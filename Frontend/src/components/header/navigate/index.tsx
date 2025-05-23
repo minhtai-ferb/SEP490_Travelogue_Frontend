@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"; // Nếu bạn có utility function này
 
 const menuItems = [
   { label: "Khám phá", href: "/kham-pha" },
-  // { label: "Kế hoạch chuyến đi", href: "/ke-hoach-chuyen-di" },
+  { label: "Kế hoạch chuyến đi", href: "/chuyen-di" },
   { label: "Lễ hội & Sự kiện", href: "/le-hoi-va-su-kien" },
   { label: "Trải nghiệm", href: "/trai-nghiem" },
   { label: "Tin tức", href: "/tin-tuc" },

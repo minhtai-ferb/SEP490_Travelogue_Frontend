@@ -16,9 +16,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Go Young Tây Ninh",
-  description: "Go Young Tây Ninh Du khảo Về Nguồn",
+  title: "Traveloge",
+  description: "Traveloge - Tây Ninh Du khảo Về Nguồn",
 };
+
 
 export default function RootLayout({
   children,
