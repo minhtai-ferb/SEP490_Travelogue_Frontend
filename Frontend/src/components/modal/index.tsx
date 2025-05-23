@@ -89,7 +89,7 @@ function Modal({ isLogin, open, onClose }: ModalProps) {
 			const response = await register(data)
 			addToast({
 				title: "Đăng ký thành công!",
-				description: "Chào mừng bạn đến với Go young Tây Ninh",
+				description: "Chào mừng bạn đến với Traveloge",
 				color: "success",
 			})
 			onClose()
@@ -118,7 +118,7 @@ function Modal({ isLogin, open, onClose }: ModalProps) {
 
 			addToast({
 				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Go young Tây Ninh",
+				description: "Chào mừng bạn đến với Traveloge",
 				color: "success",
 			})
 			onClose()
@@ -145,7 +145,7 @@ function Modal({ isLogin, open, onClose }: ModalProps) {
 			await loginWithGoogle()
 			addToast({
 				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Go young Tây Ninh",
+				description: "Chào mừng bạn đến với Traveloge",
 				color: "success",
 			})
 			onClose()
