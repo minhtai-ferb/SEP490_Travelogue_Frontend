@@ -117,7 +117,7 @@ function Header() {
           variants={jumpVariants}
           initial="initial"
           animate="animate"
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce md:bottom-10"
+          className="absolute z-10 bottom-6 left-1/2 -translate-x-1/2 cursor-pointer animate-bounce md:bottom-10"
         >
           <Image
             src={arrow.src || "/placeholder.svg"}
