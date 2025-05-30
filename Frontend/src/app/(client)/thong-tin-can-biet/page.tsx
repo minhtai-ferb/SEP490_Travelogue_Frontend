@@ -1,15 +1,12 @@
 "use client";
+import UnifiedHeader from "@/components/common/common-header";
+import DestinationGrid from "@/components/common/destination-grid";
+import { headerConfigs } from "@/config/header";
+import { Image } from "antd";
+import dynamic from "next/dynamic";
+import { useRef, useState } from "react";
 import "swiper/css";
 import "swiper/css/pagination";
-import Header from "./components/header";
-import { Button, Collapse, Divider, Image, Modal } from "antd";
-import { useRef, useState } from "react";
-import { Fullscreen } from "lucide-react";
-import DiscoverMore from "../le-hoi-va-su-kien/components/discover-more";
-import Experience from "@/components/common/experience";
-import StorySharing from "@/components/common/story-sharing";
-import DestinationGrid from "@/components/common/destination-grid";
-import dynamic from "next/dynamic";
 
 const infoTayNinh = [
   {
@@ -126,21 +123,48 @@ function EventPage() {
 
   // const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  // const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleFullscreen = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.requestFullscreen) {
-      video.requestFullscreen();
-    } else if ((video as any).webkitRequestFullscreen) {
-      (video as any).webkitRequestFullscreen();
-    }
-  };
+  // const handleFullscreen = () => {
+  //   const video = videoRef.current;
+  //   if (!video) return;
+  //   if (video.requestFullscreen) {
+  //     video.requestFullscreen();
+  //   } else if ((video as any).webkitRequestFullscreen) {
+  //     (video as any).webkitRequestFullscreen();
+  //   }
+  // };
 
   return (
     <div>
-      <Header />
+      <header
+        className="relative h-screen w-full bg-cover bg-center flex flex-col bg-transparent inset-0 bg-black bg-opacity-40"
+        style={{ backgroundImage: "url('/thanh_pho_tay_ninh.jpg')" }}
+      >
+        {/* Dark overlay */}
+        <div
+          className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 to-transparent"
+        ></div>
+        {/* Unified nav/header */}
+        <UnifiedHeader
+          config={headerConfigs?.knowledge}
+        />
+
+        {/* Centered Main content */}
+        <div className="z-20 transition-all duration-100 flex-grow flex flex-col items-center justify-center px-4 text-center text-white">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight drop-shadow-xl mb-4">
+            Tin tức mới nhất của chúng tôi
+          </h1>
+          <p className="max-w-2xl text-base sm:text-lg md:text-xl mb-2 drop-shadow-md">
+            Nguồn tin tức và cập nhật mới nhất từ tỉnh của chúng tôi.
+          </p>
+          <p className="max-w-2xl text-base sm:text-lg md:text-xl mb-6 drop-shadow-md">
+            Nơi kết nối cộng đồng với những thông tin đáng tin cậy và kịp thời.
+          </p>
+          <div className="h-1 w-20 bg-blue-400 rounded-full"></div>
+        </div>
+
+      </header>
 
       <div className="max-w-7xl mx-auto px-4 pt-12">
         <h2 className="text-center text-7xl font-bold mb-10 text-blue-500">
@@ -150,26 +174,6 @@ function EventPage() {
         {/* Khung chính */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center h-1/2 w-full">
-            {/* Ảnh đại diện */}
-            {/* <div className="md:col-span-1 bg-gray-300 h-full w-full rounded-lg flex items-center justify-center text-xl font-bold text-gray-600">
-							<Button type="primary" onClick={() => setIsModalOpen(true)}>
-								▶ Xem Video
-							</Button>
-
-							<Modal
-								open={isModalOpen}
-								onCancel={() => setIsModalOpen(false)}
-								footer={null}
-								width={800}
-								centered
-							>
-								<video
-									controls
-									style={{ width: '100%', borderRadius: '8px' }}
-									src="/tvc.mp4"
-								/>
-							</Modal>
-						</div> */}
             <VideoComponent />
 
             {/* Nội dung giới thiệu */}
@@ -242,9 +246,8 @@ function EventPage() {
               >
                 <span className="text-2xl  leading">{item.label}</span>
                 <span
-                  className={`transition-transform duration-200 ${
-                    openIndex === index ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform duration-200 ${openIndex === index ? "rotate-180" : ""
+                    }`}
                 >
                   ▼
                 </span>
