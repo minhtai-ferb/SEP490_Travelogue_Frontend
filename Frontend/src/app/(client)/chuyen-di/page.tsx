@@ -1,8 +1,8 @@
-import TourBookingInterface from '@/components/interface/tour-booking'
+import TourBooking from '@/components/page/tour-booking'
 import React from 'react'
 
 function page() {
-	return <TourBookingInterface />
+	return <TourBooking />
 }
 
 export default page

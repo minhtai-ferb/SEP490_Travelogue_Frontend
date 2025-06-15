@@ -17,6 +17,10 @@ export default {
 			backgroundImage: {
 				'footer-bg': "url('/Banner.png')",
 			},
+			fontFamily: {
+				fleur: ['"Fleur De Leah"', 'cursive'],
+				poppin: ['"Poppins regular"', 'cursive'],
+			},
 			colors: {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
