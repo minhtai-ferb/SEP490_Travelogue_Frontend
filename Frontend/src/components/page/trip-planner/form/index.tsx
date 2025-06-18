@@ -68,6 +68,10 @@ export default function TripPlanningForm({ onPlanCreated }: TripPlanningFormProp
 		}
 
 		onPlanCreated(plan)
+
+		console.log('====================================');
+		console.log("Booked", plan);
+		console.log('====================================');
 	}
 
 	const generateSampleItinerary = () => {
