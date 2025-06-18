@@ -1,6 +1,7 @@
 'use client'
 
 import TripPlannerPage from '@/components/page/trip-planner'
+import EnhancedTripPlanner from '@/components/page/trip-planner/trip-planner-component/enhanced-trip-planner'
 import { BreadcrumbItem, Breadcrumbs } from '@heroui/react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -17,7 +18,8 @@ function page() {
 				<BreadcrumbItem onClick={() => { handleBack() }}>Trở về</BreadcrumbItem>
 				<BreadcrumbItem>Lập kế hoạch chuyến đi</BreadcrumbItem>
 			</Breadcrumbs>
-			<TripPlannerPage />
+			{/* <TripPlannerPage /> */}
+			<EnhancedTripPlanner />
 		</div>
 	)
 }
