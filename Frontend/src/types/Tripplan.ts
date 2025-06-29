@@ -1,3 +1,5 @@
+import { TourGuide } from "./Tourguide"
+
 export interface TripLocation {
 	id: string
 	name: string
@@ -32,4 +34,5 @@ export interface TripPlan {
 	preferences: string
 	itinerary: TripDay[]
 	isAIGenerated: boolean
+	tourguide: TourGuide
 }
