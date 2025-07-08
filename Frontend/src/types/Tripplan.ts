@@ -1,3 +1,5 @@
+import { TourGuide } from "./Tourguide"
+
 export interface TripLocation {
 	id: string
 	name: string
@@ -21,15 +23,15 @@ export interface TripDay {
 
 export interface TripPlan {
 	id: string
-	title: string
+	title?: string
 	startDate: Date
 	duration: number
 	destinations: TripLocation[]
-	restaurants: TripLocation[]
-	craftVillages: TripLocation[]
+	restaurants?: TripLocation[]
+	craftVillages?: TripLocation[]
 	budget: number
 	travelers: number
-	preferences: string
-	itinerary: TripDay[]
-	isAIGenerated: boolean
+	preferences?: string
+	itinerary?: TripDay[]
+	tourguide?: TourGuide
 }

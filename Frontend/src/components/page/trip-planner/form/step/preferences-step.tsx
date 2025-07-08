@@ -54,7 +54,7 @@ export function PreferencesStep({ formData, updateFormData, onBack, onComplete }
 			travelers: travelers,
 			preferences: preferences,
 			itinerary: generateSampleItinerary(),
-			isAIGenerated: useAI,
+			tourguide: undefined,
 		}
 
 		onComplete(plan)
@@ -193,7 +193,7 @@ export function PreferencesStep({ formData, updateFormData, onBack, onComplete }
 					{isGenerating ? (
 						<>
 							<Loader2 className="mr-2 h-5 w-5 animate-spin" />
-							{useAI ? "AI đang tạo lịch trình..." : "Đang xử lý..."}
+							"Đang tạo lịch trình..."
 						</>
 					) : (
 						<>

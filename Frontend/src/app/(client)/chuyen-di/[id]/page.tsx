@@ -1,40 +1,37 @@
-'use client'
+"use client"
 
-import CardPlace from '@/components/common/card-place'
-import { BreadcrumbItem, Breadcrumbs } from '@heroui/react'
-import { useRouter } from 'next/navigation'
-import React from 'react'
+import CalendarPicker from "@/components/page/trip-planner-detail/component/calendar-picker"
+import { BookingSidebar } from "@/components/page/trip-planner-detail/tour/booking-sidebar"
+import { TourInfoHeader } from "@/components/page/trip-planner-detail/tour/tour-info-header"
+import { TourItinerary } from "@/components/page/trip-planner-detail/tour/tour-itinerary"
+import TourRelate from "@/components/page/trip-planner-detail/tour/tour-relate"
+import { MOCK_TOUR_DATA } from "@/data/region-data"
 
-function Page() {
-	const router = useRouter()
+function TourBookingPage() {
 
-	const handleBack = () => {
-		router.back()
-	}
+	const tour = MOCK_TOUR_DATA
 
 	return (
-		<div className=''>
-			{/* Breadscrumb */}
-			<Breadcrumbs className='px-6 py-3' size='lg'>
-				<BreadcrumbItem onClick={() => { handleBack() }}>Trở về</BreadcrumbItem>
-				<BreadcrumbItem>Chi tiết chuyến đi</BreadcrumbItem>
-			</Breadcrumbs>
-			<div className="flex h-screen overflow-hidden my-12">
-				<div
-					className="w-2/5 h-screen sticky top-10 bg-cover bg-center rounded-tr-3xl rounded-br-3xl"
-					style={{ backgroundImage: "url('/image/auth_form.JPG')" }}
-				/>
-
-				<div className="custom-scrollbar w-full h-screen overflow-y-auto p-6 space-y-8">
-					<h1 className="text-3xl font-bold mb-4">Chi tiết chuyến đi</h1>
-
-					{Array.from({ length: 10 }).map((_, i) => (
-						<CardPlace i={i} key={i} />
-					))}
+		<div className="min-h-screen">
+			<div className="flex justify-center gap-6 max-w-7xl mx-20 py-20">
+				<div className="">
+					<TourInfoHeader tour={tour} />
+					<TourItinerary itinerary={tour.itinerary} />
+					<CalendarPicker tour={tour} />
+				</div>
+				<div className="w-fit">
+					<BookingSidebar
+						tour={tour}
+						onBooking={(bookingData) => {
+							console.log("Booking data:", bookingData)
+						}}
+					/>
 				</div>
 			</div>
+
+			<TourRelate />
 		</div>
 	)
 }
 
-export default Page
+export default TourBookingPage

@@ -5,18 +5,93 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { MapPin, Utensils, Briefcase, ArrowLeft, ArrowRight, X } from 'lucide-react'
+import { MapPin, Utensils, Briefcase, ArrowLeft, ArrowRight, X, Loader2, CheckCircle2 } from 'lucide-react'
 import DestinationSelector from "../../destination-selector"
+import { TripPlan } from "@/types/Tripplan"
+import { useState } from "react"
+import { format } from "date-fns"
+import { vi } from "date-fns/locale"
 
 interface DestinationStepProps {
 	formData: any
 	updateFormData: (data: any) => void
-	onNext: () => void
+	onComplete: (plan: TripPlan) => void
 	onBack: () => void
 }
 
-export function DestinationStep({ formData, updateFormData, onNext, onBack }: DestinationStepProps) {
+export function DestinationStep({ formData, updateFormData, onComplete, onBack }: DestinationStepProps) {
 	const { selectedDestinations, selectedRestaurants, selectedCraftVillages } = formData
+	const [isGenerating, setIsGenerating] = useState(false)
+
+	const {
+		preferences,
+		useAI,
+		date,
+		duration,
+		budget,
+		travelers,
+	} = formData
+
+	const handleSubmit = async () => {
+		try {
+			setIsGenerating(true)
+			// Simulate AI processing
+			await new Promise((resolve) => setTimeout(resolve, 3000))
+			setIsGenerating(false)
+		} catch (error) {
+			console.error("Error generating trip plan:", error)
+			setIsGenerating(false)
+			return
+		}
+
+		// Create the trip plan
+		const plan: TripPlan = {
+			id: `trip-${Date.now()}`,
+			title: `Chuyến du lịch Tây Ninh - ${format(date || new Date(), "dd/MM/yyyy", { locale: vi })}`,
+			startDate: date || new Date(),
+			duration: duration,
+			destinations: selectedDestinations,
+			restaurants: selectedRestaurants,
+			craftVillages: selectedCraftVillages,
+			budget: budget[0],
+			travelers: travelers,
+			itinerary: generateSampleItinerary(),
+			preferences: preferences,
+		}
+
+		onComplete(plan)
+	}
+
+	const generateSampleItinerary = () => {
+		// This would be replaced with actual AI-generated content
+		const days = []
+		for (let i = 0; i < duration; i++) {
+			days.push({
+				day: i + 1,
+				activities: [
+					{
+						time: "08:00",
+						title: i === 0 ? "Khởi hành" : "Bắt đầu ngày mới",
+						description: i === 0 ? "Xuất phát từ điểm tập trung" : "Ăn sáng tại khách sạn",
+						location: i === 0 ? "Điểm xuất phát" : "Khách sạn",
+					},
+					{
+						time: "09:30",
+						title: selectedDestinations[i % selectedDestinations.length]?.name || "Tham quan điểm du lịch",
+						description: "Khám phá và chụp ảnh tại điểm du lịch nổi tiếng",
+						location: selectedDestinations[i % selectedDestinations.length]?.address || "Tây Ninh",
+					},
+					{
+						time: "12:00",
+						title: "Ăn trưa",
+						description: "Thưởng thức ẩm thực địa phương",
+						location: selectedRestaurants[i % Math.max(1, selectedRestaurants.length)]?.name || "Nhà hàng địa phương",
+					},
+				],
+			})
+		}
+		return days
+	}
 
 	const removeDestination = (id: string) => {
 		updateFormData({
@@ -216,12 +291,22 @@ export function DestinationStep({ formData, updateFormData, onNext, onBack }: De
 					Quay lại
 				</Button>
 				<Button
-					onClick={onNext}
+					onClick={handleSubmit}
+					disabled={isGenerating}
 					size="lg"
-					className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+					className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 min-w-[200px]"
 				>
-					Tiếp theo
-					<ArrowRight className="ml-2 h-5 w-5" />
+					{isGenerating ? (
+						<>
+							<Loader2 className="mr-2 h-5 w-5 animate-spin" />
+							{useAI ? "AI đang tạo lịch trình..." : "Đang xử lý..."}
+						</>
+					) : (
+						<>
+							<CheckCircle2 className="mr-2 h-5 w-5" />
+							Hoàn thành
+						</>
+					)}
 				</Button>
 			</div>
 		</motion.div>

@@ -23,7 +23,7 @@ export function TripStats({ plan }: TripStatsProps) {
 		{
 			icon: Utensils,
 			label: "Nhà hàng",
-			value: plan.restaurants.length,
+			value: plan?.restaurants?.length,
 			color: "orange",
 			bgColor: "bg-orange-50",
 			iconColor: "text-orange-600",
@@ -32,7 +32,7 @@ export function TripStats({ plan }: TripStatsProps) {
 		{
 			icon: Briefcase,
 			label: "Làng nghề",
-			value: plan.craftVillages.length,
+			value: plan?.craftVillages?.length,
 			color: "green",
 			bgColor: "bg-green-50",
 			iconColor: "text-green-600",
@@ -41,7 +41,7 @@ export function TripStats({ plan }: TripStatsProps) {
 		{
 			icon: Route,
 			label: "Hoạt động",
-			value: plan.itinerary.reduce((total, day) => total + day.activities.length, 0),
+			value: plan?.itinerary?.reduce((total, day) => total + day.activities.length, 0),
 			color: "purple",
 			bgColor: "bg-purple-50",
 			iconColor: "text-purple-600",

@@ -91,7 +91,7 @@ export function ListCurrentTours() {
 			{/* Background image with overlay */}
 
 			{/* List current tours */}
-			<p className='relative text-5xl font-medium text-pretty w-screen text-center font-fleur text-slate-100'>
+			<p className='relative text-center py-3 text-3xl md:text-5xl font-bold text-white leading-tight'>
 				Các lịch trình gợi ý cho bạn
 			</p>
 

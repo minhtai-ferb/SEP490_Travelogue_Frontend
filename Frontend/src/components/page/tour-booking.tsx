@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import TravelCTA from '../common/booking-tour-button'
 import { ListCurrentTours } from '../common/tour'
+import FavoritesDestinations from '../common/favorite-destinations'
 
 function TourBooking() {
 	const router = useRouter()
@@ -13,7 +14,7 @@ function TourBooking() {
 
 	return (
 
-		<div className="relative h-screen">
+		<div className="relative h-full">
 			<div className="absolute inset-0 z-0">
 				<div className="w-full h-full bg-cover bg-top bg-no-repeat"
 					style={{ backgroundImage: `url('/image/bg_travel.jpg')` }}>
@@ -22,10 +23,12 @@ function TourBooking() {
 			</div>
 
 			<div>
-				<TravelCTA onClick={navigateToTripPlaning} />
+				<TravelCTA label='Khởi tạo chuyến đi của bạn' onClick={navigateToTripPlaning} />
 			</div>
 
 			<ListCurrentTours />
+
+			<FavoritesDestinations />
 		</div>
 	)
 }

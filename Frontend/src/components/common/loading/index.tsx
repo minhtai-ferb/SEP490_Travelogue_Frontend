@@ -25,7 +25,7 @@ export default function Loading() {
   const letters = "TRAVELOGE".split("")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-teal-500 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 flex items-center justify-center relative overflow-hidden">
       {/* Background Animation Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 animate-float">
@@ -72,17 +72,16 @@ export default function Loading() {
         </div>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-in-up">Your Journey Begins Here</p>
+        <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-in-up">Nơi hành trình bắt đầu</p>
 
         {/* Progress Bar */}
         <div className="w-80 max-w-sm mx-auto mb-6">
           <div className="flex justify-between text-white/70 text-sm mb-2">
-            <span>Loading your adventure...</span>
             <span>{progress}%</span>
           </div>
           <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-gradient-to-r from-blue-300 to-blue-400 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -95,7 +94,6 @@ export default function Loading() {
           <div className="w-3 h-3 bg-white/60 rounded-full animate-pulse-dot" style={{ animationDelay: "0.4s" }}></div>
         </div>
       </div>
-
 
       <style jsx>{`
         @keyframes float {
@@ -114,39 +112,39 @@ export default function Loading() {
         }
         
         @keyframes bounce-in {
-          0% { 
-            opacity: 0; 
-            transform: translateY(50px) scale(0.3); 
+          0% {
+            opacity: 0;
+            transform: translateY(50px) scale(0.3);
           }
-          50% { 
-            opacity: 1; 
-            transform: translateY(-10px) scale(1.1); 
+          50% {
+            opacity: 1;
+            transform: translateY(-10px) scale(1.1);
           }
-          100% { 
-            opacity: 1; 
-            transform: translateY(0px) scale(1); 
+          100% {
+            opacity: 1;
+            transform: translateY(0px) scale(1);
           }
         }
         
         @keyframes fade-in-up {
-          0% { 
-            opacity: 0; 
-            transform: translateY(30px); 
+          0% {
+            opacity: 0;
+            transform: translateY(30px);
           }
-          100% { 
-            opacity: 1; 
-            transform: translateY(0px); 
+          100% {
+            opacity: 1;
+            transform: translateY(0px);
           }
         }
         
         @keyframes pulse-dot {
-          0%, 100% { 
-            opacity: 0.4; 
-            transform: scale(1); 
+          0%, 100% {
+            opacity: 0.4;
+            transform: scale(1);
           }
-          50% { 
-            opacity: 1; 
-            transform: scale(1.2); 
+          50% {
+            opacity: 1;
+            transform: scale(1.2);
           }
         }
         
@@ -161,13 +159,13 @@ export default function Loading() {
         }
         
         @keyframes scale-in {
-          0% { 
-            opacity: 0; 
-            transform: scale(0); 
+          0% {
+            opacity: 0;
+            transform: scale(0);
           }
-          100% { 
-            opacity: 1; 
-            transform: scale(1); 
+          100% {
+            opacity: 1;
+            transform: scale(1);
           }
         }
         
