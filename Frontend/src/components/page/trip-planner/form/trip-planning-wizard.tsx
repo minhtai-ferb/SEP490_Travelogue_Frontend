@@ -33,7 +33,6 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 	const steps = [
 		{ id: 1, title: "Thông tin cơ bản", icon: Calendar, description: "Ngày và ngân sách" },
 		{ id: 2, title: "Chọn điểm đến", icon: MapPin, description: "Địa điểm yêu thích" },
-		{ id: 3, title: "Hoàn thiện", icon: Sparkles, description: "Tùy chỉnh và AI" },
 	]
 
 	const updateFormData = (data: Partial<typeof formData>) => {
@@ -41,7 +40,7 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 	}
 
 	const handleNext = () => {
-		setCurrentStep(prev => Math.min(prev + 1, 3))
+		setCurrentStep(prev => Math.min(prev + 1, 2))
 	}
 
 	const handleBack = () => {
@@ -50,29 +49,23 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 
 	const handleComplete = (plan: TripPlan) => {
 		onPlanCreated(plan)
+		console.log('====================================');
+		console.log('Plan created:', plan);
+		console.log('====================================');
 	}
 
-	const progress = (currentStep / 3) * 100
+	const progress = (currentStep / 2) * 100
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
 			<div className="container mx-auto px-4 py-8">
 				{/* Header */}
 				<div className="text-center mb-8">
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-4"
-					>
-						<Sparkles className="h-4 w-4" />
-						Lên kế hoạch thông minh
-					</motion.div>
-
 					<motion.h1
 						initial={{ opacity: 0, y: -20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.1 }}
-						className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4"
+						className="text-4xl md:text-5xl font-bold bg-gradient-to-r py-2 from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4"
 					>
 						Tạo chuyến du lịch hoàn hảo
 					</motion.h1>
@@ -81,7 +74,7 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 						initial={{ opacity: 0, y: -20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.2 }}
-						className="text-xl text-gray-600 max-w-2xl mx-auto"
+						className="text-xl text-gray-600 max-w-3xl mx-auto text-balance mb-12 leading-relaxed"
 					>
 						Khám phá vẻ đẹp Tây Ninh với lịch trình được cá nhân hóa chỉ trong vài phút
 					</motion.p>
@@ -132,12 +125,12 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 										key="destinations"
 										formData={formData}
 										updateFormData={updateFormData}
-										onNext={handleNext}
+										onComplete={handleComplete}
 										onBack={handleBack}
 									/>
 								)}
 
-								{currentStep === 3 && (
+								{/* {currentStep === 3 && (
 									<PreferencesStep
 										key="preferences"
 										formData={formData}
@@ -145,7 +138,7 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 										onBack={handleBack}
 										onComplete={handleComplete}
 									/>
-								)}
+								)} */}
 							</AnimatePresence>
 						</div>
 					</Card>
@@ -156,18 +149,13 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 					initial={{ opacity: 0, y: 40 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.6 }}
-					className="max-w-6xl mx-auto mt-16 grid md:grid-cols-3 gap-8"
+					className="max-w-6xl mx-auto mt-16 grid md:grid-cols-2 gap-8"
 				>
 					{[
 						{
 							icon: "🎯",
 							title: "Cá nhân hóa",
 							description: "Lịch trình được tùy chỉnh theo sở thích của bạn"
-						},
-						{
-							icon: "🤖",
-							title: "AI thông minh",
-							description: "Tối ưu hóa tuyến đường và thời gian di chuyển"
 						},
 						{
 							icon: "💎",

@@ -28,7 +28,7 @@ interface MonthData {
 export const HandmadeProductTayNinh = () => {
   const router = useRouter()
   // Get the current month and year (using the provided date)
-  const currentDate = new Date("2025-04-06")
+  const currentDate = new Date()
   const baseMonth = currentDate.getMonth() // 3 (April, 0-based)
   const baseYear = currentDate.getFullYear() // 2025
 

@@ -290,7 +290,7 @@ function TripTourguide({ plan, onGuideSelect }: TripTourguideProps) {
 							</Avatar>
 
 							{/* Verified Badge */}
-							{selectedGuide.isVerified && (
+							{selectedGuide?.isVerified && (
 								<div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2">
 									<CheckCircle2 className="h-4 w-4 text-white" />
 								</div>

@@ -29,7 +29,7 @@ export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
 
 	const { isBooking, bookingError, startTrip, calculateTotalPrice, clearError } = useTripBooking({
 		plan,
-		tourGuide: selectedTourGuide,
+		tourGuide: selectedTourGuide || undefined,
 	})
 
 	const formatDate = (date: Date) => {
@@ -198,7 +198,7 @@ export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
 				onClose={() => setShowConfirmationModal(false)}
 				onConfirm={handleConfirmBooking}
 				plan={plan}
-				tourGuide={selectedTourGuide}
+				tourGuide={selectedTourGuide || undefined}
 				pricing={pricing}
 				isLoading={isBooking}
 			/>

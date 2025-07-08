@@ -144,8 +144,19 @@ export const MOCK_TOUR_DATA: Tour = {
 	location: "Tây Ninh, Việt Nam",
 	duration: "3 ngày 2 đêm",
 	maxGuests: 15,
+	activeSlot: 15,
 	rating: 4.8,
 	reviewCount: 124,
+	dates: [
+		{ date: "2025-07-15", available: true, price: 32900000, spotsLeft: 8, leaderId: "1" },
+		{ date: "2025-07-22", available: true, price: 32900000, spotsLeft: 12 },
+		{ date: "2025-08-08", available: true, price: 34900000, spotsLeft: 6, leaderId: "2" },
+		{ date: "2025-08-15", available: true, price: 34900000, spotsLeft: 15 },
+		{ date: "2025-08-22", available: false, price: 34900000, spotsLeft: 0, leaderId: "3" },
+		{ date: "2025-09-05", available: true, price: 36900000, spotsLeft: 10 },
+		{ date: "2025-09-12", available: true, price: 36900000, spotsLeft: 8, leaderId: "1" },
+		{ date: "2025-09-19", available: true, price: 36900000, spotsLeft: 14 },
+	],
 	description:
 		"Khám phá vẻ đẹp văn hóa và thiên nhiên của Tây Ninh qua hành trình 3 ngày 2 đêm đầy thú vị. Từ Tòa thánh Cao Đài với kiến trúc độc đáo đến núi Bà Đen hùng vĩ, và địa đạo Củ Chi lịch sử.",
 	badges: ["Bestseller", "3 ngày 2 đêm"],
@@ -212,7 +223,6 @@ export const MOCK_TOUR_DATA: Tour = {
 	amenities: [
 		{ id: "amenity-1", name: "Xe đưa đón", icon: "Car", included: true },
 		{ id: "amenity-2", name: "Bữa ăn", icon: "Coffee", included: true },
-		{ id: "amenity-3", name: "Hướng dẫn viên", icon: "Camera", included: true },
 		{ id: "amenity-4", name: "WiFi miễn phí", icon: "Wifi", included: true },
 	],
 	reviews: [

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, MapPin, Camera, Utensils, Mountain, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Clock, MapPin, Camera, Utensils, Mountain, CheckCircle2, ArrowRight, CalendarHeart } from 'lucide-react'
 import type { TourItineraryDay } from "@/types/Tour"
 
 interface TourItineraryProps {
@@ -45,10 +45,15 @@ export function TourItinerary({ itinerary }: TourItineraryProps) {
 		<div className="space-y-8">
 			{/* Header Section */}
 			<div className="text-center space-y-4">
-				<h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-					🗓️ Lịch trình phiêu lưu
-				</h2>
-				<p className="text-gray-600 max-w-2xl mx-auto">
+				<section className="flex items-center align-center justify-center space-x-4">
+					<div className="flex flex-col items-center space-y-2">
+						<CalendarHeart className="w-10 h-10 text-pink-600" />
+					</div>
+					<h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-blue-400 to-blue-800 bg-clip-text text-transparent">
+						Lịch trình
+					</h2>
+				</section>
+				<p className="text-gray-600 max-w-3xl mx-auto">
 					Khám phá từng khoảnh khắc đáng nhớ trong hành trình của bạn với lịch trình được thiết kế tỉ mỉ
 				</p>
 			</div>

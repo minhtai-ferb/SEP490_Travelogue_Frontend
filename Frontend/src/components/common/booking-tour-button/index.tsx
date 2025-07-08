@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { FaCompass, FaPlane } from "react-icons/fa";
 
 interface TravelCTAProps {
+	label?: string;
+	className?: string;
 	onClick?: () => void;
 }
 
-const TravelCTA: React.FC<TravelCTAProps> = ({ onClick }) => {
+const TravelCTA: React.FC<TravelCTAProps> = ({ onClick, label, className }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
 
@@ -42,7 +44,7 @@ const TravelCTA: React.FC<TravelCTAProps> = ({ onClick }) => {
           `}
 				/>
 				<span className="relative">
-					{isLoading ? "Processing..." : isSuccess ? "Booked Successfully!" : "Book Your Adventure"}
+					{isLoading ? "Đang xử lý..." : isSuccess ? "Đang đến tạo chuyến đi ..." : label}
 				</span>
 				<FaCompass
 					className={`

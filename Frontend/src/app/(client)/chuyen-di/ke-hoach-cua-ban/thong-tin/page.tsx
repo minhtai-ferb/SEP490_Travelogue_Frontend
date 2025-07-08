@@ -9,13 +9,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { Star, AlertCircle } from "lucide-react"
-import type { TripPlan } from "@/types/tripplan"
-import { TripHeader } from "./trip-detail-component/trip-header"
-import { TripOverview } from "./trip-detail-component/trip-overview"
-import { TripItinerary } from "./trip-detail-component/trip-itinerary"
-import { TripStats } from "./trip-detail-component/trip-stats"
-import TripTourguide from "./trip-detail-component/trip-tourguide"
-import { BookingConfirmationModal } from "@/components/trip-detail-component/booking-confirmation-modal"
+import type { TripPlan } from "@/types/Tripplan"
+import { TripHeader } from "@/components/page/trip-planner/detail/trip-detail-component/trip-header"
+import { TripOverview } from "@/components/page/trip-planner/detail/trip-detail-component/trip-overview"
+import { TripItinerary } from "@/components/page/trip-planner/detail/trip-detail-component/trip-itinerary"
+import { TripStats } from "@/components/page/trip-planner/detail/trip-detail-component/trip-stats"
+import TripTourguide from "@/components/page/trip-planner/detail/trip-detail-component/trip-tourguide"
+import { BookingConfirmationModal } from "@/components/page/trip-planner/detail/trip-detail-component/booking-comfirmation"
 import { useTripBooking } from "@/hooks/use-trip-booking"
 
 interface TripPlanDetailProps {
@@ -29,7 +29,7 @@ export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
 
 	const { isBooking, bookingError, startTrip, calculateTotalPrice, clearError } = useTripBooking({
 		plan,
-		tourGuide: selectedTourGuide,
+		tourGuide: selectedTourGuide || undefined,
 	})
 
 	const formatDate = (date: Date) => {
@@ -198,7 +198,6 @@ export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
 				onClose={() => setShowConfirmationModal(false)}
 				onConfirm={handleConfirmBooking}
 				plan={plan}
-				tourGuide={selectedTourGuide}
 				pricing={pricing}
 				isLoading={isBooking}
 			/>

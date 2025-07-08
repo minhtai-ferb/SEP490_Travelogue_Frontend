@@ -1,4 +1,4 @@
-import { Car, Coffee, Camera, Wifi, CheckCircle } from "lucide-react"
+import { Car, Coffee, Camera, Wifi, CheckCircle, Sparkle } from "lucide-react"
 import type { TourAmenity } from "@/types/Tour"
 
 interface TourAmenitiesProps {
@@ -47,13 +47,16 @@ export function TourAmenities({ amenities }: TourAmenitiesProps) {
 	return (
 		<div className="space-y-6">
 			<div className="text-center">
-				<h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-					✨ Tiện ích đặc biệt
-				</h2>
+				<section className="flex items-center align-center justify-center">
+					<Sparkle className="w-6 h-6 text-yellow-500 mr-2" />
+					<h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+						Tiện ích đặc biệt
+					</h2>
+				</section>
 				<p className="text-gray-600">Những dịch vụ tuyệt vời đã bao gồm trong tour</p>
 			</div>
 
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{amenities.map((amenity, index) => {
 					const IconComponent = iconMap[amenity.icon as keyof typeof iconMap]
 					const colorScheme = colorSchemes[index % colorSchemes.length]
@@ -100,12 +103,12 @@ export function TourAmenities({ amenities }: TourAmenitiesProps) {
 			</div>
 
 			{/* Additional value proposition */}
-			<div className="text-center p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+			{/* <div className="text-center p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
 				<div className="flex items-center justify-center gap-2 text-green-700">
 					<CheckCircle className="h-5 w-5" />
 					<span className="font-medium">Tất cả đã bao gồm - Không phí phát sinh!</span>
 				</div>
-			</div>
-		</div>
+			</div> */}
+		</div >
 	)
 }

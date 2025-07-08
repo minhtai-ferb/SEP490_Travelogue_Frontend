@@ -9,6 +9,7 @@ import { Calendar, Users, Phone, Star, Sparkles, Gift, Clock } from "lucide-reac
 import { useBooking } from "@/hooks/useBooking"
 import type { Tour } from "@/types/Tour"
 import { formatPriceSimple } from "@/utils/format"
+import { useRouter } from "next/navigation"
 
 interface BookingSidebarProps {
 	tour: Tour
@@ -31,9 +32,13 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 		pricing: tour.pricing,
 	})
 
+	const route = useRouter()
+
 	const handleBooking = () => {
-		if (isBookingValid && onBooking) {
-			onBooking(bookingData)
+		// route.push('#calendar')
+		const el = document.getElementById("calendar")
+		if (el) {
+			el.scrollIntoView({ behavior: "smooth" })
 		}
 	}
 
@@ -45,17 +50,6 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 		<div className="sticky top-24 space-y-4">
 			{/* Main Booking Card */}
 			<Card className="shadow-2xl border-0 overflow-hidden bg-gradient-to-br from-white to-blue-50/30">
-				{/* Special Offer Banner */}
-				{discountPercentage > 0 && (
-					<div className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-center py-2 relative overflow-hidden">
-						<div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-pink-600/20"></div>
-						<div className="relative flex items-center justify-center gap-2">
-							<Sparkles className="h-4 w-4 animate-pulse" />
-							<span className="font-bold text-sm">🔥 GIẢM {discountPercentage}% - ƯU ĐÃI ĐẶC BIỆT!</span>
-							<Sparkles className="h-4 w-4 animate-pulse" />
-						</div>
-					</div>
-				)}
 
 				<CardHeader className="pb-4">
 					<div className="space-y-3">
@@ -95,7 +89,7 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 
 				<CardContent className="space-y-6">
 					{/* Date Selection */}
-					<div className="space-y-2">
+					{/* <div className="space-y-2">
 						<label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
 							<Calendar className="h-4 w-4 text-blue-500" />
 							Chọn ngày khởi hành
@@ -108,10 +102,10 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 								onChange={(e) => setSelectedDate(e.target.value)}
 							/>
 						</div>
-					</div>
+					</div> */}
 
 					{/* Guest Count */}
-					<div className="space-y-2">
+					{/* <div className="space-y-2">
 						<label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
 							<Users className="h-4 w-4 text-purple-500" />
 							Số lượng khách
@@ -139,11 +133,11 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 							>
 								+
 							</Button>
-						</div>
-					</div>
+						</div> 
+					</div> */}
 
 					{/* Price Breakdown */}
-					<div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 space-y-3">
+					{/* <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 space-y-3">
 						<h4 className="font-semibold text-gray-800 flex items-center gap-2">
 							<Gift className="h-4 w-4 text-green-500" />
 							Chi tiết giá
@@ -170,45 +164,36 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 								</span>
 							</div>
 						</div>
-					</div>
+					</div> */}
 
 					{/* Booking Button */}
 					<div className="space-y-3">
 						<Button
-							className={`
-                w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 transform
-                ${isBookingValid
-									? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl"
-									: "bg-gray-300 cursor-not-allowed"
-								}
-              `}
+							className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 transform bg-gradient-to-r 
+							from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg 
+							hover:shadow-xl"
 							onClick={handleBooking}
-							disabled={!isBookingValid}
 						>
-							{isBookingValid ? (
-								<span className="flex items-center justify-center gap-2">
-									<Sparkles className="h-5 w-5" />
-									Đặt tour ngay
-									<Sparkles className="h-5 w-5" />
-								</span>
-							) : (
-								"Vui lòng chọn ngày"
-							)}
+							<span className="flex items-center justify-center gap-2">
+								<Sparkles className="h-5 w-5" />
+								Chọn ngày khởi hành
+								<Sparkles className="h-5 w-5" />
+							</span>
 						</Button>
 
 						<div className="text-center space-y-1">
-							<p className="text-xs text-gray-500">✅ Không tính phí ngay lập tức</p>
+							{/* <p className="text-xs text-gray-500">✅ Không tính phí ngay lập tức</p> */}
 							<p className="text-xs text-green-600 font-medium">🎁 Miễn phí hủy trong 24h</p>
 						</div>
 					</div>
 
 					{/* Urgency Indicator */}
-					<div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-3">
+					{/* <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-3">
 						<div className="flex items-center gap-2 text-orange-700">
 							<Clock className="h-4 w-4" />
 							<span className="text-sm font-medium">⚡ Chỉ còn 3 chỗ trống cho ngày này!</span>
 						</div>
-					</div>
+					</div> */}
 				</CardContent>
 			</Card>
 
@@ -239,7 +224,7 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 							variant="outline"
 							className="w-full bg-white hover:bg-green-50 border-2 border-green-200 hover:border-green-300 text-green-700 font-semibold py-3 rounded-xl transition-all duration-200"
 						>
-							<Phone className="h-4 w-4 mr-2" />📞 Gọi ngay: 1900 1234
+							<Phone className="h-4 w-4 mr-2" />Gọi ngay: 1900 1234
 						</Button>
 
 						<div className="flex items-center justify-center gap-4 text-xs text-gray-500">
@@ -249,6 +234,6 @@ export function BookingSidebar({ tour, onBooking }: BookingSidebarProps) {
 					</div>
 				</CardContent>
 			</Card>
-		</div>
+		</div >
 	)
 }

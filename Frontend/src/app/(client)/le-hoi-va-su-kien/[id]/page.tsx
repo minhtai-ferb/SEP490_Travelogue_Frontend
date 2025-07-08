@@ -56,7 +56,7 @@ function EventDetail() {
 			{/* Hero Section */}
 			<div className="relative h-[60vh] overflow-hidden">
 				<img
-					src={event?.medias?.[0].mediaUrl || '/default.jpg'}
+					src={event?.medias?.[0]?.mediaUrl || '/default.jpg'}
 					alt="Event Header"
 					className="w-full h-full object-cover"
 				/>
@@ -97,9 +97,9 @@ function EventDetail() {
 							{event?.medias && (
 								<ImageGalleryExplore
 									images={event?.medias?.map((media) => ({
-										url: media.mediaUrl, // Adjust based on ListMedia properties
+										url: media?.mediaUrl, // Adjust based on ListMedia properties
 										alt: media?.fileName || "Image description",
-										isThumbnail: media.isThumbnail || false,
+										isThumbnail: media?.isThumbnail || false,
 									}))}
 								/>
 							)}

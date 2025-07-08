@@ -1,94 +1,12 @@
-// "use client"
-
-// import { useState } from "react"
-// import { Button } from "@/components/ui/button"
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-// import TripPlanningForm from "./form"
-// import TripPlanDetailUpdate from "./detail/trip-plan-detail"
-// import type { TripPlan } from "@/types/Tripplan"
-// import { Sparkles } from "lucide-react"
-// import TripPlanningWizard from "./form/trip-planning-wizard"
-
-// export default function TripPlannerPage() {
-// 	const [activeTab, setActiveTab] = useState("create")
-// 	const [currentPlan, setCurrentPlan] = useState<TripPlan | null>(null)
-
-// 	const handlePlanCreated = (plan: TripPlan) => {
-// 		setCurrentPlan(plan)
-// 		setActiveTab("view")
-// 	}
-
-// 	const handleCreateNew = () => {
-// 		setActiveTab("create")
-// 	}
-
-// 	return (
-// 		<div className="container mx-auto px-4 py-8">
-// 			<div className="max-w-5xl mx-auto">
-// 				<div className="mb-8 text-center">
-// 					<h1 className="text-3xl md:text-4xl font-bold mb-3 text-primary">Lập kế hoạch Du lịch Tây Ninh</h1>
-// 					<p className="text-muted-foreground max-w-2xl mx-auto">
-// 						Tạo lịch trình du lịch cá nhân hóa với các điểm đến, làng nghề và ẩm thực đặc sắc của Tây Ninh
-// 					</p>
-// 				</div>
-
-// 				<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-// 					<TabsList className="grid w-full grid-cols-2 mb-8">
-// 						<TabsTrigger value="create">Tạo kế hoạch mới</TabsTrigger>
-// 						<TabsTrigger value="view" disabled={!currentPlan}>
-// 							Xem kế hoạch
-// 						</TabsTrigger>
-// 					</TabsList>
-
-// 					<TabsContent value="create">
-// 						<Card>
-// 							<CardHeader>
-// 								<CardTitle className="flex items-center gap-2">
-// 									<span>Tạo kế hoạch du lịch</span>
-// 									<Sparkles className="h-5 w-5 text-amber-500" />
-// 								</CardTitle>
-// 								<CardDescription>Chọn các địa điểm bạn muốn đến và thời gian cho chuyến đi của bạn</CardDescription>
-// 							</CardHeader>
-// 							<CardContent>
-// 								{/* <TripPlanningForm onPlanCreated={handlePlanCreated} /> */}
-// 								<TripPlanningWizard onPlanCreated={handlePlanCreated} />
-// 							</CardContent>
-// 						</Card>
-// 					</TabsContent>
-
-// 					<TabsContent value="view">
-// 						{currentPlan && (
-// 							<div className="space-y-6">
-// 								{/* <TripPlanDetail plan={currentPlan} /> */}
-// 								<TripPlanDetailUpdate plan={currentPlan} />
-// 								<div className="flex justify-center mt-8">
-// 									<Button onClick={handleCreateNew} variant="outline" className="mr-4">
-// 										Tạo kế hoạch mới
-// 									</Button>
-// 									<Button>Lưu kế hoạch</Button>
-// 								</div>
-// 							</div>
-// 						)}
-// 					</TabsContent>
-// 				</Tabs>
-// 			</div>
-// 		</div>
-// 	)
-// }
-
-
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import TripPlanningWizard from "./form/trip-planning-wizard"
-import TripPlanDetailUpdate from "./detail/trip-plan-detail"
 import type { TripPlan } from "@/types/Tripplan"
-import { Sparkles, MapPin, Calendar, Users, Compass, Star, ArrowRight, Plus, Eye, Save, Share2 } from 'lucide-react'
+import { AnimatePresence, motion } from "framer-motion"
+import { ArrowRight, Compass, Eye, MapPin, Plus, Save, Share2, Star, Users } from 'lucide-react'
+import { useState } from "react"
+import TripPlanDetailUpdate from "./detail/trip-plan-detail"
+import TripPlanningWizard from "./form/trip-planning-wizard"
 
 export default function TripPlannerPage() {
 	const [activeView, setActiveView] = useState<"landing" | "create" | "view">("landing")
@@ -127,18 +45,15 @@ export default function TripPlannerPage() {
 								className="text-center mb-16"
 							>
 								<div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-6 py-3 rounded-full text-sm font-medium mb-6">
-									<Sparkles className="h-4 w-4" />
-									Trải nghiệm du lịch thông minh 2025
+									Trải nghiệm du lịch của bạn
 								</div>
 
-								<h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6 leading-tight">
+								<h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r py-3 from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6 leading-tight">
 									Khám phá Tây Ninh
-									<br />
-									<span className="text-4xl md:text-6xl">cùng AI</span>
 								</h1>
 
-								<p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-									Tạo lịch trình du lịch hoàn hảo với công nghệ AI tiên tiến.
+								<p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-12 my-3 py-3 leading-relaxed">
+									Tạo lịch trình du lịch hoàn hảo
 									Khám phá văn hóa, ẩm thực và làng nghề truyền thống độc đáo.
 								</p>
 
@@ -146,9 +61,11 @@ export default function TripPlannerPage() {
 									<Button
 										onClick={handleCreateNew}
 										size="lg"
-										className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+										className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 
+										hover:to-purple-700 text-white px-12 py-8 rounded-2xl font-semibold text-lg transition-all 
+										duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
 									>
-										<Plus className="mr-2 h-5 w-5" />
+										<Plus className="mr-2 h-6 w-6" />
 										Bắt đầu lập kế hoạch
 										<ArrowRight className="ml-2 h-5 w-5" />
 									</Button>
@@ -172,16 +89,9 @@ export default function TripPlannerPage() {
 								initial={{ opacity: 0, y: 40 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.3 }}
-								className="grid md:grid-cols-3 gap-8 mb-16"
+								className="grid md:grid-cols-2 gap-8 mb-16"
 							>
 								{[
-									{
-										icon: Compass,
-										title: "AI Thông minh",
-										description: "Lịch trình được tối ưu hóa bởi AI dựa trên sở thích cá nhân",
-										gradient: "from-blue-500 to-cyan-500",
-										bgGradient: "from-blue-50 to-cyan-50"
-									},
 									{
 										icon: MapPin,
 										title: "Điểm đến độc đáo",
@@ -202,7 +112,7 @@ export default function TripPlannerPage() {
 										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: 0.4 + index * 0.1 }}
-										className={`bg-gradient-to-br ${feature.bgGradient} p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}
+										className={`bg-gradient-to-br ${feature.bgGradient} flex flex-col items-center p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}
 									>
 										<div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}>
 											<feature.icon className="h-8 w-8 text-white" />
@@ -254,34 +164,32 @@ export default function TripPlannerPage() {
 						initial={{ opacity: 0, x: 100 }}
 						animate={{ opacity: 1, x: 0 }}
 						exit={{ opacity: 0, x: -100 }}
-						className="container mx-auto px-4 py-8"
+						className="mx-auto px-4 py-8"
 					>
-						<div className="max-w-6xl mx-auto">
+						<Button
+							onClick={handleBackToLanding}
+							variant="ghost"
+							className="mb-4 text-gray-600 hover:text-gray-900"
+						>
+							← Quay lại trang đầu
+						</Button>
+						<div className="max-w-6xl text-center mx-auto">
 							{/* Header */}
 							<motion.div
 								initial={{ opacity: 0, y: -20 }}
 								animate={{ opacity: 1, y: 0 }}
-								className="flex items-center justify-between mb-8"
+								className="flex items-center justify-center"
 							>
 								<div>
-									<Button
-										onClick={handleBackToLanding}
-										variant="ghost"
-										className="mb-4 text-gray-600 hover:text-gray-900"
-									>
-										← Quay lại trang chủ
-									</Button>
-									<h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-										Tạo kế hoạch du lịch mới
-									</h1>
-									<p className="text-gray-600 mt-2">
-										Hãy để chúng tôi giúp bạn tạo ra chuyến du lịch hoàn hảo
-									</p>
+									<div className="mx-auto text-center">
+										<h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+											Tạo kế hoạch du lịch mới
+										</h1>
+										<p className="text-gray-600 mt-2">
+											Hãy để chúng tôi giúp bạn tạo ra chuyến du lịch hoàn hảo
+										</p>
+									</div>
 								</div>
-								<Badge className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-2">
-									<Sparkles className="h-4 w-4 mr-1" />
-									AI Powered
-								</Badge>
 							</motion.div>
 
 							{/* Form */}
@@ -312,7 +220,7 @@ export default function TripPlannerPage() {
 										variant="ghost"
 										className="mb-4 text-gray-600 hover:text-gray-900"
 									>
-										← Quay lại trang chủ
+										← Quay lại trang đầu
 									</Button>
 									<h1 className="text-3xl md:text-4xl font-bold text-gray-900">
 										Kế hoạch du lịch của bạn

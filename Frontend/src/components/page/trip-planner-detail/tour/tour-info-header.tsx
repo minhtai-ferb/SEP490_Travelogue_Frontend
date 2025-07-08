@@ -1,8 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 // import { StarRating } from "@/components/common/star-rating"
-import { MapPin, Clock, Users, Award, Heart, Share2, Bookmark } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import type { Tour } from "@/types/Tour"
+import { Award, Clock, MapPin, Users } from "lucide-react"
 
 interface TourInfoHeaderProps {
 	tour: Tour
@@ -42,13 +41,13 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 			{/* Title Section */}
 			<div className="space-y-4">
 				<h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
-					<span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+					<span className="bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-clip-text text-transparent">
 						{tour.title}
 					</span>
 				</h1>
 
 				{/* Quick Actions */}
-				<div className="flex items-center gap-3">
+				{/* <div className="flex items-center gap-3">
 					<Button
 						variant="outline"
 						size="sm"
@@ -73,7 +72,7 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 						<Bookmark className="h-4 w-4" />
 						Lưu
 					</Button>
-				</div>
+				</div> */}
 			</div>
 
 			{/* Info Cards Grid */}

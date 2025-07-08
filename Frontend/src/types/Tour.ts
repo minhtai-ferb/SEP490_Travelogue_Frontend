@@ -42,6 +42,14 @@ export interface TourPricing {
 	currency: string
 }
 
+export interface TourDate {
+	date: string
+	available: boolean
+	price: number
+	spotsLeft: number
+	leaderId?: string
+}
+
 export interface Tour {
 	id: string
 	title: string
@@ -51,12 +59,14 @@ export interface Tour {
 	rating: number
 	reviewCount: number
 	description: string
+	activeSlot: number
 	images: TourImage[]
 	itinerary: TourItineraryDay[]
 	amenities: TourAmenity[]
 	reviews: TourReview[]
 	pricing: TourPricing
 	badges: string[]
+	dates: TourDate[]
 }
 
 export interface BookingData {
