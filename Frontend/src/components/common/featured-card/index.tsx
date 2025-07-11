@@ -1,12 +1,11 @@
-import { Card, CardFooter, Image as ImageHero } from "@heroui/react";
+import { Card, CardFooter } from "@heroui/react";
 import { Calendar } from "lucide-react";
 import defaultImage from "../../../../public/image_intro.png";
-import eventevent from "../../../../public/image/event_1.png";
 
 import { format } from "date-fns";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 
 // Define a proper interface for the item prop

@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ParallaxLocationIntro, type LocationType } from "../parallax-effect"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Mountain, Palette, Building2 } from "lucide-react"
+import { useLocationController } from "@/services/location-controller"
 
 export function ParallaxShowcase() {
 	const [selectedType, setSelectedType] = useState<LocationType>("scenic-spot")
-
+	const { getAllTypeLocation } = useLocationController()
 	const locationTypes: { type: LocationType; label: string; icon: any; description: string }[] = [
 		{
 			type: "scenic-spot",
@@ -29,6 +30,27 @@ export function ParallaxShowcase() {
 			description: "Khám phá di sản văn hóa",
 		},
 	]
+
+	const fetchLocations = async (type: LocationType) => {
+		try {
+			const response = await getAllTypeLocation()
+			if (response) {
+				console.log("Fetched locations:", response)
+				// Assuming response is an array of Location objects
+				// You can filter or process the response based on the selected type if needed
+			} else {
+				console.warn("No locations found")
+			}
+		} catch (error) {
+			console.log('====================================');
+			console.log("Error fetching locations:", error);
+			console.log('====================================');
+		}
+	}
+
+	useEffect(() => {
+		fetchLocations(selectedType)
+	}, [])
 
 	const handleLocationSelect = (location: any) => {
 		console.log("Selected location:", location)
