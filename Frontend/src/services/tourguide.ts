@@ -1,21 +1,22 @@
 "use client";
 
+import { TOUR_API_URL } from "@/constants/api";
 import useApiService from "@/hooks/useApi";
 import { isLoadingAtom } from "@/store/auth";
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
-export function useTripPlan() {
+export function useTourguideAssign() {
 	const { callApi, loading, setIsLoading } = useApiService();
 	const router = useRouter();
 	const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
-	const getAllTripPlan = useCallback(
+	const getTourAssign = useCallback(
 		async () => {
 			setLoading(true);
 			try {
-				const response = await callApi("get", "TripPlan");
+				const response = await callApi("get", TOUR_API_URL.TOUR_ASSIGNED);
 				return response?.data;
 			} catch (e: any) {
 				throw e;
@@ -26,7 +27,7 @@ export function useTripPlan() {
 	);
 
 
-	const geTripPlanSearch = useCallback(
+	const getTourAssignSearch = useCallback(
 		async ({
 			title = '',
 			pageNumber = 1,
@@ -34,7 +35,7 @@ export function useTripPlan() {
 		}) => {
 			setLoading(true);
 			try {
-				const response = await callApi('get', '/trip-plans', {
+				const response = await callApi('get', TOUR_API_URL.TOUR_ASSIGNED_SEARCH, {
 					params: {
 						title,
 						pageNumber,
@@ -51,41 +52,9 @@ export function useTripPlan() {
 		[callApi, setLoading]
 	);
 
-	const getTripPlanById = useCallback(
-		async (id: string) => {
-			setLoading(true);
-			try {
-				const response = await callApi("get", `TripPlan/${id}`);
-				return response?.data;
-			} catch (e: any) {
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[callApi, setLoading]
-	);
-
-	const getDistrictById = useCallback(
-		async (id: string) => {
-			setLoading(true);
-			try {
-				const response = await callApi("get", `district/${id}`);
-				return response?.data;
-			} catch (e: any) {
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[callApi, setLoading]
-	);
-
 	return {
-		getAllTripPlan,
-		geTripPlanSearch,
-		getDistrictById,
-		getTripPlanById,
+		getTourAssign,
+		getTourAssignSearch,
 		loading: isLoading || loading,
 	};
 }

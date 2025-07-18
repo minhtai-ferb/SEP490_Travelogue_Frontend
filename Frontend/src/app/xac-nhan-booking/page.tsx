@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import BookingConfirmationClient from "@/components/page/booking-confirmation"
 
 // Dynamic metadata
-async function generateMetadata({
+export async function generateMetadata({
 	searchParams,
 }: {
 	searchParams: { [key: string]: string | undefined }

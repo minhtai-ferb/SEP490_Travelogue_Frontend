@@ -27,13 +27,13 @@ export interface TripBookingData {
 }
 
 export interface UserTripPlan extends TripPlan {
-	bookingId: string
+	bookingId?: string
 	tourGuide?: TourGuide
-	status: "planning" | "booked" | "active" | "completed"
-	progress: {
-		currentDay: number
-		completedActivities: string[]
-		notes: string[]
+	status?: "planning" | "booked" | "active" | "completed"
+	progress?: {
+		currentDay?: number
+		completedActivities?: string[]
+		notes?: string[]
 	},
-	title: string
+	title?: string
 }

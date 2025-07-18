@@ -1,3 +1,5 @@
+'use client'
+
 import { useLocationController } from "@/services/location-controller";
 import { Location } from "@/types/Location";
 import Head from "next/head";

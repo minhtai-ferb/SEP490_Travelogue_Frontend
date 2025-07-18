@@ -2,7 +2,7 @@
 
 import Navigate from "@/components/header/navigate"
 import PersonIcon from "@mui/icons-material/Person"
-import { AlignJustify, BookHeart, LogOut, Menu, MenuIcon, User, X } from "lucide-react"
+import { AlignJustify, Backpack, BookHeart, LogOut, Menu, MenuIcon, User, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { menuItems } from "@/data/region-data"
-import { isAdmin } from "@/lib/check-admin"
+import { checkRole, isAdmin } from "@/lib/check-admin"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/services/useAuth"
 import { userAtom } from "@/store/auth"
@@ -34,6 +34,7 @@ import {
 	DropdownTrigger,
 } from "@heroui/react"
 import { useAtom } from "jotai"
+import { ROLES } from "@/config/rbacConfig"
 
 export interface HeaderConfig {
 	backgroundImage: string
@@ -335,7 +336,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											<DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem className="cursor-pointer">
-												<Link href="/ho-so" className="flex items-center">
+												<Link href={`${!checkRole(ROLES.TOUR_GUIDE) ? '/ho-so' : '/ho-so-tourguide'}`} className="flex items-center">
 													<User className="mr-2 h-4 w-4 text-primary" />
 													<span>Hồ sơ</span>
 												</Link>
@@ -346,6 +347,14 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													<span>Địa điểm yêu thích</span>
 												</Link>
 											</DropdownMenuItem>
+											{checkRole(ROLES.TOUR_GUIDE) && (
+												<DropdownMenuItem className="cursor-pointer">
+													<Link href="/cac-tour-cua-ban" className="flex items-center">
+														<Backpack className="mr-2 h-4 w-4 text-primary" />
+														<span>Xem tour của bạn</span>
+													</Link>
+												</DropdownMenuItem>
+											)}
 											{isAdmin() && (
 												<DropdownMenuItem className="cursor-pointer">
 													<Link href="/admin/dashboard" className="flex items-center">
@@ -460,6 +469,14 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													<span>Địa điểm yêu thích</span>
 												</Link>
 											</DropdownMenuItem>
+											{checkRole(ROLES.TOUR_GUIDE) && (
+												<DropdownMenuItem className="cursor-pointer">
+													<Link href="/cac-tour-cua-ban" className="flex items-center">
+														<Backpack className="mr-2 h-4 w-4 text-primary" />
+														<span>Xem tour của bạn</span>
+													</Link>
+												</DropdownMenuItem>
+											)}
 											{isAdmin() && (
 												<DropdownMenuItem className="cursor-pointer">
 													<Link href="/admin/dashboard" className="flex items-center">

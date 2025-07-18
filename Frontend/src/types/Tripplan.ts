@@ -30,6 +30,7 @@ export interface TripPlan {
 	restaurants?: TripLocation[]
 	craftVillages?: TripLocation[]
 	budget: number
+	estimatedCost?: number
 	travelers: number
 	preferences?: string
 	itinerary?: TripDay[]

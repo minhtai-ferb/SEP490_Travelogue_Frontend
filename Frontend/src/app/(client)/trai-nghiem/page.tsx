@@ -17,7 +17,7 @@ import {
 // UI Components
 import { Button } from "@/components/ui/button"
 // Icons
-import { AlignJustify, BookHeart, LogOut, Menu, MenuIcon, User, X } from "lucide-react"
+import { AlignJustify, Backpack, BookHeart, LogOut, Menu, MenuIcon, User, X } from "lucide-react"
 
 // Swiper
 import { Autoplay, EffectFade, Pagination } from "swiper/modules"
@@ -36,13 +36,14 @@ import { SectionExploreTravel } from "@/components/common/explore-travel"
 import MapTayNinh from "@/components/common/map-tay-ninh-hp"
 import Navigate from "@/components/header/navigate"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { isAdmin } from "@/lib/check-admin"
+import { checkRole, isAdmin } from "@/lib/check-admin"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/services/useAuth"
 import { userAtom } from "@/store/auth"
 import { Avatar, Divider, Dropdown, DropdownItem, DropdownMenu as DropdownMenuHero, DropdownTrigger } from "@heroui/react"
 import { PersonIcon } from "@radix-ui/react-icons"
 import DiscoverMore from "../le-hoi-va-su-kien/components/discover-more"
+import { ROLES } from "@/config/rbacConfig"
 
 // Navigation data
 const menuItems = [
@@ -368,7 +369,7 @@ export default function HeroSlider() {
 											<DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem className="cursor-pointer">
-												<Link href='/ho-so' className="flex items-center">
+												<Link href={`${!checkRole(ROLES.TOUR_GUIDE) ? '/ho-so' : '/ho-so-tourguide'}`} className="flex items-center">
 													<User className="mr-2 h-4 w-4 text-primary" />
 													<span>Hồ sơ</span>
 												</Link>
@@ -379,6 +380,14 @@ export default function HeroSlider() {
 													<span>Địa điểm yêu thích</span>
 												</Link>
 											</DropdownMenuItem>
+											{checkRole(ROLES.TOUR_GUIDE) && (
+												<DropdownMenuItem className="cursor-pointer">
+													<Link href="/cac-tour-cua-ban" className="flex items-center">
+														<Backpack className="mr-2 h-4 w-4 text-primary" />
+														<span>Xem tour của bạn</span>
+													</Link>
+												</DropdownMenuItem>
+											)}
 											{isAdmin() && (
 												<DropdownMenuItem onClick={handleAdminPage} className="cursor-pointer">
 													<div className="flex items-center">
@@ -537,7 +546,7 @@ export default function HeroSlider() {
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end" className="w-56">
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href='/ho-so' className="flex items-center">
+													<Link href={`${!checkRole(ROLES.TOUR_GUIDE) ? '/ho-so' : '/ho-so-tourguide'}`} className="flex items-center">
 														<User className="mr-2 h-4 w-4 text-primary" />
 														<span>Hồ sơ</span>
 													</Link>

@@ -19,9 +19,9 @@ api.interceptors.request.use(
       console.log("Client side cookies: ", token);
     }
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
 
     // Set 'Content-Type': 'application/json' if the request is not FormData
     if (config.data instanceof FormData) {
