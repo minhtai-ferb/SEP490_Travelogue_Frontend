@@ -1,3 +1,6 @@
+import { addToast, useToast } from "@heroui/react";
+import { useRouter } from "next/navigation";
+
 // utils
 export const isValidEmailOrPhone = (input: string) => {
 	// Simple regex for email validation
@@ -13,10 +16,17 @@ export const isValidPassword = (password: string) => password.length >= 6;
 
 export const getDataFromLocalStorage = (item: string) => {
 	const data = localStorage.getItem(item);
-	console.log("item", data)
+	const route = useRouter();
 	if (data) {
 		const useData = JSON.parse(data)
 		return useData;
+	} else {
+		addToast({
+			title: "Không tìm thấy dữ liệu - trở về đăng nhập",
+			variant: "solid",
+			color: "danger",
+		})
+		route.push("/login");
+		return null;
 	}
 }
-

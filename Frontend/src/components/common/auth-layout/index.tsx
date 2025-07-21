@@ -49,7 +49,7 @@ export default function AuthLayout() {
 			{/* Left side - Background image and branding */}
 			<div className="relative flex flex-1 flex-col items-center justify-center bg-blue-900 p-8 text-center text-white">
 				<div className="relative z-10 max-w-md">
-					<h1 className="mb-2 font-serif text-5xl font-bold italic tracking-wide">Goyoung</h1>
+					<h1 className="mb-2 font-serif text-5xl font-bold italic tracking-wide">Traveloge</h1>
 					<h2 className="mb-6 text-xl">Tây Ninh Du Khảo về nguồn</h2>
 					<p className="text-lg">
 						Du lịch là trải nghiệm duy nhất làm phong phú tâm hồn bạn theo những cách vượt xa giá trị vật chất

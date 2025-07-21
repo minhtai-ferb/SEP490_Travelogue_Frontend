@@ -152,6 +152,14 @@ export default function MyBookingsPage() {
 														)}
 													</div>
 												</div>
+												<Button
+													variant="outline"
+													className="w-full bg-transparent"
+													onClick={() => router.push(`/xac-nhan-booking?bookingId=${booking.id}`)}
+												>
+													<Eye className="w-4 h-4 mr-2" />
+													Xem chi tiết
+												</Button>
 
 												{/* Customer Info */}
 												<div>
@@ -183,14 +191,14 @@ export default function MyBookingsPage() {
 															Thanh toán ngay
 														</Button>
 													)}
-													<Button
+													{/* <Button
 														variant="outline"
 														className="w-full bg-transparent"
 														onClick={() => router.push(`/xac-nhan-booking?bookingId=${booking.id}`)}
 													>
 														<Eye className="w-4 h-4 mr-2" />
 														Xem chi tiết
-													</Button>
+													</Button> */}
 												</div>
 
 												{booking.specialRequests && (

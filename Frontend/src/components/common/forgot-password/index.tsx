@@ -22,7 +22,7 @@ interface FormData {
 export function ForgotPasswordForm({ onSwitchToLogin, onCodeSent }: ForgotPasswordFormProps) {
 	const [isPending, setIsPending] = useState(false)
 	const [error, setError] = useState("")
-	const { forgotPassword } = useAuth()
+	const { resendEmailVerification } = useAuth()
 
 	const {
 		register,
@@ -41,7 +41,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onCodeSent }: ForgotPasswo
 
 		try {
 			// Call the API to request password reset
-			await forgotPassword(data.email)
+			await resendEmailVerification(data.email)
 
 			addToast({
 				title: "Yêu cầu đã được gửi",
@@ -58,12 +58,6 @@ export function ForgotPasswordForm({ onSwitchToLogin, onCodeSent }: ForgotPasswo
 				error?.response?.data?.Message || error?.message || "Đã xảy ra lỗi khi gửi yêu cầu đặt lại mật khẩu"
 
 			setError(errorMessage)
-
-			addToast({
-				title: "Lỗi",
-				description: errorMessage,
-				color: "danger",
-			})
 		} finally {
 			setIsPending(false)
 		}
@@ -71,10 +65,6 @@ export function ForgotPasswordForm({ onSwitchToLogin, onCodeSent }: ForgotPasswo
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-			{/* <div className="text-center mb-6">
-				<h2 className="text-2xl font-bold text-gray-800">Quên mật khẩu</h2>
-				<p className="text-gray-600 mt-2">Nhập email của bạn để nhận mã xác nhận đặt lại mật khẩu</p>
-			</div> */}
 
 			<div className="space-y-2">
 				<label htmlFor="email" className="text-sm font-medium text-gray-700">
