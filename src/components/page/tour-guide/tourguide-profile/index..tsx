@@ -2,22 +2,23 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useRef, useState } from "react"
 // import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Camera, Save, Key, User, Globe, Award, FileText, CheckCircle, X, ImageIcon } from "lucide-react"
-import Link from "next/link"
+import axiosInstance from "@/lib/interceptors"
+import { useTourguideAssign } from "@/services/tourguide"
+import { userAtom } from "@/store/auth"
 import { motion } from "framer-motion"
 import { useAtom } from "jotai"
-import { userAtom } from "@/store/auth"
-import axiosInstance from "@/lib/interceptors"
+import { ArrowLeft, Award, Camera, CheckCircle, FileText, Globe, ImageIcon, Key, Save, User, X } from "lucide-react"
+import Link from "next/link"
 
 interface Certification {
 	id?: string
@@ -79,10 +80,27 @@ const MOCK_PROFILE: GuideProfile = {
 function GuideProfileContent() {
 	const [user] = useAtom(userAtom)
 	const [profile, setProfile] = useState<GuideProfile>(MOCK_PROFILE)
+	const { getTourguideProfile } = useTourguideAssign()
 	const [isEditing, setIsEditing] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [saveMessage, setSaveMessage] = useState("")
 	const [error, setError] = useState("")
+
+	// useEffect(() => {
+	// 	fetchProfile()
+	// }, [user])
+
+	// const fetchProfile = async () => {
+	// 	try {
+	// 		const response = await getTourguideProfile(user?.id || "")
+	// 		console.log('====================================');
+	// 		console.log("Fetched profile:", response);
+	// 		console.log('====================================');
+	// 		setProfile(response)
+	// 	} catch (error) {
+	// 		console.error("Error fetching tour guide profile:", error)
+	// 	}
+	// }
 
 	const profilePictureRef = useRef<HTMLInputElement>(null)
 	const certificationRefs = useRef<{ [key: number]: HTMLInputElement }>({})

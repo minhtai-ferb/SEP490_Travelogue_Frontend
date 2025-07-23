@@ -75,3 +75,29 @@ export interface BookingData {
 	guestCount: number
 	totalPrice: number
 }
+
+
+export type TourStatus = "upcoming" | "in_progress" | "completed"
+
+export interface AssignedTour {
+	id: string
+	name: string
+	startDate: string
+	endDate: string
+	meetingLocation: string
+	status: TourStatus
+	participants: number
+	maxParticipants: number
+	description: string
+	notes?: string
+	price: number
+}
+
+export interface TourStats {
+	upcoming: number
+	completed: number
+	inProgress: number
+	total: number
+	totalParticipants: number
+	totalRevenue: number
+}
