@@ -13,28 +13,46 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import React, { useState, useEffect } from "react";
 import { DataTable } from "./components/data-table-user";
 import { columns } from "./components/columns-user";
-import { UserTable } from "@/types/Users";
+import { User, UserTable } from "@/types/Users";
 import SearchInput from "./components/search-user";
 import { useUserManager } from "@/services/user-manager";
 import { addToast } from "@heroui/react";
 import { Loader2 } from "lucide-react";
+import { map } from "leaflet";
+import LoadingContent from "@/components/common/loading-content";
 
 function ManageUser() {
   const [searchValue, setSearchValue] = useState("");
 
-  const [users, setUsers] = useState<UserTable[]>([]);
-  const { getCurrentUser, loading } = useUserManager();
+  const [users, setUsers] = useState<User[]>([]);
+  const { getListUser, loading } = useUserManager();
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchUsers = async () => {
       try {
-        const response: UserTable[] = await getCurrentUser();
+        const response: User[] = await getListUser();
         console.log("User data: ", response);
         if (!response) {
-          throw new Error("No data returned from API getCurrentUser");
+          throw new Error("No data returned from API getListUser");
         }
+        const userTableData: User[] = response.map((user) => ({
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+          avatarUrl: user.avatarUrl ?? "/placeholder-user.jpg",
+          phoneNumber: user.phoneNumber ?? "Chưa có",
+          address: user.address ?? "Chưa có",
+          isEmailVerified: user.isEmailVerified,
+          createdTime: user.createdTime,
+          lockoutEnd: user.lockoutEnd,
+          lastUpdatedTime: user.lastUpdatedTime,
+          createdBy: user.createdBy,
+          createdByName: user.createdByName,
+          lastUpdatedBy: user.lastUpdatedBy,
+          roles: user.roles,
+        }));
 
-        setUsers(response);
+        setUsers(userTableData);
       } catch (error: any) {
         console.log("====================================");
         console.log(error);
@@ -52,8 +70,8 @@ function ManageUser() {
       }
     };
 
-    fetchStudents();
-  }, [getCurrentUser]);
+    fetchUsers();
+  }, [getListUser]);
 
   return (
     <SidebarInset>
@@ -73,9 +91,7 @@ function ManageUser() {
         </Breadcrumb>
       </header>
       {loading ? (
-        <div className="h-full flex items-center justify-center">
-          <Loader2 className="animate-spin h-10 w-10 text-blue-500" />
-        </div>
+        <LoadingContent />
       ) : (
         <div className="flex flex-1 flex-col justify-items-center items-center w-full">
           <div className="flex justify-between items-center w-full px-3">

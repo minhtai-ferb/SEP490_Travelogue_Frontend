@@ -11,7 +11,7 @@ export function useUserManager() {
   const router = useRouter();
   const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
-  const getCurrentUser = useCallback(async () => {
+  const getListUser = useCallback(async () => {
     try {
       setLoading(true);
       const response = await callApi("get", "user");
@@ -62,10 +62,41 @@ export function useUserManager() {
     [callApi, setLoading]
   );
 
+  const getAllRoles = useCallback(async () => {
+    try {
+      const response = await callApi("get", "role/search-paged");
+      return response?.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }, [callApi, setLoading]);
+
+  const assignRoleToUser = useCallback(
+    async (userId: string, roleId: string) => {
+      setLoading(true);
+      try {
+        const response = await callApi("post", "user/assign-role-to-user", {
+          params: {
+            userId,
+            roleId,
+          },
+        });
+        return response?.data;
+      } catch (error: any) {
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
   return {
-    getCurrentUser,
+    getListUser,
     getUserById,
     updateUser,
+    getAllRoles,
+    assignRoleToUser,
     loading: isLoading || loading,
   };
 }

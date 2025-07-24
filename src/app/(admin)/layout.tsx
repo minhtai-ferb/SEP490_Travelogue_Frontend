@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/app/(admin)/components/app-sidebar";
 
 import {
   SidebarInset,
@@ -8,7 +8,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useLoginCheck } from "@/lib/login-check";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import LoadingPage from "./loading";
 
 export default function Page({
   children,

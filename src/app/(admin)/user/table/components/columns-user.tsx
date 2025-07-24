@@ -8,13 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserTable } from "@/types/Users";
+import { User } from "@/types/Users";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { ArrowUpDown, Eye, MoreHorizontal, Pencil } from "lucide-react";
 import Link from "next/link";
 
-export const columns: ColumnDef<UserTable>[] = [
+export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "fullName",
     header: ({ column }) => {
@@ -23,7 +23,21 @@ export const columns: ColumnDef<UserTable>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Họ và Tên
+          Tên
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "phoneNumber",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Số điện thoại
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -55,13 +69,12 @@ export const columns: ColumnDef<UserTable>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
-      
     },
     cell: ({ row }) => {
       const createdTime = new Date(row.original.createdTime);
       return createdTime.toLocaleDateString("en-GB"); // Formats as dd-MM-yyyy
     },
-  }, 
+  },
   {
     accessorKey: "roles",
     header: ({ column }) => {
@@ -105,15 +118,15 @@ export const columns: ColumnDef<UserTable>[] = [
       const status = row.original.isEmailVerified;
       return (
         <span
-  className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-medium ${
-    status ? "bg-blue-500 text-white" : "bg-red-500 text-white"
-      }`}
->
-  {status ? "Active" : "Inactive"}
-</span>
+          className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-medium ${
+            status ? "bg-blue-500 text-white" : "bg-red-500 text-white"
+          }`}
+        >
+          {status ? "Active" : "Inactive"}
+        </span>
       ); // Displaying "Active" or "Inactive" with a green background
     },
-  },  
+  },
   {
     id: "actions",
     cell: ({ row }) => {
@@ -128,7 +141,7 @@ export const columns: ColumnDef<UserTable>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link href={`/admin/user/${id}`}>
+            <Link href={`/user/${id}`}>
               <DropdownMenuItem>
                 <Eye className="h-4 w-4 mr-2" />
                 View

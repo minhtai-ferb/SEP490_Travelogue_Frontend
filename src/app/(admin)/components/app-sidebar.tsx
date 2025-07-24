@@ -18,10 +18,10 @@ import {
   Newspaper,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import { NavMain } from "@/app/(admin)/components/nav-main";
+import { NavProjects } from "@/app/(admin)/components/nav-projects";
+import { NavSecondary } from "@/app/(admin)/components/nav-secondary";
+import { NavUser } from "@/app/(admin)/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -40,21 +40,21 @@ const data = {
   navMain: [
     {
       title: "Quản lý quận huyện",
-      url: "/admin/districs",
+      url: "/districs",
       icon: MapPin,
     },
     {
       title: "Quản lý địa điểm",
-      url: "/admin/locations",
+      url: "/locations",
       icon: Map,
       items: [
         {
           title: "Danh sách địa điểm",
-          url: "/admin/locations/list",
+          url: "/locations/list",
         },
         {
           title: "Quản lý loại địa điểm",
-          url: "/admin/locations/types",
+          url: "/locations/types",
         },
         {
           title: "Kho hình ảnh",
@@ -64,16 +64,16 @@ const data = {
     },
     {
       title: "Quản lý sự kiện",
-      url: "/admin/events",
+      url: "/events",
       icon: Calendar,
       items: [
         {
           title: "Danh sách sự kiện",
-          url: "/admin/events/lists",
+          url: "/events/lists",
         },
         {
           title: "Quản lý loại sự kiện",
-          url: "/admin/events/types",
+          url: "/events/types",
         },
         {
           title: "Kho hình ảnh",
@@ -83,16 +83,16 @@ const data = {
     },
     {
       title: "Quản lý trải nghiệm",
-      url: "/admin/experience",
+      url: "/experience",
       icon: Earth,
       items: [
         {
           title: "Danh sách trải nghiệm",
-          url: "/admin/experience/lists",
+          url: "/experience/lists",
         },
         {
           title: "Quản lý loại trải nghiệm",
-          url: "/admin/experience/types",
+          url: "/experience/types",
         },
         {
           title: "Kho hình ảnh",
@@ -102,16 +102,16 @@ const data = {
     },
     {
       title: "Quản lý tin tức",
-      url: "/admin/news",
+      url: "/news",
       icon: Newspaper,
       items: [
         {
           title: "Danh sách tin tức",
-          url: "/admin/news/lists",
+          url: "/news/lists",
         },
         {
           title: "Quản lý danh mục tin tức",
-          url: "/admin/news/types",
+          url: "/news/types",
         },
         {
           title: "Kho hình ảnh",
@@ -135,22 +135,22 @@ const data = {
   projects: [
     {
       title: "Dashboard",
-      url: "/admin/dashboard",
+      url: "/dashboard",
       icon: SquareTerminal,
     },
     {
       title: "Quản lý tài khoản",
-      url: "/admin/user",
+      url: "/user",
       icon: Bot,
       items: [
         {
           title: "Người dùng",
-          url: "/admin/user",
+          url: "/user",
         },
-        {
-          title: "Kiểm soát viên",
-          url: "#",
-        },
+        // {
+        //   title: "Kiểm soát viên",
+        //   url: "#",
+        // },
       ],
     },
   ],
