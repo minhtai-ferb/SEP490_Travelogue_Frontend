@@ -207,7 +207,7 @@ function CreateNewLocation() {
       if (thumbnailFile) {
         await uploadThumbnail(locationData.id, thumbnailFile);
       }
-      router.push("/admin/locations/list");
+      router.push("/locations/table");
       message.success("Location created successfully!");
     } catch (error) {
       message.error("Failed to create location.");
@@ -696,7 +696,7 @@ function CreateNewLocation() {
   //           </BreadcrumbItem>
   //           <BreadcrumbSeparator className="hidden md:block" />
   //           <BreadcrumbItem>
-  //             <BreadcrumbLink href="/admin/locations/list">
+  //             <BreadcrumbLink href="/locations/list">
   //               Danh sách địa điểm
   //             </BreadcrumbLink>
   //           </BreadcrumbItem>
@@ -725,7 +725,7 @@ function CreateNewLocation() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/locations/list">
+              <BreadcrumbLink href="/locations/table">
                 Danh sách địa điểm
               </BreadcrumbLink>
             </BreadcrumbItem>

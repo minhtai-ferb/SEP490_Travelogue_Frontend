@@ -1,17 +1,17 @@
-export type Location = {
+export type LocationTable = {
     id: string;
     name: string;
     description: string;
     content: string;
+    address: string;
     latitude: number;
     longitude: number;
     rating: string;
-    typeLocationId: string;
-    typeLocationName: string;
+    openTime?: string;
+    closeTime?: string;
+    category: string;
     districtId: string;
     districtName: string;
-    heritageRank: number;
-    heritageRankName: string;
     medias?: ListMedia[];
 };
 

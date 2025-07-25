@@ -215,7 +215,7 @@ function ViewLocation() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/locations/list">
+                <BreadcrumbLink href="/locations/table">
                   Danh sách địa điểm
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -245,7 +245,7 @@ function ViewLocation() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/locations/list">
+                <BreadcrumbLink href="/locations/table">
                   Danh sách địa điểm
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -406,7 +406,7 @@ function ViewLocation() {
                       <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => router.push("/admin/locations/list")}
+                        onClick={() => router.push("/locations/table")}
                       >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Quay lại danh sách

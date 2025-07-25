@@ -50,11 +50,7 @@ const data = {
       items: [
         {
           title: "Danh sách địa điểm",
-          url: "/locations/list",
-        },
-        {
-          title: "Quản lý loại địa điểm",
-          url: "/locations/types",
+          url: "/locations/table",
         },
         {
           title: "Kho hình ảnh",

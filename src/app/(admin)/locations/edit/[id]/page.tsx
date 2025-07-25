@@ -283,7 +283,7 @@ function EditLocation() {
       message.success("Cập nhật địa điểm thành công!");
 
       // Navigate back to list
-      router.push("/admin/locations/list");
+      router.push("/locations/table");
     } catch (error) {
       console.error("Error updating location:", error);
       message.error("Không thể cập nhật địa điểm. Vui lòng thử lại sau.");
@@ -785,7 +785,7 @@ function EditLocation() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/locations/list">
+                <BreadcrumbLink href="/locations/table">
                   Danh sách địa điểm
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -816,7 +816,7 @@ function EditLocation() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/locations/list">
+              <BreadcrumbLink href="/locations/list">
                 Danh sách địa điểm
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -1216,7 +1216,7 @@ function EditLocation() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => router.push("/admin/locations/list")}
+              onClick={() => router.push("/locations/table")}
             >
               Hủy
             </Button>

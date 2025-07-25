@@ -75,11 +75,8 @@ export function useUserManager() {
     async (userId: string, roleId: string) => {
       setLoading(true);
       try {
-        const response = await callApi("post", "user/assign-role-to-user", {
-          params: {
-            userId,
-            roleId,
-          },
+        const response = await callApi("post", `user/assign-role-to-user?userId=${userId}&roleId=${roleId}`, {
+          data: {},
         });
         return response?.data;
       } catch (error: any) {

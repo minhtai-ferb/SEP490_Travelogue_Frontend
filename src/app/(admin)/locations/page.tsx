@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,28 +11,23 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import LoadingContent from "@/components/common/loading-content";
+import HeaderManageLocation from "./components/header";
 
 function ManageLocation() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    router.push("/admin/locations/list");
+    setLoading(true);
+    router.push("/locations/table");
   }, []);
 
-  return (
-    <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="#">Quản lý địa điểm</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className="ml-auto"></div>
-    </header>
-  );
+  if (loading) {
+    return <LoadingContent />;
+  }
+
+  return <HeaderManageLocation />;
 }
 
 export default ManageLocation;
