@@ -8,25 +8,25 @@ import { useLocationController } from "@/services/location-controller"
 
 export function BentoShowcase() {
 	const [bentoItems, setBentoItems] = useState<Location[]>([])
+	const [error, setError] = useState<boolean>(false)
+	const [loading, setLoading] = useState<boolean>(false)
 	const { searchLocation } = useLocationController()
 
 	const fetchLocations = async () => {
 		try {
+			setLoading(true)
+			setError(false)
 			const response = await searchLocation({
 				title: "",
 				pageNumber: 1,
 				pageSize: 9,
 			})
-			if (response) {
-				console.log("Fetched locations:", response)
-				// Assuming response is an array of Location objects
-				setBentoItems(response?.data || [])
-			} else {
-				console.warn("No locations found")
-			}
+			setBentoItems(response?.data || [])
 		}
 		catch (error) {
-			console.error("Error fetching locations:", error)
+			setError(true)
+		} finally {
+			setLoading(false)
 		}
 	}
 
@@ -43,7 +43,16 @@ export function BentoShowcase() {
 				transition={{ delay: 0.4 }}
 				className="max-w-7xl mx-auto px-4"
 			>
-				<BentoPhotoGrid items={bentoItems as any} />
+				{loading && (
+					<div className="flex justify-center items-center py-6">
+						<p className="text-gray-500">Đang tải...</p>
+					</div>
+				)}
+				{error ? (
+					<p className="text-center text-red-500">Không thể tải địa điểm</p>
+				) :
+					<BentoPhotoGrid items={bentoItems as any} />
+				}
 			</motion.div>
 		</div>
 	)

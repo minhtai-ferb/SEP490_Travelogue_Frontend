@@ -65,10 +65,6 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 	const [user] = useAtom(userAtom)
 	const { logout } = useAuth()
 
-	const handleAdminPage = () => {
-		router.push("/admin/dashboard")
-	}
-
 	// Handle scroll effect
 	useEffect(() => {
 		const handleScroll = () => {
@@ -82,7 +78,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 	// Scroll event listener
 	useEffect(() => {
 		const handleScroll = () => {
-			if (window.scrollY > 0) {
+			if (window.scrollY > 10) {
 				setIsHeaderVisible(false)
 			} else {
 				setIsHeaderVisible(true)

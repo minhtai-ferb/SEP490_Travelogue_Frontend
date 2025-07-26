@@ -18,7 +18,7 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 	return (
 		<div className="space-y-6">
 			{/* Badges Section */}
-			<div className="flex items-center gap-3 flex-wrap">
+			{/* <div className="flex items-center gap-3 flex-wrap">
 				{tour.badges.map((badge, index) => {
 					const variant = badgeVariants[index % badgeVariants.length]
 
@@ -36,13 +36,13 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 						</Badge>
 					)
 				})}
-			</div>
+			</div> */}
 
 			{/* Title Section */}
 			<div className="space-y-4">
 				<h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
 					<span className="bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-clip-text text-transparent">
-						{tour.title}
+						{tour?.name}
 					</span>
 				</h1>
 
@@ -78,7 +78,7 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 			{/* Info Cards Grid */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 				{/* Location Card */}
-				<div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
+				{/* <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
 					<div className="flex items-center gap-3">
 						<div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
 							<MapPin className="h-6 w-6 text-white" />
@@ -88,7 +88,7 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 							<p className="font-bold text-gray-800">{tour.location}</p>
 						</div>
 					</div>
-				</div>
+				</div> */}
 
 				{/* Duration Card */}
 				<div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
@@ -98,13 +98,13 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 						</div>
 						<div>
 							<p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Thời gian</p>
-							<p className="font-bold text-gray-800">{tour.duration}</p>
+							<p className="font-bold text-gray-800">{tour?.totalDays}</p>
 						</div>
 					</div>
 				</div>
 
 				{/* Group Size Card */}
-				<div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
+				{/* <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
 					<div className="flex items-center gap-3">
 						<div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
 							<Users className="h-6 w-6 text-white" />
@@ -114,10 +114,10 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 							<p className="font-bold text-gray-800">Tối đa {tour.maxGuests}</p>
 						</div>
 					</div>
-				</div>
+				</div> */}
 
 				{/* Rating Card */}
-				<div className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
+				{/* <div className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 group">
 					<div className="flex items-center gap-3">
 						<div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
 							<Award className="h-6 w-6 text-white" />
@@ -125,13 +125,12 @@ export function TourInfoHeader({ tour }: TourInfoHeaderProps) {
 						<div>
 							<p className="text-xs font-medium text-orange-600 uppercase tracking-wide">Đánh giá</p>
 							<div className="flex items-center gap-2">
-								{/* <StarRating rating={tour.rating} size="sm" /> */}
 								<span className="font-bold text-gray-800">{tour.rating}</span>
 							</div>
 							<p className="text-xs text-gray-600">({tour.reviewCount} đánh giá)</p>
 						</div>
-					</div>
-				</div>
+					</div> 
+				</div> */}
 			</div>
 
 			{/* Trust Indicators */}

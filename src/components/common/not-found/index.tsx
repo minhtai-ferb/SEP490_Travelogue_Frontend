@@ -31,7 +31,7 @@ const NotFoundPage = () => {
 	return (
 		<>
 			<Head>
-				<title>Không tìm thấy trang | Tây Ninh Explorer</title>
+				<title>404</title>
 				<meta
 					name="description"
 					content="Oops! Trang bạn tìm kiếm không tồn tại. Cùng khám phá Tây Ninh – vùng đất của vẻ đẹp thiên nhiên và văn hóa."

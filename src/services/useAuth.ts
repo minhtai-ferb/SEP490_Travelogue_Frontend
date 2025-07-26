@@ -44,10 +44,11 @@ export function useAuth() {
 
         return userData;
       } catch (e: any) {
-        console.log("====================================");
-        console.log(e);
-        console.log("====================================");
-        throw e;
+        addToast({
+          title: "Đăng nhập thất bại!",
+          description: e?.response?.data?.message || "Vui lòng thử lại",
+          color: "danger",
+        })
       } finally {
         setLoading(false);
       }
@@ -164,7 +165,7 @@ export function useAuth() {
       setUser(null);
 
       // Redirect to login page
-      router.push("/");
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -265,7 +266,7 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [callApi,setUser, setLoading]
+    [callApi, setUser, setLoading]
   );
 
   const resetPassword = useCallback(
@@ -309,7 +310,7 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [callApi,setUser, setLoading]
+    [callApi, setUser, setLoading]
   );
 
   const getRefreshToken = async (token: string) => {

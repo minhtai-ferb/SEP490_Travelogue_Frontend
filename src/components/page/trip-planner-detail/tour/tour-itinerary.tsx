@@ -1,10 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock, MapPin, Camera, Utensils, Mountain, CheckCircle2, ArrowRight, CalendarHeart } from 'lucide-react'
-import type { TourItineraryDay } from "@/types/Tour"
+import type { TourDays } from "@/types/Tour"
 
-interface TourItineraryProps {
-	itinerary: TourItineraryDay[]
+interface TourdaysProps {
+	days: TourDays[]
 }
 
 const dayColors = [
@@ -40,7 +40,7 @@ const dayColors = [
 
 const activityIcons = [Camera, Utensils, Mountain, MapPin]
 
-export function TourItinerary({ itinerary }: TourItineraryProps) {
+export function Tourdays({ days }: TourdaysProps) {
 	return (
 		<div className="space-y-8">
 			{/* Header Section */}
@@ -64,7 +64,7 @@ export function TourItinerary({ itinerary }: TourItineraryProps) {
 				<div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-200 via-purple-200 to-pink-200 rounded-full hidden md:block"></div>
 
 				<div className="space-y-8">
-					{itinerary.map((day, index) => {
+					{days.map((day, index) => {
 						const colorScheme = dayColors[index % dayColors.length]
 						const isEven = index % 2 === 0
 
@@ -132,7 +132,7 @@ export function TourItinerary({ itinerary }: TourItineraryProps) {
 												</div>
 
 												<div className="grid gap-3">
-													{day.activities.map((activity, actIndex) => {
+													{day?.activities?.map((activity, actIndex) => {
 														const IconComponent = activityIcons[actIndex % activityIcons.length]
 
 														return (
@@ -175,7 +175,7 @@ export function TourItinerary({ itinerary }: TourItineraryProps) {
 								</div>
 
 								{/* Connection Arrow for Desktop */}
-								{index < itinerary.length - 1 && (
+								{index < days.length - 1 && (
 									<div className="hidden md:flex justify-center mt-6 mb-2">
 										<div className={`w-8 h-8 rounded-full bg-gradient-to-r ${colorScheme.gradient} flex items-center justify-center animate-bounce`}>
 											<ArrowRight className="h-4 w-4 text-white rotate-90" />
@@ -192,7 +192,7 @@ export function TourItinerary({ itinerary }: TourItineraryProps) {
 			<div className="text-center p-6 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl border border-purple-200">
 				<div className="flex items-center justify-center gap-2 text-purple-700 font-semibold">
 					<CheckCircle2 className="h-5 w-5" />
-					<span>Tổng cộng {itinerary.length} ngày khám phá đầy thú vị!</span>
+					<span>Tổng cộng {days.length} ngày khám phá đầy thú vị!</span>
 				</div>
 			</div>
 		</div>

@@ -11,7 +11,7 @@ export interface TourActivity {
 	description?: string
 }
 
-export interface TourItineraryDay {
+export interface TourDays {
 	day: number
 	title: string
 	description: string
@@ -52,7 +52,9 @@ export interface TourDate {
 
 export interface Tour {
 	id: string
+	name: string
 	title: string
+	totalDays: string
 	location: string
 	duration: string
 	maxGuests: number
@@ -61,7 +63,7 @@ export interface Tour {
 	description: string
 	activeSlot: number
 	images: TourImage[]
-	itinerary: TourItineraryDay[]
+	days: TourDays[]
 	amenities: TourAmenity[]
 	reviews: TourReview[]
 	pricing: TourPricing

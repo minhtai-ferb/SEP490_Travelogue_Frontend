@@ -5,24 +5,11 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-	MapPin,
-	Star,
-	Clock,
-	Users,
-	Camera,
-	Mountain,
-	Building2,
-	Palette,
-	ArrowRight,
-	Loader2,
-	Heart,
-	Share2,
-} from "lucide-react"
+import { MapPin, Star, Clock, Users, Camera, Mountain, Building2, Palette, ArrowRight, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
-
-export type LocationType = "scenic-spot" | "craft-village" | "historical-site"
+import type { TypeLocation } from "@/types/Location"
+import { useLocationController } from "@/services/location-controller"
 
 interface LocationData {
 	id: string
@@ -43,166 +30,28 @@ interface LocationData {
 }
 
 interface ParallaxLocationIntroProps {
-	locationType: LocationType
+	locationType: TypeLocation | null
 	className?: string
 	onLocationSelect?: (location: LocationData) => void
 }
 
-// Mock API function - replace with your actual API
-const fetchLocationData = async (type: LocationType): Promise<LocationData[]> => {
-	// Simulate API delay
-	await new Promise((resolve) => setTimeout(resolve, 1500))
-
-	const mockData: Record<LocationType, LocationData[]> = {
-		"scenic-spot": [
-			{
-				id: "nui-ba-den",
-				name: "Núi Bà Đen",
-				description:
-					"Ngọn núi thiêng liêng cao nhất Nam Bộ với độ cao 986m, nổi tiếng với những truyền thuyết bí ẩn và cảnh quan hùng vĩ. Đây là điểm du lịch tâm linh quan trọng với nhiều đền chùa cổ kính và hệ thống cáp treo hiện đại.",
-				shortDescription: "Ngọn núi thiêng liêng cao nhất Nam Bộ",
-				images: ["/backgroundTayNinh.png", "/placeholder.svg?height=300&width=400"],
-				rating: 4.8,
-				reviewCount: 2847,
-				visitDuration: "4-6 giờ",
-				bestTimeToVisit: "6:00 - 17:00",
-				highlights: ["Cáp treo hiện đại", "Đền Bà Đen linh thiêng", "Tầm nhìn 360°", "Rừng nguyên sinh"],
-				location: "Tây Ninh",
-				price: "150.000đ - 300.000đ",
-				category: "Thiên nhiên & Tâm linh",
-				tags: ["Núi", "Tâm linh", "Cáp treo", "Thiên nhiên"],
-				facts: [
-					{ label: "Độ cao", value: "986m" },
-					{ label: "Diện tích", value: "2.570 ha" },
-					{ label: "Thành lập", value: "1978" },
-				],
-			},
-			{
-				id: "rung-tram-tra-su-2",
-				name: "Cánh đồng",
-				description:
-					"Khu rừng tràm ngập nước đẹp như tranh vẽ với hệ sinh thái đa dạng. Nơi đây có hơn 70 loài chim quý hiếm và là điểm đến lý tưởng cho những ai yêu thích thiên nhiên hoang dã.",
-				shortDescription: "Rừng tràm ngập nước đẹp như tranh vẽ",
-				images: [
-					"https://cdn.tgdd.vn/Files/2022/03/30/1422964/kham-pha-du-lich-rung-tram-tra-su-o-an-giang-xanh-muot-mat-202203300104042991.jpg",
-					"https://cdn.tgdd.vn/Files/2022/03/30/1422964/kham-pha-du-lich-rung-tram-tra-su-o-an-giang-xanh-muot-mat-202203300104042991.jpg",
-				],
-				rating: 4.6,
-				reviewCount: 1523,
-				visitDuration: "3-4 giờ",
-				bestTimeToVisit: "5:30 - 17:30",
-				highlights: ["Chèo thúng chai", "Ngắm chim hoang dã", "Cảnh hoàng hôn", "Không khí trong lành"],
-				location: "An Giang",
-				price: "50.000đ - 100.000đ",
-				category: "Sinh thái",
-				tags: ["Rừng", "Sinh thái", "Chim", "Thúng chai"],
-				facts: [
-					{ label: "Diện tích", value: "845 ha" },
-					{ label: "Loài chim", value: "70+ loài" },
-					{ label: "Tuổi rừng", value: "100+ năm" },
-				],
-			},
-		],
-		"craft-village": [
-			{
-				id: "lang-gom-binh-duong",
-				name: "Làng gốm Bình Dương",
-				description:
-					"Làng nghề gốm sứ truyền thống với lịch sử hơn 200 năm. Nơi đây vẫn giữ nguyên các kỹ thuật làm gốm cổ truyền, tạo ra những sản phẩm gốm sứ tinh xảo với họa tiết độc đáo mang đậm bản sắc văn hóa Khmer.",
-				shortDescription: "Làng nghề gốm sứ truyền thống 200 năm tuổi",
-				images: ["/placeholder.svg?height=400&width=600", "/placeholder.svg?height=300&width=400"],
-				rating: 4.5,
-				reviewCount: 892,
-				visitDuration: "2-3 giờ",
-				bestTimeToVisit: "8:00 - 17:00",
-				highlights: ["Xem thợ làm gốm", "Trải nghiệm làm gốm", "Mua sản phẩm thủ công", "Tìm hiểu văn hóa Khmer"],
-				location: "Tây Ninh",
-				price: "30.000đ - 80.000đ",
-				category: "Làng nghề",
-				tags: ["Gốm sứ", "Thủ công", "Khmer", "Truyền thống"],
-				facts: [
-					{ label: "Lịch sử", value: "200+ năm" },
-					{ label: "Gia đình thợ", value: "50+ hộ" },
-					{ label: "Sản phẩm", value: "100+ loại" },
-				],
-			},
-			{
-				id: "lang-det-chieu",
-				name: "Làng dệt chiếu cói",
-				description:
-					"Làng nghề dệt chiếu cói nổi tiếng với những tấm chiếu mịn màng, bền đẹp. Nghề dệt chiếu được truyền từ đời này sang đời khác, tạo ra những sản phẩm thủ công mỹ nghệ có giá trị cao.",
-				shortDescription: "Làng nghề dệt chiếu cói truyền thống",
-				images: ["/placeholder.svg?height=400&width=600", "/placeholder.svg?height=300&width=400"],
-				rating: 4.3,
-				reviewCount: 654,
-				visitDuration: "1-2 giờ",
-				bestTimeToVisit: "7:00 - 16:00",
-				highlights: ["Xem quy trình dệt", "Mua chiếu thủ công", "Học cách dệt cơ bản", "Chụp ảnh với thợ dệt"],
-				location: "Tây Ninh",
-				price: "20.000đ - 50.000đ",
-				category: "Làng nghề",
-				tags: ["Dệt", "Chiếu cói", "Thủ công", "Mỹ nghệ"],
-				facts: [
-					{ label: "Thành lập", value: "150+ năm" },
-					{ label: "Thợ dệt", value: "80+ người" },
-					{ label: "Sản lượng", value: "1000+ chiếu/tháng" },
-				],
-			},
-		],
-		"historical-site": [
-			{
-				id: "chua-cao-dai",
-				name: "Thánh Tòa Cao Đài",
-				description:
-					"Thánh địa của đạo Cao Đài với kiến trúc độc đáo kết hợp phong cách Đông Tây. Đây là trung tâm tôn giáo quan trọng với những nghi lễ trang nghiêm và kiến trúc đầy màu sắc, thu hút hàng triệu du khách mỗi năm.",
-				shortDescription: "Thánh địa của đạo Cao Đài với kiến trúc độc đáo",
-				images: ["/placeholder.svg?height=400&width=600", "/placeholder.svg?height=300&width=400"],
-				rating: 4.7,
-				reviewCount: 3241,
-				visitDuration: "2-3 giờ",
-				bestTimeToVisit: "6:00 - 18:00",
-				highlights: ["Kiến trúc độc đáo", "Nghi lễ tôn giáo", "Bảo tàng Cao Đài", "Văn hóa tâm linh"],
-				location: "Tây Ninh",
-				price: "Miễn phí",
-				category: "Tôn giáo",
-				tags: ["Cao Đài", "Tôn giáo", "Kiến trúc", "Văn hóa"],
-				facts: [
-					{ label: "Thành lập", value: "1926" },
-					{ label: "Tín đồ", value: "2.5 triệu" },
-					{ label: "Diện tích", value: "5 ha" },
-				],
-			},
-			{
-				id: "chua-cao-dai",
-				name: "Thánh Tòa Cao Đài",
-				description:
-					"Thánh địa của đạo Cao Đài với kiến trúc độc đáo kết hợp phong cách Đông Tây. Đây là trung tâm tôn giáo quan trọng với những nghi lễ trang nghiêm và kiến trúc đầy màu sắc, thu hút hàng triệu du khách mỗi năm.",
-				shortDescription: "Thánh địa của đạo Cao Đài với kiến trúc độc đáo",
-				images: ["/placeholder.svg?height=400&width=600", "/placeholder.svg?height=300&width=400"],
-				rating: 4.7,
-				reviewCount: 3241,
-				visitDuration: "2-3 giờ",
-				bestTimeToVisit: "6:00 - 18:00",
-				highlights: ["Kiến trúc độc đáo", "Nghi lễ tôn giáo", "Bảo tàng Cao Đài", "Văn hóa tâm linh"],
-				location: "Tây Ninh",
-				price: "Miễn phí",
-				category: "Tôn giáo",
-				tags: ["Cao Đài", "Tôn giáo", "Kiến trúc", "Văn hóa"],
-				facts: [
-					{ label: "Thành lập", value: "1926" },
-					{ label: "Tín đồ", value: "2.5 triệu" },
-					{ label: "Diện tích", value: "5 ha" },
-				],
-			},
-		],
+const getLocationTypeInfo = (type: TypeLocation | null) => {
+	if (!type) {
+		return {
+			title: "Chọn loại địa điểm",
+			subtitle: "Vui lòng chọn một loại địa điểm để khám phá",
+			description: "Hãy chọn một trong các loại địa điểm ở trên để bắt đầu khám phá những điểm đến tuyệt vời.",
+			icon: Mountain,
+			gradient: "from-gray-500 to-gray-600",
+			bgImage: "/placeholder.svg?height=800&width=1200",
+		}
 	}
 
-	return mockData[type] || []
-}
+	// Map based on type name or id - adjust based on your TypeLocation structure
+	const typeKey = type.name?.toLowerCase() || type.displayName?.toLowerCase() || type.id
 
-const getLocationTypeInfo = (type: LocationType) => {
-	const info = {
-		"scenic-spot": {
+	const infoMap: Record<string, any> = {
+		"danh lam thắng cảnh": {
 			title: "Danh lam thắng cảnh",
 			subtitle: "Khám phá vẻ đẹp thiên nhiên hùng vĩ",
 			description:
@@ -212,7 +61,7 @@ const getLocationTypeInfo = (type: LocationType) => {
 			bgImage:
 				"https://vinhtour.vn/wp-content/uploads/2024/01/kham-pha-khu-du-lich-sinh-thai-khong-thoi-gian-long-an-2024-1678-1.jpg",
 		},
-		"craft-village": {
+		"làng nghề truyền thống": {
 			title: "Làng Nghề Truyền Thống",
 			subtitle: "Khám phá nghệ thuật thủ công tinh xảo",
 			description:
@@ -221,24 +70,37 @@ const getLocationTypeInfo = (type: LocationType) => {
 			gradient: "from-orange-500 to-red-600",
 			bgImage: "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/04_2021/nghe-dan-may-tre-nua.jpg",
 		},
-		"historical-site": {
+		"di tích lịch sử": {
 			title: "Di Tích Lịch Sử",
 			subtitle: "Khám phá di sản văn hóa quý báu",
 			description:
 				"Những di tích lịch sử quan trọng mang giá trị văn hóa và giáo dục cao, giúp bạn hiểu thêm về lịch sử và truyền thống của vùng đất này.",
 			icon: Building2,
-			gradient: "from-black to-white",
+			gradient: "from-purple-500 to-indigo-600",
 			bgImage: "/image/dinhhiepninh.jpg",
 		},
 	}
 
-	return info[type]
+	return (
+		infoMap[typeKey] ||
+		infoMap[type.displayName?.toLowerCase()] ||
+		infoMap[type.name?.toLowerCase()] || {
+			title: type.displayName || type.name || "Địa điểm du lịch",
+			subtitle: "Khám phá những điểm đến tuyệt vời",
+			description: "Những địa điểm du lịch hấp dẫn đang chờ bạn khám phá.",
+			icon: Mountain,
+			gradient: "from-blue-500 to-purple-600",
+			bgImage: "/placeholder.svg?height=800&width=1200",
+		}
+	)
 }
 
 export function ParallaxLocationIntro({ locationType, className, onLocationSelect }: ParallaxLocationIntroProps) {
 	const [locations, setLocations] = useState<LocationData[]>([])
-	const [loading, setLoading] = useState(true)
+	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+
+	const { searchLocation } = useLocationController()
 
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { scrollYProgress } = useScroll({
@@ -255,16 +117,43 @@ export function ParallaxLocationIntro({ locationType, className, onLocationSelec
 
 	const locationInfo = getLocationTypeInfo(locationType)
 
-	// Fetch data when component mounts or location type changes
+	// Fetch data when location type changes
 	useEffect(() => {
 		const loadData = async () => {
+			if (!locationType?.id) {
+				setLocations([])
+				setLoading(false)
+				return
+			}
+
 			setLoading(true)
 			setError(null)
 
 			try {
-				const data = await fetchLocationData(locationType)
-				setLocations(data)
+				const data = await searchLocation({ typeId: locationType.id })
+
+				// Transform API data to match LocationData interface
+				const transformedData: LocationData[] = data.map((item: any) => ({
+					id: item.id || "",
+					name: item.name || "",
+					description: item.description || "",
+					shortDescription: item.shortDescription || item.description?.substring(0, 100) + "..." || "",
+					images: item.images || ["/placeholder.svg?height=400&width=600"],
+					rating: item.rating || 4.5,
+					reviewCount: item.reviewCount || 0,
+					visitDuration: item.visitDuration || "2-3 giờ",
+					bestTimeToVisit: item.bestTimeToVisit || "8:00 - 17:00",
+					highlights: item.highlights || [],
+					location: item.location || item.address || "",
+					price: item.price || "Liên hệ",
+					category: item.category || locationType.displayName || "",
+					tags: item.tags || [],
+					facts: item.facts || [],
+				}))
+
+				setLocations(transformedData)
 			} catch (err) {
+				console.error("Error fetching locations:", err)
 				setError("Không thể tải dữ liệu. Vui lòng thử lại sau.")
 			} finally {
 				setLoading(false)
@@ -272,7 +161,7 @@ export function ParallaxLocationIntro({ locationType, className, onLocationSelec
 		}
 
 		loadData()
-	}, [locationType])
+	}, [locationType, searchLocation])
 
 	return (
 		<div ref={containerRef} className={cn("relative min-h-screen overflow-hidden", className)}>
@@ -288,10 +177,8 @@ export function ParallaxLocationIntro({ locationType, className, onLocationSelec
 						}}
 					/>
 				</motion.div>
-
 				{/* Gradient Overlay - Reduced opacity */}
 				<div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", locationInfo.gradient)} />
-
 				{/* Dark Overlay - Reduced opacity */}
 				<div className="absolute inset-0 bg-black/20" />
 			</div>
@@ -389,12 +276,37 @@ export function ParallaxLocationIntro({ locationType, className, onLocationSelec
 					</motion.div>
 				)}
 
+				{/* No Type Selected */}
+				{!locationType && !loading && (
+					<motion.div
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-8 text-center text-white"
+					>
+						<Mountain className="w-16 h-16 mx-auto mb-4 opacity-60" />
+						<p className="text-lg">Vui lòng chọn một loại địa điểm để bắt đầu khám phá</p>
+					</motion.div>
+				)}
+
 				{/* Location Cards */}
-				{!loading && !error && (
+				{!loading && !error && locationType && locations.length > 0 && (
 					<motion.div style={{ y: cardY }} className="grid md:grid-cols-2 gap-8">
-						{locations?.map((location, index) => (
+						{locations.map((location, index) => (
 							<LocationCard key={location.id} location={location} index={index} onSelect={onLocationSelect} />
 						))}
+					</motion.div>
+				)}
+
+				{/* Empty State */}
+				{!loading && !error && locationType && locations.length === 0 && (
+					<motion.div
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-8 text-center text-white"
+					>
+						<MapPin className="w-16 h-16 mx-auto mb-4 opacity-60" />
+						<p className="text-lg">Không tìm thấy địa điểm nào cho loại này</p>
+						<p className="text-sm opacity-75 mt-2">Hãy thử chọn loại địa điểm khác</p>
 					</motion.div>
 				)}
 			</div>
@@ -413,15 +325,20 @@ function LocationCard({ location, index, onSelect }: LocationCardProps) {
 	const router = useRouter()
 	const cardRef = useRef<HTMLDivElement>(null)
 	const isInView = useInView(cardRef, { once: true, margin: "-50px" })
-	const [disable, setDisable] = useState(false) // disable,
-	const handleNavigate = () => {
-		if (location.id) {
-			setDisable(true)
-			if (onSelect) {
-				onSelect(location)
+	const [isNavigating, setIsNavigating] = useState(false)
+
+	const handleNavigate = async () => {
+		if (location.id && !isNavigating) {
+			setIsNavigating(true)
+			try {
+				if (onSelect) {
+					onSelect(location)
+				}
+				router.push(`/trai-nghiem/${location.id}`)
+			} catch (error) {
+				console.error("Navigation error:", error)
+				setIsNavigating(false)
 			}
-			router.push(`/trai-nghiem/${location.id}`)
-			setDisable(false)
 		}
 	}
 
@@ -448,6 +365,15 @@ function LocationCard({ location, index, onSelect }: LocationCardProps) {
 							}}
 						/>
 						<div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+
+						{/* Rating */}
+						{location.rating > 0 && (
+							<div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
+								<Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+								<span className="text-sm font-medium">{location.rating}</span>
+								{location.reviewCount > 0 && <span className="text-xs text-white/70">({location.reviewCount})</span>}
+							</div>
+						)}
 					</div>
 
 					<CardContent className="p-6">
@@ -478,36 +404,49 @@ function LocationCard({ location, index, onSelect }: LocationCardProps) {
 						</div>
 
 						{/* Tags */}
-						<div className="flex flex-wrap gap-2 mb-6">
-							{location.tags.slice(0, 3).map((tag) => (
-								<Badge key={tag} variant="outline" className="border-white/40 text-white/80 text-xs bg-white/10">
-									{tag}
-								</Badge>
-							))}
-						</div>
+						{location.tags.length > 0 && (
+							<div className="flex flex-wrap gap-2 mb-6">
+								{location.tags.slice(0, 3).map((tag) => (
+									<Badge key={tag} variant="outline" className="border-white/40 text-white/80 text-xs bg-white/10">
+										{tag}
+									</Badge>
+								))}
+							</div>
+						)}
 
 						{/* Highlights */}
-						<div className="mb-6">
-							<h4 className="font-semibold mb-2 text-white/95">Điểm nổi bật:</h4>
-							<ul className="space-y-1">
-								{location.highlights.slice(0, 3).map((highlight, idx) => (
-									<li key={idx} className="text-sm text-white/75 flex items-center gap-2">
-										<div className="w-1.5 h-1.5 bg-white/60 rounded-full" />
-										{highlight}
-									</li>
-								))}
-							</ul>
-						</div>
+						{location.highlights.length > 0 && (
+							<div className="mb-6">
+								<h4 className="font-semibold mb-2 text-white/95">Điểm nổi bật:</h4>
+								<ul className="space-y-1">
+									{location.highlights.slice(0, 3).map((highlight, idx) => (
+										<li key={idx} className="text-sm text-white/75 flex items-center gap-2">
+											<div className="w-1.5 h-1.5 bg-white/60 rounded-full" />
+											{highlight}
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
 
 						{/* Action Button */}
 						<Button
-							onClick={() => [onSelect?.(location), handleNavigate()]}
+							onClick={handleNavigate}
 							className="w-full bg-white/25 hover:bg-white/35 backdrop-blur-sm border-white/40 text-white group transition-all duration-300"
 							variant="outline"
-							disabled={!location.id}
+							disabled={!location.id || isNavigating}
 						>
-							Khám phá ngay
-							<ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+							{isNavigating ? (
+								<>
+									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+									Đang tải...
+								</>
+							) : (
+								<>
+									Khám phá ngay
+									<ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+								</>
+							)}
 						</Button>
 					</CardContent>
 				</div>

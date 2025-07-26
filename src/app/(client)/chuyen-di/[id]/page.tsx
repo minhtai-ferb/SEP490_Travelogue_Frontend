@@ -3,33 +3,63 @@
 import CalendarPicker from "@/components/page/trip-planner-detail/component/calendar-picker"
 import { BookingSidebar } from "@/components/page/trip-planner-detail/tour/booking-sidebar"
 import { TourInfoHeader } from "@/components/page/trip-planner-detail/tour/tour-info-header"
-import { TourItinerary } from "@/components/page/trip-planner-detail/tour/tour-itinerary"
+import { Tourdays } from "@/components/page/trip-planner-detail/tour/tour-itinerary"
 import TourRelate from "@/components/page/trip-planner-detail/tour/tour-relate"
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { MOCK_TOUR_DATA } from "@/data/region-data"
+import { useTour } from "@/services/tour"
+import { useEffect, useState } from "react"
+import { Tour } from "@/types/Tour"
 
 function TourBookingPage() {
 
-	const tour = MOCK_TOUR_DATA
+	const [tour, setTour] = useState<Tour | null>(null)
+	const router = useRouter()
+	const { getTourDetail } = useTour()
+	const { id } = useParams()
+
+	useEffect(() => {
+		if (id) {
+			fetchTourDetail(id as string)
+		} else {
+			console.error("Tour ID is not provided")
+		}
+	}, [id])
+
+	const fetchTourDetail = async (id: string) => {
+		try {
+			const response = await getTourDetail(id)
+			console.info("Fetched tour details:", response)
+			setTour(response)
+		} catch (error) {
+			console.error("Failed to fetch tour details:", error)
+			router.push('/404')
+		}
+	}
 
 	return (
 		<div className="min-h-screen">
-			<div className="flex justify-center gap-6 max-w-7xl mx-20 py-20">
-				<div className="">
-					<TourInfoHeader tour={tour} />
-					<TourItinerary itinerary={tour.itinerary} />
-					<CalendarPicker tour={tour} />
-				</div>
-				<div className="w-fit">
-					<BookingSidebar
-						tour={tour}
-						onBooking={(bookingData) => {
-							console.log("Booking data:", bookingData)
-						}}
-					/>
-				</div>
-			</div>
+			{tour &&
+				(
 
-			<TourRelate />
+					<div className="flex justify-center gap-6 max-w-7xl mx-20 py-20">
+						<div className="">
+							<TourInfoHeader tour={tour} />
+							<Tourdays days={tour?.days} />
+							<CalendarPicker tour={tour} />
+						</div>
+						<div className="w-fit">
+							<BookingSidebar
+								tour={tour}
+								onBooking={(bookingData) => {
+									console.log("Booking data:", bookingData)
+								}}
+							/>
+						</div>
+						<TourRelate />
+					</div>
+				)
+			}
 		</div>
 	)
 }

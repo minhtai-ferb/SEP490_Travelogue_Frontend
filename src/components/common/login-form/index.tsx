@@ -47,11 +47,13 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
 
 		try {
 			const response = await login(data)
-
+			if (!response) {
+				return
+			}
 			navigate.push("/")
 			addToast({
 				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Goyoung Tây Ninh",
+				description: "Chào mừng bạn đến với Traveloge",
 				color: "success",
 			})
 		} catch (error: any) {
@@ -71,7 +73,7 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
 			navigate.push("/")
 			addToast({
 				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Goyoung Tây Ninh",
+				description: "Chào mừng bạn đến với Traveloge",
 				color: "success",
 			})
 		} catch (error: any) {

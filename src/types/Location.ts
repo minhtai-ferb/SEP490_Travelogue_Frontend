@@ -24,4 +24,5 @@ export interface ListMedia {
 export interface TypeLocation {
     id: string;
     name: string;
+    displayName: string;
 }

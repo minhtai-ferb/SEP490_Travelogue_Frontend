@@ -1,8 +1,8 @@
 "use client"
 
+import { useCallback, useEffect, useState } from "react"
 import { Slider, type SlideItem } from "../"
-import { motion } from "framer-motion"
-import { Star, MapPin, Heart } from "lucide-react"
+import { useTour } from "@/services/tour"
 
 // Sample data
 const sampleSlides: SlideItem[] = [
@@ -44,93 +44,53 @@ const sampleSlides: SlideItem[] = [
 	},
 ]
 
-const cardSlides: SlideItem[] = [
-	{
-		id: "1",
-		title: "Tour Núi Bà Đen",
-		description: "1 ngày khám phá",
-		image: "/placeholder.svg?height=400&width=300",
-		overlay: true,
-	},
-	{
-		id: "2",
-		title: "Tour Chùa Cao Đài",
-		description: "Tham quan tâm linh",
-		image: "/placeholder.svg?height=400&width=300",
-		overlay: true,
-	},
-	{
-		id: "3",
-		title: "Tour Ẩm Thực",
-		description: "Khám phá đặc sản",
-		image: "/placeholder.svg?height=400&width=300",
-		overlay: true,
-	},
-	{
-		id: "4",
-		title: "Tour Làng Nghề",
-		description: "Trải nghiệm thủ công",
-		image: "/placeholder.svg?height=400&width=300",
-		overlay: true,
-	},
-]
-
-const customContentSlides: SlideItem[] = [
-	{
-		id: "1",
-		content: (
-			<div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-				<div className="text-center">
-					<Star className="w-16 h-16 mx-auto mb-4" />
-					<h2 className="text-4xl font-bold mb-4">Premium Tours</h2>
-					<p className="text-xl">Trải nghiệm cao cấp</p>
-				</div>
-			</div>
-		),
-	},
-	{
-		id: "2",
-		content: (
-			<div className="flex items-center justify-center h-full bg-gradient-to-br from-green-500 to-teal-600 text-white">
-				<div className="text-center">
-					<MapPin className="w-16 h-16 mx-auto mb-4" />
-					<h2 className="text-4xl font-bold mb-4">Local Guides</h2>
-					<p className="text-xl">Hướng dẫn viên địa phương</p>
-				</div>
-			</div>
-		),
-	},
-	{
-		id: "3",
-		content: (
-			<div className="flex items-center justify-center h-full bg-gradient-to-br from-pink-500 to-red-600 text-white">
-				<div className="text-center">
-					<Heart className="w-16 h-16 mx-auto mb-4" />
-					<h2 className="text-4xl font-bold mb-4">Memorable</h2>
-					<p className="text-xl">Kỷ niệm đáng nhớ</p>
-				</div>
-			</div>
-		),
-	},
-]
 
 export function SliderShowcase() {
+	const [tours, setTours] = useState([])
+	const [error, setError] = useState(false)
+	const { getAllTour } = useTour()
+
+	useEffect(() => {
+		fetchTours()
+	}, [])
+
+	const fetchTours = async () => {
+		try {
+			const response = await getAllTour()
+			setTours(response)
+		} catch (error) {
+			console.error("Error fetching tours:", error)
+			setError(true)
+		} finally {
+			fetchTours()
+		}
+	}
+
 	return (
 		<div className="w-full max-w-7xl mx-auto p-8 space-y-16">
 
-			{/* Default Slider */}
-			<div className="space-y-4">
-				<Slider
-					items={sampleSlides}
-					variant="default"
-					autoPlay={true}
-					autoPlayInterval={5000}
-					showDots={true}
-					showArrows={true}
-					height="500px"
-					onSlideChange={(index) => console.log("Slide changed to:", index)}
-				/>
-			</div>
+			{/* Error Handling */}
+			{error && (
+				<div className="text-red-500 text-center">
+					<p>Không thể tải dữ liệu chuyến đi. Vui lòng thử lại sau.</p>
+				</div>
+			)}
+
+			{/* Sample Slider */}
+			{!error && tours.length === 0 && (
+				<div className="space-y-4">
+					<Slider
+						items={tours}
+						variant="default"
+						autoPlay={true}
+						autoPlayInterval={5000}
+						showDots={true}
+						showArrows={true}
+						height="500px"
+						onSlideChange={(index) => console.log("Slide changed to:", index)}
+					/>
+				</div>
+			)}
 
 		</div>
 	)
