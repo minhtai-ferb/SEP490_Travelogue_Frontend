@@ -5,11 +5,10 @@ import { BookingSidebar } from "@/components/page/trip-planner-detail/tour/booki
 import { TourInfoHeader } from "@/components/page/trip-planner-detail/tour/tour-info-header"
 import { Tourdays } from "@/components/page/trip-planner-detail/tour/tour-itinerary"
 import TourRelate from "@/components/page/trip-planner-detail/tour/tour-relate"
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { MOCK_TOUR_DATA } from "@/data/region-data"
 import { useTour } from "@/services/tour"
-import { useEffect, useState } from "react"
 import { Tour } from "@/types/Tour"
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from "react"
 
 function TourBookingPage() {
 
@@ -41,7 +40,6 @@ function TourBookingPage() {
 		<div className="min-h-screen">
 			{tour &&
 				(
-
 					<div className="flex justify-center gap-6 max-w-7xl mx-20 py-20">
 						<div className="">
 							<TourInfoHeader tour={tour} />

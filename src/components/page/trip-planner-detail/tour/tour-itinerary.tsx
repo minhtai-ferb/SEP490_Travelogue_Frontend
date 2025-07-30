@@ -100,7 +100,7 @@ export function Tourdays({ days }: TourdaysProps) {
 														</div>
 														<div>
 															<Badge className={`${colorScheme.badge} border font-medium px-3 py-1`}>
-																Ngày {day.day}
+																Ngày {day.dayNumber}
 															</Badge>
 														</div>
 													</div>

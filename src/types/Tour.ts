@@ -13,6 +13,7 @@ export interface TourActivity {
 
 export interface TourDays {
 	day: number
+	dayNumber: number
 	title: string
 	description: string
 	time: string
