@@ -73,7 +73,7 @@ export default function HeroSlider() {
 	const handleMenuToggle = () => setIsOpen(!isOpen)
 
 	const handleAdminPage = () => {
-		router.push("/admin/dashboard");
+		router.push("/dashboard");
 	};
 
 	const handleLogout = () => logout()
@@ -263,7 +263,7 @@ export default function HeroSlider() {
 											{user && (
 												<div>
 													<Link
-														href="/admin/dashboard"
+														href="/dashboard"
 														className="text-lg font-medium py-3 px-4 hover:bg-slate-700 rounded-lg transition duration-300 flex items-center gap-3"
 													>
 														Quản lý

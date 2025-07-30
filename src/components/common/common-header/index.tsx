@@ -66,7 +66,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 	const { logout } = useAuth()
 
 	const handleAdminPage = () => {
-		router.push("/admin/dashboard")
+		router.push("/dashboard")
 	}
 
 	// Handle scroll effect
@@ -357,7 +357,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											)}
 											{isAdmin() && (
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href="/admin/dashboard" className="flex items-center">
+													<Link href="/dashboard" className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
 															viewBox="0 0 24 24"
@@ -479,7 +479,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											)}
 											{isAdmin() && (
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href="/admin/dashboard" className="flex items-center">
+													<Link href="/dashboard" className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
 															viewBox="0 0 24 24"
