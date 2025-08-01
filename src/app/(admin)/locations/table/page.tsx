@@ -21,7 +21,6 @@ import { LocationFilterBar } from "./components/location-filter-bar";
 import { DeleteLocationDialog } from "./components/delete-location-dialog";
 import { LocationTable } from "@/types/Location";
 import { LocationTableComponent } from "./components/location-table";
-import { Head } from "react-day-picker";
 import HeaderLocationTable from "./components/header";
 
 interface Option {
