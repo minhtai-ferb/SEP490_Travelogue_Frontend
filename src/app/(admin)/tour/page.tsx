@@ -18,7 +18,9 @@ export const metadata: Metadata = {
 
 function page() {
 	return (
-		<TourManagement />
+		<div className=''>
+			<TourManagement />
+		</div>
 	)
 }
 

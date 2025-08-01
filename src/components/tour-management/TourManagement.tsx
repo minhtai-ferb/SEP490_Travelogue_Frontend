@@ -33,6 +33,9 @@ import { TourForm } from "./TourForm"
 import { TourDetails } from "./TourDetail"
 import { DeleteConfirmation } from "./DeleteConfirmation"
 import { TourWizard } from "./TourWizard"
+import { SidebarInset, SidebarTrigger } from "../ui/sidebar"
+import { Separator } from "../ui/separator"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList } from "../ui/breadcrumb"
 
 const columns = [
 	{ name: "Tên Tour", uid: "name" },
@@ -348,6 +351,19 @@ function TourManagement() {
 
 	return (
 		<div className="p-6">
+			<SidebarInset>
+				<header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4">
+					<SidebarTrigger className="-ml-1" />
+					<Separator orientation="vertical" className="mr-2 h-4" />
+					<Breadcrumb>
+						<BreadcrumbList>
+							<BreadcrumbItem className="hidden md:block">
+								<BreadcrumbLink href="/tour">Quản lý tour</BreadcrumbLink>
+							</BreadcrumbItem>
+						</BreadcrumbList>
+					</Breadcrumb>
+				</header>
+			</SidebarInset>
 			<Card>
 				<CardHeader>
 					<h1 className="text-2xl font-bold">Quản Lý Tour</h1>
@@ -359,7 +375,7 @@ function TourManagement() {
 						bottomContent={bottomContent}
 						bottomContentPlacement="outside"
 						classNames={{
-							wrapper: "max-h-[382px]",
+							wrapper: "max-h-[400px]",
 						}}
 						topContent={topContent}
 						topContentPlacement="outside"
