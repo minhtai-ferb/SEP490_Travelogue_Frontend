@@ -52,10 +52,10 @@ export interface TourDate {
 }
 
 export interface Tour {
-	id: string
+	tourId: string
 	name: string
 	title: string
-	totalDays: string
+	totalDays: number
 	location: string
 	duration: string
 	maxGuests: number
@@ -64,14 +64,56 @@ export interface Tour {
 	description: string
 	activeSlot: number
 	images: TourImage[]
+	content: string | null
 	days: TourDays[]
 	amenities: TourAmenity[]
 	reviews: TourReview[]
 	pricing: TourPricing
 	badges: string[]
+	tourType: number
 	dates: TourDate[]
+	status: number
+	tourTypeText: string
+	totalDaysText: string
+	adultPrice: number
+	finalPrice: number
+	statusText: TourStatus
+	isActive: boolean
+	minParticipants: number
+	maxParticipants: number
+	bookedCount: number
+	childrenPrice: number
 }
 
+export type TourStatus = "Draft" | "Published" | "Active" | "Cancelled"
+
+export interface CreateTourRequest {
+	name: string
+	description: string
+	content: string | null
+	tourTypeText: string
+	tourType: number
+	totalDaysText: string
+	totalDays: number
+	adultPrice: number
+	childrenPrice: number
+	finalPrice: number
+	statusText: TourStatus
+	status: number
+}
+
+
+export interface ScheduleFormData {
+	departureDate: string
+	maxParticipant: number
+	totalDays: number
+	adultPrice: number
+	childrenPrice: number
+}
+
+export interface UpdateTourRequest extends Partial<CreateTourRequest> {
+	tourId: string
+}
 export interface BookingData {
 	tourId: string
 	selectedDate: string
@@ -79,8 +121,6 @@ export interface BookingData {
 	totalPrice: number
 }
 
-
-export type TourStatus = "upcoming" | "in_progress" | "completed"
 
 export interface AssignedTour {
 	id: string
@@ -103,4 +143,80 @@ export interface TourStats {
 	total: number
 	totalParticipants: number
 	totalRevenue: number
+}
+
+
+export interface LocationMedia {
+	mediaUrl: string
+	fileName: string
+	fileType: string
+	isThumbnail: boolean
+	sizeInBytes: number
+	createdTime: string
+}
+
+export interface TourLocationRequest {
+	locationId: string
+	dayOrder: number
+	startTime: string
+	endTime: string
+	notes: string
+	travelTimeFromPrev: number
+	distanceFromPrev: number
+	estimatedStartTime: number
+	estimatedEndTime: number
+}
+
+export interface CreateTourBasicRequest {
+	name: string
+	description: string
+	content: string
+	totalDays: number
+	tourType: number
+}
+
+export interface LocationResponse {
+	data: Location[]
+	message: string
+	succeeded: boolean
+	statusCode: number
+}
+
+export enum TourType {
+	International = 1,
+	Leisure = 2,
+	Adventure = 3,
+	Ecotourism = 4,
+	Cultural = 5,
+	Spiritual = 6,
+	Culinary = 7,
+	Extreme = 8,
+}
+
+export interface Location {
+	id: string
+	name: string
+	description: string
+	content: string
+	address: string
+	latitude: number
+	longitude: number
+	rating: number
+	openTime: string | null
+	closeTime: string | null
+	category: string
+	districtId: string
+	districtName: string
+	medias: LocationMedia[]
+}
+
+export const TourTypeLabels: Record<TourType, string> = {
+	[TourType.International]: "Du lịch trong nước",
+	[TourType.Leisure]: "Du lịch nghỉ dưỡng",
+	[TourType.Adventure]: "Du lịch khám phá",
+	[TourType.Ecotourism]: "Du lịch sinh thái",
+	[TourType.Cultural]: "Du lịch văn hóa",
+	[TourType.Spiritual]: "Du lịch tâm linh",
+	[TourType.Culinary]: "Du lịch ẩm thực",
+	[TourType.Extreme]: "Du lịch mạo hiểm",
 }

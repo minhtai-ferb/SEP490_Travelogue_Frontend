@@ -153,6 +153,17 @@ const data = {
         },
       ],
     },
+    {
+      title: "Quản lý Tour",
+      url: "/admin/tour",
+      icon: BookOpen,
+      items: [
+        {
+          title: "Quản lý tour",
+          url: "/admin/tour",
+        },
+      ],
+    },
   ],
 };
 
