@@ -1,193 +1,161 @@
 "use client"
-import { useState, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import { Progress } from "@/components/ui/progress"
-import { Card, CardContent } from "@/components/ui/card"
+import { CheckCircle, Circle, AlertTriangle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, X, AlertCircle } from "lucide-react"
 import { TourBasicForm } from "./wizard/TourBasicForm"
-import { TourScheduleForm } from "./wizard/TourScheduleForm"
 import { TourLocationForm } from "./wizard/TourLocationForm"
-import type { CreateTourBasicRequest, ScheduleFormData, TourLocationRequest } from "@/types/Tour"
 import { useTour } from "@/services/tour"
+import type { CreateTourRequest, CreateTourScheduleRequest, ScheduleFormData, TourLocationBulkRequest } from "@/types/Tour"
+import { TourScheduleForm } from "./wizard/TourScheduleForm"
 
 interface TourWizardProps {
-	isOpen: boolean
-	onClose: () => void
 	onComplete: () => void
+	onCancel: () => void
 }
 
-interface WizardStep {
-	id: number
-	title: string
-	description: string
-	completed: boolean
-}
+const steps = [
+	{
+		id: 1,
+		title: "Thông Tin Cơ Bản",
+		description: "Tạo tour với thông tin cơ bản",
+	},
+	{
+		id: 2,
+		title: "Lịch Trình Tour",
+		description: "Thêm các lịch trình khởi hành",
+	},
+	{
+		id: 3,
+		title: "Địa Điểm Tour",
+		description: "Cập nhật địa điểm tham quan",
+	},
+]
 
-export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
+export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 	const [currentStep, setCurrentStep] = useState(1)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState("")
 	const [createdTourId, setCreatedTourId] = useState<string | null>(null)
-	const { createTour, createTourSchedule, createTourBulk } = useTour()
 
 	// Form data states
-	const [basicData, setBasicData] = useState<CreateTourBasicRequest | null>(null)
-	const [scheduleData, setScheduleData] = useState<ScheduleFormData[]>([])
-	const [locationData, setLocationData] = useState<TourLocationRequest[]>([])
+	const [basicInfo, setBasicInfo] = useState<CreateTourRequest | null>(null)
+	const [schedules, setSchedules] = useState<ScheduleFormData[]>([])
 
-	const steps: WizardStep[] = [
-		{
-			id: 1,
-			title: "Thông tin cơ bản",
-			description: "Tạo tour với thông tin cơ bản",
-			completed: basicData !== null,
-		},
-		{
-			id: 2,
-			title: "Lịch trình tour",
-			description: "Thêm các lịch trình khởi hành",
-			completed: scheduleData.length > 0,
-		},
-		{
-			id: 3,
-			title: "Địa điểm tham quan",
-			description: "Thêm các địa điểm trong tour",
-			completed: locationData.length > 0,
-		},
-	]
+	const { createTour, createTourSchedule, createTourBulk } = useTour()
 
-	const handleReset = useCallback(() => {
-		setCurrentStep(1)
-		setBasicData(null)
-		setScheduleData([])
-		setLocationData([])
-		setCreatedTourId(null)
-		setError("")
-	}, [])
+	const progress = (currentStep / steps.length) * 100
 
-	const handleClose = useCallback(() => {
-		handleReset()
-		onClose()
-	}, [handleReset, onClose])
+	const handleNext = () => {
+		if (currentStep < steps.length) {
+			setCurrentStep(currentStep + 1)
+		}
+	}
 
-	const handleBasicFormSubmit = useCallback(async (data: CreateTourBasicRequest) => {
+	const handlePrevious = () => {
+		if (currentStep > 1) {
+			setCurrentStep(currentStep - 1)
+		}
+	}
+
+	const handleBasicInfoSubmit = async (data: CreateTourRequest) => {
 		try {
 			setIsLoading(true)
 			setError("")
 
-			// Call API to create basic tour
+			// Step 1: Create basic tour
 			const response = await createTour(data)
-			setCreatedTourId(response?.tourId)
-			setBasicData(data)
-			setCurrentStep(2)
-		} catch (error) {
-			console.error("Error creating basic tour:", error)
-			setError("Có lỗi khi tạo tour cơ bản. Vui lòng thử lại.")
+
+			if (response) {
+				setCreatedTourId(response.tourId)
+				setBasicInfo(data)
+				handleNext()
+			} else {
+				throw new Error(response.message || "Failed to create tour")
+			}
+		} catch (error: any) {
+			console.error("Error creating tour:", error)
+			setError(error.message || "Có lỗi khi tạo tour cơ bản")
 		} finally {
 			setIsLoading(false)
 		}
-	}, [])
+	}
 
-	const handleScheduleFormSubmit = useCallback(
-		async (data: ScheduleFormData[]) => {
-			if (!createdTourId) {
-				setError("Không tìm thấy ID tour")
-				return
-			}
-
-			try {
-				setIsLoading(true)
-				setError("")
-
-				// Call API to create schedules
-				const response = await createTourSchedule(createdTourId, data)
-				if (!response) {
-					throw new Error("Không thể tạo lịch trình")
-				}
-				setScheduleData(data)
-				setCurrentStep(3)
-			} catch (error) {
-				console.error("Error creating schedules:", error)
-				setError("Có lỗi khi tạo lịch trình. Vui lòng thử lại.")
-			} finally {
-				setIsLoading(false)
-			}
-		},
-		[createdTourId],
-	)
-
-	const handleLocationFormSubmit = useCallback(
-		async (data: TourLocationRequest[]) => {
-			if (!createdTourId) {
-				setError("Không tìm thấy ID tour")
-				return
-			}
-
-			try {
-				setIsLoading(true)
-				setError("")
-
-				// Call API to bulk update locations
-				// const response = await fetch(`/api/tour/bulk?tourId=${createdTourId}`, {
-				// 	method: "POST",
-				// 	headers: {
-				// 		"Content-Type": "application/json",
-				// 	},
-				// 	body: JSON.stringify(data),
-				// })
-
-				// if (!response.ok) {
-				// 	throw new Error("Không thể cập nhật địa điểm")
-				// }
-
-				const response = await createTourBulk(createdTourId, data)
-				if (!response) {
-					throw new Error("Không thể cập nhật địa điểm")
-				}
-
-				setLocationData(data)
-				// Tour creation completed
-				onComplete()
-				handleClose()
-			} catch (error) {
-				console.error("Error updating locations:", error)
-				setError("Có lỗi khi cập nhật địa điểm. Vui lòng thử lại.")
-			} finally {
-				setIsLoading(false)
-			}
-		},
-		[createdTourId, onComplete, handleClose],
-	)
-
-	const handlePrevious = useCallback(() => {
-		if (currentStep > 1) {
-			setCurrentStep(currentStep - 1)
+	const handleScheduleSubmit = async (data: ScheduleFormData[]) => {
+		if (!createdTourId) {
+			setError("Không tìm thấy ID tour")
+			return
 		}
-	}, [currentStep])
+
+		try {
+			setIsLoading(true)
+			setError("")
+
+			// Step 2: Create tour schedules
+			await createTourSchedule(createdTourId, data)
+			setSchedules(data)
+			handleNext()
+		} catch (error: any) {
+			console.error("Error creating schedules:", error)
+			setError(error.message || "Có lỗi khi tạo lịch trình tour")
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	const handleLocationSubmit = async (data: TourLocationBulkRequest[]) => {
+		if (!createdTourId) {
+			setError("Không tìm thấy ID tour")
+			return
+		}
+
+		try {
+			setIsLoading(true)
+			setError("")
+
+			// Step 3: Bulk update tour locations
+			await createTourBulk(createdTourId, data)
+
+			// Tour creation completed
+			onComplete()
+		} catch (error: any) {
+			console.error("Error updating locations:", error)
+			setError(error.message || "Có lỗi khi cập nhật địa điểm tour")
+		} finally {
+			setIsLoading(false)
+		}
+	}
 
 	const renderStepContent = () => {
 		switch (currentStep) {
 			case 1:
-				return <TourBasicForm initialData={basicData} onSubmit={handleBasicFormSubmit} isLoading={isLoading} />
+				return (
+					<TourBasicForm
+						initialData={basicInfo}
+						onSubmit={handleBasicInfoSubmit}
+						onCancel={onCancel}
+						isLoading={isLoading}
+					/>
+				)
 			case 2:
 				return (
 					<TourScheduleForm
-						initialData={scheduleData}
-						totalDays={basicData?.totalDays || 1}
-						onSubmit={handleScheduleFormSubmit}
+						initialData={schedules}
+						tourDays={basicInfo?.totalDays || 1}
+						onSubmit={handleScheduleSubmit}
 						onPrevious={handlePrevious}
+						onCancel={onCancel}
 						isLoading={isLoading}
 					/>
 				)
 			case 3:
 				return (
 					<TourLocationForm
-						initialData={locationData}
-						totalDays={basicData?.totalDays || 1}
-						onSubmit={handleLocationFormSubmit}
+						tourId={createdTourId!}
+						tourDays={basicInfo?.totalDays || 1}
+						onSubmit={handleLocationSubmit}
 						onPrevious={handlePrevious}
+						onCancel={onCancel}
 						isLoading={isLoading}
 					/>
 				)
@@ -197,66 +165,58 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 	}
 
 	return (
-		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-				<DialogHeader className="space-y-4">
-					<div className="flex items-center justify-between">
-						<DialogTitle className="text-2xl font-bold">Tạo Tour Mới</DialogTitle>
-						<Button variant="ghost" size="sm" onClick={handleClose}>
-							<X className="h-4 w-4" />
-						</Button>
-					</div>
-
-					{/* Progress Bar */}
-					<div className="w-full space-y-4">
-						<Progress value={(currentStep / steps.length) * 100} className="w-full" />
-
-						{/* Step Indicators */}
-						<div className="flex justify-between items-center">
-							{steps.map((step, index) => (
-								<div key={step.id} className="flex items-center">
-									<div className="flex flex-col items-center">
-										<div
-											className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${step.completed
-												? "bg-green-500 text-white border-green-500"
-												: currentStep === step.id
-													? "bg-blue-500 text-white border-blue-500"
-													: "bg-gray-100 text-gray-400 border-gray-300"
-												}`}
-										>
-											{step.completed ? (
-												<CheckCircle className="w-5 h-5" />
-											) : (
-												<span className="text-sm font-semibold">{step.id}</span>
-											)}
-										</div>
-										<div className="mt-2 text-center">
-											<p className="text-sm font-medium">{step.title}</p>
-											<p className="text-xs text-gray-500">{step.description}</p>
-										</div>
-									</div>
-									{index < steps.length - 1 && <div className="flex-1 h-0.5 bg-gray-200 mx-4 mt-[-20px]" />}
-								</div>
-							))}
-						</div>
-					</div>
-				</DialogHeader>
-
-				<div className="px-6">
-					{error && (
-						<Alert className="mb-4 border-red-200 bg-red-50">
-							<div className="flex items-center align-middle gap-3">
-								<AlertCircle className="h-6 w-6 text-red-600" />
-								<AlertDescription className="text-red-800 font-semibold">{error}</AlertDescription>
-							</div>
-						</Alert>
-					)}
-
-					<Card>
-						<CardContent className="p-6">{renderStepContent()}</CardContent>
-					</Card>
+		<div className="space-y-8">
+			{/* Progress Header */}
+			<div className="space-y-4">
+				<div className="flex items-center justify-between">
+					<h2 className="text-xl font-semibold">
+						Bước {currentStep} của {steps.length}
+					</h2>
+					<span className="text-sm text-gray-500">{Math.round(progress)}% hoàn thành</span>
 				</div>
-			</DialogContent>
-		</Dialog>
+
+				<Progress value={progress} className="h-2" />
+
+				{/* Step Indicators */}
+				<div className="flex items-center justify-between">
+					{steps.map((step, index) => (
+						<div key={step.id} className="flex items-center">
+							<div className="flex flex-col items-center">
+								<div
+									className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep > step.id
+										? "bg-green-500 border-green-500 text-white"
+										: currentStep === step.id
+											? "bg-blue-500 border-blue-500 text-white"
+											: "bg-white border-gray-300 text-gray-400"
+										}`}
+								>
+									{currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+								</div>
+								<div className="mt-2 text-center">
+									<p className={`text-sm font-medium ${currentStep >= step.id ? "text-gray-900" : "text-gray-400"}`}>
+										{step.title}
+									</p>
+									<p className="text-xs text-gray-500 max-w-32">{step.description}</p>
+								</div>
+							</div>
+							{index < steps.length - 1 && (
+								<div className={`flex-1 h-0.5 mx-4 ${currentStep > step.id ? "bg-green-500" : "bg-gray-200"}`} />
+							)}
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Error Alert */}
+			{error && (
+				<Alert className="border-red-200 bg-red-50">
+					<AlertTriangle className="h-4 w-4 text-red-600" />
+					<AlertDescription className="text-red-800">{error}</AlertDescription>
+				</Alert>
+			)}
+
+			{/* Step Content */}
+			<div className="min-h-[500px]">{renderStepContent()}</div>
+		</div>
 	)
 }

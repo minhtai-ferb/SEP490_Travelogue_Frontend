@@ -1,23 +1,25 @@
 "use client"
-import type React from "react"
 import { useState, useEffect } from "react"
+import type React from "react"
+
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TourType, TourTypeLabels, type CreateTourBasicRequest } from "@/types/Tour"
-import { Loader2 } from "lucide-react"
+import { ArrowRight, X, Loader2 } from "lucide-react"
+import { TourType, TourTypeLabels, type CreateTourRequest } from "@/types/Tour"
 
 interface TourBasicFormProps {
-	initialData: CreateTourBasicRequest | null
-	onSubmit: (data: CreateTourBasicRequest) => void
-	isLoading: boolean
+	initialData?: CreateTourRequest | null
+	onSubmit: (data: CreateTourRequest) => void
+	onCancel: () => void
+	isLoading?: boolean
 }
 
-export function TourBasicForm({ initialData, onSubmit, isLoading }: TourBasicFormProps) {
-	const [formData, setFormData] = useState<CreateTourBasicRequest>({
+export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = false }: TourBasicFormProps) {
+	const [formData, setFormData] = useState<CreateTourRequest>({
 		name: "",
 		description: "",
 		content: "",
@@ -48,12 +50,12 @@ export function TourBasicForm({ initialData, onSubmit, isLoading }: TourBasicFor
 			newErrors.content = "Nội dung tour là bắt buộc"
 		}
 
-		if (formData.totalDays < 1) {
-			newErrors.totalDays = "Số ngày tour phải ít nhất là 1"
+		if (formData.totalDays <= 0) {
+			newErrors.totalDays = "Số ngày tour phải lớn hơn 0"
 		}
 
-		if (formData.totalDays > 365) {
-			newErrors.totalDays = "Số ngày tour không được vượt quá 365"
+		if (!formData.tourType) {
+			newErrors.tourType = "Loại tour là bắt buộc"
 		}
 
 		setErrors(newErrors)
@@ -67,7 +69,7 @@ export function TourBasicForm({ initialData, onSubmit, isLoading }: TourBasicFor
 		}
 	}
 
-	const handleInputChange = (field: keyof CreateTourBasicRequest, value: any) => {
+	const handleInputChange = (field: keyof CreateTourRequest, value: any) => {
 		setFormData((prev) => ({
 			...prev,
 			[field]: value,
@@ -82,117 +84,141 @@ export function TourBasicForm({ initialData, onSubmit, isLoading }: TourBasicFor
 		}
 	}
 
-	const tourTypeOptions = Object.entries(TourTypeLabels).map(([value, label]) => ({
-		value,
-		label,
-	}))
-
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
-			<div className="text-center mb-6">
-				<h3 className="text-xl font-semibold text-gray-900">Thông Tin Cơ Bản Tour</h3>
-				<p className="text-gray-600 mt-2">
-					Nhập thông tin cơ bản để tạo tour mới. Các thông tin này sẽ được sử dụng làm nền tảng cho tour của bạn.
-				</p>
-			</div>
-
-			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg font-medium">Chi Tiết Tour</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="name">
-							Tên Tour <span className="text-red-500">*</span>
-						</Label>
-						<Input
-							id="name"
-							placeholder="Nhập tên tour (ví dụ: Tour Tây Ninh 3 ngày 2 đêm)"
-							value={formData.name}
-							onChange={(e) => handleInputChange("name", e.target.value)}
-							className={errors.name ? "border-red-500" : ""}
-						/>
-						{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="description">
-							Mô Tả Tour <span className="text-red-500">*</span>
-						</Label>
-						<Textarea
-							id="description"
-							placeholder="Nhập mô tả ngắn gọn về tour (100-200 từ)"
-							value={formData.description}
-							onChange={(e) => handleInputChange("description", e.target.value)}
-							className={`min-h-[80px] ${errors.description ? "border-red-500" : ""}`}
-						/>
-						{errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="content">
-							Nội Dung Chi Tiết <span className="text-red-500">*</span>
-						</Label>
-						<Textarea
-							id="content"
-							placeholder="Nhập nội dung chi tiết về tour, bao gồm các hoạt động, dịch vụ, lưu ý..."
-							value={formData.content}
-							onChange={(e) => handleInputChange("content", e.target.value)}
-							className={`min-h-[120px] ${errors.content ? "border-red-500" : ""}`}
-						/>
-						{errors.content && <p className="text-sm text-red-500">{errors.content}</p>}
-					</div>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				{/* Basic Information */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<div className="w-2 h-2 bg-blue-500 rounded-full" />
+							Thông Tin Cơ Bản
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="tourType">
-								Loại Tour <span className="text-red-500">*</span>
-							</Label>
+							<Label htmlFor="name">Tên Tour *</Label>
+							<Input
+								id="name"
+								placeholder="Nhập tên tour du lịch"
+								value={formData.name}
+								onChange={(e) => handleInputChange("name", e.target.value)}
+								className={errors.name ? "border-red-500" : ""}
+								disabled={isLoading}
+							/>
+							{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="description">Mô Tả Tour *</Label>
+							<Textarea
+								id="description"
+								placeholder="Nhập mô tả chi tiết về tour"
+								value={formData.description}
+								onChange={(e) => handleInputChange("description", e.target.value)}
+								className={errors.description ? "border-red-500" : ""}
+								rows={3}
+								disabled={isLoading}
+							/>
+							{errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="content">Nội Dung Chi Tiết *</Label>
+							<Textarea
+								id="content"
+								placeholder="Nhập nội dung chi tiết về tour"
+								value={formData.content}
+								onChange={(e) => handleInputChange("content", e.target.value)}
+								className={errors.content ? "border-red-500" : ""}
+								rows={4}
+								disabled={isLoading}
+							/>
+							{errors.content && <p className="text-sm text-red-500">{errors.content}</p>}
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Tour Details */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<div className="w-2 h-2 bg-green-500 rounded-full" />
+							Chi Tiết Tour
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="space-y-2">
+							<Label>Loại Tour *</Label>
 							<Select
 								value={formData.tourType.toString()}
 								onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
+								disabled={isLoading}
 							>
-								<SelectTrigger>
+								<SelectTrigger className={errors.tourType ? "border-red-500" : ""}>
 									<SelectValue placeholder="Chọn loại tour" />
 								</SelectTrigger>
 								<SelectContent>
-									{tourTypeOptions.map((option) => (
-										<SelectItem key={option.value} value={option.value}>
-											{option.label}
+									{Object.entries(TourTypeLabels).map(([key, label]) => (
+										<SelectItem key={key} value={key}>
+											{label}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
+							{errors.tourType && <p className="text-sm text-red-500">{errors.tourType}</p>}
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="totalDays">
-								Số Ngày Tour <span className="text-red-500">*</span>
-							</Label>
-							<div className="relative">
-								<Input
-									id="totalDays"
-									type="number"
-									min={1}
-									max={365}
-									value={formData.totalDays.toString()}
-									onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
-									className={errors.totalDays ? "border-red-500" : ""}
-								/>
-								<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-									<span className="text-gray-500 text-sm">ngày</span>
-								</div>
-							</div>
+							<Label htmlFor="totalDays">Số Ngày Tour *</Label>
+							<Input
+								id="totalDays"
+								type="number"
+								min="1"
+								max="365"
+								value={formData.totalDays}
+								onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
+								className={errors.totalDays ? "border-red-500" : ""}
+								disabled={isLoading}
+							/>
 							{errors.totalDays && <p className="text-sm text-red-500">{errors.totalDays}</p>}
+							<p className="text-xs text-gray-500">
+								Tour sẽ có {formData.totalDays} ngày {formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
+							</p>
 						</div>
-					</div>
-				</CardContent>
-			</Card>
 
-			<div className="flex justify-end pt-4">
-				<Button type="submit" size="lg" className="px-8" disabled={isLoading}>
-					{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-					Tiếp Theo: Tạo Lịch Trình
+						<div className="p-4 bg-blue-50 rounded-lg">
+							<h4 className="font-medium text-blue-900 mb-2">Thông Tin Tour</h4>
+							<div className="space-y-1 text-sm text-blue-800">
+								<p>
+									<strong>Loại:</strong> {formData.tourType}
+								</p>
+								<p>
+									<strong>Thời gian:</strong> {formData.totalDays} ngày{" "}
+									{formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
+								</p>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			</div>
+
+			{/* Action Buttons */}
+			<div className="flex justify-between items-center pt-6 border-t">
+				<Button
+					type="button"
+					variant="outline"
+					onClick={onCancel}
+					className="flex items-center gap-2 bg-transparent"
+					disabled={isLoading}
+				>
+					<X className="w-4 h-4" />
+					Hủy
+				</Button>
+				<Button type="submit" className="flex items-center gap-2" disabled={isLoading}>
+					{isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+					Tiếp theo
+					<ArrowRight className="w-4 h-4" />
 				</Button>
 			</div>
 		</form>

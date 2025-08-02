@@ -1,11 +1,12 @@
 "use client"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -19,12 +20,9 @@ import {
 	PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Search, Eye, Edit, Trash2, Plus, AlertCircle } from "lucide-react"
-import type { Tour, UpdateTourRequest } from "@/types/Tour"
+import type { Tour, TourDetail } from "@/types/Tour"
 import { useTour } from "@/services/tour"
-import { TourForm } from "./TourForm"
-import { TourDetails } from "./TourDetail"
 import { DeleteConfirmation } from "./DeleteConfirmation"
-import { TourWizard } from "./TourWizard"
 
 const columns = [
 	{ name: "Tên Tour", uid: "name" },
@@ -62,35 +60,31 @@ const tourTypeOptions = [
 ]
 
 function TourManagement() {
-	const [tours, setTours] = useState<Tour[]>([])
-	const [filteredTours, setFilteredTours] = useState<Tour[]>([])
+	const router = useRouter()
+	const [tours, setTours] = useState<TourDetail[]>([])
+	const [filteredTours, setFilteredTours] = useState<TourDetail[]>([])
 	const [page, setPage] = useState(1)
 	const [searchValue, setSearchValue] = useState("")
 	const [statusFilter, setStatusFilter] = useState("all")
 	const [typeFilter, setTypeFilter] = useState("all")
-	const [selectedTour, setSelectedTour] = useState<Tour | null>(null)
+	const [selectedTour, setSelectedTour] = useState<TourDetail | null>(null)
 	const [error, setError] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [actionLoading, setActionLoading] = useState(false)
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
 	const rowsPerPage = 10
 	const pages = Math.ceil(filteredTours.length / rowsPerPage)
 
-	const { getAllTour, createTour, updateTour, deleteTour } = useTour()
-
-	// Modal controls
-	const [isEditOpen, setIsEditOpen] = useState(false)
-	const [isViewOpen, setIsViewOpen] = useState(false)
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-	const [isWizardOpen, setIsWizardOpen] = useState(false)
+	const { getAllTour, deleteTour } = useTour()
 
 	const fetchAllTours = async () => {
 		try {
 			setError("")
 			setLoading(true)
 			const response = await getAllTour()
-			setTours(response || [])
-			setFilteredTours(response || [])
+			setTours(response)
+			setFilteredTours(response)
 		} catch (error) {
 			setError("Có lỗi khi tải dữ liệu")
 			console.error("Lỗi fetch tours", error)
@@ -137,40 +131,21 @@ function TourManagement() {
 	}, [page, filteredTours])
 
 	// Actions
-	const handleView = (tour: Tour) => {
-		setSelectedTour(tour)
-		setIsViewOpen(true)
+	const handleView = (tour: TourDetail) => {
+		router.push(`/tour/${tour.tourId}`)
 	}
 
-	const handleEdit = (tour: Tour) => {
-		setSelectedTour(tour)
-		setIsEditOpen(true)
+	const handleEdit = (tour: TourDetail) => {
+		router.push(`/tour/${tour.tourId}/edit`)
 	}
 
-	const handleDelete = (tour: Tour) => {
+	const handleDelete = (tour: TourDetail) => {
 		setSelectedTour(tour)
 		setIsDeleteOpen(true)
 	}
 
-	const handleWizardComplete = () => {
-		fetchAllTours()
-	}
-
-	const handleUpdate = async (data: Partial<UpdateTourRequest>) => {
-		if (!selectedTour) return
-
-		try {
-			setActionLoading(true)
-			// await updateTour({ ...data, tourId: selectedTour.tourId } as UpdateTourRequest)
-			await fetchAllTours()
-			setIsEditOpen(false)
-			setSelectedTour(null)
-		} catch (error) {
-			console.error("Error updating tour:", error)
-			setError("Có lỗi khi cập nhật tour")
-		} finally {
-			setActionLoading(false)
-		}
+	const handleCreate = () => {
+		router.push("/tour/create")
 	}
 
 	const handleConfirmDelete = async () => {
@@ -190,7 +165,7 @@ function TourManagement() {
 		}
 	}
 
-	const renderCell = useCallback((tour: Tour, columnKey: string) => {
+	const renderCell = useCallback((tour: TourDetail, columnKey: string) => {
 		switch (columnKey) {
 			case "name":
 				return (
@@ -254,7 +229,7 @@ function TourManagement() {
 					</div>
 				)
 			default:
-				return tour[columnKey as keyof Tour] as React.ReactNode
+				return tour[columnKey as keyof TourDetail] as React.ReactNode
 		}
 	}, [])
 
@@ -316,7 +291,7 @@ function TourManagement() {
 										))}
 									</SelectContent>
 								</Select>
-								<Button onClick={() => setIsWizardOpen(true)} className="flex items-center gap-2">
+								<Button onClick={handleCreate} className="flex items-center gap-2">
 									<Plus className="w-4 h-4" />
 									Tạo Tour Mới
 								</Button>
@@ -407,41 +382,6 @@ function TourManagement() {
 					)}
 				</CardContent>
 			</Card>
-
-			{/* Tour Creation Wizard */}
-			<TourWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} onComplete={handleWizardComplete} />
-
-			{/* Edit Tour Modal */}
-			<Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-				<DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Chỉnh Sửa Tour</DialogTitle>
-					</DialogHeader>
-					{selectedTour && (
-						<TourForm
-							tour={selectedTour}
-							onSubmit={handleUpdate}
-							onCancel={() => setIsEditOpen(false)}
-							isLoading={actionLoading}
-						/>
-					)}
-				</DialogContent>
-			</Dialog>
-
-			{/* View Tour Modal */}
-			<Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-				<DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Chi Tiết Tour</DialogTitle>
-					</DialogHeader>
-					{selectedTour && <TourDetails tour={selectedTour} />}
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setIsViewOpen(false)}>
-							Đóng
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
 
 			{/* Delete Confirmation Modal */}
 			<Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>

@@ -1,27 +1,16 @@
-import TourManagement from '@/components/tour-management/TourManagement'
-import { Metadata } from 'next'
+import TourManagement from "@/components/tour-management/TourManagement"
+import type { Metadata } from "next"
+
 
 export const metadata: Metadata = {
-	title: 'Tour Management',
-	description: 'Manage your tours efficiently with the Tour Management dashboard.',
-	keywords: ['tour', 'management', 'dashboard', 'admin'],
-	openGraph: {
-		title: 'Tour Management Dashboard',
-		description: 'Efficient tour management system',
-		url: 'https://traveloge.com/admin/tours',
-		siteName: 'Traveloge',
-		type: 'website',
+	title: "Quản Lý Tour | Dashboard",
+	description: "Quản lý danh sách tour du lịch",
+	robots: {
+		index: false,
+		follow: false,
 	},
-	metadataBase: new URL('https://traveloge.com/admin/tour'),
 }
 
-
-function page() {
-	return (
-		<div className=''>
-			<TourManagement />
-		</div>
-	)
+export default function ToursPage() {
+	return <TourManagement />
 }
-
-export default page

@@ -54,35 +54,22 @@ export interface TourDate {
 export interface Tour {
 	tourId: string
 	name: string
-	title: string
-	totalDays: number
-	location: string
-	duration: string
-	maxGuests: number
-	rating: number
-	reviewCount: number
 	description: string
-	activeSlot: number
-	images: TourImage[]
-	content: string | null
-	days: TourDays[]
-	amenities: TourAmenity[]
-	reviews: TourReview[]
-	pricing: TourPricing
-	badges: string[]
-	tourType: number
-	dates: TourDate[]
-	status: number
+	content?: string | null
 	tourTypeText: string
+	tourType: number
 	totalDaysText: string
+	totalDays: number
 	adultPrice: number
+	childrenPrice: number
 	finalPrice: number
 	statusText: TourStatus
+	status: number
+	location?: string
+	maxParticipants?: number
+	minParticipants?: number
+	bookedCount?: number
 	isActive: boolean
-	minParticipants: number
-	maxParticipants: number
-	bookedCount: number
-	childrenPrice: number
 }
 
 export type TourStatus = "Draft" | "Published" | "Active" | "Cancelled"
@@ -90,16 +77,10 @@ export type TourStatus = "Draft" | "Published" | "Active" | "Cancelled"
 export interface CreateTourRequest {
 	name: string
 	description: string
-	content: string | null
-	tourTypeText: string
-	tourType: number
-	totalDaysText: string
+	content: string
 	totalDays: number
-	adultPrice: number
-	childrenPrice: number
-	finalPrice: number
-	statusText: TourStatus
-	status: number
+	tourType: number
+	finalPrice?: number
 }
 
 
@@ -175,6 +156,12 @@ export interface CreateTourBasicRequest {
 	tourType: number
 }
 
+export interface CreateTourScheduleRequest {
+	departureDate: string
+	price: number
+	availableSpots: number
+}
+
 export interface LocationResponse {
 	data: Location[]
 	message: string
@@ -211,12 +198,63 @@ export interface Location {
 }
 
 export const TourTypeLabels: Record<TourType, string> = {
-	[TourType.International]: "Du lịch trong nước",
-	[TourType.Leisure]: "Du lịch nghỉ dưỡng",
-	[TourType.Adventure]: "Du lịch khám phá",
-	[TourType.Ecotourism]: "Du lịch sinh thái",
-	[TourType.Cultural]: "Du lịch văn hóa",
-	[TourType.Spiritual]: "Du lịch tâm linh",
-	[TourType.Culinary]: "Du lịch ẩm thực",
-	[TourType.Extreme]: "Du lịch mạo hiểm",
+	1: "Du lịch trong nước",
+	2: "Du lịch nghỉ dưỡng",
+	3: "Du lịch khám phá",
+	4: "Du lịch sinh thái",
+	5: "Du lịch văn hóa",
+	6: "Du lịch tâm linh",
+	7: "Du lịch ẩm thực",
+	8: "Du lịch mạo hiểm",
+}
+
+
+
+export interface TourDetail {
+	tourId: string
+	name: string
+	description: string
+	content: string
+	totalDays: number
+	tourType: number
+	tourTypeText: string
+	totalDaysText: string
+	adultPrice: number
+	childrenPrice: number
+	finalPrice: number
+	isDiscount: boolean
+	status: number
+	statusText: TourStatus
+	schedules: TourSchedule[]
+	tourGuide: any[]
+	promotions: any[]
+	days: TourDay[]
+}
+
+export interface TourDay {
+	dayNumber: number
+	activities: TourActivity[]
+}
+
+export interface TourSchedule {
+	scheduleId: string
+	departureDate: string
+	maxParticipant: number
+	currentBooked: number
+	totalDays: number
+	adultPrice: number
+	childrenPrice: number
+}
+
+
+export interface TourLocationBulkRequest {
+	locationId: string
+	dayOrder: number
+	startTime: string
+	endTime: string
+	notes: string
+	travelTimeFromPrev: number
+	distanceFromPrev: number
+	estimatedStartTime: number
+	estimatedEndTime: number
 }

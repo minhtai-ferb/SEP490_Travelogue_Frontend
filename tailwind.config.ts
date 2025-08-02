@@ -15,11 +15,17 @@ export default {
 	theme: {
 		extend: {
 			backgroundImage: {
-				'footer-bg': "url('/Banner.png')",
+				"footer-bg": "url('/Banner.png')"
 			},
 			fontFamily: {
-				fleur: ['"Fleur De Leah"', 'cursive'],
-				poppin: ['"Poppins regular"', 'cursive'],
+				fleur: [
+					'Fleur De Leah"',
+					'cursive'
+				],
+				poppin: [
+					'Poppins regular',
+					'cursive'
+				]
 			},
 			colors: {
 				background: 'hsl(var(--background))',
@@ -72,7 +78,9 @@ export default {
 				pulse: 'pulse var(--duration) ease-out infinite',
 				shine: 'shine var(--duration) infinite linear',
 				marquee: 'marquee var(--duration) infinite linear',
-				'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
+				'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+				'accordion-down': 'accordion-down 0.2s ease-out',
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			},
 			keyframes: {
 				pulse: {
@@ -108,6 +116,22 @@ export default {
 					},
 					to: {
 						transform: 'translateY(calc(-100% - var(--gap)))'
+					}
+				},
+				'accordion-down': {
+					from: {
+						height: '0'
+					},
+					to: {
+						height: 'var(--radix-accordion-content-height)'
+					}
+				},
+				'accordion-up': {
+					from: {
+						height: 'var(--radix-accordion-content-height)'
+					},
+					to: {
+						height: '0'
 					}
 				}
 			}

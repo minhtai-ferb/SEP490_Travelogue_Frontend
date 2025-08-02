@@ -1,116 +1,167 @@
 "use client"
-import { Card, CardBody, CardHeader, Chip, Divider } from "@heroui/react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import type { Tour } from "@/types/Tour"
 
 interface TourDetailsProps {
 	tour: Tour
 }
 
-export function TourDetails({ tour }: TourDetailsProps) {
-	const getStatusColor = (status: string) => {
-		const colorMap: Record<string, "warning" | "success" | "danger" | "default"> = {
-			Draft: "warning",
-			Published: "success",
-			Active: "success",
-			Cancelled: "danger",
-		}
-		return colorMap[status] || "default"
-	}
+const statusColorMap = {
+	Draft: "bg-yellow-100 text-yellow-800",
+	Published: "bg-green-100 text-green-800",
+	Active: "bg-blue-100 text-blue-800",
+	Cancelled: "bg-red-100 text-red-800",
+} as const
 
+export function TourDetails({ tour }: TourDetailsProps) {
 	return (
 		<div className="space-y-6">
 			{/* Basic Information */}
 			<Card>
 				<CardHeader>
-					<div className="flex justify-between items-start w-full">
-						<div>
-							<h3 className="text-xl font-bold">{tour.name}</h3>
-							<p className="text-small text-default-500">ID: {tour.tourId}</p>
-						</div>
-						<Chip color={getStatusColor(tour.statusText)} variant="flat">
-							{tour.statusText}
-						</Chip>
-					</div>
+					<CardTitle>Thông Tin Cơ Bản</CardTitle>
 				</CardHeader>
-				<CardBody>
-					<div className="space-y-4">
+				<CardContent className="space-y-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
-							<h4 className="font-semibold text-default-700 mb-2">Mô tả</h4>
-							<p className="text-default-600">{tour.description || "Chưa có mô tả"}</p>
+							<p className="text-sm text-gray-600">Tên Tour</p>
+							<p className="font-semibold">{tour.name}</p>
 						</div>
-
-						{tour.content && (
-							<div>
-								<h4 className="font-semibold text-default-700 mb-2">Nội dung chi tiết</h4>
-								<p className="text-default-600">{tour.content}</p>
-							</div>
-						)}
-					</div>
-				</CardBody>
-			</Card>
-
-			{/* Tour Information */}
-			<Card>
-				<CardHeader>
-					<h3 className="text-lg font-semibold">Thông Tin Tour</h3>
-				</CardHeader>
-				<CardBody>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div className="space-y-3">
-							<div>
-								<span className="text-small font-medium text-default-500">Loại Tour</span>
-								<p className="text-default-700">{tour.tourTypeText}</p>
-							</div>
-
-							<div>
-								<span className="text-small font-medium text-default-500">Thời Gian</span>
-								<p className="text-default-700">{tour.totalDaysText}</p>
-							</div>
-
-							<div>
-								<span className="text-small font-medium text-default-500">Số Ngày</span>
-								<p className="text-default-700">{tour.totalDays} ngày</p>
-							</div>
+						<div>
+							<p className="text-sm text-gray-600">Loại Tour</p>
+							<p className="font-semibold">{tour.tourTypeText}</p>
 						</div>
-
-						<div className="space-y-3">
-							<div>
-								<span className="text-small font-medium text-default-500">Mã Loại Tour</span>
-								<p className="text-default-700">{tour.tourType}</p>
-							</div>
-
-							<div>
-								<span className="text-small font-medium text-default-500">Mã Trạng Thái</span>
-								<p className="text-default-700">{tour.status}</p>
-							</div>
+						<div>
+							<p className="text-sm text-gray-600">Thời Gian</p>
+							<p className="font-semibold">{tour.totalDaysText}</p>
+						</div>
+						<div>
+							<p className="text-sm text-gray-600">Số Ngày</p>
+							<p className="font-semibold">{tour.totalDays} ngày</p>
 						</div>
 					</div>
-				</CardBody>
+
+					<div>
+						<p className="text-sm text-gray-600 mb-2">Mô Tả</p>
+						<p className="text-sm leading-relaxed">{tour.description}</p>
+					</div>
+
+					{tour.content && (
+						<div>
+							<p className="text-sm text-gray-600 mb-2">Nội Dung Chi Tiết</p>
+							<p className="text-sm leading-relaxed">{tour.content}</p>
+						</div>
+					)}
+				</CardContent>
 			</Card>
 
 			{/* Pricing Information */}
 			<Card>
 				<CardHeader>
-					<h3 className="text-lg font-semibold">Thông Tin Giá</h3>
+					<CardTitle>Thông Tin Giá</CardTitle>
 				</CardHeader>
-				<CardBody>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<div className="text-center p-4 bg-success-50 rounded-lg">
-							<span className="text-small font-medium text-success-600">Giá Người Lớn</span>
-							<p className="text-2xl font-bold text-success-700">{tour.adultPrice.toLocaleString("vi-VN")} VNĐ</p>
+				<CardContent>
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div className="text-center p-4 bg-green-50 rounded-lg border">
+							<p className="text-sm text-gray-600">Giá Người Lớn</p>
+							<p className="text-xl font-bold text-green-600">{tour.adultPrice?.toLocaleString()} VNĐ</p>
 						</div>
-
-						<div className="text-center p-4 bg-warning-50 rounded-lg">
-							<span className="text-small font-medium text-warning-600">Giá Trẻ Em</span>
-							<p className="text-2xl font-bold text-warning-700">{tour.childrenPrice.toLocaleString("vi-VN")} VNĐ</p>
+						<div className="text-center p-4 bg-blue-50 rounded-lg border">
+							<p className="text-sm text-gray-600">Giá Trẻ Em</p>
+							<p className="text-xl font-bold text-blue-600">{tour.childrenPrice?.toLocaleString()} VNĐ</p>
 						</div>
-
-						<div className="text-center p-4 bg-primary-50 rounded-lg">
-							<span className="text-small font-medium text-primary-600">Giá Cuối</span>
-							<p className="text-2xl font-bold text-primary-700">{tour.finalPrice.toLocaleString("vi-VN")} VNĐ</p>
+						<div className="text-center p-4 bg-orange-50 rounded-lg border">
+							<p className="text-sm text-gray-600">Giá Cuối</p>
+							<p className="text-xl font-bold text-orange-600">{tour.finalPrice?.toLocaleString()} VNĐ</p>
 						</div>
 					</div>
-				</CardBody>
+				</CardContent>
+			</Card>
+
+			{/* Status Information */}
+			<Card>
+				<CardHeader>
+					<CardTitle>Trạng Thái</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="flex items-center gap-4">
+						<div>
+							<p className="text-sm text-gray-600">Trạng Thái Hiện Tại</p>
+							<Badge className={`${statusColorMap[tour.statusText] || "bg-gray-100 text-gray-800"} text-sm mt-1`}>
+								{tour.statusText}
+							</Badge>
+						</div>
+						<div>
+							<p className="text-sm text-gray-600">Mã Trạng Thái</p>
+							<p className="font-semibold">{tour.status}</p>
+						</div>
+						<div>
+							<p className="text-sm text-gray-600">Mã Loại Tour</p>
+							<p className="font-semibold">{tour.tourType}</p>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Additional Information */}
+			{(tour.location || tour.maxParticipants || tour.minParticipants) && (
+				<Card>
+					<CardHeader>
+						<CardTitle>Thông Tin Bổ Sung</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							{tour.location && (
+								<div>
+									<p className="text-sm text-gray-600">Địa Điểm</p>
+									<p className="font-semibold">{tour.location}</p>
+								</div>
+							)}
+							{tour.maxParticipants && (
+								<div>
+									<p className="text-sm text-gray-600">Số Người Tối Đa</p>
+									<p className="font-semibold">{tour.maxParticipants} người</p>
+								</div>
+							)}
+							{tour.minParticipants && (
+								<div>
+									<p className="text-sm text-gray-600">Số Người Tối Thiểu</p>
+									<p className="font-semibold">{tour.minParticipants} người</p>
+								</div>
+							)}
+							{tour.bookedCount !== undefined && (
+								<div>
+									<p className="text-sm text-gray-600">Đã Đặt</p>
+									<p className="font-semibold">{tour.bookedCount} người</p>
+								</div>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
+			{/* System Information */}
+			<Card>
+				<CardHeader>
+					<CardTitle>Thông Tin Hệ Thống</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<p className="text-sm text-gray-600">ID Tour</p>
+							<p className="font-mono text-sm">{tour.tourId}</p>
+						</div>
+						<div>
+							<p className="text-sm text-gray-600">Trạng Thái Hoạt Động</p>
+							<Badge
+								className={`${tour.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} text-sm mt-1`}
+							>
+								{tour.isActive ? "Hoạt động" : "Không hoạt động"}
+							</Badge>
+						</div>
+					</div>
+				</CardContent>
 			</Card>
 		</div>
 	)

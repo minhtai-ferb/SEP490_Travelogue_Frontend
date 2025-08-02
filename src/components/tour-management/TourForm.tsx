@@ -1,7 +1,14 @@
 "use client"
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Input, Textarea, Select, SelectItem, Button, Card, CardBody, CardHeader, Divider } from "@heroui/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Loader2 } from "lucide-react"
 import type { Tour, CreateTourRequest, UpdateTourRequest, TourStatus } from "@/types/Tour"
 
 interface TourFormProps {
@@ -114,16 +121,15 @@ export function TourForm({ tour, onSubmit, onCancel, isLoading = false }: TourFo
 		}
 	}
 
-	const statusMap: Partial<Record<TourStatus, number>> = {
-		Draft: 0,
-		Published: 1,
-		Active: 2,
-		Cancelled: 3,
-	};
-
 	const getStatusNumber = (statusText: TourStatus): number => {
-		return statusMap[statusText] ?? 0;
-	};
+		const statusMap: Record<TourStatus, number> = {
+			Draft: 0,
+			Published: 1,
+			Active: 2,
+			Cancelled: 3,
+		}
+		return statusMap[statusText] || 0
+	}
 
 	const getTourTypeNumber = (tourTypeText: string): number => {
 		const typeMap: Record<string, number> = {
@@ -167,167 +173,173 @@ export function TourForm({ tour, onSubmit, onCancel, isLoading = false }: TourFo
 		<form onSubmit={handleSubmit} className="space-y-6">
 			<Card>
 				<CardHeader>
-					<h3 className="text-lg font-semibold">Thông Tin Cơ Bản</h3>
+					<CardTitle>Thông Tin Cơ Bản</CardTitle>
 				</CardHeader>
-				<CardBody className="space-y-4">
-					<Input
-						label="Tên Tour"
-						placeholder="Nhập tên tour"
-						value={formData.name}
-						onValueChange={(value) => handleInputChange("name", value)}
-						isInvalid={!!errors.name}
-						errorMessage={errors.name}
-						isRequired
-					/>
-
-					<Textarea
-						label="Mô Tả Tour"
-						placeholder="Nhập mô tả chi tiết về tour"
-						value={formData.description}
-						onValueChange={(value) => handleInputChange("description", value)}
-						isInvalid={!!errors.description}
-						errorMessage={errors.description}
-						minRows={3}
-						isRequired
-					/>
-
-					<Textarea
-						label="Nội Dung Tour"
-						placeholder="Nhập nội dung chi tiết về tour (tùy chọn)"
-						value={formData.content || ""}
-						onValueChange={(value) => handleInputChange("content", value || null)}
-						minRows={4}
-					/>
-
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<Select
-							label="Loại Tour"
-							placeholder="Chọn loại tour"
-							selectedKeys={formData.tourTypeText ? [formData.tourTypeText] : []}
-							onSelectionChange={(keys) => {
-								const selected = Array.from(keys)[0] as string
-								handleInputChange("tourTypeText", selected)
-							}}
-							isInvalid={!!errors.tourTypeText}
-							errorMessage={errors.tourTypeText}
-							isRequired
-						>
-							{tourTypes.map((type) => (
-								<SelectItem key={type.key} textValue={type.key}>
-									{type.label}
-								</SelectItem>
-							))}
-						</Select>
-
+				<CardContent className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="name">Tên Tour *</Label>
 						<Input
-							label="Thời Gian Tour"
-							placeholder="VD: 7 ngày 6 đêm"
-							value={formData.totalDaysText}
-							onValueChange={(value) => handleInputChange("totalDaysText", value)}
-							isInvalid={!!errors.totalDaysText}
-							errorMessage={errors.totalDaysText}
-							isRequired
+							id="name"
+							placeholder="Nhập tên tour"
+							value={formData.name}
+							onChange={(e) => handleInputChange("name", e.target.value)}
+							className={errors.name ? "border-red-500" : ""}
+						/>
+						{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="description">Mô Tả Tour *</Label>
+						<Textarea
+							id="description"
+							placeholder="Nhập mô tả chi tiết về tour"
+							value={formData.description}
+							onChange={(e) => handleInputChange("description", e.target.value)}
+							className={errors.description ? "border-red-500" : ""}
+							rows={3}
+						/>
+						{errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="content">Nội Dung Tour</Label>
+						<Textarea
+							id="content"
+							placeholder="Nhập nội dung chi tiết về tour (tùy chọn)"
+							value={formData.content || ""}
+							onChange={(e) => handleInputChange("content", e.target.value || null)}
+							rows={4}
 						/>
 					</div>
 
-					<Input
-						label="Số Ngày"
-						placeholder="7"
-						type="number"
-						value={formData.totalDays.toString()}
-						onValueChange={(value) => handleInputChange("totalDays", Number.parseInt(value) || 0)}
-						isInvalid={!!errors.totalDays}
-						errorMessage={errors.totalDays}
-						isRequired
-					/>
-				</CardBody>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label>Loại Tour *</Label>
+							<Select value={formData.tourTypeText} onValueChange={(value) => handleInputChange("tourTypeText", value)}>
+								<SelectTrigger className={errors.tourTypeText ? "border-red-500" : ""}>
+									<SelectValue placeholder="Chọn loại tour" />
+								</SelectTrigger>
+								<SelectContent>
+									{tourTypes.map((type) => (
+										<SelectItem key={type.key} value={type.key}>
+											{type.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{errors.tourTypeText && <p className="text-sm text-red-500">{errors.tourTypeText}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="totalDaysText">Thời Gian Tour *</Label>
+							<Input
+								id="totalDaysText"
+								placeholder="VD: 7 ngày 6 đêm"
+								value={formData.totalDaysText}
+								onChange={(e) => handleInputChange("totalDaysText", e.target.value)}
+								className={errors.totalDaysText ? "border-red-500" : ""}
+							/>
+							{errors.totalDaysText && <p className="text-sm text-red-500">{errors.totalDaysText}</p>}
+						</div>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="totalDays">Số Ngày *</Label>
+						<Input
+							id="totalDays"
+							placeholder="7"
+							type="number"
+							value={formData.totalDays.toString()}
+							onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 0)}
+							className={errors.totalDays ? "border-red-500" : ""}
+						/>
+						{errors.totalDays && <p className="text-sm text-red-500">{errors.totalDays}</p>}
+					</div>
+				</CardContent>
 			</Card>
 
 			<Card>
 				<CardHeader>
-					<h3 className="text-lg font-semibold">Thông Tin Giá</h3>
+					<CardTitle>Thông Tin Giá</CardTitle>
 				</CardHeader>
-				<CardBody className="space-y-4">
+				<CardContent className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label htmlFor="adultPrice">Giá Người Lớn (VNĐ) *</Label>
+							<Input
+								id="adultPrice"
+								placeholder="0"
+								type="number"
+								value={formData.adultPrice.toString()}
+								onChange={(e) => handleInputChange("adultPrice", Number.parseInt(e.target.value) || 0)}
+								className={errors.adultPrice ? "border-red-500" : ""}
+							/>
+							{errors.adultPrice && <p className="text-sm text-red-500">{errors.adultPrice}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="childrenPrice">Giá Trẻ Em (VNĐ)</Label>
+							<Input
+								id="childrenPrice"
+								placeholder="0"
+								type="number"
+								value={formData.childrenPrice.toString()}
+								onChange={(e) => handleInputChange("childrenPrice", Number.parseInt(e.target.value) || 0)}
+								className={errors.childrenPrice ? "border-red-500" : ""}
+							/>
+							{errors.childrenPrice && <p className="text-sm text-red-500">{errors.childrenPrice}</p>}
+						</div>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="finalPrice">Giá Cuối (VNĐ)</Label>
 						<Input
-							label="Giá Người Lớn (VNĐ)"
-							placeholder="0"
+							id="finalPrice"
+							placeholder="Tự động tính từ giá người lớn"
 							type="number"
 							value={formData.adultPrice.toString()}
-							onValueChange={(value) => handleInputChange("adultPrice", Number.parseInt(value) || 0)}
-							isInvalid={!!errors.adultPrice}
-							errorMessage={errors.adultPrice}
-							startContent={
-								<div className="pointer-events-none flex items-center">
-									<span className="text-default-400 text-small">VNĐ</span>
-								</div>
-							}
-							isRequired
+							readOnly
+							className="bg-gray-50"
 						/>
-
-						<Input
-							label="Giá Trẻ Em (VNĐ)"
-							placeholder="0"
-							type="number"
-							value={formData.childrenPrice.toString()}
-							onValueChange={(value) => handleInputChange("childrenPrice", Number.parseInt(value) || 0)}
-							isInvalid={!!errors.childrenPrice}
-							errorMessage={errors.childrenPrice}
-							startContent={
-								<div className="pointer-events-none flex items-center">
-									<span className="text-default-400 text-small">VNĐ</span>
-								</div>
-							}
-						/>
+						<p className="text-sm text-gray-500">Giá cuối sẽ tự động được tính từ giá người lớn</p>
 					</div>
-
-					<Input
-						label="Giá Cuối (VNĐ)"
-						placeholder="Tự động tính từ giá người lớn"
-						type="number"
-						value={formData.adultPrice.toString()}
-						isReadOnly
-						startContent={
-							<div className="pointer-events-none flex items-center">
-								<span className="text-default-400 text-small">VNĐ</span>
-							</div>
-						}
-						description="Giá cuối sẽ tự động được tính từ giá người lớn"
-					/>
-				</CardBody>
+				</CardContent>
 			</Card>
 
 			<Card>
 				<CardHeader>
-					<h3 className="text-lg font-semibold">Trạng Thái</h3>
+					<CardTitle>Trạng Thái</CardTitle>
 				</CardHeader>
-				<CardBody className="space-y-4">
-					<Select
-						label="Trạng Thái Tour"
-						placeholder="Chọn trạng thái"
-						selectedKeys={formData.statusText ? [formData.statusText] : []}
-						onSelectionChange={(keys) => {
-							const selected = Array.from(keys)[0] as TourStatus
-							handleInputChange("statusText", selected)
-						}}
-						isRequired
-					>
-						{statusOptions.map((status) => (
-							<SelectItem key={status.key} textValue={status.key}>
-								{status.label}
-							</SelectItem>
-						))}
-					</Select>
-				</CardBody>
+				<CardContent className="space-y-4">
+					<div className="space-y-2">
+						<Label>Trạng Thái Tour *</Label>
+						<Select
+							value={formData.statusText}
+							onValueChange={(value) => handleInputChange("statusText", value as TourStatus)}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Chọn trạng thái" />
+							</SelectTrigger>
+							<SelectContent>
+								{statusOptions.map((status) => (
+									<SelectItem key={status.key} value={status.key}>
+										{status.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</CardContent>
 			</Card>
 
-			<Divider />
+			<Separator />
 
 			<div className="flex gap-3 justify-end">
-				<Button color="danger" variant="light" onPress={onCancel} isDisabled={isLoading}>
+				<Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
 					Hủy
 				</Button>
-				<Button color="primary" type="submit" isLoading={isLoading}>
+				<Button type="submit" disabled={isLoading}>
+					{isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
 					{tour ? "Cập Nhật" : "Tạo Tour"}
 				</Button>
 			</div>
