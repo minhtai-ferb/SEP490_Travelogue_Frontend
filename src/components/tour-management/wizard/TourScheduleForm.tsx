@@ -1,28 +1,15 @@
 "use client"
 import { useState, useEffect } from "react"
-import {
-	Input,
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	Table,
-	TableHeader,
-	TableColumn,
-	TableBody,
-	TableRow,
-	TableCell,
-	Chip,
-	Tooltip,
-	Modal,
-	ModalContent,
-	ModalHeader,
-	ModalBody,
-	ModalFooter,
-	useDisclosure,
-} from "@heroui/react"
-import { Plus, Edit, Trash2, Calendar, Users, DollarSign } from "lucide-react"
-import type { ScheduleFormData } from "@/types/Tour"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Plus, Edit, Trash2, Calendar, Users, DollarSign, Loader2 } from "lucide-react"
+import { ScheduleFormData } from "@/types/Tour"
 
 interface TourScheduleFormProps {
 	initialData: ScheduleFormData[]
@@ -32,10 +19,10 @@ interface TourScheduleFormProps {
 	isLoading: boolean
 }
 
-
 export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious, isLoading }: TourScheduleFormProps) {
 	const [schedules, setSchedules] = useState<ScheduleFormData[]>(initialData)
 	const [editingIndex, setEditingIndex] = useState<number | null>(null)
+	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [formData, setFormData] = useState<ScheduleFormData>({
 		departureDate: "",
 		maxParticipant: 20,
@@ -44,8 +31,6 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 		childrenPrice: 0,
 	})
 	const [errors, setErrors] = useState<Record<string, string>>({})
-
-	const { isOpen, onOpen, onClose } = useDisclosure()
 
 	useEffect(() => {
 		setFormData((prev) => ({ ...prev, totalDays }))
@@ -96,7 +81,7 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 			childrenPrice: 0,
 		})
 		setErrors({})
-		onOpen()
+		setIsModalOpen(true)
 	}
 
 	const handleEditSchedule = (index: number) => {
@@ -110,7 +95,7 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 			childrenPrice: schedule.childrenPrice,
 		})
 		setErrors({})
-		onOpen()
+		setIsModalOpen(true)
 	}
 
 	const handleDeleteSchedule = (index: number) => {
@@ -136,7 +121,7 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 			setSchedules((prev) => [...prev, scheduleData])
 		}
 
-		onClose()
+		setIsModalOpen(false)
 	}
 
 	const handleSubmit = () => {
@@ -144,9 +129,6 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 			alert("Vui lòng thêm ít nhất một lịch trình")
 			return
 		}
-		console.log('====================================');
-		console.log(schedules);
-		console.log('====================================');
 		onSubmit(schedules)
 	}
 
@@ -180,13 +162,14 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 			</div>
 
 			<Card>
-				<CardHeader className="flex justify-between items-center">
-					<h4 className="text-lg font-medium">Danh Sách Lịch Trình</h4>
-					<Button color="primary" startContent={<Plus className="w-4 h-4" />} onPress={handleAddSchedule}>
+				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+					<CardTitle className="text-lg font-medium">Danh Sách Lịch Trình</CardTitle>
+					<Button onClick={handleAddSchedule} className="flex items-center gap-2">
+						<Plus className="w-4 h-4" />
 						Thêm Lịch Trình
 					</Button>
 				</CardHeader>
-				<CardBody>
+				<CardContent>
 					{schedules.length === 0 ? (
 						<div className="text-center py-8 text-gray-500">
 							<Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -194,28 +177,28 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 							<p className="text-sm">Nhấn "Thêm Lịch Trình" để bắt đầu</p>
 						</div>
 					) : (
-						<Table aria-label="Bảng lịch trình tour">
+						<Table>
 							<TableHeader>
-								<TableColumn>Ngày Khởi Hành</TableColumn>
-								<TableColumn>Số Ngày</TableColumn>
-								<TableColumn>Số Người Tối Đa</TableColumn>
-								<TableColumn>Giá Người Lớn</TableColumn>
-								<TableColumn>Giá Trẻ Em</TableColumn>
-								<TableColumn align="center">Hành Động</TableColumn>
+								<TableRow>
+									<TableHead>Ngày Khởi Hành</TableHead>
+									<TableHead>Số Ngày</TableHead>
+									<TableHead>Số Người Tối Đa</TableHead>
+									<TableHead>Giá Người Lớn</TableHead>
+									<TableHead>Giá Trẻ Em</TableHead>
+									<TableHead className="text-center">Hành Động</TableHead>
+								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{schedules.map((schedule, index) => (
 									<TableRow key={index}>
 										<TableCell>
 											<div className="flex items-center gap-2">
-												<Calendar className="w-4 h-4 text-primary" />
+												<Calendar className="w-4 h-4 text-blue-500" />
 												{formatDate(schedule.departureDate)}
 											</div>
 										</TableCell>
 										<TableCell>
-											<Chip size="sm" variant="flat" color="primary">
-												{schedule.totalDays} ngày
-											</Chip>
+											<Badge variant="secondary">{schedule.totalDays} ngày</Badge>
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-2">
@@ -225,34 +208,43 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-2">
-												<DollarSign className="w-4 h-4 text-success" />
-												<span className="font-semibold text-success">{formatPrice(schedule.adultPrice)}</span>
+												<DollarSign className="w-4 h-4 text-green-500" />
+												<span className="font-semibold text-green-600">{formatPrice(schedule.adultPrice)}</span>
 											</div>
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-2">
-												<DollarSign className="w-4 h-4 text-warning" />
-												<span className="font-semibold text-warning">{formatPrice(schedule.childrenPrice)}</span>
+												<DollarSign className="w-4 h-4 text-orange-500" />
+												<span className="font-semibold text-orange-600">{formatPrice(schedule.childrenPrice)}</span>
 											</div>
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center justify-center gap-2">
-												<Tooltip content="Chỉnh sửa">
-													<Button isIconOnly size="sm" variant="light" onPress={() => handleEditSchedule(index)}>
-														<Edit className="w-4 h-4" />
-													</Button>
-												</Tooltip>
-												<Tooltip content="Xóa" color="danger">
-													<Button
-														isIconOnly
-														size="sm"
-														variant="light"
-														color="danger"
-														onPress={() => handleDeleteSchedule(index)}
-													>
-														<Trash2 className="w-4 h-4" />
-													</Button>
-												</Tooltip>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button variant="ghost" size="sm" onClick={() => handleEditSchedule(index)}>
+																<Edit className="w-4 h-4" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>Chỉnh sửa</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() => handleDeleteSchedule(index)}
+																className="text-red-500 hover:text-red-700"
+															>
+																<Trash2 className="w-4 h-4" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>Xóa</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
 											</div>
 										</TableCell>
 									</TableRow>
@@ -260,122 +252,128 @@ export function TourScheduleForm({ initialData, totalDays, onSubmit, onPrevious,
 							</TableBody>
 						</Table>
 					)}
-				</CardBody>
+				</CardContent>
 			</Card>
 
 			<div className="flex justify-between pt-4">
-				<Button variant="bordered" onPress={onPrevious} size="lg" className="px-8">
+				<Button variant="outline" onClick={onPrevious} size="lg" className="px-8 bg-transparent">
 					Quay Lại
 				</Button>
-				<Button
-					color="primary"
-					onPress={handleSubmit}
-					isLoading={isLoading}
-					size="lg"
-					className="px-8"
-					isDisabled={schedules.length === 0}
-				>
+				<Button onClick={handleSubmit} disabled={isLoading || schedules.length === 0} size="lg" className="px-8">
+					{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 					Tiếp Theo: Thêm Địa Điểm
 				</Button>
 			</div>
 
 			{/* Schedule Form Modal */}
-			<Modal isOpen={isOpen} onClose={onClose} size="2xl">
-				<ModalContent>
-					<ModalHeader>{editingIndex !== null ? "Chỉnh Sửa Lịch Trình" : "Thêm Lịch Trình Mới"}</ModalHeader>
-					<ModalBody>
-						<div className="space-y-4">
+			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+				<DialogContent className="sm:max-w-[600px]">
+					<DialogHeader>
+						<DialogTitle>{editingIndex !== null ? "Chỉnh Sửa Lịch Trình" : "Thêm Lịch Trình Mới"}</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
+						<div className="space-y-2">
+							<Label htmlFor="departureDate">
+								Ngày Khởi Hành <span className="text-red-500">*</span>
+							</Label>
 							<Input
-								label="Ngày Khởi Hành"
+								id="departureDate"
 								type="date"
 								value={formData.departureDate}
-								onValueChange={(value) => handleInputChange("departureDate", value)}
-								isInvalid={!!errors.departureDate}
-								errorMessage={errors.departureDate}
-								isRequired
-								variant="bordered"
+								onChange={(e) => handleInputChange("departureDate", e.target.value)}
+								className={errors.departureDate ? "border-red-500" : ""}
 							/>
+							{errors.departureDate && <p className="text-sm text-red-500">{errors.departureDate}</p>}
+						</div>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<Input
-									label="Số Người Tối Đa"
-									type="number"
-									min={1}
-									max={100}
-									value={formData.maxParticipant.toString()}
-									onValueChange={(value) => handleInputChange("maxParticipant", Number.parseInt(value) || 1)}
-									isInvalid={!!errors.maxParticipant}
-									errorMessage={errors.maxParticipant}
-									isRequired
-									variant="bordered"
-									endContent={
-										<div className="pointer-events-none flex items-center">
-											<span className="text-default-400 text-small">người</span>
-										</div>
-									}
-								/>
-
-								<Input
-									label="Số Ngày Tour"
-									type="number"
-									value={formData.totalDays.toString()}
-									isReadOnly
-									variant="bordered"
-									description="Tự động lấy từ thông tin cơ bản"
-									endContent={
-										<div className="pointer-events-none flex items-center">
-											<span className="text-default-400 text-small">ngày</span>
-										</div>
-									}
-								/>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label htmlFor="maxParticipant">
+									Số Người Tối Đa <span className="text-red-500">*</span>
+								</Label>
+								<div className="relative">
+									<Input
+										id="maxParticipant"
+										type="number"
+										min={1}
+										max={100}
+										value={formData.maxParticipant.toString()}
+										onChange={(e) => handleInputChange("maxParticipant", Number.parseInt(e.target.value) || 1)}
+										className={errors.maxParticipant ? "border-red-500" : ""}
+									/>
+									<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+										<span className="text-gray-500 text-sm">người</span>
+									</div>
+								</div>
+								{errors.maxParticipant && <p className="text-sm text-red-500">{errors.maxParticipant}</p>}
 							</div>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<Input
-									label="Giá Người Lớn"
-									type="number"
-									min={0}
-									value={formData.adultPrice.toString()}
-									onValueChange={(value) => handleInputChange("adultPrice", Number.parseInt(value) || 0)}
-									isInvalid={!!errors.adultPrice}
-									errorMessage={errors.adultPrice}
-									isRequired
-									variant="bordered"
-									startContent={
-										<div className="pointer-events-none flex items-center">
-											<span className="text-default-400 text-small">VNĐ</span>
-										</div>
-									}
-								/>
-
-								<Input
-									label="Giá Trẻ Em"
-									type="number"
-									min={0}
-									value={formData.childrenPrice.toString()}
-									onValueChange={(value) => handleInputChange("childrenPrice", Number.parseInt(value) || 0)}
-									isInvalid={!!errors.childrenPrice}
-									errorMessage={errors.childrenPrice}
-									variant="bordered"
-									startContent={
-										<div className="pointer-events-none flex items-center">
-											<span className="text-default-400 text-small">VNĐ</span>
-										</div>
-									}
-								/>
+							<div className="space-y-2">
+								<Label htmlFor="totalDays">Số Ngày Tour</Label>
+								<div className="relative">
+									<Input
+										id="totalDays"
+										type="number"
+										value={formData.totalDays.toString()}
+										readOnly
+										className="bg-gray-50"
+									/>
+									<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+										<span className="text-gray-500 text-sm">ngày</span>
+									</div>
+								</div>
+								<p className="text-sm text-gray-500">Tự động lấy từ thông tin cơ bản</p>
 							</div>
 						</div>
-					</ModalBody>
-					<ModalFooter>
-						<Button variant="light" onPress={onClose}>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label htmlFor="adultPrice">
+									Giá Người Lớn <span className="text-red-500">*</span>
+								</Label>
+								<div className="relative">
+									<Input
+										id="adultPrice"
+										type="number"
+										min={0}
+										value={formData.adultPrice.toString()}
+										onChange={(e) => handleInputChange("adultPrice", Number.parseInt(e.target.value) || 0)}
+										className={errors.adultPrice ? "border-red-500" : ""}
+									/>
+									<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+										<span className="text-gray-500 text-sm">VNĐ</span>
+									</div>
+								</div>
+								{errors.adultPrice && <p className="text-sm text-red-500">{errors.adultPrice}</p>}
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="childrenPrice">Giá Trẻ Em</Label>
+								<div className="relative">
+									<Input
+										id="childrenPrice"
+										type="number"
+										min={0}
+										value={formData.childrenPrice.toString()}
+										onChange={(e) => handleInputChange("childrenPrice", Number.parseInt(e.target.value) || 0)}
+										className={errors.childrenPrice ? "border-red-500" : ""}
+									/>
+									<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+										<span className="text-gray-500 text-sm">VNĐ</span>
+									</div>
+								</div>
+								{errors.childrenPrice && <p className="text-sm text-red-500">{errors.childrenPrice}</p>}
+							</div>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setIsModalOpen(false)}>
 							Hủy
 						</Button>
-						<Button color="primary" onPress={handleSaveSchedule}>
-							{editingIndex !== null ? "Cập Nhật" : "Thêm"}
-						</Button>
-					</ModalFooter>
-				</ModalContent>
-			</Modal>
+						<Button onClick={handleSaveSchedule}>{editingIndex !== null ? "Cập Nhật" : "Thêm"}</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

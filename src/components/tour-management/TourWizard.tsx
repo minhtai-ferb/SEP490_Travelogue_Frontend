@@ -1,7 +1,11 @@
 "use client"
 import { useState, useCallback } from "react"
-import { Modal, ModalContent, ModalHeader, ModalBody, Button, Progress, Card, CardBody, Alert } from "@heroui/react"
-import { CheckCircle } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Card, CardContent } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CheckCircle, X, AlertCircle } from "lucide-react"
 import { TourBasicForm } from "./wizard/TourBasicForm"
 import { TourScheduleForm } from "./wizard/TourScheduleForm"
 import { TourLocationForm } from "./wizard/TourLocationForm"
@@ -75,10 +79,6 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 
 			// Call API to create basic tour
 			const response = await createTour(data)
-			console.log('====================================');
-			console.log("Response tao tour", response);
-			console.log('====================================');
-
 			setCreatedTourId(response?.tourId)
 			setBasicData(data)
 			setCurrentStep(2)
@@ -103,9 +103,9 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 
 				// Call API to create schedules
 				const response = await createTourSchedule(createdTourId, data)
-				console.log('====================================');
-				console.log("Response tạo lịch trình schedule", response);
-				console.log('====================================');
+				if (!response) {
+					throw new Error("Không thể tạo lịch trình")
+				}
 				setScheduleData(data)
 				setCurrentStep(3)
 			} catch (error) {
@@ -130,10 +130,23 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 				setError("")
 
 				// Call API to bulk update locations
+				// const response = await fetch(`/api/tour/bulk?tourId=${createdTourId}`, {
+				// 	method: "POST",
+				// 	headers: {
+				// 		"Content-Type": "application/json",
+				// 	},
+				// 	body: JSON.stringify(data),
+				// })
+
+				// if (!response.ok) {
+				// 	throw new Error("Không thể cập nhật địa điểm")
+				// }
+
 				const response = await createTourBulk(createdTourId, data)
-				console.log('====================================');
-				console.log("Response cập nhật địa điểm", response);
-				console.log('====================================');
+				if (!response) {
+					throw new Error("Không thể cập nhật địa điểm")
+				}
+
 				setLocationData(data)
 				// Tour creation completed
 				onComplete()
@@ -153,19 +166,6 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 			setCurrentStep(currentStep - 1)
 		}
 	}, [currentStep])
-
-	const canGoNext = useCallback(() => {
-		switch (currentStep) {
-			case 1:
-				return basicData !== null
-			case 2:
-				return scheduleData.length > 0
-			case 3:
-				return locationData.length > 0
-			default:
-				return false
-		}
-	}, [currentStep, basicData, scheduleData, locationData])
 
 	const renderStepContent = () => {
 		switch (currentStep) {
@@ -197,26 +197,19 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 	}
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			onClose={handleClose}
-			size="5xl"
-			scrollBehavior="inside"
-			isDismissable={false}
-			hideCloseButton
-		>
-			<ModalContent>
-				<ModalHeader className="flex flex-col gap-4 pb-2">
+		<Dialog open={isOpen} onOpenChange={handleClose}>
+			<DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+				<DialogHeader className="space-y-4">
 					<div className="flex items-center justify-between">
-						<h2 className="text-2xl font-bold">Tạo Tour Mới</h2>
-						<Button variant="light" color="danger" onPress={handleClose} size="sm">
-							Hủy
+						<DialogTitle className="text-2xl font-bold">Tạo Tour Mới</DialogTitle>
+						<Button variant="ghost" size="sm" onClick={handleClose}>
+							<X className="h-4 w-4" />
 						</Button>
 					</div>
 
 					{/* Progress Bar */}
-					<div className="w-full">
-						<Progress value={(currentStep / steps.length) * 100} color="primary" className="mb-4" />
+					<div className="w-full space-y-4">
+						<Progress value={(currentStep / steps.length) * 100} className="w-full" />
 
 						{/* Step Indicators */}
 						<div className="flex justify-between items-center">
@@ -225,9 +218,9 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 									<div className="flex flex-col items-center">
 										<div
 											className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${step.completed
-												? "bg-success text-white border-success"
+												? "bg-green-500 text-white border-green-500"
 												: currentStep === step.id
-													? "bg-primary text-white border-primary"
+													? "bg-blue-500 text-white border-blue-500"
 													: "bg-gray-100 text-gray-400 border-gray-300"
 												}`}
 										>
@@ -247,20 +240,23 @@ export function TourWizard({ isOpen, onClose, onComplete }: TourWizardProps) {
 							))}
 						</div>
 					</div>
-				</ModalHeader>
+				</DialogHeader>
 
-				<ModalBody className="px-6">
+				<div className="px-6">
 					{error && (
-						<Alert color="danger" className="mb-4">
-							{error}
+						<Alert className="mb-4 border-red-200 bg-red-50">
+							<div className="flex items-center align-middle gap-3">
+								<AlertCircle className="h-6 w-6 text-red-600" />
+								<AlertDescription className="text-red-800 font-semibold">{error}</AlertDescription>
+							</div>
 						</Alert>
 					)}
 
 					<Card>
-						<CardBody className="p-6">{renderStepContent()}</CardBody>
+						<CardContent className="p-6">{renderStepContent()}</CardContent>
 					</Card>
-				</ModalBody>
-			</ModalContent>
-		</Modal>
+				</div>
+			</DialogContent>
+		</Dialog>
 	)
 }

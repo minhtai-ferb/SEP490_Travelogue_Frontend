@@ -1,41 +1,30 @@
 "use client"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { ChipProps } from "@heroui/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
-	Table,
-	TableHeader,
-	TableColumn,
-	TableBody,
-	TableRow,
-	TableCell,
-	Chip,
-	Tooltip,
 	Pagination,
-	Input,
-	Select,
-	SelectItem,
-	Modal,
-	ModalContent,
-	ModalHeader,
-	ModalBody,
-	ModalFooter,
-	useDisclosure,
-	Card,
-	CardBody,
-	CardHeader,
-	Button,
-} from "@heroui/react"
-import { DeleteIcon, EditIcon, EyeIcon, PlusIcon, SearchIcon } from "@/utils/icon"
-import type { Tour, CreateTourRequest, UpdateTourRequest } from "@/types/Tour"
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination"
+import { Search, Eye, Edit, Trash2, Plus, AlertCircle } from "lucide-react"
+import type { Tour, UpdateTourRequest } from "@/types/Tour"
 import { useTour } from "@/services/tour"
 import { TourForm } from "./TourForm"
 import { TourDetails } from "./TourDetail"
 import { DeleteConfirmation } from "./DeleteConfirmation"
 import { TourWizard } from "./TourWizard"
-import { SidebarInset, SidebarTrigger } from "../ui/sidebar"
-import { Separator } from "../ui/separator"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList } from "../ui/breadcrumb"
 
 const columns = [
 	{ name: "Tên Tour", uid: "name" },
@@ -47,11 +36,11 @@ const columns = [
 	{ name: "Hành Động", uid: "actions" },
 ]
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-	Draft: "warning",
-	Published: "success",
-	Active: "primary",
-	Cancelled: "danger",
+const statusColorMap: Record<string, string> = {
+	Draft: "bg-yellow-100 text-yellow-800",
+	Published: "bg-green-100 text-green-800",
+	Active: "bg-blue-100 text-blue-800",
+	Cancelled: "bg-red-100 text-red-800",
 }
 
 const statusOptions = [
@@ -90,11 +79,10 @@ function TourManagement() {
 	const { getAllTour, createTour, updateTour, deleteTour } = useTour()
 
 	// Modal controls
-	const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure()
-	const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
-	const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure()
-	const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
-	const { isOpen: isWizardOpen, onOpen: onWizardOpen, onClose: onWizardClose } = useDisclosure()
+	const [isEditOpen, setIsEditOpen] = useState(false)
+	const [isViewOpen, setIsViewOpen] = useState(false)
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+	const [isWizardOpen, setIsWizardOpen] = useState(false)
 
 	const fetchAllTours = async () => {
 		try {
@@ -151,35 +139,21 @@ function TourManagement() {
 	// Actions
 	const handleView = (tour: Tour) => {
 		setSelectedTour(tour)
-		onViewOpen()
+		setIsViewOpen(true)
 	}
 
 	const handleEdit = (tour: Tour) => {
 		setSelectedTour(tour)
-		onEditOpen()
+		setIsEditOpen(true)
 	}
 
 	const handleDelete = (tour: Tour) => {
 		setSelectedTour(tour)
-		onDeleteOpen()
+		setIsDeleteOpen(true)
 	}
 
 	const handleWizardComplete = () => {
 		fetchAllTours()
-	}
-
-	const handleCreate = async (data: Partial<CreateTourRequest>) => {
-		try {
-			setActionLoading(true)
-			await createTour(data as CreateTourRequest)
-			await fetchAllTours()
-			onCreateClose()
-		} catch (error) {
-			console.error("Error creating tour:", error)
-			setError("Có lỗi khi tạo tour")
-		} finally {
-			setActionLoading(false)
-		}
 	}
 
 	const handleUpdate = async (data: Partial<UpdateTourRequest>) => {
@@ -189,7 +163,7 @@ function TourManagement() {
 			setActionLoading(true)
 			// await updateTour({ ...data, tourId: selectedTour.tourId } as UpdateTourRequest)
 			await fetchAllTours()
-			onEditClose()
+			setIsEditOpen(false)
 			setSelectedTour(null)
 		} catch (error) {
 			console.error("Error updating tour:", error)
@@ -206,7 +180,7 @@ function TourManagement() {
 			setActionLoading(true)
 			await deleteTour(selectedTour.tourId)
 			await fetchAllTours()
-			onDeleteClose()
+			setIsDeleteOpen(false)
 			setSelectedTour(null)
 		} catch (error) {
 			console.error("Error deleting tour:", error)
@@ -221,8 +195,8 @@ function TourManagement() {
 			case "name":
 				return (
 					<div className="flex flex-col">
-						<p className="text-bold text-sm capitalize">{tour.name}</p>
-						<p className="text-bold text-sm capitalize text-default-400">{tour.description?.substring(0, 50)}...</p>
+						<p className="font-medium text-sm">{tour.name}</p>
+						<p className="text-sm text-gray-500">{tour.description?.substring(0, 50)}...</p>
 					</div>
 				)
 			case "tourTypeText":
@@ -230,42 +204,53 @@ function TourManagement() {
 			case "totalDaysText":
 				return <span className="text-sm">{tour.totalDaysText}</span>
 			case "adultPrice":
-				return <span className="text-sm font-semibold text-success">{tour.adultPrice?.toLocaleString()} VNĐ</span>
+				return <span className="text-sm font-semibold text-green-600">{tour.adultPrice?.toLocaleString()} VNĐ</span>
 			case "childrenPrice":
-				return <span className="text-sm font-semibold text-primary">{tour.childrenPrice?.toLocaleString()} VNĐ</span>
+				return <span className="text-sm font-semibold text-blue-600">{tour.childrenPrice?.toLocaleString()} VNĐ</span>
 			case "statusText":
 				return (
-					<Chip size="sm" variant="flat" color={statusColorMap[tour.statusText] || "default"}>
+					<Badge className={`${statusColorMap[tour.statusText] || "bg-gray-100 text-gray-800"} text-xs`}>
 						{tour.statusText}
-					</Chip>
+					</Badge>
 				)
 			case "actions":
 				return (
 					<div className="flex items-center justify-center gap-2">
-						<Tooltip content="Xem chi tiết">
-							<span
-								onClick={() => handleView(tour)}
-								className="cursor-pointer text-lg text-default-400 hover:text-default-600"
-							>
-								<EyeIcon />
-							</span>
-						</Tooltip>
-						<Tooltip content="Chỉnh sửa">
-							<span
-								onClick={() => handleEdit(tour)}
-								className="cursor-pointer text-lg text-default-400 hover:text-default-600"
-							>
-								<EditIcon />
-							</span>
-						</Tooltip>
-						<Tooltip color="danger" content="Xóa tour">
-							<span
-								onClick={() => handleDelete(tour)}
-								className="text-lg text-danger cursor-pointer hover:text-danger-600"
-							>
-								<DeleteIcon />
-							</span>
-						</Tooltip>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button variant="ghost" size="sm" onClick={() => handleView(tour)}>
+										<Eye className="w-4 h-4" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>Xem chi tiết</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button variant="ghost" size="sm" onClick={() => handleEdit(tour)}>
+										<Edit className="w-4 h-4" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>Chỉnh sửa</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => handleDelete(tour)}
+										className="text-red-500 hover:text-red-700"
+									>
+										<Trash2 className="w-4 h-4" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>Xóa tour</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 					</div>
 				)
 			default:
@@ -273,174 +258,207 @@ function TourManagement() {
 		}
 	}, [])
 
-	const topContent = useMemo(() => {
-		return (
-			<div className="flex flex-col gap-4">
-				<div className="flex justify-between gap-3 items-end">
-					<Input
-						isClearable
-						className="w-full sm:max-w-[44%]"
-						placeholder="Tìm kiếm theo tên tour..."
-						startContent={<SearchIcon />}
-						value={searchValue}
-						onClear={() => setSearchValue("")}
-						onValueChange={setSearchValue}
-					/>
-					<div className="flex gap-3">
-						<Select
-							placeholder="Lọc theo trạng thái"
-							className="max-w-xs"
-							selectedKeys={[statusFilter]}
-							onSelectionChange={(keys) => setStatusFilter(Array.from(keys)[0] as string)}
-						>
-							{statusOptions.map((status) => (
-								<SelectItem key={status.key} textValue={status.key}>
-									{status.label}
-								</SelectItem>
-							))}
-						</Select>
-						<Select
-							placeholder="Lọc theo loại tour"
-							className="max-w-xs"
-							selectedKeys={[typeFilter]}
-							onSelectionChange={(keys) => setTypeFilter(Array.from(keys)[0] as string)}
-						>
-							{tourTypeOptions.map((type) => (
-								<SelectItem key={type.key} textValue={type.key}>
-									{type.label}
-								</SelectItem>
-							))}
-						</Select>
-						<Button color="primary" endContent={<PlusIcon />} onPress={onWizardOpen}>
-							Tạo Tour Mới
-						</Button>
-					</div>
-				</div>
-				<div className="flex justify-between items-center">
-					<span className="text-default-400 text-small">Tổng cộng {filteredTours.length} tour</span>
-				</div>
-			</div>
-		)
-	}, [searchValue, statusFilter, typeFilter, filteredTours.length, onWizardOpen])
-
-	const bottomContent = useMemo(() => {
-		return (
-			<div className="py-2 px-2 flex justify-between items-center">
-				<span className="w-[30%] text-small text-default-400">
-					{filteredTours.length > 0
-						? `${(page - 1) * rowsPerPage + 1}-${Math.min(page * rowsPerPage, filteredTours.length)} của ${filteredTours.length}`
-						: "0 tour"}
-				</span>
-				<Pagination isCompact showControls showShadow color="primary" page={page} total={pages} onChange={setPage} />
-			</div>
-		)
-	}, [page, pages, filteredTours.length])
-
 	if (error) {
 		return (
 			<Card className="max-w-md mx-auto mt-8">
-				<CardBody className="text-center">
-					<p className="text-danger mb-4">{error}</p>
-					<Button color="primary" onPress={fetchAllTours}>
-						Thử lại
-					</Button>
-				</CardBody>
+				<CardContent className="text-center p-6">
+					<Alert className="mb-4">
+						<AlertCircle className="h-4 w-4" />
+						<AlertDescription>{error}</AlertDescription>
+					</Alert>
+					<Button onClick={fetchAllTours}>Thử lại</Button>
+				</CardContent>
 			</Card>
 		)
 	}
 
 	return (
 		<div className="p-6">
-			<SidebarInset>
-				<header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4">
-					<SidebarTrigger className="-ml-1" />
-					<Separator orientation="vertical" className="mr-2 h-4" />
-					<Breadcrumb>
-						<BreadcrumbList>
-							<BreadcrumbItem className="hidden md:block">
-								<BreadcrumbLink href="/tour">Quản lý tour</BreadcrumbLink>
-							</BreadcrumbItem>
-						</BreadcrumbList>
-					</Breadcrumb>
-				</header>
-			</SidebarInset>
 			<Card>
 				<CardHeader>
-					<h1 className="text-2xl font-bold">Quản Lý Tour</h1>
+					<CardTitle className="text-2xl font-bold">Quản Lý Tour</CardTitle>
 				</CardHeader>
-				<CardBody>
-					<Table
-						aria-label="Bảng quản lý tour"
-						isHeaderSticky
-						bottomContent={bottomContent}
-						bottomContentPlacement="outside"
-						classNames={{
-							wrapper: "max-h-[400px]",
-						}}
-						topContent={topContent}
-						topContentPlacement="outside"
-						onLoad={() => fetchAllTours()}
-					>
-						<TableHeader columns={columns}>
-							{(column) => (
-								<TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
-									{column.name}
-								</TableColumn>
-							)}
-						</TableHeader>
-						<TableBody items={items} emptyContent="Không có tour nào">
-							{(item) => (
-								<TableRow key={item.tourId}>
-									{(columnKey) => <TableCell>{renderCell(item, columnKey as string)}</TableCell>}
+				<CardContent>
+					{/* Top Content */}
+					<div className="flex flex-col gap-4 mb-6">
+						<div className="flex justify-between gap-3 items-end">
+							<div className="relative w-full sm:max-w-[44%]">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+								<Input
+									placeholder="Tìm kiếm theo tên tour..."
+									value={searchValue}
+									onChange={(e) => setSearchValue(e.target.value)}
+									className="pl-10"
+								/>
+							</div>
+							<div className="flex gap-3">
+								<Select value={statusFilter} onValueChange={setStatusFilter}>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue placeholder="Lọc theo trạng thái" />
+									</SelectTrigger>
+									<SelectContent>
+										{statusOptions.map((status) => (
+											<SelectItem key={status.key} value={status.key}>
+												{status.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Select value={typeFilter} onValueChange={setTypeFilter}>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue placeholder="Lọc theo loại tour" />
+									</SelectTrigger>
+									<SelectContent>
+										{tourTypeOptions.map((type) => (
+											<SelectItem key={type.key} value={type.key}>
+												{type.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Button onClick={() => setIsWizardOpen(true)} className="flex items-center gap-2">
+									<Plus className="w-4 h-4" />
+									Tạo Tour Mới
+								</Button>
+							</div>
+						</div>
+						<div className="flex justify-between items-center">
+							<span className="text-sm text-gray-500">Tổng cộng {filteredTours.length} tour</span>
+						</div>
+					</div>
+
+					{/* Table */}
+					<div className="border rounded-lg">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									{columns.map((column) => (
+										<TableHead key={column.uid} className={column.uid === "actions" ? "text-center" : ""}>
+											{column.name}
+										</TableHead>
+									))}
 								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</CardBody>
+							</TableHeader>
+							<TableBody>
+								{loading ? (
+									<TableRow>
+										<TableCell colSpan={columns.length} className="text-center py-8">
+											Đang tải...
+										</TableCell>
+									</TableRow>
+								) : items.length === 0 ? (
+									<TableRow>
+										<TableCell colSpan={columns.length} className="text-center py-8">
+											Không có tour nào
+										</TableCell>
+									</TableRow>
+								) : (
+									items.map((item) => (
+										<TableRow key={item.tourId}>
+											{columns.map((column) => (
+												<TableCell key={column.uid}>{renderCell(item, column.uid)}</TableCell>
+											))}
+										</TableRow>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
+
+					{/* Bottom Content */}
+					{pages > 1 && (
+						<div className="flex justify-between items-center mt-4">
+							<span className="text-sm text-gray-500">
+								{filteredTours.length > 0
+									? `${(page - 1) * rowsPerPage + 1}-${Math.min(page * rowsPerPage, filteredTours.length)} của ${filteredTours.length}`
+									: "0 tour"}
+							</span>
+							<Pagination>
+								<PaginationContent>
+									<PaginationItem>
+										<PaginationPrevious
+											onClick={() => setPage(Math.max(1, page - 1))}
+											className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+										/>
+									</PaginationItem>
+									{Array.from({ length: Math.min(5, pages) }, (_, i) => {
+										const pageNum = i + 1
+										return (
+											<PaginationItem key={pageNum}>
+												<PaginationLink
+													onClick={() => setPage(pageNum)}
+													isActive={page === pageNum}
+													className="cursor-pointer"
+												>
+													{pageNum}
+												</PaginationLink>
+											</PaginationItem>
+										)
+									})}
+									<PaginationItem>
+										<PaginationNext
+											onClick={() => setPage(Math.min(pages, page + 1))}
+											className={page === pages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+										/>
+									</PaginationItem>
+								</PaginationContent>
+							</Pagination>
+						</div>
+					)}
+				</CardContent>
 			</Card>
 
 			{/* Tour Creation Wizard */}
-			<TourWizard isOpen={isWizardOpen} onClose={onWizardClose} onComplete={handleWizardComplete} />
+			<TourWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} onComplete={handleWizardComplete} />
 
 			{/* Edit Tour Modal */}
-			<Modal isOpen={isEditOpen} onClose={onEditClose} size="3xl" scrollBehavior="inside">
-				<ModalContent>
-					<ModalHeader>Chỉnh Sửa Tour</ModalHeader>
-					<ModalBody>
-						<TourForm tour={selectedTour} onSubmit={handleUpdate} onCancel={onEditClose} isLoading={actionLoading} />
-					</ModalBody>
-				</ModalContent>
-			</Modal>
+			<Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+				<DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+					<DialogHeader>
+						<DialogTitle>Chỉnh Sửa Tour</DialogTitle>
+					</DialogHeader>
+					{selectedTour && (
+						<TourForm
+							tour={selectedTour}
+							onSubmit={handleUpdate}
+							onCancel={() => setIsEditOpen(false)}
+							isLoading={actionLoading}
+						/>
+					)}
+				</DialogContent>
+			</Dialog>
 
 			{/* View Tour Modal */}
-			<Modal isOpen={isViewOpen} onClose={onViewClose} size="4xl" scrollBehavior="inside">
-				<ModalContent>
-					<ModalHeader>Chi Tiết Tour</ModalHeader>
-					<ModalBody>{selectedTour && <TourDetails tour={selectedTour} />}</ModalBody>
-					<ModalFooter>
-						<Button color="danger" variant="light" onPress={onViewClose}>
+			<Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+				<DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
+					<DialogHeader>
+						<DialogTitle>Chi Tiết Tour</DialogTitle>
+					</DialogHeader>
+					{selectedTour && <TourDetails tour={selectedTour} />}
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setIsViewOpen(false)}>
 							Đóng
 						</Button>
-					</ModalFooter>
-				</ModalContent>
-			</Modal>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			{/* Delete Confirmation Modal */}
-			<Modal isOpen={isDeleteOpen} onClose={onDeleteClose}>
-				<ModalContent>
-					<ModalHeader>Xác Nhận Xóa</ModalHeader>
-					<ModalBody>
-						{selectedTour && (
-							<DeleteConfirmation
-								tour={selectedTour}
-								onConfirm={handleConfirmDelete}
-								onCancel={onDeleteClose}
-								isLoading={actionLoading}
-							/>
-						)}
-					</ModalBody>
-				</ModalContent>
-			</Modal>
+			<Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Xác Nhận Xóa</DialogTitle>
+					</DialogHeader>
+					{selectedTour && (
+						<DeleteConfirmation
+							tour={selectedTour}
+							onConfirm={handleConfirmDelete}
+							onCancel={() => setIsDeleteOpen(false)}
+							isLoading={actionLoading}
+						/>
+					)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

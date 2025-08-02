@@ -1,29 +1,19 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
-import {
-	Input,
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	Chip,
-	Tooltip,
-	Modal,
-	ModalContent,
-	ModalHeader,
-	ModalBody,
-	ModalFooter,
-	useDisclosure,
-	Select,
-	SelectItem,
-	Textarea,
-	Avatar,
-	Spinner,
-	Alert,
-} from "@heroui/react"
-import { Plus, Edit, Trash2, MapPin, Clock, Navigation } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Plus, Edit, Trash2, MapPin, Clock, Navigation, Loader2, AlertCircle } from "lucide-react"
+import { Spin } from "antd"
 import type { TourLocationRequest, Location, LocationResponse } from "@/types/Tour"
-import { ListMedia } from "@/types/Location"
 import { useLocationController } from "@/services/location-controller"
 
 interface TourLocationFormProps {
@@ -51,6 +41,8 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 	const [availableLocations, setAvailableLocations] = useState<Location[]>([])
 	const [editingIndex, setEditingIndex] = useState<number | null>(null)
 	const [loadingLocations, setLoadingLocations] = useState(false)
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const { getAllLocation } = useLocationController()
 	const [formData, setFormData] = useState<LocationFormData>({
 		locationId: "",
 		dayOrder: 1,
@@ -62,10 +54,7 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 		estimatedStartTime: 0,
 		estimatedEndTime: 0,
 	})
-	const { getAllLocation } = useLocationController()
 	const [errors, setErrors] = useState<Record<string, string>>({})
-
-	const { isOpen, onOpen, onClose } = useDisclosure()
 
 	// Fetch available locations
 	const fetchLocations = useCallback(async () => {
@@ -73,7 +62,12 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 			setLoadingLocations(true)
 			const response = await getAllLocation()
 
+			if (!response) {
+				throw new Error("Failed to fetch locations")
+			}
+
 			setAvailableLocations(response)
+
 		} catch (error) {
 			console.error("Error fetching locations:", error)
 		} finally {
@@ -159,7 +153,7 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 			estimatedEndTime: 0,
 		})
 		setErrors({})
-		onOpen()
+		setIsModalOpen(true)
 	}
 
 	const handleEditLocation = (index: number) => {
@@ -177,7 +171,7 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 			estimatedEndTime: location.estimatedEndTime,
 		})
 		setErrors({})
-		onOpen()
+		setIsModalOpen(true)
 	}
 
 	const handleDeleteLocation = (index: number) => {
@@ -207,7 +201,7 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 			setLocations((prev) => [...prev, locationData])
 		}
 
-		onClose()
+		setIsModalOpen(false)
 	}
 
 	const handleSubmit = () => {
@@ -244,7 +238,7 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 
 	const getLocationImage = (locationId: string) => {
 		const location = availableLocations.find((loc) => loc.id === locationId)
-		const thumbnail = location?.medias?.find((media: ListMedia) => media.isThumbnail)
+		const thumbnail = location?.medias?.find((media) => media.isThumbnail)
 		return thumbnail?.mediaUrl || "/placeholder.svg?height=40&width=40"
 	}
 
@@ -253,7 +247,7 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 	}
 
 	const dayOptions = Array.from({ length: totalDays }, (_, i) => ({
-		key: (i + 1).toString(),
+		value: (i + 1).toString(),
 		label: `Ngày ${i + 1}`,
 	}))
 
@@ -276,27 +270,24 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 			</div>
 
 			{loadingLocations && (
-				<Alert color="primary">
-					<div className="flex items-center gap-2">
-						<Spinner size="sm" />
+				<Alert>
+					<AlertCircle className="h-4 w-4" />
+					<AlertDescription className="flex items-center gap-2">
+						<Spin size="small" />
 						Đang tải danh sách địa điểm...
-					</div>
+					</AlertDescription>
 				</Alert>
 			)}
 
 			<Card>
-				<CardHeader className="flex justify-between items-center">
-					<h4 className="text-lg font-medium">Danh Sách Địa Điểm</h4>
-					<Button
-						color="primary"
-						startContent={<Plus className="w-4 h-4" />}
-						onPress={handleAddLocation}
-						isDisabled={loadingLocations}
-					>
+				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+					<CardTitle className="text-lg font-medium">Danh Sách Địa Điểm</CardTitle>
+					<Button onClick={handleAddLocation} disabled={loadingLocations} className="flex items-center gap-2">
+						<Plus className="w-4 h-4" />
 						Thêm Địa Điểm
 					</Button>
 				</CardHeader>
-				<CardBody>
+				<CardContent>
 					{locations.length === 0 ? (
 						<div className="text-center py-8 text-gray-500">
 							<MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -307,29 +298,30 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 						<div className="space-y-6">
 							{Array.from({ length: totalDays }, (_, i) => i + 1).map((day) => (
 								<div key={day}>
-									<h5 className="text-lg font-semibold mb-3 flex items-center gap-2">
-										<Chip color="primary" variant="flat">
+									<div className="flex items-center gap-2 mb-3">
+										<Badge variant="default" className="text-sm">
 											Ngày {day}
-										</Chip>
+										</Badge>
 										<span className="text-sm text-gray-500">({locationsByDay[day]?.length || 0} địa điểm)</span>
-									</h5>
+									</div>
 
 									{locationsByDay[day]?.length > 0 ? (
 										<div className="space-y-3">
 											{locationsByDay[day]
 												.sort((a, b) => a.startTime.localeCompare(b.startTime))
-												.map((location: TourLocationRequest, locationIndex: number) => {
+												.map((location, locationIndex) => {
 													const globalIndex = locations.findIndex((loc) => loc === location)
 													return (
 														<Card key={globalIndex} className="border">
-															<CardBody className="p-4">
+															<CardContent className="p-4">
 																<div className="flex items-center justify-between">
 																	<div className="flex items-center gap-4">
-																		<Avatar
-																			src={getLocationImage(location.locationId)}
-																			size="md"
-																			className="flex-shrink-0"
-																		/>
+																		<Avatar className="h-12 w-12">
+																			<AvatarImage src={getLocationImage(location.locationId) || "/placeholder.svg"} />
+																			<AvatarFallback>
+																				<MapPin className="h-6 w-6" />
+																			</AvatarFallback>
+																		</Avatar>
 																		<div className="flex-1">
 																			<h6 className="font-semibold">{getLocationName(location.locationId)}</h6>
 																			<div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
@@ -337,9 +329,9 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 																					<Clock className="w-4 h-4" />
 																					{formatTime(location.startTime)} - {formatTime(location.endTime)}
 																				</div>
-																				<Chip size="sm" variant="flat" color="secondary">
+																				<Badge variant="secondary" className="text-xs">
 																					{getLocationCategory(location.locationId)}
-																				</Chip>
+																				</Badge>
 																			</div>
 																			{location.notes && <p className="text-sm text-gray-600 mt-2">{location.notes}</p>}
 																			{location.travelTimeFromPrev > 0 && (
@@ -352,30 +344,38 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 																		</div>
 																	</div>
 																	<div className="flex items-center gap-2">
-																		<Tooltip content="Chỉnh sửa">
-																			<Button
-																				isIconOnly
-																				size="sm"
-																				variant="light"
-																				onPress={() => handleEditLocation(globalIndex)}
-																			>
-																				<Edit className="w-4 h-4" />
-																			</Button>
-																		</Tooltip>
-																		<Tooltip content="Xóa" color="danger">
-																			<Button
-																				isIconOnly
-																				size="sm"
-																				variant="light"
-																				color="danger"
-																				onPress={() => handleDeleteLocation(globalIndex)}
-																			>
-																				<Trash2 className="w-4 h-4" />
-																			</Button>
-																		</Tooltip>
+																		<TooltipProvider>
+																			<Tooltip>
+																				<TooltipTrigger asChild>
+																					<Button
+																						variant="ghost"
+																						size="sm"
+																						onClick={() => handleEditLocation(globalIndex)}
+																					>
+																						<Edit className="w-4 h-4" />
+																					</Button>
+																				</TooltipTrigger>
+																				<TooltipContent>Chỉnh sửa</TooltipContent>
+																			</Tooltip>
+																		</TooltipProvider>
+																		<TooltipProvider>
+																			<Tooltip>
+																				<TooltipTrigger asChild>
+																					<Button
+																						variant="ghost"
+																						size="sm"
+																						onClick={() => handleDeleteLocation(globalIndex)}
+																						className="text-red-500 hover:text-red-700"
+																					>
+																						<Trash2 className="w-4 h-4" />
+																					</Button>
+																				</TooltipTrigger>
+																				<TooltipContent>Xóa</TooltipContent>
+																			</Tooltip>
+																		</TooltipProvider>
 																	</div>
 																</div>
-															</CardBody>
+															</CardContent>
 														</Card>
 													)
 												})}
@@ -390,159 +390,178 @@ export function TourLocationForm({ initialData, totalDays, onSubmit, onPrevious,
 							))}
 						</div>
 					)}
-				</CardBody>
+				</CardContent>
 			</Card>
 
 			<div className="flex justify-between pt-4">
-				<Button variant="bordered" onPress={onPrevious} size="lg" className="px-8">
+				<Button variant="outline" onClick={onPrevious} size="lg" className="px-8 bg-transparent">
 					Quay Lại
 				</Button>
 				<Button
-					color="success"
-					onPress={handleSubmit}
-					isLoading={isLoading}
+					onClick={handleSubmit}
+					disabled={isLoading || locations.length === 0}
 					size="lg"
-					className="px-8"
-					isDisabled={locations.length === 0}
+					className="px-8 bg-green-600 hover:bg-green-700"
 				>
+					{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 					Hoàn Thành Tạo Tour
 				</Button>
 			</div>
 
 			{/* Location Form Modal */}
-			<Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
-				<ModalContent>
-					<ModalHeader>{editingIndex !== null ? "Chỉnh Sửa Địa Điểm" : "Thêm Địa Điểm Mới"}</ModalHeader>
-					<ModalBody>
-						<div className="space-y-4">
+			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+				<DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+					<DialogHeader>
+						<DialogTitle>{editingIndex !== null ? "Chỉnh Sửa Địa Điểm" : "Thêm Địa Điểm Mới"}</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
+						<div className="space-y-2">
+							<Label htmlFor="locationId">
+								Địa Điểm <span className="text-red-500">*</span>
+							</Label>
 							<Select
-								label="Địa Điểm"
-								placeholder="Chọn địa điểm tham quan"
-								selectedKeys={formData.locationId ? [formData.locationId] : []}
-								onSelectionChange={(keys) => {
-									const selected = Array.from(keys)[0] as string
-									handleInputChange("locationId", selected)
-								}}
-								isInvalid={!!errors.locationId}
-								errorMessage={errors.locationId}
-								isRequired
-								variant="bordered"
-								isLoading={loadingLocations}
+								value={formData.locationId}
+								onValueChange={(value) => handleInputChange("locationId", value)}
+								disabled={loadingLocations}
 							>
-								{availableLocations.map((location) => (
-									<SelectItem
-										key={location.id}
-										textValue={location.name}
-										startContent={<Avatar src={location.medias?.find((m) => m.isThumbnail)?.mediaUrl} size="sm" />}
-									>
-										<div className="flex flex-col">
-											<span className="font-medium">{location.name}</span>
-											<span className="text-sm text-gray-500">
-												{location.category} • {location.districtName}
-											</span>
-										</div>
-									</SelectItem>
-								))}
-							</Select>
-
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-								<Select
-									label="Ngày Thứ"
-									placeholder="Chọn ngày"
-									selectedKeys={[formData.dayOrder.toString()]}
-									onSelectionChange={(keys) => {
-										const selected = Array.from(keys)[0] as string
-										handleInputChange("dayOrder", Number.parseInt(selected))
-									}}
-									isInvalid={!!errors.dayOrder}
-									errorMessage={errors.dayOrder}
-									isRequired
-									variant="bordered"
-								>
-									{dayOptions.map((option) => (
-										<SelectItem key={option.key} textValue={option.label}>
-											{option.label}
+								<SelectTrigger className={errors.locationId ? "border-red-500" : ""}>
+									<SelectValue placeholder="Chọn địa điểm tham quan" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableLocations.map((location) => (
+										<SelectItem key={location.id} value={location.id}>
+											<div className="flex items-center gap-2">
+												<Avatar className="h-6 w-6">
+													<AvatarImage
+														src={location.medias?.find((m) => m.isThumbnail)?.mediaUrl || "/placeholder.svg"}
+													/>
+													<AvatarFallback>
+														<MapPin className="h-3 w-3" />
+													</AvatarFallback>
+												</Avatar>
+												<div>
+													<div className="font-medium">{location.name}</div>
+													<div className="text-sm text-gray-500">
+														{location.category} • {location.districtName}
+													</div>
+												</div>
+											</div>
 										</SelectItem>
 									))}
-								</Select>
+								</SelectContent>
+							</Select>
+							{errors.locationId && <p className="text-sm text-red-500">{errors.locationId}</p>}
+						</div>
 
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+							<div className="space-y-2">
+								<Label htmlFor="dayOrder">
+									Ngày Thứ <span className="text-red-500">*</span>
+								</Label>
+								<Select
+									value={formData.dayOrder.toString()}
+									onValueChange={(value) => handleInputChange("dayOrder", Number.parseInt(value))}
+								>
+									<SelectTrigger className={errors.dayOrder ? "border-red-500" : ""}>
+										<SelectValue placeholder="Chọn ngày" />
+									</SelectTrigger>
+									<SelectContent>
+										{dayOptions.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.dayOrder && <p className="text-sm text-red-500">{errors.dayOrder}</p>}
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="startTime">
+									Giờ Bắt Đầu <span className="text-red-500">*</span>
+								</Label>
 								<Input
-									label="Giờ Bắt Đầu"
+									id="startTime"
 									type="time"
 									value={formData.startTime}
-									onValueChange={(value) => handleInputChange("startTime", value)}
-									isInvalid={!!errors.startTime}
-									errorMessage={errors.startTime}
-									isRequired
-									variant="bordered"
+									onChange={(e) => handleInputChange("startTime", e.target.value)}
+									className={errors.startTime ? "border-red-500" : ""}
 								/>
+								{errors.startTime && <p className="text-sm text-red-500">{errors.startTime}</p>}
+							</div>
 
+							<div className="space-y-2">
+								<Label htmlFor="endTime">
+									Giờ Kết Thúc <span className="text-red-500">*</span>
+								</Label>
 								<Input
-									label="Giờ Kết Thúc"
+									id="endTime"
 									type="time"
 									value={formData.endTime}
-									onValueChange={(value) => handleInputChange("endTime", value)}
-									isInvalid={!!errors.endTime}
-									errorMessage={errors.endTime}
-									isRequired
-									variant="bordered"
+									onChange={(e) => handleInputChange("endTime", e.target.value)}
+									className={errors.endTime ? "border-red-500" : ""}
 								/>
+								{errors.endTime && <p className="text-sm text-red-500">{errors.endTime}</p>}
+							</div>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label htmlFor="travelTimeFromPrev">Thời Gian Di Chuyển</Label>
+								<div className="relative">
+									<Input
+										id="travelTimeFromPrev"
+										type="number"
+										min={0}
+										value={formData.travelTimeFromPrev.toString()}
+										onChange={(e) => handleInputChange("travelTimeFromPrev", Number.parseInt(e.target.value) || 0)}
+										className={errors.travelTimeFromPrev ? "border-red-500" : ""}
+									/>
+									<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+										<span className="text-gray-500 text-sm">phút</span>
+									</div>
+								</div>
+								{errors.travelTimeFromPrev && <p className="text-sm text-red-500">{errors.travelTimeFromPrev}</p>}
 							</div>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<Input
-									label="Thời Gian Di Chuyển"
-									type="number"
-									min={0}
-									value={formData.travelTimeFromPrev.toString()}
-									onValueChange={(value) => handleInputChange("travelTimeFromPrev", Number.parseInt(value) || 0)}
-									isInvalid={!!errors.travelTimeFromPrev}
-									errorMessage={errors.travelTimeFromPrev}
-									variant="bordered"
-									endContent={
-										<div className="pointer-events-none flex items-center">
-											<span className="text-default-400 text-small">phút</span>
-										</div>
-									}
-								/>
-
-								<Input
-									label="Khoảng Cách"
-									type="number"
-									min={0}
-									value={formData.distanceFromPrev.toString()}
-									onValueChange={(value) => handleInputChange("distanceFromPrev", Number.parseInt(value) || 0)}
-									isInvalid={!!errors.distanceFromPrev}
-									errorMessage={errors.distanceFromPrev}
-									variant="bordered"
-									endContent={
-										<div className="pointer-events-none flex items-center">
-											<span className="text-default-400 text-small">km</span>
-										</div>
-									}
-								/>
+							<div className="space-y-2">
+								<Label htmlFor="distanceFromPrev">Khoảng Cách</Label>
+								<div className="relative">
+									<Input
+										id="distanceFromPrev"
+										type="number"
+										min={0}
+										value={formData.distanceFromPrev.toString()}
+										onChange={(e) => handleInputChange("distanceFromPrev", Number.parseInt(e.target.value) || 0)}
+										className={errors.distanceFromPrev ? "border-red-500" : ""}
+									/>
+									<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+										<span className="text-gray-500 text-sm">km</span>
+									</div>
+								</div>
+								{errors.distanceFromPrev && <p className="text-sm text-red-500">{errors.distanceFromPrev}</p>}
 							</div>
+						</div>
 
+						<div className="space-y-2">
+							<Label htmlFor="notes">Ghi Chú</Label>
 							<Textarea
-								label="Ghi Chú"
+								id="notes"
 								placeholder="Nhập ghi chú về địa điểm này (tùy chọn)"
 								value={formData.notes}
-								onValueChange={(value) => handleInputChange("notes", value)}
-								variant="bordered"
-								minRows={2}
+								onChange={(e) => handleInputChange("notes", e.target.value)}
+								className="min-h-[60px]"
 							/>
 						</div>
-					</ModalBody>
-					<ModalFooter>
-						<Button variant="light" onPress={onClose}>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setIsModalOpen(false)}>
 							Hủy
 						</Button>
-						<Button color="primary" onPress={handleSaveLocation}>
-							{editingIndex !== null ? "Cập Nhật" : "Thêm"}
-						</Button>
-					</ModalFooter>
-				</ModalContent>
-			</Modal>
+						<Button onClick={handleSaveLocation}>{editingIndex !== null ? "Cập Nhật" : "Thêm"}</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

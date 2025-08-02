@@ -1,6 +1,8 @@
 "use client"
-import { Button, Card, CardBody } from "@heroui/react"
-import { AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertTriangle, Loader2 } from "lucide-react"
 import type { Tour } from "@/types/Tour"
 
 interface DeleteConfirmationProps {
@@ -13,29 +15,32 @@ interface DeleteConfirmationProps {
 export function DeleteConfirmation({ tour, onConfirm, onCancel, isLoading }: DeleteConfirmationProps) {
 	return (
 		<div className="space-y-4">
-			<Card className="border-danger-200 bg-danger-50">
-				<CardBody className="flex flex-row items-center gap-3 p-4">
-					<AlertTriangle className="w-6 h-6 text-danger flex-shrink-0" />
+			<Alert className="border-red-200 bg-red-50">
+				<AlertTriangle className="h-4 w-4 text-red-600" />
+				<AlertDescription className="text-red-800">
 					<div>
-						<h4 className="font-semibold text-danger">Xác nhận xóa tour</h4>
-						<p className="text-sm text-danger-600">Hành động này không thể hoàn tác. Tour sẽ bị xóa vĩnh viễn.</p>
+						<h4 className="font-semibold">Xác nhận xóa tour</h4>
+						<p className="text-sm mt-1">Hành động này không thể hoàn tác. Tour sẽ bị xóa vĩnh viễn.</p>
 					</div>
-				</CardBody>
-			</Card>
+				</AlertDescription>
+			</Alert>
 
 			<div className="space-y-2">
 				<p className="text-sm text-gray-600">Bạn có chắc chắn muốn xóa tour:</p>
-				<div className="p-3 bg-gray-100 rounded-lg">
-					<p className="font-semibold">{tour.name}</p>
-					<p className="text-sm text-gray-600">{tour.description}</p>
-				</div>
+				<Card className="bg-gray-50">
+					<CardContent className="p-3">
+						<p className="font-semibold">{tour.name}</p>
+						<p className="text-sm text-gray-600">{tour.description}</p>
+					</CardContent>
+				</Card>
 			</div>
 
 			<div className="flex justify-end gap-3 pt-4">
-				<Button variant="light" onPress={onCancel} isDisabled={isLoading}>
+				<Button variant="outline" onClick={onCancel} disabled={isLoading}>
 					Hủy
 				</Button>
-				<Button color="danger" onPress={onConfirm} isLoading={isLoading}>
+				<Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
+					{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 					Xóa Tour
 				</Button>
 			</div>

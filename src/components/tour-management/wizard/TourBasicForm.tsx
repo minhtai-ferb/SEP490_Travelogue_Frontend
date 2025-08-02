@@ -1,8 +1,14 @@
 "use client"
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Input, Textarea, Select, SelectItem, Button, Card, CardBody, CardHeader } from "@heroui/react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TourType, TourTypeLabels, type CreateTourBasicRequest } from "@/types/Tour"
+import { Loader2 } from "lucide-react"
 
 interface TourBasicFormProps {
 	initialData: CreateTourBasicRequest | null
@@ -77,7 +83,7 @@ export function TourBasicForm({ initialData, onSubmit, isLoading }: TourBasicFor
 	}
 
 	const tourTypeOptions = Object.entries(TourTypeLabels).map(([value, label]) => ({
-		key: value,
+		value,
 		label,
 	}))
 
@@ -92,89 +98,100 @@ export function TourBasicForm({ initialData, onSubmit, isLoading }: TourBasicFor
 
 			<Card>
 				<CardHeader>
-					<h4 className="text-lg font-medium">Chi Tiết Tour</h4>
+					<CardTitle className="text-lg font-medium">Chi Tiết Tour</CardTitle>
 				</CardHeader>
-				<CardBody className="space-y-4">
-					<Input
-						label="Tên Tour"
-						placeholder="Nhập tên tour (ví dụ: Tour Tây Ninh 3 ngày 2 đêm)"
-						value={formData.name}
-						onValueChange={(value) => handleInputChange("name", value)}
-						isInvalid={!!errors.name}
-						errorMessage={errors.name}
-						isRequired
-						variant="bordered"
-					/>
+				<CardContent className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="name">
+							Tên Tour <span className="text-red-500">*</span>
+						</Label>
+						<Input
+							id="name"
+							placeholder="Nhập tên tour (ví dụ: Tour Tây Ninh 3 ngày 2 đêm)"
+							value={formData.name}
+							onChange={(e) => handleInputChange("name", e.target.value)}
+							className={errors.name ? "border-red-500" : ""}
+						/>
+						{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+					</div>
 
-					<Textarea
-						label="Mô Tả Tour"
-						placeholder="Nhập mô tả ngắn gọn về tour (100-200 từ)"
-						value={formData.description}
-						onValueChange={(value) => handleInputChange("description", value)}
-						isInvalid={!!errors.description}
-						errorMessage={errors.description}
-						minRows={3}
-						maxRows={5}
-						isRequired
-						variant="bordered"
-					/>
+					<div className="space-y-2">
+						<Label htmlFor="description">
+							Mô Tả Tour <span className="text-red-500">*</span>
+						</Label>
+						<Textarea
+							id="description"
+							placeholder="Nhập mô tả ngắn gọn về tour (100-200 từ)"
+							value={formData.description}
+							onChange={(e) => handleInputChange("description", e.target.value)}
+							className={`min-h-[80px] ${errors.description ? "border-red-500" : ""}`}
+						/>
+						{errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+					</div>
 
-					<Textarea
-						label="Nội Dung Chi Tiết"
-						placeholder="Nhập nội dung chi tiết về tour, bao gồm các hoạt động, dịch vụ, lưu ý..."
-						value={formData.content}
-						onValueChange={(value) => handleInputChange("content", value)}
-						isInvalid={!!errors.content}
-						errorMessage={errors.content}
-						minRows={4}
-						maxRows={8}
-						isRequired
-						variant="bordered"
-					/>
+					<div className="space-y-2">
+						<Label htmlFor="content">
+							Nội Dung Chi Tiết <span className="text-red-500">*</span>
+						</Label>
+						<Textarea
+							id="content"
+							placeholder="Nhập nội dung chi tiết về tour, bao gồm các hoạt động, dịch vụ, lưu ý..."
+							value={formData.content}
+							onChange={(e) => handleInputChange("content", e.target.value)}
+							className={`min-h-[120px] ${errors.content ? "border-red-500" : ""}`}
+						/>
+						{errors.content && <p className="text-sm text-red-500">{errors.content}</p>}
+					</div>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<Select
-							label="Loại Tour"
-							placeholder="Chọn loại tour"
-							selectedKeys={[formData.tourType.toString()]}
-							onSelectionChange={(keys) => {
-								const selected = Array.from(keys)[0] as string
-								handleInputChange("tourType", Number.parseInt(selected))
-							}}
-							isRequired
-							variant="bordered"
-						>
-							{tourTypeOptions.map((option) => (
-								<SelectItem key={option.key} textValue={option.label}>
-									{option.label}
-								</SelectItem>
-							))}
-						</Select>
+						<div className="space-y-2">
+							<Label htmlFor="tourType">
+								Loại Tour <span className="text-red-500">*</span>
+							</Label>
+							<Select
+								value={formData.tourType.toString()}
+								onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Chọn loại tour" />
+								</SelectTrigger>
+								<SelectContent>
+									{tourTypeOptions.map((option) => (
+										<SelectItem key={option.value} value={option.value}>
+											{option.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
 
-						<Input
-							label="Số Ngày Tour"
-							placeholder="Nhập số ngày"
-							type="number"
-							min={1}
-							max={365}
-							value={formData.totalDays.toString()}
-							onValueChange={(value) => handleInputChange("totalDays", Number.parseInt(value) || 1)}
-							isInvalid={!!errors.totalDays}
-							errorMessage={errors.totalDays}
-							isRequired
-							variant="bordered"
-							endContent={
-								<div className="pointer-events-none flex items-center">
-									<span className="text-default-400 text-small">ngày</span>
+						<div className="space-y-2">
+							<Label htmlFor="totalDays">
+								Số Ngày Tour <span className="text-red-500">*</span>
+							</Label>
+							<div className="relative">
+								<Input
+									id="totalDays"
+									type="number"
+									min={1}
+									max={365}
+									value={formData.totalDays.toString()}
+									onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
+									className={errors.totalDays ? "border-red-500" : ""}
+								/>
+								<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+									<span className="text-gray-500 text-sm">ngày</span>
 								</div>
-							}
-						/>
+							</div>
+							{errors.totalDays && <p className="text-sm text-red-500">{errors.totalDays}</p>}
+						</div>
 					</div>
-				</CardBody>
+				</CardContent>
 			</Card>
 
 			<div className="flex justify-end pt-4">
-				<Button type="submit" color="primary" size="lg" isLoading={isLoading} className="px-8">
+				<Button type="submit" size="lg" className="px-8" disabled={isLoading}>
+					{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 					Tiếp Theo: Tạo Lịch Trình
 				</Button>
 			</div>
