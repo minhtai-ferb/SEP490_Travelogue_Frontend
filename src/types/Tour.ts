@@ -7,8 +7,16 @@ export interface TourImage {
 
 export interface TourActivity {
 	id: string
+	tourPlanLocationId: string
 	name: string
 	description?: string
+	startTimeFormatted: string
+	endTimeFormatted: string
+	duration: string
+	address: string
+	travelTimeFromPrev: number
+	notes: string
+	imageUrl: string
 }
 
 export interface TourDays {
@@ -18,6 +26,7 @@ export interface TourDays {
 	description: string
 	time: string
 	activities: TourActivity[]
+
 }
 
 export interface TourAmenity {
