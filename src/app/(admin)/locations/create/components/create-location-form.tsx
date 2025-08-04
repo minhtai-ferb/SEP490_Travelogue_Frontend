@@ -9,7 +9,6 @@ import { LocationTypeSelector } from "./location-type-selector";
 import { CuisineForm } from "./cuisine-form";
 import { CraftVillageForm } from "./craft-village-form";
 import { HistoricalLocationForm } from "./historical-location-form";
-import { ContentEditor } from "./content-editor";
 import { MapSelector } from "./map-selector";
 import { TimeSelector } from "./time-selector";
 import {
@@ -17,6 +16,7 @@ import {
   type TypeHistoricalLocation,
 } from "../types/CreateLocation";
 import { useLocations } from "@/services/use-locations";
+import ContentEditor from "./content-editor";
 
 interface LocationFormData {
   name: string;
@@ -103,6 +103,7 @@ export function CreateLocationForm() {
   };
 
   const handleContentChange = (content: string) => {
+    console.log("Content updated:", content);
     setFormData((prev) => ({ ...prev, content }));
   };
 
