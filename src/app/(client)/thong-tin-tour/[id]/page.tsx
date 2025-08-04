@@ -10,8 +10,8 @@ interface TourDetailPageProps {
 export default function TourDetailPage({ params }: TourDetailPageProps) {
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<Suspense fallback={<div>Loading...</div>}>
-				<TourDetailClient tourId={params.id} />
+			<Suspense fallback={<div>Đang tải thông tin...</div>}>
+				<TourDetailClient tourId={params?.id} />
 			</Suspense>
 		</div>
 	)

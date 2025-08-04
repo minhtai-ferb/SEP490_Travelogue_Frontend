@@ -10,7 +10,7 @@ interface TourCardProps {
 function TourCard({ tour }: TourCardProps) {
 
 	return (
-		<Link href={`/chuyen-di/${tour?.tourId}`}>
+		<Link href={`/thong-tin-tour/${tour?.tourId}`}>
 			<section key={tour?.tourId} className='flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all duration-300'>
 				{/* image - header */}
 				<div className='h-fit'>

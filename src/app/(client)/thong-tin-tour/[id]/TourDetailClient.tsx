@@ -13,6 +13,7 @@ import { formatPrice } from "@/utils/format"
 import TourCalendar from "@/components/page/trip-planner-detail/tour/TourCalendar"
 import TourItinerary from "@/components/page/trip-planner-detail/tour/TourItinerary"
 import TourBookingCard from "@/components/page/trip-planner-detail/tour/TourBookingCard"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 
 interface TourDetailClientProps {
 	tourId: string
@@ -77,6 +78,23 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 			{/* Hero Section */}
 			<div className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white">
 				<div className="absolute inset-0 bg-black/20"></div>
+				<div className="absolute top-4 left-4">
+					<Breadcrumb>
+						<BreadcrumbList>
+							<BreadcrumbItem>
+								<BreadcrumbLink href="/" className="text-white">Trang chủ</BreadcrumbLink>
+							</BreadcrumbItem>
+							<BreadcrumbSeparator className="text-white" />
+							<BreadcrumbItem>
+								<BreadcrumbLink href="/chuyen-di" className="text-white">Chuyến đi</BreadcrumbLink>
+							</BreadcrumbItem>
+							<BreadcrumbSeparator className="text-white" />
+							<BreadcrumbItem hidden>
+								<BreadcrumbLink href="/thong-tin-tour/{id}" className="text-white">{tour.name}</BreadcrumbLink>
+							</BreadcrumbItem>
+						</BreadcrumbList>
+					</Breadcrumb>
+				</div>
 				<div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 						<div className="lg:col-span-2">
