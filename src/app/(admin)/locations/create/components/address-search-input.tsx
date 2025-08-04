@@ -251,7 +251,7 @@ export function AddressSearchInput({
 			</div>
 
 			{/* Place Details Display */}
-			{placeDetails && (
+			{/* {placeDetails && (
 				<div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
 					<div className="flex items-start gap-2">
 						<MapPin className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -277,7 +277,7 @@ export function AddressSearchInput({
 						</div>
 					</div>
 				</div>
-			)}
+			)} */}
 
 			{/* Suggestions Dropdown */}
 			{showSuggestions && (
