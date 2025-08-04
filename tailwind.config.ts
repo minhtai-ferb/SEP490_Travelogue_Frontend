@@ -15,7 +15,7 @@ export default {
 	theme: {
 		extend: {
 			backgroundImage: {
-				"footer-bg": "url('/Banner.png')"
+				'footer-bg': "url('/Banner.png')"
 			},
 			fontFamily: {
 				fleur: [
