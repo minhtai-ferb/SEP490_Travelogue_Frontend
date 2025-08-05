@@ -23,6 +23,7 @@ export interface Location {
   closeTime: { ticks: number }
   districtId: string
   locationType: LocationType
+  mediaDtos: MediaDto[]
 }
 
 export interface CuisineData {
@@ -49,4 +50,8 @@ export interface HistoricalLocationData {
   establishedDate: string
   locationId: string
   typeHistoricalLocation: TypeHistoricalLocation
+}
+export interface MediaDto {
+  url: string
+  isThumbnail: boolean
 }

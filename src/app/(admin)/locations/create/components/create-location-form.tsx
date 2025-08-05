@@ -13,10 +13,12 @@ import { MapSelector } from "./map-selector";
 import { TimeSelector } from "./time-selector";
 import {
   LocationType,
+  MediaDto,
   type TypeHistoricalLocation,
 } from "../types/CreateLocation";
 import { useLocations } from "@/services/use-locations";
 import ContentEditor from "./content-editor";
+import { ImageUpload } from "./image-upload";
 
 interface LocationFormData {
   name: string;
@@ -29,6 +31,7 @@ interface LocationFormData {
   closeTime: { ticks: number };
   districtId: string;
   locationType: LocationType;
+  mediaDtos: MediaDto[];
 }
 
 interface LocationTypeData {
@@ -68,6 +71,7 @@ export function CreateLocationForm() {
     closeTime: { ticks: 0 },
     districtId: "",
     locationType: LocationType.ScenicSpot,
+    mediaDtos: [],
   });
 
   const [locationTypeData, setLocationTypeData] = useState<LocationTypeData>(
@@ -95,6 +99,10 @@ export function CreateLocationForm() {
     setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }));
   };
 
+  const handleMediaChange = (mediaDtos: MediaDto[]) => {
+    setFormData((prev) => ({ ...prev, mediaDtos }));
+  };
+
   const handleTimeChange = (
     openTime: { ticks: number },
     closeTime: { ticks: number }
@@ -109,60 +117,46 @@ export function CreateLocationForm() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    try {
-      // Create main location
-      const locationResponse = await fetch("/api/locations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    console.log("Submitting form data:", formData, locationTypeData);
 
-      if (!locationResponse.ok) throw new Error("Failed to create location");
+    // try {
+    //   // Create main location
+    //   const locationResponse = await createLocation(formData);
 
-      const location = await locationResponse.json();
-      const locationId = location.id;
+    //   if (!locationResponse.ok) throw new Error("Failed to create location");
 
-      // Create location type specific data
-      if (
-        formData.locationType === LocationType.Cuisine &&
-        locationTypeData.cuisine
-      ) {
-        await fetch(`/api/locations/${locationId}/cuisine`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(locationTypeData.cuisine),
-        });
-      } else if (
-        formData.locationType === LocationType.CraftVillage &&
-        locationTypeData.craftVillage
-      ) {
-        await fetch(`/api/locations/${locationId}/craft-village`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(locationTypeData.craftVillage),
-        });
-      } else if (
-        formData.locationType === LocationType.HistoricalSite &&
-        locationTypeData.historicalLocation
-      ) {
-        await fetch(`/api/locations/${locationId}/historical-location`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...locationTypeData.historicalLocation,
-            locationId,
-          }),
-        });
-      }
+    //   const location = await locationResponse.json();
+    //   const locationId = location.id;
 
-      // Success notification
-      alert("Tạo địa điểm thành công!");
-    } catch (error) {
-      console.error("Error creating location:", error);
-      alert("Có lỗi xảy ra khi tạo địa điểm");
-    } finally {
-      setIsSubmitting(false);
-    }
+    //   // Create location type specific data
+    //   if (
+    //     formData.locationType === LocationType.Cuisine &&
+    //     locationTypeData.cuisine
+    //   ) {
+    //     await addCuisine(locationId, locationTypeData.cuisine);
+    //   } else if (
+    //     formData.locationType === LocationType.CraftVillage &&
+    //     locationTypeData.craftVillage
+    //   ) {
+    //     await addCraftVillage(locationId, locationTypeData.craftVillage);
+    //   } else if (
+    //     formData.locationType === LocationType.HistoricalSite &&
+    //     locationTypeData.historicalLocation
+    //   ) {
+    //     await addHistoricalLocation(
+    //       locationId,
+    //       locationTypeData.historicalLocation
+    //     );
+    //   }
+
+    //   // Success notification
+    //   alert("Tạo địa điểm thành công!");
+    // } catch (error) {
+    //   console.error("Error creating location:", error);
+    //   alert("Có lỗi xảy ra khi tạo địa điểm");
+    // } finally {
+    //   setIsSubmitting(false);
+    // }
   };
 
   const renderLocationTypeForm = () => {
@@ -199,15 +193,45 @@ export function CreateLocationForm() {
 
   return (
     <div className="space-y-6">
-      {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Thông tin cơ bản</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BasicLocationInfo data={formData} onChange={handleBasicInfoChange} />
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="">
+          {" "}
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Thông tin cơ bản</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BasicLocationInfo
+                data={formData}
+                onChange={handleBasicInfoChange}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="">
+          {/* Time Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Giờ hoạt động</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TimeSelector
+                openTime={formData.openTime}
+                closeTime={formData.closeTime}
+                onChange={handleTimeChange}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Image Upload */}
+      <ImageUpload
+        mediaDtos={formData.mediaDtos}
+        onChange={handleMediaChange}
+        isLoading={isSubmitting}
+      />
 
       {/* Location Type */}
       <Card>
@@ -235,21 +259,8 @@ export function CreateLocationForm() {
             address={formData.address}
             latitude={formData.latitude}
             longitude={formData.longitude}
+            center={[formData.latitude, formData.longitude]}
             onChange={handleCoordinatesChange}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Time Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Giờ hoạt động</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TimeSelector
-            openTime={formData.openTime}
-            closeTime={formData.closeTime}
-            onChange={handleTimeChange}
           />
         </CardContent>
       </Card>

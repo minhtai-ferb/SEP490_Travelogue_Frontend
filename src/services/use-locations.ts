@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import useApiService from "@/hooks/useApi";
+import { MediaDto } from "@/app/(admin)/locations/create/types/CreateLocation";
 
 export function useLocations() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -103,6 +104,7 @@ export function useLocations() {
       closeTime: { ticks: number };
       districtId: string;
       locationType: number;
+      mediaDtos: MediaDto[];
     }) => {
       setIsLoading(true);
       try {
@@ -117,18 +119,20 @@ export function useLocations() {
     [callApi, setIsLoading]
   );
 
-  const uploadLocationMedia = useCallback(
-    async (id: string, files: File[], thumbnailFileName?: string) => {
+  const uploadMediaMultiple = useCallback(
+    async (files: File[]) => {
       setIsLoading(true);
       try {
         const formData = new FormData();
-        files.forEach((file) => formData.append("imageUploads", file));
+        files.forEach((file) => {
+          formData.append("images", file);
+        });
 
-        const query = thumbnailFileName
-          ? `upload-media?id=${id}&thumbnailFileName=${thumbnailFileName}`
-          : `upload-media?id=${id}`;
-
-        const response = await callApi("post", `location/${query}`, formData);
+        const response = await callApi(
+          "post",
+          "media/upload-multiple",
+          formData
+        );
         return response?.data;
       } catch (e: any) {
         throw e;
@@ -139,17 +143,11 @@ export function useLocations() {
     [callApi, setIsLoading]
   );
 
-  const deleteLocationMedia = useCallback(
-    async (id: string, mediaURLs: string[]) => {
+  const deleteMediaByFileName = useCallback(
+    async (fileName: string) => {
       setIsLoading(true);
       try {
-        const response = await callApi(
-          "delete",
-          `location/delete-media?id=${id}`,
-          {
-            data: mediaURLs,
-          }
-        );
+        const response = await callApi("delete", `media/delete/${fileName}`);
         return response?.data;
       } catch (e: any) {
         throw e;
@@ -165,8 +163,8 @@ export function useLocations() {
     addCraftVillage,
     addCuisine,
     createLocation,
-    uploadLocationMedia,
-    deleteLocationMedia,
+    uploadMediaMultiple,
+    deleteMediaByFileName,
     loading: setIsLoading || loading,
   };
 }

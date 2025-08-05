@@ -1,10 +1,12 @@
-import Loading from "@/components/common/loading";
+'use client';
+
+import LoadingContent from "@/components/common/loading-content";
 import React from "react";
 
 function LoadingPage() {
   return (
     <div>
-      <Loading />
+      <LoadingContent />
     </div>
   );
 }
