@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-function HeaderCreateLocation() {
+function HeaderViewLocation() {
   return (
     <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
       <SidebarTrigger className="-ml-1" />
@@ -29,7 +29,7 @@ function HeaderCreateLocation() {
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>
-            <BreadcrumbPage>Tạo mới địa điểm</BreadcrumbPage>
+            <BreadcrumbPage>Chi tiết địa điểm</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -37,4 +37,4 @@ function HeaderCreateLocation() {
   );
 }
 
-export default HeaderCreateLocation;
+export default HeaderViewLocation;

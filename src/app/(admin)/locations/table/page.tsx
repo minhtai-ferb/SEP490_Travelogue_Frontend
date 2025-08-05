@@ -22,6 +22,8 @@ import { DeleteLocationDialog } from "./components/delete-location-dialog";
 import { LocationTable } from "@/types/Location";
 import { LocationTableComponent } from "./components/location-table";
 import HeaderLocationTable from "./components/header";
+import { useLocations } from "@/services/use-locations";
+import LoadingContent from "@/components/common/loading-content";
 
 interface Option {
   value: string;
@@ -36,8 +38,8 @@ type Sorts = GetSingle<Parameters<OnChange>[2]>;
 export default function ManageLocation() {
   const [filteredInfo, setFilteredInfo] = useState<Filters>({});
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
-  const { searchLocation, loading, deleteLocation } = useLocationController();
   const { getAllDistrict } = useDistrictManager();
+  const { loading, searchAllLocations, deleteLocation } = useLocations();
   const [data, setData] = useState<LocationTable[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
@@ -61,9 +63,9 @@ export default function ManageLocation() {
           })),
         ]);
 
-        const response = await searchLocation({
+        const response = await searchAllLocations({
           title: "",
-          typeId: "",
+          type: undefined,
           districtId: selectedOption,
           heritageRank: undefined,
           pageNumber: currentPage,
@@ -80,8 +82,8 @@ export default function ManageLocation() {
     fetchLocations();
   }, [selectedOption, currentPage, pageSize]);
 
-  //   const handleViewDetails = (record: LocationTable) =>
-  //     router.push(`/admin/locations/view/${record.id}`);
+  const handleViewDetails = (record: LocationTable) =>
+    router.push(`/locations/view/${record.id}`);
   //   const handleEdit = (record: LocationTable) =>
   //     router.push(`/admin/locations/edit/${record.id}`);
   const handleDeleteConfirm = (record: LocationTable) => {
@@ -93,9 +95,9 @@ export default function ManageLocation() {
     if (!locationToDelete) return;
     try {
       await deleteLocation(locationToDelete.id);
-      const response = await searchLocation({
+      const response = await searchAllLocations({
         title: "",
-        typeId: "",
+        type: undefined,
         districtId: selectedOption,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -126,9 +128,9 @@ export default function ManageLocation() {
   const onChangeDistrict = async (value: string) => {
     setSelectedOption(value);
     try {
-      const response = await searchLocation({
+      const response = await searchAllLocations({
         title: "",
-        typeId: "",
+        type: undefined,
         districtId: value,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -144,9 +146,9 @@ export default function ManageLocation() {
   const onSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     try {
-      const response = await searchLocation({
+      const response = await searchAllLocations({
         title: value,
-        typeId: "",
+        type: undefined,
         districtId: selectedOption,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -163,10 +165,9 @@ export default function ManageLocation() {
     <SidebarInset>
       <HeaderLocationTable />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {loading || data.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <Spin size="large" />
-          </div>
+        {(typeof loading === "boolean" ? loading : false) ||
+        data.length === 0 ? (
+          <LoadingContent />
         ) : (
           <>
             <LocationFilterBar
@@ -177,7 +178,7 @@ export default function ManageLocation() {
 
             <LocationTableComponent
               data={data}
-              loading={loading}
+              loading={typeof loading === "boolean" ? loading : false}
               currentPage={currentPage}
               pageSize={pageSize}
               totalCount={totalCount}
@@ -186,7 +187,7 @@ export default function ManageLocation() {
                 setPageSize(size);
               }}
               // onChange={handleChange}
-              // onView={handleViewDetails}
+              onView={handleViewDetails}
               // onEdit={handleEdit}
               onDelete={handleDeleteConfirm}
             />

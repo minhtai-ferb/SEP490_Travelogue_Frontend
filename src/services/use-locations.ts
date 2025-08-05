@@ -100,8 +100,8 @@ export function useLocations() {
       address: string;
       latitude: number;
       longitude: number;
-      openTime: { ticks: number };
-      closeTime: { ticks: number };
+      openTime: string;
+      closeTime: string;
       districtId: string;
       locationType: number;
       mediaDtos: MediaDto[];
@@ -158,6 +158,77 @@ export function useLocations() {
     [callApi, setIsLoading]
   );
 
+  const deleteLocation = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi("delete", `location/${id}`);
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const searchAllLocations = useCallback(
+    async ({
+      title,
+      type,
+      districtId,
+      heritageRank,
+      pageNumber,
+      pageSize,
+    }: {
+      title?: string;
+      type?: number;
+      districtId?: string;
+      heritageRank?: number;
+      pageNumber?: number;
+      pageSize?: number;
+    }) => {
+      setIsLoading(true);
+      try {
+        const queryParams = new URLSearchParams();
+        if (title) queryParams.append("title", title);
+        if (type !== undefined) queryParams.append("type", type.toString());
+        if (districtId) queryParams.append("districtId", districtId);
+        if (heritageRank !== undefined)
+          queryParams.append("heritageRank", heritageRank.toString());
+        if (pageNumber) queryParams.append("pageNumber", pageNumber.toString());
+        if (pageSize) queryParams.append("pageSize", pageSize.toString());
+
+        const response = await callApi(
+          "get",
+          `location/filter-paged?${queryParams.toString()}`
+        );
+        return response;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const getLocationById = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi("get", `location/${id}`);
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
   return {
     addHistoricalLocation,
     addCraftVillage,
@@ -165,6 +236,9 @@ export function useLocations() {
     createLocation,
     uploadMediaMultiple,
     deleteMediaByFileName,
+    deleteLocation,
+    searchAllLocations,
+    getLocationById,
     loading: setIsLoading || loading,
   };
 }

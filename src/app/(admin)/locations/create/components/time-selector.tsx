@@ -4,34 +4,28 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 interface TimeSelectorProps {
-  openTime: { ticks: number }
-  closeTime: { ticks: number }
-  onChange: (openTime: { ticks: number }, closeTime: { ticks: number }) => void
+  openTime: string // kiểu "HH:mm:ss"
+  closeTime: string // kiểu "HH:mm:ss"
+  onChange: (openTime: string, closeTime: string) => void
 }
 
 export function TimeSelector({ openTime, closeTime, onChange }: TimeSelectorProps) {
-  // Convert ticks to time string (simplified conversion)
-  const ticksToTime = (ticks: number): string => {
-    if (ticks === 0) return "08:00"
-    const hours = Math.floor(ticks / 36000000000) // 1 hour = 36000000000 ticks
-    const minutes = Math.floor((ticks % 36000000000) / 600000000) // 1 minute = 600000000 ticks
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
+  // Cắt chuỗi "HH:mm:ss" → "HH:mm" để gán vào input type="time"
+  const trimSeconds = (time: string): string => {
+    return time.substring(0, 5)
   }
 
-  // Convert time string to ticks
-  const timeToTicks = (timeString: string): number => {
-    const [hours, minutes] = timeString.split(":").map(Number)
-    return hours * 36000000000 + minutes * 600000000
+  // Ghép thêm ":00" nếu thiếu giây
+  const addSeconds = (time: string): string => {
+    return time.length === 5 ? `${time}:00` : time
   }
 
-  const handleOpenTimeChange = (timeString: string) => {
-    const ticks = timeToTicks(timeString)
-    onChange({ ticks }, closeTime)
+  const handleOpenTimeChange = (time: string) => {
+    onChange(addSeconds(time), closeTime)
   }
 
-  const handleCloseTimeChange = (timeString: string) => {
-    const ticks = timeToTicks(timeString)
-    onChange(openTime, { ticks })
+  const handleCloseTimeChange = (time: string) => {
+    onChange(openTime, addSeconds(time))
   }
 
   return (
@@ -41,7 +35,7 @@ export function TimeSelector({ openTime, closeTime, onChange }: TimeSelectorProp
         <Input
           id="openTime"
           type="time"
-          value={ticksToTime(openTime.ticks)}
+          value={trimSeconds(openTime)}
           onChange={(e) => handleOpenTimeChange(e.target.value)}
         />
       </div>
@@ -51,7 +45,7 @@ export function TimeSelector({ openTime, closeTime, onChange }: TimeSelectorProp
         <Input
           id="closeTime"
           type="time"
-          value={ticksToTime(closeTime.ticks)}
+          value={trimSeconds(closeTime)}
           onChange={(e) => handleCloseTimeChange(e.target.value)}
         />
       </div>

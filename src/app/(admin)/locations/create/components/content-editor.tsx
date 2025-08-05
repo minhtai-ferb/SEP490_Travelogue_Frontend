@@ -7,6 +7,9 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import MenuBar from "./menu-bar";
+import { Image } from "@tiptap/extension-image";
+import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node";
+import { useLocations } from "@/services/use-locations";
 
 interface ContentEditorProps {
   content: string;
@@ -17,6 +20,8 @@ export default function ContentEditor({
   content,
   onChange,
 }: ContentEditorProps) {
+  const { uploadMediaMultiple, deleteMediaByFileName } = useLocations();
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -39,10 +44,33 @@ export default function ContentEditor({
         placeholder: "Viết nội dung ở đây…",
         showOnlyWhenEditable: true,
       }),
+      Image.configure({ HTMLAttributes: { class: "max-w-full h-auto mx-auto" } }),
+      ImageUploadNode.configure({
+        accept: "image/*",
+        maxSize: 5 * 1024 * 1024, // ví dụ 5MB
+        upload: async (file) => {
+          const urls = await uploadMediaMultiple([file]);
+          if (!urls?.length) throw new Error("Không nhận URL");
+          return urls[0];
+        },
+        onError: (err) => console.error("Upload thất bại:", err),
+        onSuccess: (url) => console.log("Upload thành công:", url),
+      }),
     ],
     content,
     onUpdate({ editor }) {
       onChange(editor.getHTML());
+    },
+    onDelete({ type, node }: any) {
+      if (type === "node" && node.type.name === "image") {
+        const src = node.attrs.src as string;
+        const fileName = src.split("/").pop();
+        if (fileName) {
+          deleteMediaByFileName(fileName)
+            .then(() => console.log("Xóa file media:", fileName))
+            .catch((e) => console.error("Lỗi xóa file:", e));
+        }
+      }
     },
     editorProps: {
       attributes: {

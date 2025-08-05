@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Underline,
   AlignJustify,
+  Link2Icon,
 } from "lucide-react";
 import { Editor } from "@tiptap/react";
 import {
@@ -31,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
 
 function MenuGroup({ children }: { children: React.ReactNode }) {
   return (
@@ -281,7 +283,40 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
             </Tooltip>
           ))}
         </MenuGroup>
-
+        {/* Nhóm: Chức năng nâng cao */}
+        <MenuGroup>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  const url = prompt("Nhập URL liên kết:");
+                  const text = prompt("Văn bản hiển thị:");
+                  if (url) {
+                    editor
+                      .chain()
+                      .focus()
+                      .extendMarkRange("link")
+                      .setLink({ href: url })
+                      .insertContent(text || url)
+                      .run();
+                  }
+                }}
+                className="p-2 rounded-md hover:bg-muted"
+              >
+                <Link2Icon className="size‑4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Thêm hoặc chỉnh sửa liên kết</p>
+            </TooltipContent>
+          </Tooltip>
+          <ImageUploadButton
+            editor={editor}
+            text="Thêm ảnh"
+            hideWhenUnavailable
+            onInserted={() => console.log("Đã chèn ảnh")}
+          />
+        </MenuGroup>
       </div>
     </TooltipProvider>
   );
