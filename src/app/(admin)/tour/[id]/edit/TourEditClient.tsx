@@ -2,12 +2,14 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
-import type { Tour, UpdateTourRequest } from "@/types/Tour"
 import { useTour } from "@/services/tour"
-import { TourForm } from "@/components/tour-management/TourForm"
+import { TourBasicInfoForm } from "@/components/tour-management/edit/TourBasicInfoForm"
+import { TourScheduleManager } from "@/components/tour-management/edit/TourScheduleManager"
+import { TourItineraryManager } from "@/components/tour-management/edit/TourItineraryManager"
+import type { TourDetail } from "@/types/Tour"
 
 interface TourEditClientProps {
 	tourId: string
@@ -15,12 +17,12 @@ interface TourEditClientProps {
 
 export default function TourEditClient({ tourId }: TourEditClientProps) {
 	const router = useRouter()
-	const [tour, setTour] = useState<Tour | null>(null)
+	const [tour, setTour] = useState<TourDetail | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
-	const [actionLoading, setActionLoading] = useState(false)
+	const [activeTab, setActiveTab] = useState("basic")
 
-	const { getTourDetail, updateTour } = useTour()
+	const { getTourDetail } = useTour()
 
 	useEffect(() => {
 		const fetchTour = async () => {
@@ -42,33 +44,17 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 		}
 	}, [tourId, getTourDetail])
 
-	const handleUpdate = async (data: Partial<UpdateTourRequest>) => {
-		if (!tour) return
-
-		try {
-			setActionLoading(true)
-			setError("")
-			await updateTour(tour.tourId, data)
-			router.push(`/tour/${tourId}`)
-		} catch (error) {
-			console.error("Error updating tour:", error)
-			setError("Có lỗi khi cập nhật tour")
-		} finally {
-			setActionLoading(false)
-		}
-	}
-
-	const handleCancel = () => {
-		router.push(`/tour/${tourId}`)
-	}
-
 	const handleBack = () => {
 		router.push("/tour")
 	}
 
+	const handleTourUpdate = (updatedTour: TourDetail) => {
+		setTour(updatedTour)
+	}
+
 	if (loading) {
 		return (
-			<div className="container mx-auto p-6 max-w-4xl">
+			<div className="container mx-auto p-6 max-w-7xl">
 				<div className="flex items-center justify-center py-12">
 					<Loader2 className="w-8 h-8 animate-spin" />
 					<span className="ml-2">Đang tải...</span>
@@ -79,7 +65,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 
 	if (error || !tour) {
 		return (
-			<div className="container mx-auto p-6 max-w-4xl">
+			<div className="container mx-auto p-6 max-w-7xl">
 				<Alert className="mb-6">
 					<AlertCircle className="h-4 w-4" />
 					<AlertDescription>{error || "Không tìm thấy tour"}</AlertDescription>
@@ -93,34 +79,47 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 	}
 
 	return (
-		<div className="container mx-auto p-6 max-w-4xl">
+		<div className="container mx-auto p-6 max-w-7xl">
 			{/* Header */}
 			<div className="flex items-center gap-4 mb-6">
-				<Button variant="ghost" onClick={handleCancel} className="flex items-center gap-2">
+				<Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
 					<ArrowLeft className="w-4 h-4" />
 					Quay lại
 				</Button>
-				<div>
+				<div className="flex-1">
 					<h1 className="text-3xl font-bold">Chỉnh Sửa Tour</h1>
 					<p className="text-gray-600 mt-1">{tour.name}</p>
 				</div>
+				<div className="flex items-center gap-2">
+					<div
+						className={`px-3 py-1 rounded-full text-sm font-medium ${tour.status === 1 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+							}`}
+					>
+						{tour.statusText}
+					</div>
+				</div>
 			</div>
 
-			{error && (
-				<Alert className="mb-6 border-red-200 bg-red-50">
-					<AlertCircle className="h-4 w-4 text-red-600" />
-					<AlertDescription className="text-red-800">{error}</AlertDescription>
-				</Alert>
-			)}
+			{/* Tabs */}
+			<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+				<TabsList className="grid w-full grid-cols-3">
+					<TabsTrigger value="basic">Thông Tin Cơ Bản</TabsTrigger>
+					<TabsTrigger value="schedules">Lịch Trình</TabsTrigger>
+					<TabsTrigger value="itinerary">Hành Trình</TabsTrigger>
+				</TabsList>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Thông Tin Tour</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<TourForm tour={tour} onSubmit={handleUpdate} onCancel={handleCancel} isLoading={actionLoading} />
-				</CardContent>
-			</Card>
+				<TabsContent value="basic">
+					<TourBasicInfoForm tour={tour} onUpdate={handleTourUpdate} />
+				</TabsContent>
+
+				<TabsContent value="schedules">
+					<TourScheduleManager tour={tour} onUpdate={handleTourUpdate} />
+				</TabsContent>
+
+				<TabsContent value="itinerary">
+					<TourItineraryManager tour={tour} onUpdate={handleTourUpdate} />
+				</TabsContent>
+			</Tabs>
 		</div>
 	)
 }

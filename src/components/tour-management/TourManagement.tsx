@@ -36,17 +36,16 @@ const columns = [
 
 const statusColorMap: Record<string, string> = {
 	Draft: "bg-yellow-100 text-yellow-800",
-	Published: "bg-green-100 text-green-800",
-	Active: "bg-blue-100 text-blue-800",
-	Cancelled: "bg-red-100 text-red-800",
+	Confirmed: "bg-green-100 text-green-800",
+	// Active: "bg-blue-100 text-blue-800",
+	Cancel: "bg-red-100 text-red-800",
 }
 
 const statusOptions = [
 	{ key: "all", label: "Tất cả trạng thái" },
 	{ key: "Draft", label: "Nháp" },
-	{ key: "Published", label: "Đã xuất bản" },
-	{ key: "Active", label: "Hoạt động" },
-	{ key: "Cancelled", label: "Đã hủy" },
+	{ key: "Confirmed", label: "Đã xác nhận" },
+	{ key: "Cancel", label: "Đã hủy" },
 ]
 
 const tourTypeOptions = [
@@ -83,6 +82,7 @@ function TourManagement() {
 			setError("")
 			setLoading(true)
 			const response = await getAllTour()
+			setTours(response)
 			setTours(response)
 			setFilteredTours(response)
 		} catch (error) {
@@ -236,10 +236,10 @@ function TourManagement() {
 	if (error) {
 		return (
 			<Card className="max-w-md mx-auto mt-8">
-				<CardContent className="text-center p-6">
-					<Alert className="mb-4">
-						<AlertCircle className="h-4 w-4" />
-						<AlertDescription>{error}</AlertDescription>
+				<CardContent className="text-center m-6">
+					<Alert className="flex justify-center items-center mb-6">
+						<AlertCircle className="h-6 w-6" color="red" />
+						<AlertDescription className="ml-2 mt-1 text-xl text-red-600">{error}</AlertDescription>
 					</Alert>
 					<Button onClick={fetchAllTours}>Thử lại</Button>
 				</CardContent>

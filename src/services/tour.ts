@@ -14,8 +14,18 @@ export function useTour() {
 	const getAllTour = useCallback(
 		async () => {
 			setLoading(true);
+			const params = {
+				Name: "",
+				TourType: "all",
+				TotalDaysMin: 0,
+				TotalDaysMax: 0,
+				PriceMin: 0,
+				PriceMax: 0,
+				CreatedTime: "",
+				LastUpdatedTime: "",
+			}
 			try {
-				const response = await callApi("get", TOUR_API_URL.ALL_TOURS);
+				const response = await callApi("get", TOUR_API_URL.ALL_TOURS, { params });
 				return response?.data;
 			} catch (e: any) {
 				throw e;
@@ -52,10 +62,22 @@ export function useTour() {
 		}
 	}, [callApi, setLoading]);
 
-	const updateTour = useCallback(async (id: string, data: any) => {
+	const updateTourInfo = useCallback(async (id: string, data: any) => {
 		setLoading(true);
 		try {
 			const response = await callApi("put", `${TOUR_API_URL.ALL_TOURS}/${id}`, data);
+			return response?.data;
+		} catch (e: any) {
+			throw e;
+		} finally {
+			setLoading(false);
+		}
+	}, [callApi, setLoading]);
+
+	const updateTourSchedule = useCallback(async (tourId: string, scheduleId: string, data: any) => {
+		setLoading(true);
+		try {
+			const response = await callApi("put", `${TOUR_API_URL.TOUR_UPDATE_SCHEDULE}${scheduleId}`, data, { params: { tourId } });
 			return response?.data;
 		} catch (e: any) {
 			throw e;
@@ -109,14 +131,31 @@ export function useTour() {
 		}
 	}, [callApi, setLoading]);
 
+	const deleteTourSchedule = useCallback(async (scheduleId: string, tourId: string) => {
+		setLoading(true)
+		try {
+			const response = await callApi("delete", `${TOUR_API_URL.ALL_TOURS}/` + scheduleId,
+				{ params: { tourId } }
+			);
+			return response?.data
+		} catch (error) {
+			throw error
+		} finally {
+			setLoading(false)
+
+		}
+	}, [callApi, setLoading]);
+
 	return {
 		getAllTour,
 		getTourDetail,
 		createTour,
-		updateTour,
-		deleteTour,
+		updateTourInfo,
+		updateTourSchedule,
 		createTourSchedule,
 		createTourBulk,
+		deleteTour,
+		deleteTourSchedule,
 		loading: isLoading || loading,
 	};
 }

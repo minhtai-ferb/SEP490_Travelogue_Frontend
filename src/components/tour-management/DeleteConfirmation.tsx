@@ -12,14 +12,14 @@ interface DeleteConfirmationProps {
 }
 
 export function DeleteConfirmation({ tour, onConfirm, onCancel, isLoading = false }: DeleteConfirmationProps) {
-	const hasBookings = tour.schedules.some((schedule) => schedule.currentBooked > 0)
-	const totalBookings = tour.schedules.reduce((total, schedule) => total + schedule.currentBooked, 0)
+	const hasBookings = tour?.schedules?.some((schedule) => schedule.currentBooked > 0)
+	const totalBookings = tour?.schedules?.reduce((total, schedule) => total + schedule.currentBooked, 0)
 
 	return (
 		<div className="space-y-4">
-			<Alert className="border-red-200 bg-red-50">
-				<AlertTriangle className="h-4 w-4 text-red-600" />
-				<AlertDescription className="text-red-800">
+			<Alert className="flex gap-3 border-red-200 bg-red-50">
+				<AlertTriangle className="h-6 w-6" color="red" />
+				<AlertDescription className="my-auto mt-2 ml-3 text-red-800">
 					<strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
 				</AlertDescription>
 			</Alert>
@@ -45,8 +45,8 @@ export function DeleteConfirmation({ tour, onConfirm, onCancel, isLoading = fals
 						<li>• Tên tour: {tour.name}</li>
 						<li>• Loại tour: {tour.tourTypeText}</li>
 						<li>• Thời gian: {tour.totalDaysText}</li>
-						<li>• Số lịch trình: {tour.schedules.length}</li>
-						<li>• Tổng địa điểm: {tour.days.reduce((total, day) => total + day.activities.length, 0)}</li>
+						<li>• Số lịch trình: {tour?.schedules?.length || 0}</li>
+						<li>• Tổng địa điểm: {tour?.days?.reduce((total, day) => total + day.activities.length, 0) || 0}</li>
 					</ul>
 				</div>
 			</div>

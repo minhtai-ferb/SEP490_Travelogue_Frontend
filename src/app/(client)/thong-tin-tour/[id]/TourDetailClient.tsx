@@ -78,7 +78,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 			{/* Hero Section */}
 			<div className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white">
 				<div className="absolute inset-0 bg-black/20"></div>
-				<div className="absolute top-4 left-4">
+				<div className="absolute top-4 left-4 z-10">
 					<Breadcrumb>
 						<BreadcrumbList>
 							<BreadcrumbItem>
@@ -89,8 +89,8 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 								<BreadcrumbLink href="/chuyen-di" className="text-white">Chuyến đi</BreadcrumbLink>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator className="text-white" />
-							<BreadcrumbItem hidden>
-								<BreadcrumbLink href="/thong-tin-tour/{id}" className="text-white">{tour.name}</BreadcrumbLink>
+							<BreadcrumbItem>
+								<BreadcrumbLink className="text-white">{tour.name}</BreadcrumbLink>
 							</BreadcrumbItem>
 						</BreadcrumbList>
 					</Breadcrumb>

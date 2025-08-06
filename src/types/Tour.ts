@@ -17,6 +17,9 @@ export interface TourActivity {
 	travelTimeFromPrev: number
 	notes: string
 	imageUrl: string
+	startTime: string
+	endTime: string
+	distanceFromPrev: number
 }
 
 export interface TourDays {
@@ -81,7 +84,7 @@ export interface Tour {
 	isActive: boolean
 }
 
-export type TourStatus = "Draft" | "Published" | "Active" | "Cancelled"
+export type TourStatus = "Draft" | "Confirmed" | "Cancel"
 
 export interface CreateTourRequest {
 	name: string
@@ -94,6 +97,7 @@ export interface CreateTourRequest {
 
 
 export interface ScheduleFormData {
+	scheduleId?: string
 	departureDate: string
 	maxParticipant: number
 	totalDays: number

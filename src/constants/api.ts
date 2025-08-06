@@ -4,6 +4,7 @@ export const TOUR_API_URL = {
 	TOUR_ASSIGNED_SEARCH: "/tourguides/search",
 	TOUR_ASSIGNED_BY_ID: "/tourguides/assigned/",
 	TOURGUIDE_PROFILE: "/tour-guide/:id",
+	TOUR_UPDATE_SCHEDULE: "/tour/tour-schedule/"
 }
 
 export const LOCATION_API_URL = {
