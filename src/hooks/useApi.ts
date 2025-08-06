@@ -12,18 +12,19 @@ const useApiService = () => {
     async (
       method: "get" | "post" | "put" | "delete",
       url: string,
-      data?: any
+      data?: any,
+      params?: Record<string, any> // optional & typed
     ) => {
       try {
         setIsLoading(true);
-        const response = await api[method](url, data);
+        const response = await api[method](url, data, params);
         return response.data;
       } catch (e: any) {
         // console.log ("Unauthorized access detected.", e?.response?.data);
-		console.error(e);
-		toast.error(e?.response?.data?.Message || "Error");
-		// toast.error(e?.response?.data || "Operation failed");
-		throw e;
+        console.error(e);
+        toast.error(e?.response?.data?.Message || "Error");
+        // toast.error(e?.response?.data || "Operation failed");
+        throw e;
       } finally {
         setIsLoading(false);
       }

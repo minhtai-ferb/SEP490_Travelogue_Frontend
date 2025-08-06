@@ -22,10 +22,6 @@ function TourBooking() {
 				</div>
 			</div>
 
-			<div>
-				<TravelCTA label='Khởi tạo chuyến đi của bạn' onClick={navigateToTripPlaning} />
-			</div>
-
 			<ListCurrentTours />
 
 			<FavoritesDestinations />

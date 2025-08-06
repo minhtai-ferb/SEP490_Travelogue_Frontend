@@ -8,6 +8,7 @@ import { userAtom, isLoadingAtom, type User } from "@/store/auth";
 import { District, DistrictCreate } from "@/types/District";
 import { SeccretKey } from "@/secret/secret";
 import axios from "axios";
+import { LOCATION_API_URL } from "@/constants/api";
 
 export function useLocationController() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -55,7 +56,7 @@ export function useLocationController() {
 
         const response = await callApi(
           "get",
-          `location/filter-paged?${queryParams.toString()}`
+          `${LOCATION_API_URL.LOCATION_SEARCH}?${queryParams.toString()}`
         );
         return response;
       } catch (e: any) {
@@ -111,7 +112,7 @@ export function useLocationController() {
   const getAllTypeLocation = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await callApi("get", "type-location");
+      const response = await callApi("get", LOCATION_API_URL.LOCATION_TYPES);
       return response?.data;
     } catch (e: any) {
       throw e;

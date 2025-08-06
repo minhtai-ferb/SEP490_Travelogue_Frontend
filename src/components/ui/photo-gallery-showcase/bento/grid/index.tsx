@@ -134,11 +134,6 @@ interface BentoCardProps {
 function BentoCard({ item, onClick }: BentoCardProps) {
 	const [isHovered, setIsHovered] = useState(false)
 	const [imageLoaded, setImageLoaded] = useState(false)
-
-	console.log('====================================');
-	console.log('BentoCard item:', item);
-	console.log('====================================');
-
 	const renderPhotoCard = () => (
 		<div className="relative w-full h-full overflow-hidden group">
 			{/* Background Image */}
@@ -159,20 +154,6 @@ function BentoCard({ item, onClick }: BentoCardProps) {
 			{/* {!imageLoaded && item?.location?.medias?.[0] && ( */}
 			<div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
 			{/* )} */}
-
-			{/* Video indicator */}
-			{/* {item.isVideo && (
-				<div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm rounded-full p-2 z-10">
-					<Play className="h-4 w-4 text-white" />
-				</div>
-			)} */}
-
-			{/* Category badge */}
-			{/* {item.category && (
-				<div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4 z-10">
-					<Badge className="bg-white/90 text-gray-900 backdrop-blur-sm text-xs px-2 py-1">{item.category}</Badge>
-				</div>
-			)} */}
 
 			{/* Gradient overlay */}
 			<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -196,46 +177,6 @@ function BentoCard({ item, onClick }: BentoCardProps) {
 		</div>
 	)
 
-	// const renderStatsCard = () => (
-	// 	<div
-	// 		className={cn(
-	// 			"relative w-full h-full p-6 flex flex-col justify-center",
-	// 			item.gradient || "bg-gradient-to-br from-blue-500 to-purple-600",
-	// 		)}
-	// 	>
-	// 		<div className="text-center text-white">
-	// 			<h3 className="text-2xl md:text-3xl font-bold mb-2">{item?.location?.name}</h3>
-	// 			{item?.location?.description && <p className="text-sm opacity-90 mb-4">{item?.location?.description}</p>}
-
-	// 			{item.stats && (
-	// 				<div className="grid grid-cols-1 gap-3">
-	// 					{item.stats.map((stat, index) => (
-	// 						<div key={index} className="flex items-center justify-center gap-2">
-	// 							<stat.icon className="h-5 w-5" />
-	// 							<span className="text-lg font-semibold">{stat.value}</span>
-	// 							<span className="text-sm opacity-80">{stat.label}</span>
-	// 						</div>
-	// 					))}
-	// 				</div>
-	// 			)}
-	// 		</div>
-	// 	</div>
-	// )
-
-	// const renderTextCard = () => (
-	// 	<div
-	// 		className={cn(
-	// 			"relative w-full h-full p-6 flex flex-col justify-center",
-	// 			item.gradient || "bg-gradient-to-br from-gray-100 to-gray-200",
-	// 		)}
-	// 	>
-	// 		<div className="text-center">
-	// 			<h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900">{item?.location?.name}</h3>
-	// 			{item?.location?.description && <p className="text-gray-700 text-sm leading-relaxed">{item?.location.description}</p>}
-	// 			{item?.location?.content && <p className="text-gray-600 text-xs mt-2 opacity-80">{item?.location.content}</p>}
-	// 		</div>
-	// 	</div>
-	// )
 
 	const renderFeatureCard = () => (
 		<div className="relative w-full h-full overflow-hidden">

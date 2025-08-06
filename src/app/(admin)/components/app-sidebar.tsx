@@ -1,25 +1,20 @@
 "use client";
 
-import * as React from "react";
 import {
   BookOpen,
   Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
   Calendar,
   Earth,
+  LifeBuoy,
+  Map,
   MapPin,
   Newspaper,
+  Send,
+  SquareTerminal
 } from "lucide-react";
+import * as React from "react";
 
 import { NavMain } from "@/app/(admin)/components/nav-main";
-import { NavProjects } from "@/app/(admin)/components/nav-projects";
 import { NavSecondary } from "@/app/(admin)/components/nav-secondary";
 import { NavUser } from "@/app/(admin)/components/nav-user";
 import {
@@ -29,12 +24,11 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+  SidebarMenuItem
 } from "@/components/ui/sidebar";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const data = {
   navMain: [
@@ -112,6 +106,17 @@ const data = {
         {
           title: "Kho hình ảnh",
           url: "#",
+        },
+      ],
+    },
+    {
+      title: "Quản lý Tour",
+      url: "/tour",
+      icon: BookOpen,
+      items: [
+        {
+          title: "Quản lý tour",
+          url: "/tour",
         },
       ],
     },

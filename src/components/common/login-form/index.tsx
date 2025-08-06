@@ -74,20 +74,20 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
     setError("");
 
     try {
-      await loginWithGoogle();
-      navigate.push("/");
+      await loginWithGoogle()
+      navigate.push("/")
       addToast({
         title: "Đăng nhập thành công!",
         description: "Chào mừng bạn đến với Goyoung Tây Ninh",
         color: "success",
-      });
+      })
     } catch (error: any) {
-      console.error("Google login error:", error);
-      setError(error?.message || "Đã xảy ra lỗi khi đăng nhập với Google");
+      console.error("Google login error:", error)
+      setError(error?.message || "Đã xảy ra lỗi khi đăng nhập với Google")
     } finally {
-      setIsGooglePending(false);
+      setIsGooglePending(false)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

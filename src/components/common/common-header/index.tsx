@@ -82,7 +82,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 	// Scroll event listener
 	useEffect(() => {
 		const handleScroll = () => {
-			if (window.scrollY > 0) {
+			if (window.scrollY > 10) {
 				setIsHeaderVisible(false)
 			} else {
 				setIsHeaderVisible(true)

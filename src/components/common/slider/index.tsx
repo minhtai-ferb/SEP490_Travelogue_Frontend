@@ -274,7 +274,7 @@ function SlideContent({ item, variant }: SlideContentProps) {
 	return (
 		<div className="relative w-full h-full overflow-hidden rounded-2xl">
 			{/* Background Image/Video */}
-			{item.image && (
+			{item?.image && (
 				<motion.img
 					src={item.image}
 					alt={item.title || "Slide"}
@@ -285,15 +285,15 @@ function SlideContent({ item, variant }: SlideContentProps) {
 				/>
 			)}
 
-			{item.video && (
+			{item?.video && (
 				<video src={item.video} autoPlay muted loop className="absolute inset-0 w-full h-full object-cover" />
 			)}
 
 			{/* Overlay */}
-			{item.overlay && <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />}
+			{item?.overlay && <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />}
 
 			{/* Content */}
-			{(item.title || item.subtitle || item.description) && (
+			{(item?.title || item?.subtitle || item?.description) && (
 				<motion.div
 					initial={{ opacity: 0, y: 50 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -305,7 +305,7 @@ function SlideContent({ item, variant }: SlideContentProps) {
 						"bottom-8 left-8 right-8": item.textPosition === "bottom" || !item.textPosition,
 					})}
 				>
-					{item.subtitle && (
+					{item?.subtitle && (
 						<motion.p
 							initial={{ opacity: 0, x: -20 }}
 							animate={{ opacity: 1, x: 0 }}
@@ -341,7 +341,7 @@ function SlideContent({ item, variant }: SlideContentProps) {
 			)}
 
 			{/* Custom Content */}
-			{item.content && (
+			{item?.content && (
 				<motion.div
 					initial={{ opacity: 0, scale: 0.9 }}
 					animate={{ opacity: 1, scale: 1 }}

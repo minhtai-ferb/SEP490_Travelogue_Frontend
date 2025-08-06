@@ -1,60 +1,51 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ParallaxLocationIntro, type LocationType } from "../parallax-effect"
+import { useLocationController } from "@/services/location-controller"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Mountain, Palette, Building2 } from "lucide-react"
-import { useLocationController } from "@/services/location-controller"
+import { ParallaxLocationIntro } from "../parallax-effect"
+import { TypeLocation } from "@/types/Location"
 
 export function ParallaxShowcase() {
-	const [selectedType, setSelectedType] = useState<LocationType>("scenic-spot")
-	const { getAllTypeLocation } = useLocationController()
-	const locationTypes: { type: LocationType; label: string; icon: any; description: string }[] = [
-		{
-			type: "scenic-spot",
-			label: "Danh lam thắng cảnh",
-			icon: Mountain,
-			description: "Khám phá thiên nhiên hùng vĩ",
-		},
-		{
-			type: "craft-village",
-			label: "Làng Nghề Truyền Thống",
-			icon: Palette,
-			description: "Trải nghiệm nghệ thuật thủ công",
-		},
-		{
-			type: "historical-site",
-			label: "Di Tích Lịch Sử",
-			icon: Building2,
-			description: "Khám phá di sản văn hóa",
-		},
-	]
+	// 1) selectedType is your chosen `id` string, or null if none
+	const [selectedType, setSelectedType] = useState<string | null>(null)
+	const { getAllTypeLocation, searchLocation } = useLocationController()
+	const [locationTypes, setLocationTypes] = useState<TypeLocation[]>([])
 
-	const fetchLocations = async (type: LocationType) => {
+	// Fetch all types once on mount
+	useEffect(() => {
+		fetchAllTypes()
+	}, [])
+
+	const fetchAllTypes = async () => {
 		try {
-			const response = await getAllTypeLocation()
-			if (response) {
-				console.log("Fetched locations:", response)
-				// Assuming response is an array of Location objects
-				// You can filter or process the response based on the selected type if needed
-			} else {
-				console.warn("No locations found")
-			}
+			const types = await getAllTypeLocation()
+			console.log("Types fetched:", types)
+			setLocationTypes(types)
 		} catch (error) {
-			console.log('====================================');
-			console.log("Error fetching locations:", error);
-			console.log('====================================');
+			console.error("Error fetching location types:", error)
 		}
 	}
 
+	// Whenever we pick a type-id, refetch locations
 	useEffect(() => {
-		fetchLocations(selectedType)
-	}, [])
+		if (selectedType) {
+			fetchLocationsByType(selectedType)
+		}
+	}, [selectedType])
+
+	// 2) Accept only the typeId, not the full object
+	const fetchLocationsByType = async (typeId: string) => {
+		try {
+			const locations = await searchLocation({ typeId })
+		} catch (error) {
+			console.error("Error fetching locations:", error)
+		}
+	}
 
 	const handleLocationSelect = (location: any) => {
 		console.log("Selected location:", location)
-		// Handle location selection - could navigate to detail page, open modal, etc.
 	}
 
 	return (
@@ -63,20 +54,23 @@ export function ParallaxShowcase() {
 			<div className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200 py-4">
 				<div className="container mx-auto px-4">
 					<div className="flex flex-wrap justify-center gap-4">
-						{locationTypes.map((item) => (
+						{locationTypes?.map((item) => (
 							<Button
-								key={item.type}
-								onClick={() => setSelectedType(item.type)}
-								variant={selectedType === item.type ? "default" : "outline"}
-								className={`gap-2 transition-all duration-300 ${selectedType === item.type
-									? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-									: "hover:bg-gray-50"
-									}`}
+								key={item.id}
+								onClick={() => setSelectedType(item.id)}
+								// 3) Compare against item.id, since that's what we store
+								variant={selectedType === item.id ? "default" : "outline"}
+								className={`
+                  gap-2 transition-all duration-300
+                  ${selectedType === item.id
+										? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+										: "hover:bg-gray-50"
+									}
+                `}
 							>
-								<item.icon className="w-4 h-4" />
 								<div className="text-left">
-									<div className="font-medium">{item.label}</div>
-									<div className="text-xs opacity-70">{item.description}</div>
+									<div className="font-medium">{item?.displayName}</div>
+									{/* <div className="text-xs opacity-70">{item.description}</div> */}
 								</div>
 							</Button>
 						))}
@@ -85,10 +79,19 @@ export function ParallaxShowcase() {
 			</div>
 
 			{/* Parallax Component */}
-			<motion.div key={selectedType} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-				<ParallaxLocationIntro locationType={selectedType} onLocationSelect={handleLocationSelect} />
+			<motion.div
+				key={selectedType}
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.5 }}
+			>
+				<ParallaxLocationIntro
+					locationType={
+						locationTypes.find((t) => t.id === selectedType) ?? null
+					}
+					onLocationSelect={handleLocationSelect}
+				/>
 			</motion.div>
-
 		</div>
 	)
 }

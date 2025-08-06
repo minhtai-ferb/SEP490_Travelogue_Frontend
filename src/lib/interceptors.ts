@@ -16,15 +16,13 @@ axiosInstance.interceptors.request.use(
 
     if (typeof window !== "undefined") {
       token = Cookies.get("jwtToken"); // Get the token from cookies
-      // Client-side code
-      console.log("Client side cookies: ", token);
     }
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-	// Set 'Content-Type': 'application/json' if the request is not FormData
+    // Set 'Content-Type': 'application/json' if the request is not FormData
     if (!(config.data instanceof FormData)) {
       config.headers["Content-Type"] = "application/json";
     }

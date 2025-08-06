@@ -1,9 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
-// import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { LoadingSkeleton } from "@/components/common/loading-skeleton"
+import { ErrorAlert } from "@/components/tourguide/error-alert"
+import { StatsCard } from "@/components/tourguide/stat-card"
+import { TourList } from "@/components/tourguide/tour-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -16,27 +18,14 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useDebounce } from "@/hooks/useDebounce"
 import { useTourguideAssign } from "@/services/tourguide"
 import { userAtom } from "@/store/auth"
+import { AssignedTour, TourStats } from "@/types/Tour"
 import { formatDate, formatPrice } from "@/utils/format"
-import { motion } from "framer-motion"
 import { useAtom } from "jotai"
-import { ArrowLeft, Calendar, CalendarDays, Clock, Eye, List, MapPin, Users } from "lucide-react"
+import { ArrowLeft, Calendar, CalendarDays, Clock, List, MapPin, Users } from "lucide-react"
 import Link from "next/link"
-
-interface AssignedTour {
-	id: string
-	name: string
-	startDate: string
-	endDate: string
-	meetingLocation: string
-	status: "upcoming" | "in_progress" | "completed"
-	participants: number
-	maxParticipants: number
-	description: string
-	notes?: string
-	price: number
-}
 
 const MOCK_ASSIGNED_TOURS: AssignedTour[] = [
 	{
@@ -79,65 +68,120 @@ const MOCK_ASSIGNED_TOURS: AssignedTour[] = [
 	},
 ]
 
-// export default function MyToursClient() {
-// 	return (
-// 		<ProtectedRoute requiredRole="tour_guide">
-// 			<MyToursContent />
-// 		</ProtectedRoute>
-// 	)
-// }
-
 function MyToursContent() {
-	const user = useAtom(userAtom)
+	const [user] = useAtom(userAtom)
 	const [tours, setTours] = useState<AssignedTour[]>(MOCK_ASSIGNED_TOURS)
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [viewMode, setViewMode] = useState<"list" | "calendar">("list")
 	const [selectedTour, setSelectedTour] = useState<AssignedTour | null>(null)
-
+	const [error, setError] = useState<string | null>(null)
+	const [isLoading, setLoading] = useState<boolean>(false)
+	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
 	const { getTourAssign } = useTourguideAssign()
 
+	const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-	const fetchTours = async () => {
+
+	const fetchTours = useCallback(async () => {
+		setLoading(true);
+		setError(null);
 		try {
-			const response = await getTourAssign()
-			setTours(response || MOCK_ASSIGNED_TOURS)
-		} catch (error) {
-			console.error("Failed to fetch tours:", error)
+			const data = await getTourAssign(user?.email!);
+			setTours(data ?? MOCK_ASSIGNED_TOURS);
+		} catch {
+			setError("Không thể tải danh sách tour. Vui lòng thử lại sau.");
+		} finally {
+			setLoading(false);
 		}
-	}
+	}, [getTourAssign, user?.email]);
 
 	useEffect(() => {
-		fetchTours()
-		setViewMode("list") // Reset to list view on mount
-		setSearchTerm("") // Clear search term
-		setStatusFilter("all") // Reset status filter
-		setSelectedTour(null) // Clear selected tour
+		if (user?.email) fetchTours();
+	}, [user?.email, fetchTours]);
+
+	// Memoized filtered tours với debounced search
+	const filteredTours = useMemo(() => {
+		return tours.filter((tour) => {
+			const matchesSearch = tour.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+			const matchesStatus = statusFilter === "all" || tour.status === statusFilter
+			return matchesSearch && matchesStatus
+		})
+	}, [tours, debouncedSearchTerm, statusFilter])
+
+	// Memoized stats - chỉ tính toán lại khi tours thay đổi
+	const tourStats = useMemo<TourStats>(() => {
+		return {
+			upcoming: tours.filter((t) => t.status === "upcoming").length,
+			completed: tours.filter((t) => t.status === "completed").length,
+			inProgress: tours.filter((t) => t.status === "in_progress").length,
+			total: tours.length,
+			totalParticipants: tours.reduce((sum, tour) => sum + tour.participants, 0),
+			totalRevenue: tours.reduce((sum, tour) => sum + tour.price * tour.participants, 0),
+		}
+	}, [tours])
+
+	const handleViewModeChange = useCallback((mode: "list" | "calendar") => {
+		setViewMode(mode)
 	}, [])
 
-	const filteredTours = tours.filter((tour) => {
-		const matchesSearch = tour.name.toLowerCase().includes(searchTerm.toLowerCase())
-		const matchesStatus = statusFilter === "all" || tour.status === statusFilter
-		return matchesSearch && matchesStatus
-	})
+	const handleTourSelect = useCallback((tour: AssignedTour) => {
+		setSelectedTour(tour)
+		setIsDialogOpen(true)
+	}, [])
 
-	const getStatusBadge = (status: AssignedTour["status"]) => {
-		const variants = {
-			upcoming: "bg-blue-100 text-blue-800",
-			in_progress: "bg-green-100 text-green-800",
-			completed: "bg-gray-100 text-gray-800",
-		}
-		const labels = {
-			upcoming: "Sắp diễn ra",
-			in_progress: "Đang diễn ra",
-			completed: "Đã hoàn thành",
-		}
-		return <Badge className={variants[status]}>{labels[status]}</Badge>
-	}
+	const handleStatusFilterChange = useCallback((value: string) => {
+		setStatusFilter(value)
+	}, [])
 
-	const upcomingTours = tours.filter((t) => t.status === "upcoming").length
-	const completedTours = tours.filter((t) => t.status === "completed").length
-	const totalParticipants = tours.reduce((sum, tour) => sum + tour.participants, 0)
+	const handleRetry = useCallback(() => {
+		fetchTours()
+	}, [])
+
+	// Close dialog handler
+	const handleCloseDialog = useCallback(() => {
+		setIsDialogOpen(false)
+		setSelectedTour(null)
+	}, [])
+
+	// Stats cards configuration
+	const statsCards = useMemo(
+		() => [
+			{
+				icon: Calendar,
+				label: "Tour sắp tới",
+				value: tourStats.upcoming,
+				delay: 0.1,
+				iconBgColor: "bg-blue-100",
+				iconColor: "text-blue-600",
+			},
+			{
+				icon: MapPin,
+				label: "Đã hoàn thành",
+				value: tourStats.completed,
+				delay: 0.2,
+				iconBgColor: "bg-green-100",
+				iconColor: "text-green-600",
+			},
+			{
+				icon: Users,
+				label: "Tổng khách",
+				value: tourStats.totalParticipants,
+				delay: 0.3,
+				iconBgColor: "bg-purple-100",
+				iconColor: "text-purple-600",
+			},
+			{
+				icon: Clock,
+				label: "Tổng tour",
+				value: tourStats.total,
+				delay: 0.4,
+				iconBgColor: "bg-yellow-100",
+				iconColor: "text-yellow-600",
+			},
+		],
+		[tourStats],
+	)
 
 	return (
 		<div className="min-h-screen bg-gray-50">
@@ -157,15 +201,15 @@ function MyToursContent() {
 
 						<div className="flex items-center space-x-3">
 							<Avatar className="text-blue-500 font-bold">
-								<AvatarImage src={user?.[0]?.avatar || "/placeholder.svg"} />
+								<AvatarImage src={user?.avatar || "/placeholder.svg"} />
 								<AvatarFallback>
-									{user && user[0] && user?.[0]?.fullName
-										? user?.[0]?.fullName[0]
+									{user && user?.fullName
+										? user?.fullName[0]
 										: "U"}
 								</AvatarFallback>
 							</Avatar>
 							<div className="hidden md:block">
-								<div className="text-sm font-medium">{user?.[0]?.fullName}</div>
+								<div className="text-sm font-medium">{user?.fullName}</div>
 								<div className="text-xs text-gray-200">Hướng dẫn viên</div>
 							</div>
 						</div>
@@ -175,74 +219,12 @@ function MyToursContent() {
 
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				{/* Stats */}
+				{error && <ErrorAlert message={error} onRetry={handleRetry} />}
+				{/* Stats */}
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-					{/* Upcoming Tours */}
-					<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-						<Card>
-							<CardContent className="p-6">
-								<div className="flex items-center">
-									<div className="p-2 rounded-lg bg-blue-100">
-										<Calendar className="w-6 h-6 text-blue-600" />
-									</div>
-									<div className="ml-4">
-										<p className="text-sm font-medium text-gray-600">Tour sắp tới</p>
-										<p className="text-2xl font-bold text-gray-900">{upcomingTours}</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</motion.div>
-
-					{/* Completed Tours */}
-					<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-						<Card>
-							<CardContent className="p-6">
-								<div className="flex items-center">
-									<div className="p-2 rounded-lg bg-green-100">
-										<MapPin className="w-6 h-6 text-green-600" />
-									</div>
-									<div className="ml-4">
-										<p className="text-sm font-medium text-gray-600">Đã hoàn thành</p>
-										<p className="text-2xl font-bold text-gray-900">{completedTours}</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</motion.div>
-
-					{/* Total Participants */}
-					<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-						<Card>
-							<CardContent className="p-6">
-								<div className="flex items-center">
-									<div className="p-2 rounded-lg bg-purple-100">
-										<Users className="w-6 h-6 text-purple-600" />
-									</div>
-									<div className="ml-4">
-										<p className="text-sm font-medium text-gray-600">Tổng khách</p>
-										<p className="text-2xl font-bold text-gray-900">{totalParticipants}</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</motion.div>
-
-					{/* Total Tours */}
-					<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-						<Card>
-							<CardContent className="p-6">
-								<div className="flex items-center">
-									<div className="p-2 rounded-lg bg-yellow-100">
-										<Clock className="w-6 h-6 text-yellow-600" />
-									</div>
-									<div className="ml-4">
-										<p className="text-sm font-medium text-gray-600">Tổng tour</p>
-										<p className="text-2xl font-bold text-gray-900">{tours.length}</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</motion.div>
+					{statsCards.map((card, index) => (
+						<StatsCard key={index} {...card} />
+					))}
 				</div>
 
 				{/* Filters and View Toggle */}
@@ -258,7 +240,7 @@ function MyToursContent() {
 									/>
 								</div>
 
-								<Select value={statusFilter} onValueChange={setStatusFilter}>
+								<Select value={statusFilter} onValueChange={handleStatusFilterChange}>
 									<SelectTrigger className="w-48">
 										<SelectValue placeholder="Lọc theo trạng thái" />
 									</SelectTrigger>
@@ -275,7 +257,7 @@ function MyToursContent() {
 								<Button
 									variant={viewMode === "list" ? "default" : "outline"}
 									size="sm"
-									onClick={() => setViewMode("list")}
+									onClick={() => handleViewModeChange("list")}
 								>
 									<List className="w-4 h-4 mr-2" />
 									Danh sách
@@ -283,7 +265,7 @@ function MyToursContent() {
 								<Button
 									variant={viewMode === "calendar" ? "default" : "outline"}
 									size="sm"
-									onClick={() => setViewMode("calendar")}
+									onClick={() => handleViewModeChange("calendar")}
 								>
 									<CalendarDays className="w-4 h-4 mr-2" />
 									Lịch
@@ -293,132 +275,11 @@ function MyToursContent() {
 					</CardContent>
 				</Card>
 
+				{/* Loading State */}
+				{isLoading && <LoadingSkeleton />}
+
 				{/* Tours List */}
-				{viewMode === "list" && (
-					<div className="space-y-4">
-						{filteredTours.map((tour, index) => (
-							<motion.div
-								key={tour.id}
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: index * 0.1 }}
-							>
-								<Card className="hover:shadow-md transition-shadow">
-									<CardContent className="p-6">
-										<div className="flex flex-col md:flex-row md:items-center justify-between">
-											<div className="flex-1">
-												<div className="flex items-center space-x-3 mb-2">
-													<h3 className="text-lg font-semibold text-gray-900">{tour.name}</h3>
-													{getStatusBadge(tour.status)}
-												</div>
-
-												<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-													<div className="flex items-center">
-														<Calendar className="w-4 h-4 mr-2" />
-														<span>
-															{formatDate(tour.startDate)} - {formatDate(tour.endDate)}
-														</span>
-													</div>
-													<div className="flex items-center">
-														<MapPin className="w-4 h-4 mr-2" />
-														<span>{tour.meetingLocation}</span>
-													</div>
-													<div className="flex items-center">
-														<Users className="w-4 h-4 mr-2" />
-														<span>
-															{tour.participants}/{tour.maxParticipants} người
-														</span>
-													</div>
-													<div className="flex items-center">
-														<span className="font-medium text-green-600">{formatPrice(tour.price)}</span>
-													</div>
-												</div>
-
-												{tour.notes && (
-													<div className="mt-3 p-3 bg-yellow-50 rounded-lg">
-														<p className="text-sm text-yellow-800">
-															<strong>Ghi chú:</strong> {tour.notes}
-														</p>
-													</div>
-												)}
-											</div>
-
-											<div className="mt-4 md:mt-0 md:ml-6">
-												<Dialog>
-													<DialogTrigger asChild>
-														<Button onClick={() => setSelectedTour(tour)}>
-															<Eye className="w-4 h-4 mr-2" />
-															Chi tiết
-														</Button>
-													</DialogTrigger>
-													<DialogContent className="max-w-2xl">
-														<DialogHeader>
-															<DialogTitle>{selectedTour?.name}</DialogTitle>
-															<DialogDescription>Thông tin chi tiết về tour</DialogDescription>
-														</DialogHeader>
-														{selectedTour && (
-															<div className="space-y-4">
-																<div className="grid grid-cols-2 gap-4">
-																	<div>
-																		<h4 className="font-medium text-gray-900 mb-2">Thời gian</h4>
-																		<p className="text-sm text-gray-600">
-																			Bắt đầu: {formatDate(selectedTour.startDate)}
-																		</p>
-																		<p className="text-sm text-gray-600">
-																			Kết thúc: {formatDate(selectedTour.endDate)}
-																		</p>
-																	</div>
-																	<div>
-																		<h4 className="font-medium text-gray-900 mb-2">Điểm hẹn</h4>
-																		<p className="text-sm text-gray-600">{selectedTour.meetingLocation}</p>
-																	</div>
-																</div>
-
-																<div>
-																	<h4 className="font-medium text-gray-900 mb-2">Mô tả tour</h4>
-																	<p className="text-sm text-gray-600">{selectedTour.description}</p>
-																</div>
-
-																<div className="grid grid-cols-2 gap-4">
-																	<div>
-																		<h4 className="font-medium text-gray-900 mb-2">Số lượng khách</h4>
-																		<p className="text-sm text-gray-600">
-																			{selectedTour.participants}/{selectedTour.maxParticipants} người
-																		</p>
-																	</div>
-																	<div>
-																		<h4 className="font-medium text-gray-900 mb-2">Giá tour</h4>
-																		<p className="text-sm font-medium text-green-600">
-																			{formatPrice(selectedTour.price)}
-																		</p>
-																	</div>
-																</div>
-
-																{selectedTour.notes && (
-																	<div>
-																		<h4 className="font-medium text-gray-900 mb-2">Ghi chú từ quản lý</h4>
-																		<div className="p-3 bg-yellow-50 rounded-lg">
-																			<p className="text-sm text-yellow-800">{selectedTour.notes}</p>
-																		</div>
-																	</div>
-																)}
-
-																<div className="flex justify-end space-x-2">
-																	<Button variant="outline">In thông tin</Button>
-																	<Button>Liên hệ khách hàng</Button>
-																</div>
-															</div>
-														)}
-													</DialogContent>
-												</Dialog>
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							</motion.div>
-						))}
-					</div>
-				)}
+				{!isLoading && viewMode === "list" && <TourList tours={filteredTours} onViewDetails={handleTourSelect} />}
 
 				{/* Calendar View */}
 				{viewMode === "calendar" && (
@@ -435,7 +296,8 @@ function MyToursContent() {
 					</Card>
 				)}
 
-				{filteredTours.length === 0 && (
+				{/* Empty State */}
+				{!isLoading && filteredTours.length === 0 && (
 					<Card>
 						<CardContent className="text-center py-12">
 							<MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -448,6 +310,66 @@ function MyToursContent() {
 						</CardContent>
 					</Card>
 				)}
+
+				{/* Tour Details Dialog */}
+				<Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
+					<DialogTrigger asChild>
+						<div style={{ display: "none" }} />
+					</DialogTrigger>
+					<DialogContent className="max-w-2xl">
+						<DialogHeader>
+							<DialogTitle>{selectedTour?.name}</DialogTitle>
+							<DialogDescription>Thông tin chi tiết về tour</DialogDescription>
+						</DialogHeader>
+						{selectedTour && (
+							<div className="space-y-4">
+								<div className="grid grid-cols-2 gap-4">
+									<div>
+										<h4 className="font-medium text-gray-900 mb-2">Thời gian</h4>
+										<p className="text-sm text-gray-600">Bắt đầu: {formatDate(selectedTour.startDate)}</p>
+										<p className="text-sm text-gray-600">Kết thúc: {formatDate(selectedTour.endDate)}</p>
+									</div>
+									<div>
+										<h4 className="font-medium text-gray-900 mb-2">Điểm hẹn</h4>
+										<p className="text-sm text-gray-600">{selectedTour.meetingLocation}</p>
+									</div>
+								</div>
+
+								<div>
+									<h4 className="font-medium text-gray-900 mb-2">Mô tả tour</h4>
+									<p className="text-sm text-gray-600">{selectedTour.description}</p>
+								</div>
+
+								<div className="grid grid-cols-2 gap-4">
+									<div>
+										<h4 className="font-medium text-gray-900 mb-2">Số lượng khách</h4>
+										<p className="text-sm text-gray-600">
+											{selectedTour.participants}/{selectedTour.maxParticipants} người
+										</p>
+									</div>
+									<div>
+										<h4 className="font-medium text-gray-900 mb-2">Giá tour</h4>
+										<p className="text-sm font-medium text-green-600">{formatPrice(selectedTour.price)}</p>
+									</div>
+								</div>
+
+								{selectedTour.notes && (
+									<div>
+										<h4 className="font-medium text-gray-900 mb-2">Ghi chú từ quản lý</h4>
+										<div className="p-3 bg-yellow-50 rounded-lg">
+											<p className="text-sm text-yellow-800">{selectedTour.notes}</p>
+										</div>
+									</div>
+								)}
+
+								<div className="flex justify-end space-x-2">
+									<Button variant="outline">In thông tin</Button>
+									<Button>Liên hệ khách hàng</Button>
+								</div>
+							</div>
+						)}
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	)

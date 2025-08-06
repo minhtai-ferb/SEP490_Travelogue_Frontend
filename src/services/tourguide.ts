@@ -12,11 +12,30 @@ export function useTourguideAssign() {
 	const router = useRouter();
 	const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
-	const getTourAssign = useCallback(
-		async () => {
+	const getTourguideProfile = useCallback(
+		async (id: string) => {
 			setLoading(true);
 			try {
-				const response = await callApi("get", TOUR_API_URL.TOUR_ASSIGNED);
+				const response = await callApi("get", TOUR_API_URL.TOURGUIDE_PROFILE + id);
+				return response?.data;
+			} catch (e: any) {
+				console.log('====================================');
+				console.log(`Error fetching tour guide profile: ${e.message}`);
+				console.log('====================================');
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, router, setLoading]
+	)
+
+	const getTourAssign = useCallback(
+		async (email: string) => {
+			setLoading(true);
+			const params = {
+				email,
+			};
+			try {
+				const response = await callApi("get", TOUR_API_URL.TOUR_ASSIGNED, { params });
 				return response?.data;
 			} catch (e: any) {
 				throw e;
@@ -53,6 +72,7 @@ export function useTourguideAssign() {
 	);
 
 	return {
+		getTourguideProfile,
 		getTourAssign,
 		getTourAssignSearch,
 		loading: isLoading || loading,

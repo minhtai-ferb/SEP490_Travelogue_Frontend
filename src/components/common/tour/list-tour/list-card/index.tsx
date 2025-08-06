@@ -13,7 +13,7 @@ function ListCards({ list }: ListCardsProps) {
 		<Marquee pauseOnHover className='py-6'>
 			<div className='relative flex w-full h-full gap-12 mt-6 px-3'>
 				{list?.map((tour) => (
-					<TourCard key={tour.id} tour={tour} />
+					<TourCard key={tour?.tourId} tour={tour} />
 				))
 				}
 			</div>

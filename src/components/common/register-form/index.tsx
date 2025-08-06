@@ -41,7 +41,7 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 			router.push("/")
 			addToast({
 				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Goyoung Tây Ninh",
+				description: "Chào mừng bạn đến với Traveloge",
 				color: "success",
 			})
 		} catch (error: any) {

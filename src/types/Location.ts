@@ -24,6 +24,20 @@ export interface ListMedia {
 export interface TypeLocation {
     id: string;
     name: string;
+    description: string;
+}
+
+
+export interface LocationDTO {
+    id: string;
+    name: string;
+    description: string;
+    content: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    districtId: string;
+    locationType: number;
 }
 
 
