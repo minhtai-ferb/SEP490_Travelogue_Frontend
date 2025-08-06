@@ -1,13 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { use } from "react"; // Import use for unwrapping promises
-import { District } from "@/types/District";
-import { useDistrictManager } from "@/services/district-manager";
-import { addToast, Image } from "@heroui/react";
-import { Loader2, Upload, X } from "lucide-react"; // Added Upload and X icons
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,17 +8,24 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { FaMapMarkerAlt, FaCamera } from "react-icons/fa"; // Added FaCamera
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button"; // Add button component
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"; // Add dialog components
-import { Button } from "@/components/ui/button"; // Add button component
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useDistrictManager } from "@/services/district-manager";
+import { District } from "@/types/District";
+import { Loader2, Upload, X } from "lucide-react"; // Added Upload and X icons
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { FaCamera, FaMapMarkerAlt } from "react-icons/fa"; // Added FaCamera
 
 const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [district, setDistrict] = useState<District>();
@@ -56,12 +55,7 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
           error?.response?.data.Message ||
           "Đã xảy ra lỗi khi lấy dữ liệu quận huyện";
 
-        // Display error using toast
-        addToast({
-          title: "Lỗi khi lấy dữ liệu quận huyện",
-          description: errorMessage,
-          color: "danger",
-        });
+        toast.error(errorMessage); // Use toast to show error message
       }
     };
 
@@ -110,23 +104,16 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       const updatedDistrict = await updateDistrictImage(formData);
 
       setDistrict(updatedDistrict);
-
-      addToast({
-        title: "Thành công",
-        description: "Hình ảnh đã được cập nhật",
-        color: "success",
-      });
+      toast.success("Hình ảnh đã được cập nhật");
 
       setIsImageModalOpen(false);
       setSelectedImage(null);
       setImagePreview(null);
     } catch (error: any) {
       console.error("Error uploading image:", error);
-      addToast({
-        title: "Lỗi cập nhật hình ảnh",
-        description: error?.message || "Đã xảy ra lỗi khi cập nhật hình ảnh",
-        color: "danger",
-      });
+
+      toast.error(
+        error?.message || "Đã xảy ra lỗi khi cập nhật hình ảnh")
     } finally {
       setUploading(false);
     }
