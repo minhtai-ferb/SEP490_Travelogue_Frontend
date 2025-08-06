@@ -50,7 +50,7 @@ export function ImageGalleryExplore({ images }: ImageGalleryProps) {
 				)}
 			>
 				<Image
-					src={images[currentIndex]?.url || "/placeholder.svg"}
+					src={images[currentIndex]?.url || "/placeholder_image.jpg"}
 					alt={images[currentIndex]?.alt || "Image"}
 					fill
 					className="object-contain"
@@ -110,7 +110,7 @@ export function ImageGalleryExplore({ images }: ImageGalleryProps) {
 							)}
 							aria-label={`View image ${index + 1}`}
 						>
-							<Image src={image.url || "/placeholder.svg"} alt={image.alt} fill className="object-cover" />
+							<Image src={image.url || "/placeholder_image.jpg"} alt={image.alt} fill className="object-cover" />
 						</button>
 					))}
 				</div>
@@ -132,7 +132,7 @@ export function ImageGalleryExplore({ images }: ImageGalleryProps) {
 								)}
 								aria-label={`View image ${index + 1}`}
 							>
-								<Image src={image.url || "/placeholder.svg"} alt={image.alt} fill className="object-cover" />
+								<Image src={image.url || "/placeholder_image.jpg"} alt={image.alt} fill className="object-cover" />
 							</button>
 						))}
 					</div>

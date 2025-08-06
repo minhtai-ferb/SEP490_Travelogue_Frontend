@@ -279,7 +279,7 @@ function NewsCard({ item }: NewsCardProps) {
         <Image
           src={
             item.medias[1]?.mediaUrl ||
-            `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
+            `/placeholder_image.jpg?height=400&width=600&text=${encodeURIComponent(
               item.title || "News"
             )}`
           }

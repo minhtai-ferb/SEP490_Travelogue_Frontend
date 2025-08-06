@@ -12,9 +12,9 @@ interface LocationTableProps {
   pageSize: number;
   totalCount: number;
   onPaginationChange: (page: number, pageSize: number) => void;
-//   onChange: TableProps<LocationTable>["onChange"];
-//   onView: (record: LocationTable) => void;
-//   onEdit: (record: LocationTable) => void;
+  onView: (record: LocationTable) => void;
+  onChange: TableProps<LocationTable>["onChange"];
+  onEdit: (record: LocationTable) => void;
   onDelete: (record: LocationTable) => void;
 }
 
@@ -25,9 +25,9 @@ export function LocationTableComponent({
   pageSize,
   totalCount,
   onPaginationChange,
-//   onChange,
-//   onView,
-//   onEdit,
+  onView,
+  onChange,
+  onEdit,
   onDelete,
 }: LocationTableProps) {
   const columns = [
@@ -35,7 +35,8 @@ export function LocationTableComponent({
       title: "Tên địa điểm",
       dataIndex: "name",
       key: "name",
-      sorter: (a: LocationTable, b: LocationTable) => a.name.length - b.name.length,
+      sorter: (a: LocationTable, b: LocationTable) =>
+        a.name.length - b.name.length,
       ellipsis: true,
     },
     {
@@ -64,19 +65,19 @@ export function LocationTableComponent({
       title: "Giờ đóng cửa",
       dataIndex: "closeTime",
       key: "closeTime",
-      render: (_: any, record: LocationTable) => record.closeTime  ?? "Không rõ",
+      render: (_: any, record: LocationTable) => record.closeTime ?? "Không rõ",
     },
     {
       title: "Thao tác",
       key: "action",
       render: (_: any, record: LocationTable) => (
         <Space size="small">
-          {/* <Button onClick={() => onView(record)} variant="outline" size="sm">
+          <Button onClick={() => onView(record)} variant="outline" size="sm">
             <Eye className="h-4 w-4" />
           </Button>
           <Button onClick={() => onEdit(record)} variant="outline" size="sm">
             <Pencil className="h-4 w-4" />
-          </Button> */}
+          </Button>
           <Button
             onClick={() => onDelete(record)}
             variant="outline"
@@ -93,16 +94,20 @@ export function LocationTableComponent({
   return (
     <Table<LocationTable>
       columns={columns}
-      dataSource={data.map((item, index) => ({ ...item, key: item.id || index }))}
+      dataSource={data.map((item, index) => ({
+        ...item,
+        key: item.id || index,
+      }))}
       loading={loading}
-    //   onChange={onChange}
+      onChange={onChange}
       pagination={{
         current: currentPage,
         pageSize,
         total: totalCount,
         onChange: onPaginationChange,
         showSizeChanger: true,
-        showTotal: (total, range) => `${range[0]}-${range[1]} trong ${total} địa điểm`,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} trong ${total} địa điểm`,
       }}
       scroll={{ x: "max-content" }}
     />

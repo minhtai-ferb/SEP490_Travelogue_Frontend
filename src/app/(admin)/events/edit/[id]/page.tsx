@@ -629,7 +629,7 @@
 //                         <Label className="mb-2 block">Hình ảnh Thumbnail hiện tại</Label>
 //                         <div className="relative w-32 h-32 border rounded-md overflow-hidden group">
 //                           <img
-//                             src={existingThumbnail || "/placeholder.svg"}
+//                             src={existingThumbnail || "/placeholder_image.jpg"}
 //                             alt="Thumbnail"
 //                             className="w-full h-full object-cover"
 //                           />
@@ -1602,7 +1602,7 @@ function EditEvent() {
                         <Label className="mb-2 block">Hình ảnh Thumbnail hiện tại</Label>
                         <div className="relative w-32 h-32 border rounded-md overflow-hidden group">
                           <img
-                            src={existingThumbnail || "/placeholder.svg"}
+                            src={existingThumbnail || "/placeholder_image.jpg"}
                             alt="Thumbnail"
                             className="w-full h-full object-cover"
                           />
@@ -1669,7 +1669,7 @@ function EditEvent() {
                           .map((media, index) => (
                             <div key={index} className="relative group">
                               <img
-                                src={media.mediaUrl || "/placeholder.svg"}
+                                src={media.mediaUrl || "/placeholder_image.jpg"}
                                 alt={`Media ${index}`}
                                 className="w-full h-24 object-cover rounded-md"
                               />
@@ -1713,7 +1713,7 @@ function EditEvent() {
                         {uploadedImages.map((img, index) => (
                           <div key={index} className="relative group">
                             <img
-                              src={img.url || "/placeholder.svg"}
+                              src={img.url || "/placeholder_image.jpg"}
                               alt={`Uploaded ${index}`}
                               className="w-full h-24 object-cover rounded-md"
                             />

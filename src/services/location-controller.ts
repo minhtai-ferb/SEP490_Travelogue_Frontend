@@ -70,14 +70,14 @@ export function useLocationController() {
   const searchLocationNew = useCallback(
     async ({
       title,
-      typeId,
+      type,
       districtId,
       heritageRank,
       pageNumber,
       pageSize,
     }: {
       title?: string;
-      typeId?: string;
+      type?: string;
       districtId?: string;
       heritageRank?: number;
       pageNumber?: number;
@@ -87,7 +87,7 @@ export function useLocationController() {
       try {
         const queryParams = new URLSearchParams();
         if (title) queryParams.append("title", title);
-        if (typeId) queryParams.append("typeId", typeId);
+        if (type) queryParams.append("typeId", type);
         if (districtId) queryParams.append("districtId", districtId);
         if (heritageRank !== undefined)
           queryParams.append("heritageRank", heritageRank.toString());

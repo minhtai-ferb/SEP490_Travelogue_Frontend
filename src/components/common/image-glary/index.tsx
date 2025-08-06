@@ -40,7 +40,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
 			{/* Main image */}
 			<div className="relative h-screen w-full">
 				<Image
-					src={images[currentIndex].url || "/placeholder.svg"}
+					src={images[currentIndex].url || "/placeholder_image.jpg"}
 					alt={images[currentIndex].alt}
 					fill
 					className="object-contain"
@@ -86,7 +86,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
 						)}
 						aria-label={`View image ${index + 1}`}
 					>
-						<Image src={image.url || "/placeholder.svg"} alt={image.alt} fill className="object-cover" />
+						<Image src={image.url || "/placeholder_image.jpg"} alt={image.alt} fill className="object-cover" />
 					</button>
 				))}
 			</div>

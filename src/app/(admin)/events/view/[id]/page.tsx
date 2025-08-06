@@ -79,7 +79,7 @@ function ViewEvent() {
 
   // Find thumbnail image
   const thumbnailImage =
-    event?.medias?.find((media) => media.isThumbnail)?.mediaUrl || event?.medias?.[0]?.mediaUrl || "/placeholder.svg"
+    event?.medias?.find((media) => media.isThumbnail)?.mediaUrl || event?.medias?.[0]?.mediaUrl || "/placeholder_image.jpg"
 
   // Get non-thumbnail images for gallery
   const galleryImages = event?.medias?.filter((media) => !media.isThumbnail) || []

@@ -118,7 +118,7 @@ function InfoExperience() {
 				{experienceDetail.medias && experienceDetail.medias.length > 0 && (
 					<>
 						<Image
-							src={experienceDetail.medias[currentImageIndex].mediaUrl || "/placeholder.svg"}
+							src={experienceDetail.medias[currentImageIndex].mediaUrl || "/placeholder_image.jpg"}
 							alt={experienceDetail.title}
 							fill
 							className="object-contain"
@@ -188,7 +188,7 @@ function InfoExperience() {
 											onClick={() => setCurrentImageIndex(index)}
 										>
 											<Image
-												src={media.mediaUrl || "/placeholder.svg"}
+												src={media.mediaUrl || "/placeholder_image.jpg"}
 												alt={`${experienceDetail.title} - Hình ${index + 1}`}
 												fill
 												className="object-cover"
