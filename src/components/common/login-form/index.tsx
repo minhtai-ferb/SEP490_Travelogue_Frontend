@@ -12,6 +12,7 @@ import { isValidEmailOrPhone, isValidPassword } from "@/utils/validation";
 import { GoogleLoginButton } from "../google-button";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/Users";
+import toast from "react-hot-toast";
 
 interface LoginFormProps {
   onSwitchMode: () => void;
@@ -56,11 +57,8 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
       } else {
         navigate.push("/");
       }
-      addToast({
-        title: "Đăng nhập thành công!",
-        description: "Chào mừng bạn đến với Goyoung Tây Ninh",
-        color: "success",
-      });
+
+      toast.success("Đăng nhập thành công!");
     } catch (error: any) {
       console.error("Login error:", error);
       setError(error?.response?.data?.Message || "Đã xảy ra lỗi khi đăng nhập");

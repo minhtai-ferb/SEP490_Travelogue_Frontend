@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,13 +8,15 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import CityCard from "./components/card";
-import { District } from "@/types/District";
 import { useDistrictManager } from "@/services/district-manager";
-import { addToast } from "@heroui/react";
+import { District } from "@/types/District";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import CityCard from "./components/card";
 
 function ManageDistrics() {
   const [districts, setDistricts] = useState<District[]>([]);
@@ -40,12 +40,7 @@ function ManageDistrics() {
           error?.response?.data.Message ||
           "Đã xảy ra lỗi khi lấy dữ liệu quận huyện";
 
-        // Display error using toast
-        addToast({
-          title: "Lỗi khi lấy dữ liệu quận huyện",
-          description: errorMessage,
-          color: "danger",
-        });
+        toast.error(errorMessage); // Use toast to show error message
       }
     };
 

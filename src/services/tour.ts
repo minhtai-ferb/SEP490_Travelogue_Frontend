@@ -14,18 +14,8 @@ export function useTour() {
 	const getAllTour = useCallback(
 		async () => {
 			setLoading(true);
-			const params = {
-				Name: "",
-				TourType: "all",
-				TotalDaysMin: 0,
-				TotalDaysMax: 0,
-				PriceMin: 0,
-				PriceMax: 0,
-				CreatedTime: "",
-				LastUpdatedTime: "",
-			}
 			try {
-				const response = await callApi("get", TOUR_API_URL.ALL_TOURS, { params });
+				const response = await callApi("get", TOUR_API_URL.ALL_TOURS);
 				return response?.data;
 			} catch (e: any) {
 				throw e;

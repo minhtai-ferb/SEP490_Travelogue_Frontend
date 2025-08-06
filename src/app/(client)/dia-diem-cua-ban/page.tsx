@@ -1,16 +1,11 @@
 "use client"
 
-import { ImageGalleryExplore } from "@/components/common/image-glary/image-explore"
-import { favoritesAtom } from "@/store/favorites"
-import type { HistoricalSite } from "@/types/History"
-import { motion } from "framer-motion";
+import { ImageGalleryExplore } from "@/components/common/image-glary/image-explore";
+import { favoritesAtom } from "@/store/favorites";
+import { Location } from "@/types/Location";
 import {
 	addToast,
 	Button,
-	Card,
-	CardBody,
-	CardFooter,
-	CardHeader,
 	Image,
 	Modal,
 	ModalBody,
@@ -19,13 +14,13 @@ import {
 	ModalHeader,
 	ScrollShadow,
 	useDisclosure
-} from "@heroui/react"
-import { useAtom } from "jotai"
-import { X } from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
-import { FaInfoCircle, FaMapMarkerAlt, FaSearch, FaTrash } from "react-icons/fa"
-import { Location } from "@/types/Location";
+} from "@heroui/react";
+import { motion } from "framer-motion";
+import { useAtom } from "jotai";
+import { X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { FaInfoCircle, FaMapMarkerAlt, FaSearch, FaTrash } from "react-icons/fa";
 
 interface ListItemProps {
 	location: Location

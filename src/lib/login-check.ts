@@ -3,6 +3,7 @@
 import { useAuth } from "@/services/useAuth";
 import { addToast } from "@heroui/react";
 import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 
 const RedirectLogin = () => {
   if (typeof window !== "undefined") {
@@ -44,10 +45,10 @@ export const useLoginCheck = () => {
         tokenStatusCache = await isTokenExpired();
       } catch (error) {
         console.error("Error checking token status:", error);
-        isCheckingToken = false; 
-        return false; 
+        isCheckingToken = false;
+        return false;
       }
-      isCheckingToken = false; 
+      isCheckingToken = false;
     }
 
     const tokenStatus = tokenStatusCache;
@@ -65,20 +66,21 @@ export const useLoginCheck = () => {
         response = await getRefreshToken(refreshToken);
       } catch (error) {
         console.error("Error refreshing token:", error);
-        isRefreshing = false; 
-        tokenStatusCache = null; 
+        isRefreshing = false;
+        tokenStatusCache = null;
         return false;
       }
 
-      isRefreshing = false; 
-      tokenStatusCache = null; 
+      isRefreshing = false;
+      tokenStatusCache = null;
 
       if (response?.data == null) {
-        addToast({
-          title: "Lỗi xác thực!",
-          description: response?.message || "Không thể làm mới token.",
-          color: "danger",
-        });
+        // addToast({
+        //   title: "Lỗi xác thực!",
+        //   description: response?.message || "Không thể làm mới token.",
+        //   color: "danger",
+        // });
+        toast.error(response?.message || "Không thể làm mới token.");
         return false;
       }
 
