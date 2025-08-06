@@ -84,7 +84,7 @@ export interface Tour {
 	isActive: boolean
 }
 
-export type TourStatus = "Draft" | "Confirmed" | "Cancel"
+export type TourStatus = "Draft" | "Confirmed" | "Cancelled"
 
 export interface CreateTourRequest {
 	name: string
