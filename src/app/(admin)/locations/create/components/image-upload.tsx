@@ -7,11 +7,7 @@ import { Trash2, Upload, X } from "lucide-react";
 import { Upload as AntUpload, message, Checkbox, Image } from "antd";
 import type { UploadProps } from "antd";
 import { useLocations } from "@/services/use-locations";
-
-interface MediaDto {
-  url: string;
-  isThumbnail: boolean;
-}
+import { MediaDto } from "../types/CreateLocation";
 
 interface ImageUploadProps {
   mediaDtos: MediaDto[];
@@ -36,7 +32,7 @@ export function ImageUpload({
 
         if (uploadedFiles && Array.isArray(uploadedFiles)) {
           const newMediaDtos = uploadedFiles.map((file: any) => ({
-            url: file.url || file.fileName || file,
+            mediaUrl: file.mediaUrl || file.fileName || file,
             isThumbnail: false,
           }));
 
@@ -54,13 +50,13 @@ export function ImageUpload({
   );
 
   const handleDelete = useCallback(
-    async (url: string) => {
+    async (mediaUrl: string) => {
       try {
         // Extract filename from URL
-        const fileName = url.split("/").pop() || url;
+        const fileName = mediaUrl.split("/").pop() || mediaUrl;
         await deleteMediaByFileName(fileName);
 
-        const updatedMediaDtos = mediaDtos.filter((media) => media.url !== url);
+        const updatedMediaDtos = mediaDtos.filter((media) => media.mediaUrl !== mediaUrl);
         onChange(updatedMediaDtos);
         message.success("Đã xóa hình ảnh thành công!");
       } catch (error) {
@@ -72,10 +68,10 @@ export function ImageUpload({
   );
 
   const handleSetThumbnail = useCallback(
-    (url: string) => {
+    (mediaUrl: string) => {
       const updatedMediaDtos = mediaDtos.map((media) => ({
         ...media,
-        isThumbnail: media.url === url,
+        isThumbnail: media.mediaUrl === mediaUrl,
       }));
       onChange(updatedMediaDtos);
       message.success("Đã đặt làm ảnh đại diện!");
@@ -122,12 +118,12 @@ export function ImageUpload({
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {mediaDtos.map((media, index) => (
               <div
-                key={`${media.url}-${index}`}
+                key={`${media.mediaUrl}-${index}`}
                 className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-colors flex justify-center items-center"
               >
                 {/* Ant Design Image */}
                 <Image
-                  src={media.url || "placeholder_image.jpg"}
+                  src={media.mediaUrl || "placeholder_image.jpg"}
                   fallback="/placeholder_image.jpg?height=200&width=200"
                   preview
                   style={{
@@ -144,7 +140,7 @@ export function ImageUpload({
                   type="button"
                   variant="ghost"
                   className="absolute top-2 right-2 h-5 w-5 z-10 text-red-500 hover:text-red-600 hover:bg-red-50"
-                  onClick={() => handleDelete(media.url)}
+                  onClick={() => handleDelete(media.mediaUrl)}
                   disabled={isLoading}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -156,7 +152,7 @@ export function ImageUpload({
                     className="absolute top-2 left-2 z-10 [&_.ant-checkbox-inner]:bg-white/20 [&_.ant-checkbox-inner]:border-primary [&_.ant-checkbox-checked_.ant-checkbox-inner]:bg-primary [&_.ant-checkbox-checked_.ant-checkbox-inner]:border-primary"
                     onChange={(e) => {
                       if (e.target.checked) {
-                        handleSetThumbnail(media.url);
+                        handleSetThumbnail(media.mediaUrl);
                       } else {
                         const updatedMediaDtos = mediaDtos.map((m) => ({
                           ...m,

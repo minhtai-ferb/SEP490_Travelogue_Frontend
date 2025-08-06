@@ -13,8 +13,8 @@ interface LocationTableProps {
   totalCount: number;
   onPaginationChange: (page: number, pageSize: number) => void;
   onView: (record: LocationTable) => void;
-  //   onChange: TableProps<LocationTable>["onChange"];
-  //   onEdit: (record: LocationTable) => void;
+  onChange: TableProps<LocationTable>["onChange"];
+  onEdit: (record: LocationTable) => void;
   onDelete: (record: LocationTable) => void;
 }
 
@@ -26,8 +26,8 @@ export function LocationTableComponent({
   totalCount,
   onPaginationChange,
   onView,
-  //   onChange,
-  //   onEdit,
+  onChange,
+  onEdit,
   onDelete,
 }: LocationTableProps) {
   const columns = [
@@ -75,9 +75,9 @@ export function LocationTableComponent({
           <Button onClick={() => onView(record)} variant="outline" size="sm">
             <Eye className="h-4 w-4" />
           </Button>
-          {/* <Button onClick={() => onEdit(record)} variant="outline" size="sm">
+          <Button onClick={() => onEdit(record)} variant="outline" size="sm">
             <Pencil className="h-4 w-4" />
-          </Button> */}
+          </Button>
           <Button
             onClick={() => onDelete(record)}
             variant="outline"
@@ -99,7 +99,7 @@ export function LocationTableComponent({
         key: item.id || index,
       }))}
       loading={loading}
-      //   onChange={onChange}
+      onChange={onChange}
       pagination={{
         current: currentPage,
         pageSize,

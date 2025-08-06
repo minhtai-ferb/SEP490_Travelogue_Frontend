@@ -700,7 +700,7 @@ export default function CreateExperienceForm() {
                       ) : (
                         <div className="relative">
                           <img
-                            src={thumbnailPreview || "/placeholder.svg"}
+                            src={thumbnailPreview || "/placeholder_image.jpg"}
                             alt="Thumbnail preview"
                             className="w-full max-w-md h-auto rounded-lg mx-auto"
                           />
@@ -781,7 +781,7 @@ export default function CreateExperienceForm() {
                             <Card key={index} className="overflow-hidden">
                               <CardContent className="p-0 relative">
                                 <img
-                                  src={preview || "/placeholder.svg"}
+                                  src={preview || "/placeholder_image.jpg"}
                                   alt={`Preview ${index + 1}`}
                                   className="h-40 w-full object-cover"
                                 />

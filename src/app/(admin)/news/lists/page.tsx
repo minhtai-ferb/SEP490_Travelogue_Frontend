@@ -190,11 +190,11 @@ function ManageNews() {
         const thumbnailImage =
           record?.medias?.find((media: any) => media.isThumbnail)?.mediaUrl ||
           record?.medias?.[0]?.mediaUrl ||
-          "/placeholder.svg";
+          "/placeholder_image.jpg";
         return (
           <Image
             key={record.id}
-            src={thumbnailImage || "/placeholder.svg"}
+            src={thumbnailImage || "/placeholder_image.jpg"}
             alt="News"
             style={{ width: 50, height: 50, objectFit: "cover" }}
           />

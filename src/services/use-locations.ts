@@ -130,7 +130,7 @@ export function useLocations() {
 
         const response = await callApi(
           "post",
-          "media/upload-multiple",
+          "media/upload-multiple-images",
           formData
         );
         return response?.data;
@@ -229,6 +229,82 @@ export function useLocations() {
     [callApi, setIsLoading]
   );
 
+  const updateCuisineInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/cuisine`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateCraftVillageInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/craft-village`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateHistoricalLocationInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/historical-location`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateScenicSpotInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/scenic-spot`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
   return {
     addHistoricalLocation,
     addCraftVillage,
@@ -239,6 +315,10 @@ export function useLocations() {
     deleteLocation,
     searchAllLocations,
     getLocationById,
+    updateCuisineInfo,
+    updateCraftVillageInfo,
+    updateHistoricalLocationInfo,
+    updateScenicSpotInfo,
     loading: setIsLoading || loading,
   };
 }

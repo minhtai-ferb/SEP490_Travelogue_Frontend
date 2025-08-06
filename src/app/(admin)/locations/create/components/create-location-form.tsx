@@ -187,38 +187,28 @@ export function CreateLocationForm() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="">
-          {" "}
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Thông tin cơ bản</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BasicLocationInfo
-                data={formData}
-                onChange={handleBasicInfoChange}
-              />
-            </CardContent>
-          </Card>
-        </div>
-        <div className="">
-          {/* Time Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Giờ hoạt động</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TimeSelector
-                openTime={formData.openTime}
-                closeTime={formData.closeTime}
-                onChange={handleTimeChange}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      {/* Basic Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Thông tin cơ bản</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <BasicLocationInfo data={formData} onChange={handleBasicInfoChange} />
+        </CardContent>
+      </Card>
+      {/* Time Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Giờ hoạt động</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TimeSelector
+            openTime={formData.openTime}
+            closeTime={formData.closeTime}
+            onChange={handleTimeChange}
+          />
+        </CardContent>
+      </Card>
 
       {/* Image Upload */}
       <ImageUpload

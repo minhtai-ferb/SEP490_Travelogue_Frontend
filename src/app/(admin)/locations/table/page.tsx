@@ -30,7 +30,7 @@ interface Option {
   label: string;
 }
 
-type OnChange = NonNullable<TableProps<Location>["onChange"]>;
+type OnChange = NonNullable<TableProps<LocationTable>["onChange"]>;
 type Filters = Parameters<OnChange>[1];
 type GetSingle<T> = T extends (infer U)[] ? U : never;
 type Sorts = GetSingle<Parameters<OnChange>[2]>;
@@ -50,6 +50,9 @@ export default function ManageLocation() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedType, setSelectedType] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -65,7 +68,7 @@ export default function ManageLocation() {
 
         const response = await searchAllLocations({
           title: "",
-          type: undefined,
+          type: selectedType ? parseInt(selectedType, 10) : undefined,
           districtId: selectedOption,
           heritageRank: undefined,
           pageNumber: currentPage,
@@ -80,12 +83,12 @@ export default function ManageLocation() {
       }
     };
     fetchLocations();
-  }, [selectedOption, currentPage, pageSize]);
+  }, [selectedOption, selectedType, currentPage, pageSize]);
 
   const handleViewDetails = (record: LocationTable) =>
     router.push(`/locations/view/${record.id}`);
-  //   const handleEdit = (record: LocationTable) =>
-  //     router.push(`/admin/locations/edit/${record.id}`);
+  const handleEdit = (record: LocationTable) =>
+    router.push(`/locations/edit/${record.id}`);
   const handleDeleteConfirm = (record: LocationTable) => {
     setLocationToDelete(record);
     setDeleteDialogOpen(true);
@@ -97,7 +100,7 @@ export default function ManageLocation() {
       await deleteLocation(locationToDelete.id);
       const response = await searchAllLocations({
         title: "",
-        type: undefined,
+        type: selectedType ? parseInt(selectedType, 10) : undefined,
         districtId: selectedOption,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -130,7 +133,7 @@ export default function ManageLocation() {
     try {
       const response = await searchAllLocations({
         title: "",
-        type: undefined,
+        type: selectedType ? parseInt(selectedType, 10) : undefined,
         districtId: value,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -143,12 +146,30 @@ export default function ManageLocation() {
     }
   };
 
+  const onChangeTypeLocation = async (value: string) => {
+    setSelectedType(value);
+    try {
+      const response = await searchAllLocations({
+        title: "",
+        type: value ? parseInt(value, 10) : undefined,
+        districtId: selectedOption,
+        heritageRank: undefined,
+        pageNumber: currentPage,
+        pageSize: pageSize,
+      });
+      setData(response?.data as LocationTable[]);
+      setTotalCount(response.totalCount);
+    } catch (error) {
+      console.error("Error fetching data on type change:", error);
+    }
+  };
+
   const onSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     try {
       const response = await searchAllLocations({
         title: value,
-        type: undefined,
+        type: selectedType ? parseInt(selectedType, 10) : undefined,
         districtId: selectedOption,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -172,6 +193,7 @@ export default function ManageLocation() {
           <>
             <LocationFilterBar
               options={options}
+              onChangeTypeLocation={onChangeTypeLocation}
               onChangeDistrict={onChangeDistrict}
               onSearch={onSearch}
             />
@@ -186,9 +208,9 @@ export default function ManageLocation() {
                 setCurrentPage(page);
                 setPageSize(size);
               }}
-              // onChange={handleChange}
+              onChange={handleChange}
               onView={handleViewDetails}
-              // onEdit={handleEdit}
+              onEdit={handleEdit}
               onDelete={handleDeleteConfirm}
             />
           </>

@@ -6,11 +6,21 @@ export enum LocationType {
   ScenicSpot = 4,
 }
 
+export enum Category {
+  Other = "Khác",
+  CraftVillage = "Làng nghề",
+  HistoricalSite = "Địa điểm lịch sử",
+  Cuisine = "Ẩm thực",
+  ScenicSpot = "Danh lam thắng cảnh",
+}
+
 export enum TypeHistoricalLocation {
   SpecialNationalMonument = 1,
   NationalMonument = 2,
   ProvincialMonument = 3,
 }
+
+
 
 export interface Location {
   name: string
@@ -24,6 +34,7 @@ export interface Location {
   districtId: string
   locationType: LocationType
   mediaDtos: MediaDto[]
+  category?: Category
 }
 
 export interface CuisineData {
