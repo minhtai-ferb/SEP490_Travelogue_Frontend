@@ -80,7 +80,7 @@ export default function ExperienceDetailPage() {
 
   const getThumbnail = () => {
     if (!experience?.medias || experience.medias.length === 0) {
-      return "/placeholder.svg"
+      return "/placeholder_image.jpg"
     }
 
     const thumbnail = experience.medias.find((media: ListMedia) => media.isThumbnail)
@@ -184,7 +184,7 @@ export default function ExperienceDetailPage() {
             <Card>
               <CardContent className="p-0">
                 <img
-                  src={getThumbnail() || "/placeholder.svg"}
+                  src={getThumbnail() || "/placeholder_image.jpg"}
                   alt={experience.title}
                   className="w-full h-64 object-cover"
                 />
@@ -237,7 +237,7 @@ export default function ExperienceDetailPage() {
                     <Card key={index} className="overflow-hidden">
                       <CardContent className="p-0">
                         <img
-                          src={media.mediaUrl || "/placeholder.svg"}
+                          src={media.mediaUrl || "/placeholder_image.jpg"}
                           alt={`${experience.title} - Hình ${index + 1}`}
                           className="w-full h-40 object-cover"
                         />

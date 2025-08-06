@@ -5,20 +5,24 @@
 @tailwind components;
 @tailwind utilities;
 
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
-  -ms-overflow-style: none; /* Internet Explorer and Edge */
-  scrollbar-width: none; /* Firefox */
+html,
+body {
+  -ms-overflow-style: none;
+  /* Internet Explorer and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
-html::-webkit-scrollbar, 
+html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, and Opera */
+  display: none;
+  /* Chrome, Safari, and Opera */
 }
 
 @layer base {
@@ -58,6 +62,7 @@ body::-webkit-scrollbar {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -98,8 +103,33 @@ body::-webkit-scrollbar {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1 {
+    @apply text-2xl font-bold;
+  }
+
+  h2 {
+    @apply text-xl font-bold;
+  }
+
+  h3 {
+    @apply text-lg font-bold;
+  }
+
+  blockquote {
+    border-left: 3px solid rgb(170, 170, 170);
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid rgb(170, 170, 170);
+    margin: 2rem 0;
   }
 }
 
@@ -111,6 +141,7 @@ body::-webkit-scrollbar {
   width: 100%;
   height: 100%;
 }
+
 .swiper-slide {
   text-align: center;
   font-size: 18px;
@@ -134,9 +165,12 @@ body::-webkit-scrollbar {
   width: 10px;
   height: 10px;
   margin: 12px 0;
-  background: rgba(249, 155, 155, 0.64); /* soft pink */
-  border-radius: 2%; /* circle by default */
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4); /* subtle red shadow */
+  background: rgba(249, 155, 155, 0.64);
+  /* soft pink */
+  border-radius: 2%;
+  /* circle by default */
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  /* subtle red shadow */
   opacity: 0.6;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -167,7 +201,7 @@ body::-webkit-scrollbar {
 }
 
 .navlink {
-  color: #ffffff; 
+  color: #ffffff;
   font-size: 1.1rem;
   font-weight: 500;
   transition: color 0.3s ease-in-out;
@@ -183,8 +217,10 @@ body::-webkit-scrollbar {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .custom-scrollbar {
@@ -199,18 +235,21 @@ body::-webkit-scrollbar {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #b4c4fde1; /* Blue thumb */
+  background-color: #b4c4fde1;
+  /* Blue thumb */
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background-color: #e5e7eb; /* Light gray track */
+  background-color: #e5e7eb;
+  /* Light gray track */
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

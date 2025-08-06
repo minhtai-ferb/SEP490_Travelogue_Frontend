@@ -453,7 +453,7 @@ export default function HeroSlider() {
 						{slides.map((slide, index) => (
 							<SwiperSlide key={index}>
 								<img
-									src={slide.image || "/placeholder.svg"}
+									src={slide.image || "/placeholder_image.jpg"}
 									alt={slide.title}
 									className="w-full h-full object-cover" // Changed to object-cover for better fit
 								/>
@@ -636,12 +636,12 @@ export default function HeroSlider() {
 
 
 const categories = [
-	{ name: "Tất cả", slug: "all", icon: "/placeholder.svg?height=24&width=24" },
-	{ name: "Văn hóa & Lịch sử", slug: "van-hoa-lich-su", icon: "/placeholder.svg?height=24&width=24" },
-	{ name: "Ẩm thực", slug: "am-thuc", icon: "/placeholder.svg?height=24&width=24" },
-	{ name: "Mua sắm", slug: "mua-sam", icon: "/placeholder.svg?height=24&width=24" },
-	{ name: "Giải trí", slug: "giai-tri", icon: "/placeholder.svg?height=24&width=24" },
-	{ name: "Thiên nhiên", slug: "thien-nhien", icon: "/placeholder.svg?height=24&width=24" },
+	{ name: "Tất cả", slug: "all", icon: "/placeholder_image.jpg?height=24&width=24" },
+	{ name: "Văn hóa & Lịch sử", slug: "van-hoa-lich-su", icon: "/placeholder_image.jpg?height=24&width=24" },
+	{ name: "Ẩm thực", slug: "am-thuc", icon: "/placeholder_image.jpg?height=24&width=24" },
+	{ name: "Mua sắm", slug: "mua-sam", icon: "/placeholder_image.jpg?height=24&width=24" },
+	{ name: "Giải trí", slug: "giai-tri", icon: "/placeholder_image.jpg?height=24&width=24" },
+	{ name: "Thiên nhiên", slug: "thien-nhien", icon: "/placeholder_image.jpg?height=24&width=24" },
 ]
 
 const slides = [

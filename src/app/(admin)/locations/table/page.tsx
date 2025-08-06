@@ -22,13 +22,15 @@ import { DeleteLocationDialog } from "./components/delete-location-dialog";
 import { LocationTable } from "@/types/Location";
 import { LocationTableComponent } from "./components/location-table";
 import HeaderLocationTable from "./components/header";
+import { useLocations } from "@/services/use-locations";
+import LoadingContent from "@/components/common/loading-content";
 
 interface Option {
   value: string;
   label: string;
 }
 
-type OnChange = NonNullable<TableProps<Location>["onChange"]>;
+type OnChange = NonNullable<TableProps<LocationTable>["onChange"]>;
 type Filters = Parameters<OnChange>[1];
 type GetSingle<T> = T extends (infer U)[] ? U : never;
 type Sorts = GetSingle<Parameters<OnChange>[2]>;
@@ -36,8 +38,8 @@ type Sorts = GetSingle<Parameters<OnChange>[2]>;
 export default function ManageLocation() {
   const [filteredInfo, setFilteredInfo] = useState<Filters>({});
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
-  const { searchLocation, loading, deleteLocation } = useLocationController();
   const { getAllDistrict } = useDistrictManager();
+  const { loading, searchAllLocations, deleteLocation } = useLocations();
   const [data, setData] = useState<LocationTable[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
@@ -48,6 +50,9 @@ export default function ManageLocation() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedType, setSelectedType] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -61,9 +66,9 @@ export default function ManageLocation() {
           })),
         ]);
 
-        const response = await searchLocation({
+        const response = await searchAllLocations({
           title: "",
-          typeId: "",
+          type: selectedType ? parseInt(selectedType, 10) : undefined,
           districtId: selectedOption,
           heritageRank: undefined,
           pageNumber: currentPage,
@@ -78,12 +83,12 @@ export default function ManageLocation() {
       }
     };
     fetchLocations();
-  }, [selectedOption, currentPage, pageSize]);
+  }, [selectedOption, selectedType, currentPage, pageSize]);
 
-  //   const handleViewDetails = (record: LocationTable) =>
-  //     router.push(`/admin/locations/view/${record.id}`);
-  //   const handleEdit = (record: LocationTable) =>
-  //     router.push(`/admin/locations/edit/${record.id}`);
+  const handleViewDetails = (record: LocationTable) =>
+    router.push(`/locations/view/${record.id}`);
+  const handleEdit = (record: LocationTable) =>
+    router.push(`/locations/edit/${record.id}`);
   const handleDeleteConfirm = (record: LocationTable) => {
     setLocationToDelete(record);
     setDeleteDialogOpen(true);
@@ -93,9 +98,9 @@ export default function ManageLocation() {
     if (!locationToDelete) return;
     try {
       await deleteLocation(locationToDelete.id);
-      const response = await searchLocation({
+      const response = await searchAllLocations({
         title: "",
-        typeId: "",
+        type: selectedType ? parseInt(selectedType, 10) : undefined,
         districtId: selectedOption,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -126,9 +131,9 @@ export default function ManageLocation() {
   const onChangeDistrict = async (value: string) => {
     setSelectedOption(value);
     try {
-      const response = await searchLocation({
+      const response = await searchAllLocations({
         title: "",
-        typeId: "",
+        type: selectedType ? parseInt(selectedType, 10) : undefined,
         districtId: value,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -141,12 +146,30 @@ export default function ManageLocation() {
     }
   };
 
+  const onChangeTypeLocation = async (value: string) => {
+    setSelectedType(value);
+    try {
+      const response = await searchAllLocations({
+        title: "",
+        type: value ? parseInt(value, 10) : undefined,
+        districtId: selectedOption,
+        heritageRank: undefined,
+        pageNumber: currentPage,
+        pageSize: pageSize,
+      });
+      setData(response?.data as LocationTable[]);
+      setTotalCount(response.totalCount);
+    } catch (error) {
+      console.error("Error fetching data on type change:", error);
+    }
+  };
+
   const onSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     try {
-      const response = await searchLocation({
+      const response = await searchAllLocations({
         title: value,
-        typeId: "",
+        type: selectedType ? parseInt(selectedType, 10) : undefined,
         districtId: selectedOption,
         heritageRank: undefined,
         pageNumber: currentPage,
@@ -163,21 +186,21 @@ export default function ManageLocation() {
     <SidebarInset>
       <HeaderLocationTable />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {loading || data.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <Spin size="large" />
-          </div>
+        {(typeof loading === "boolean" ? loading : false) ||
+        data.length === 0 ? (
+          <LoadingContent />
         ) : (
           <>
             <LocationFilterBar
               options={options}
+              onChangeTypeLocation={onChangeTypeLocation}
               onChangeDistrict={onChangeDistrict}
               onSearch={onSearch}
             />
 
             <LocationTableComponent
               data={data}
-              loading={loading}
+              loading={typeof loading === "boolean" ? loading : false}
               currentPage={currentPage}
               pageSize={pageSize}
               totalCount={totalCount}
@@ -185,9 +208,9 @@ export default function ManageLocation() {
                 setCurrentPage(page);
                 setPageSize(size);
               }}
-              // onChange={handleChange}
-              // onView={handleViewDetails}
-              // onEdit={handleEdit}
+              onChange={handleChange}
+              onView={handleViewDetails}
+              onEdit={handleEdit}
               onDelete={handleDeleteConfirm}
             />
           </>

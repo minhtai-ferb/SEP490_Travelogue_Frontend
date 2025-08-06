@@ -81,7 +81,7 @@ export default function NewsDetailPage() {
 
   const getThumbnail = () => {
     if (!news?.medias || news.medias.length === 0) {
-      return "/placeholder.svg"
+      return "/placeholder_image.jpgge.jpg"
     }
 
     const thumbnail = news.medias.find((media: ListMedia) => media.isThumbnail)
@@ -184,7 +184,7 @@ export default function NewsDetailPage() {
           <div className="md:col-span-1">
             <Card>
               <CardContent className="p-0">
-                <img src={getThumbnail() || "/placeholder.svg"} alt={news.title} className="w-full h-64 object-cover" />
+                <img src={getThumbnail() || "/placeholder_image.jpg"} alt={news.title} className="w-full h-64 object-cover" />
               </CardContent>
             </Card>
 
@@ -242,7 +242,7 @@ export default function NewsDetailPage() {
                     <Card key={index} className="overflow-hidden">
                       <CardContent className="p-0">
                         <img
-                          src={media.mediaUrl || "/placeholder.svg"}
+                          src={media.mediaUrl || "/placeholder_image.jpg"}
                           alt={`${news.title} - Hình ${index + 1}`}
                           className="w-full h-40 object-cover"
                         />

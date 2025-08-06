@@ -19,10 +19,11 @@ export interface Location {
   address: string
   latitude: number
   longitude: number
-  openTime: { ticks: number }
-  closeTime: { ticks: number }
+  openTime: string
+  closeTime: string
   districtId: string
   locationType: LocationType
+  mediaDtos: MediaDto[]
 }
 
 export interface CuisineData {
@@ -49,4 +50,8 @@ export interface HistoricalLocationData {
   establishedDate: string
   locationId: string
   typeHistoricalLocation: TypeHistoricalLocation
+}
+export interface MediaDto {
+  mediaUrl: string
+  isThumbnail: boolean
 }

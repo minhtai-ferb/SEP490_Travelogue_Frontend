@@ -296,7 +296,7 @@ export default function EventContentForm({
                 {uploadedImages.map((img, index) => (
                   <div key={index} className="relative group">
                     <img
-                      src={img.url || "/placeholder.svg"}
+                      src={img.url || "/placeholder_image.jpg"}
                       alt={`Uploaded ${index}`}
                       className="w-full h-24 object-cover rounded-md"
                     />

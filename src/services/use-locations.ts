@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import useApiService from "@/hooks/useApi";
+import { MediaDto } from "@/app/(admin)/locations/create/types/CreateLocation";
 
 export function useLocations() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -99,10 +100,11 @@ export function useLocations() {
       address: string;
       latitude: number;
       longitude: number;
-      openTime: { ticks: number };
-      closeTime: { ticks: number };
+      openTime: string;
+      closeTime: string;
       districtId: string;
       locationType: number;
+      mediaDtos: MediaDto[];
     }) => {
       setIsLoading(true);
       try {
@@ -117,18 +119,20 @@ export function useLocations() {
     [callApi, setIsLoading]
   );
 
-  const uploadLocationMedia = useCallback(
-    async (id: string, files: File[], thumbnailFileName?: string) => {
+  const uploadMediaMultiple = useCallback(
+    async (files: File[]) => {
       setIsLoading(true);
       try {
         const formData = new FormData();
-        files.forEach((file) => formData.append("imageUploads", file));
+        files.forEach((file) => {
+          formData.append("images", file);
+        });
 
-        const query = thumbnailFileName
-          ? `upload-media?id=${id}&thumbnailFileName=${thumbnailFileName}`
-          : `upload-media?id=${id}`;
-
-        const response = await callApi("post", `location/${query}`, formData);
+        const response = await callApi(
+          "post",
+          "media/upload-multiple-images",
+          formData
+        );
         return response?.data;
       } catch (e: any) {
         throw e;
@@ -139,16 +143,157 @@ export function useLocations() {
     [callApi, setIsLoading]
   );
 
-  const deleteLocationMedia = useCallback(
-    async (id: string, mediaURLs: string[]) => {
+  const deleteMediaByFileName = useCallback(
+    async (fileName: string) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi("delete", `media/delete/${fileName}`);
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const deleteLocation = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi("delete", `location/${id}`);
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const searchAllLocations = useCallback(
+    async ({
+      title,
+      type,
+      districtId,
+      heritageRank,
+      pageNumber,
+      pageSize,
+    }: {
+      title?: string;
+      type?: number;
+      districtId?: string;
+      heritageRank?: number;
+      pageNumber?: number;
+      pageSize?: number;
+    }) => {
+      setIsLoading(true);
+      try {
+        const queryParams = new URLSearchParams();
+        if (title) queryParams.append("title", title);
+        if (type !== undefined) queryParams.append("type", type.toString());
+        if (districtId) queryParams.append("districtId", districtId);
+        if (heritageRank !== undefined)
+          queryParams.append("heritageRank", heritageRank.toString());
+        if (pageNumber) queryParams.append("pageNumber", pageNumber.toString());
+        if (pageSize) queryParams.append("pageSize", pageSize.toString());
+
+        const response = await callApi(
+          "get",
+          `location/filter-paged?${queryParams.toString()}`
+        );
+        return response;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const getLocationById = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi("get", `location/${id}`);
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateCuisineInfo = useCallback(
+    async (locationId: string, data: any) => {
       setIsLoading(true);
       try {
         const response = await callApi(
-          "delete",
-          `location/delete-media?id=${id}`,
-          {
-            data: mediaURLs,
-          }
+          "put",
+          `location/${locationId}/cuisine`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateCraftVillageInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/craft-village`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateHistoricalLocationInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/historical-location`,
+          data
+        );
+        return response?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
+  const updateScenicSpotInfo = useCallback(
+    async (locationId: string, data: any) => {
+      setIsLoading(true);
+      try {
+        const response = await callApi(
+          "put",
+          `location/${locationId}/scenic-spot`,
+          data
         );
         return response?.data;
       } catch (e: any) {
@@ -165,8 +310,15 @@ export function useLocations() {
     addCraftVillage,
     addCuisine,
     createLocation,
-    uploadLocationMedia,
-    deleteLocationMedia,
+    uploadMediaMultiple,
+    deleteMediaByFileName,
+    deleteLocation,
+    searchAllLocations,
+    getLocationById,
+    updateCuisineInfo,
+    updateCraftVillageInfo,
+    updateHistoricalLocationInfo,
+    updateScenicSpotInfo,
     loading: setIsLoading || loading,
   };
 }

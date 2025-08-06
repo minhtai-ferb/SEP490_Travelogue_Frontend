@@ -342,7 +342,7 @@ export default function CustomVietmapDemo() {
 									{/* Image - Full width on mobile, 1/3 on larger screens */}
 									<div className="w-full sm:w-1/3 h-48 sm:h-auto relative">
 										<Image
-											src={site?.medias?.find((media) => media.isThumbnail)?.mediaUrl || "/placeholder.svg"}
+											src={site?.medias?.find((media) => media.isThumbnail)?.mediaUrl || "/placeholder_image.jpg"}
 											alt={`Image of ${site.name}`}
 											className="object-cover h-full w-full"
 											fill
@@ -497,10 +497,10 @@ export default function CustomVietmapDemo() {
 											src={
 												selectedSite?.medias?.find((media) => media.isThumbnail)?.mediaUrl ||
 												"https://heroui.com/images/album-cover.png" ||
-												"/placeholder.svg" ||
-												"/placeholder.svg" ||
-												"/placeholder.svg" ||
-												"/placeholder.svg"
+												"/placeholder_image.jpg" ||
+												"/placeholder_image.jpg" ||
+												"/placeholder_image.jpg" ||
+												"/placeholder_image.jpg"
 											}
 										/>
 									</div>
