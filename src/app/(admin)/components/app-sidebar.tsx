@@ -10,7 +10,8 @@ import {
   MapPin,
   Newspaper,
   Send,
-  SquareTerminal
+  SquareTerminal,
+  UserCog
 } from "lucide-react";
 import * as React from "react";
 
@@ -36,6 +37,17 @@ const data = {
       title: "Quản lý quận huyện",
       url: "/districs",
       icon: MapPin,
+    },
+    {
+      title: "Quản lý hướng dẫn viên",
+      url: "/tourguide",
+      icon: UserCog,
+      items: [
+        {
+          title: "Yêu cầu đăng ký",
+          url: "/tourguide/requests",
+        },
+      ],
     },
     {
       title: "Quản lý địa điểm",

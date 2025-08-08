@@ -16,3 +16,8 @@ export const TOUR_GUIDE_API_URL = {
 	TOUR_GUIDE_PROFILE: "/tour-guide/:id",
 	TOUR_GUIDE_SCHEDULE: "/tour-guide/schedules",
 }
+
+export const USER_API_URL = {
+	GET_USER_REQUEST: "/user/tour-guide-request",
+	REQUEST_REVIEW: "/user/:requestId/review",
+}

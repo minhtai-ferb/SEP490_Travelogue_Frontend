@@ -1,8 +1,9 @@
 "use client";
 
-import { TOUR_API_URL, TOUR_GUIDE_API_URL } from "@/constants/api";
+import { TOUR_API_URL, TOUR_GUIDE_API_URL, USER_API_URL } from "@/constants/api";
 import useApiService from "@/hooks/useApi";
 import { isLoadingAtom } from "@/store/auth";
+import { TourguideRequestStatus } from "@/types/Tourguide";
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -69,10 +70,43 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	);
 
+	const getTourguideRequest = useCallback(
+		async (status: TourguideRequestStatus) => {
+			const params = {
+				status: status,
+			}
+			setLoading(true);
+			try {
+				const response = await callApi("get", USER_API_URL.GET_USER_REQUEST, { params });
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
+	const requestReview = useCallback(
+		async (id: string, data: any) => {
+			try {
+				setLoading(true);
+				const response = await callApi("put", USER_API_URL.REQUEST_REVIEW.replace(":requestId", id), data);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
 	return {
 		getTourguideProfile,
 		getTourAssign,
 		getTourGuideSchedule,
+		getTourguideRequest,
+		requestReview,
 		loading: isLoading || loading,
 	};
 }
