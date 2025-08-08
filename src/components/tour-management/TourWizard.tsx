@@ -1,12 +1,12 @@
 "use client"
-import { useState } from "react"
-import { Progress } from "@/components/ui/progress"
-import { CheckCircle, Circle, AlertTriangle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Progress } from "@/components/ui/progress"
+import { useTour } from "@/services/tour"
+import type { CreateTourRequest, ScheduleFormData, TourLocationBulkRequest } from "@/types/Tour"
+import { AlertTriangle, CheckCircle, Circle } from "lucide-react"
+import { useState } from "react"
 import { TourBasicForm } from "./wizard/TourBasicForm"
 import { TourLocationForm } from "./wizard/TourLocationForm"
-import { useTour } from "@/services/tour"
-import type { CreateTourRequest, CreateTourScheduleRequest, ScheduleFormData, TourLocationBulkRequest } from "@/types/Tour"
 import { TourScheduleForm } from "./wizard/TourScheduleForm"
 
 interface TourWizardProps {
@@ -22,13 +22,13 @@ const steps = [
 	},
 	{
 		id: 2,
-		title: "Lịch Trình Tour",
-		description: "Thêm các lịch trình khởi hành",
+		title: "Địa Điểm Tour",
+		description: "Cập nhật địa điểm tham quan",
 	},
 	{
 		id: 3,
-		title: "Địa Điểm Tour",
-		description: "Cập nhật địa điểm tham quan",
+		title: "Lịch Trình Tour",
+		description: "Thêm các lịch trình khởi hành",
 	},
 ]
 
@@ -41,6 +41,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 	// Form data states
 	const [basicInfo, setBasicInfo] = useState<CreateTourRequest | null>(null)
 	const [schedules, setSchedules] = useState<ScheduleFormData[]>([])
+	const [locationsState, setLocationsState] = useState<TourLocationBulkRequest[]>([])
 
 	const { createTour, createTourSchedule, createTourBulk } = useTour()
 
@@ -91,10 +92,11 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			setIsLoading(true)
 			setError("")
 
-			// Step 2: Create tour schedules
+			// Step 3 (final): Create tour schedules
 			await createTourSchedule(createdTourId, data)
 			setSchedules(data)
-			handleNext()
+			// Tour creation completed
+			onComplete()
 		} catch (error: any) {
 			console.error("Error creating schedules:", error)
 			setError(error.message || "Có lỗi khi tạo lịch trình tour")
@@ -113,11 +115,12 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			setIsLoading(true)
 			setError("")
 
-			// Step 3: Bulk update tour locations
+			// Step 2: Bulk update tour locations
+			// Persist locally to keep state when navigating back-and-forth
+			setLocationsState(data)
 			await createTourBulk(createdTourId, data)
-
-			// Tour creation completed
-			onComplete()
+			// Proceed to next step (schedules)
+			handleNext()
 		} catch (error: any) {
 			console.error("Error updating locations:", error)
 			setError(error.message || "Có lỗi khi cập nhật địa điểm tour")
@@ -139,10 +142,11 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 				)
 			case 2:
 				return (
-					<TourScheduleForm
-						initialData={schedules}
+					<TourLocationForm
+						tourId={createdTourId!}
 						tourDays={basicInfo?.totalDays || 1}
-						onSubmit={handleScheduleSubmit}
+						initialData={locationsState}
+						onSubmit={handleLocationSubmit}
 						onPrevious={handlePrevious}
 						onCancel={onCancel}
 						isLoading={isLoading}
@@ -150,10 +154,11 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 				)
 			case 3:
 				return (
-					<TourLocationForm
-						tourId={createdTourId!}
+					<TourScheduleForm
+						initialData={schedules}
 						tourDays={basicInfo?.totalDays || 1}
-						onSubmit={handleLocationSubmit}
+						onChange={(data) => setSchedules(data)}
+						onSubmit={handleScheduleSubmit}
 						onPrevious={handlePrevious}
 						onCancel={onCancel}
 						isLoading={isLoading}
@@ -161,6 +166,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 				)
 			default:
 				return null
+
 		}
 	}
 

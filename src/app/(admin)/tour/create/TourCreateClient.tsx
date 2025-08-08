@@ -6,40 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import { TourWizard } from "../../../../components/tour-management/TourWizard"
-import type { CreateTourBasicRequest, CreateTourScheduleRequest, TourLocationRequest } from "@/types/Tour"
+// Note: Tour creation now happens inside the wizard; no data is returned here
 
 export default function TourCreateClient() {
 	const router = useRouter()
 	const [error, setError] = useState("")
-	const [isLoading, setIsLoading] = useState(false)
 
 	const handleBack = () => {
 		router.push("/tour")
 	}
 
-	const handleComplete = async (
-		basicInfo: CreateTourBasicRequest,
-		schedules: CreateTourScheduleRequest[],
-		locations: TourLocationRequest[],
-	) => {
-		try {
-			setIsLoading(true)
-			setError("")
-
-			// Here you would call your API to create the tour
-			console.log("Creating tour with:", { basicInfo, schedules, locations })
-
-			// Simulate API call
-			await new Promise((resolve) => setTimeout(resolve, 2000))
-
-			// Navigate to tours list on success
-			router.push("/tour")
-		} catch (error) {
-			console.error("Error creating tour:", error)
-			setError("Có lỗi khi tạo tour. Vui lòng thử lại.")
-		} finally {
-			setIsLoading(false)
-		}
+	const handleComplete = () => {
+		router.push("/tour")
 	}
 
 	return (
@@ -65,10 +43,10 @@ export default function TourCreateClient() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Wizard Tạo Tour</CardTitle>
+					<CardTitle>Tạo Tour</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<TourWizard onComplete={handleComplete} onCancel={handleBack} isLoading={isLoading} />
+					<TourWizard onComplete={handleComplete} onCancel={handleBack} />
 				</CardContent>
 			</Card>
 		</div>
