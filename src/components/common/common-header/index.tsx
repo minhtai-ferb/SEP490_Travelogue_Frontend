@@ -66,7 +66,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 	const { logout } = useAuth()
 
 	const handleAdminPage = () => {
-		router.push("/dashboard")
+		router.push("/admin/dashboard")
 	}
 
 	// Handle scroll effect
@@ -267,7 +267,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													<button
 														key="btnKetnoi"
 														className="text-white border-2 border-blue-500 font-medium px-6 py-2 text-base rounded-xl hover:bg-blue-500 hover:border-white hover:text-white transition duration-300"
-														onClick={() => router.push("/login")}
+														onClick={() => router.push("/auth")}
 													>
 														Kết nối cùng chúng tôi
 													</button>
@@ -357,7 +357,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											)}
 											{isAdmin() && (
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href="/dashboard" className="flex items-center">
+													<Link href="/admin/dashboard" className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
 															viewBox="0 0 24 24"
@@ -393,7 +393,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													? "text-blue-500 hover:text-white border-blue-500 hover:bg-blue-500 hover:border-white"
 													: "text-white border-blue-500 hover:bg-blue-500 hover:border-white",
 											)}
-											onClick={() => router.push("/login")}
+											onClick={() => router.push("/auth")}
 										>
 											Kết nối cùng chúng tôi
 										</button>
@@ -479,7 +479,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											)}
 											{isAdmin() && (
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href="/dashboard" className="flex items-center">
+													<Link href="/admin/dashboard" className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
 															viewBox="0 0 24 24"
@@ -509,7 +509,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 										<Button
 											variant="outline"
 											className="hidden md:flex border-primary text-primary hover:bg-primary/10"
-											onClick={() => router.push("/login")}
+											onClick={() => router.push("/auth")}
 										>
 											Kết nối cùng chúng tôi
 										</Button>
@@ -539,7 +539,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											variant="ghost"
 											className="justify-start text-primary md:hidden"
 											onClick={() => {
-												router.push("/login")
+												router.push("/auth")
 												setIsMobileMenuOpen(false)
 											}}
 										>

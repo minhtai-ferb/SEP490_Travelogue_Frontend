@@ -15,7 +15,7 @@ const RedirectLogin = () => {
       description: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
       color: "danger",
     });
-    window.location.href = "/login";
+    window.location.href = "/auth";
   }
 };
 

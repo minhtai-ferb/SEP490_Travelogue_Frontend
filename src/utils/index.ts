@@ -26,7 +26,7 @@ export const getDataFromLocalStorage = (item: string) => {
 			variant: "solid",
 			color: "danger",
 		})
-		route.push("/login");
+		route.push("/auth");
 		return null;
 	}
 }
