@@ -11,3 +11,8 @@ export const LOCATION_API_URL = {
 	LOCATION_TYPES: "location/location-type",
 	LOCATION_SEARCH: "location/filter-paged",
 }
+
+export const TOUR_GUIDE_API_URL = {
+	TOUR_GUIDE_PROFILE: "/tour-guide/:id",
+	TOUR_GUIDE_SCHEDULE: "/tour-guide/schedules",
+}

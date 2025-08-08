@@ -1,32 +1,36 @@
 "use client"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { useLocationController } from "@/services/location-controller"
+import type { Location, TourLocationBulkRequest } from "@/types/Tour"
+import axios from "axios"
+import { SeccretKey } from "@/secret/secret"
 import {
+	AlertTriangle,
 	ArrowLeft,
-	Plus,
-	Trash2,
-	MapPin,
-	Clock,
 	Calendar,
 	CheckCircle,
+	Clock,
 	Loader2,
-	AlertTriangle,
-	Search,
+	MapPin,
+	Plus,
+	Trash2
 } from "lucide-react"
-import type { TourLocationBulkRequest, Location } from "@/types/Tour"
-import { useLocationController } from "@/services/location-controller"
+import { useEffect, useState } from "react"
+
+const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route"
 
 interface TourLocationFormProps {
 	tourId: string
 	tourDays: number
+	initialData?: TourLocationBulkRequest[]
 	onSubmit: (data: TourLocationBulkRequest[]) => void
 	onPrevious: () => void
 	onCancel: () => void
@@ -36,6 +40,7 @@ interface TourLocationFormProps {
 export function TourLocationForm({
 	tourId,
 	tourDays,
+	initialData = [],
 	onSubmit,
 	onPrevious,
 	onCancel,
@@ -77,6 +82,14 @@ export function TourLocationForm({
 
 		fetchLocations()
 	}, [getAllLocation])
+
+	// Hydrate with initial data when provided (preserves state across wizard navigation)
+	useEffect(() => {
+		if (initialData && initialData.length > 0) {
+			setLocations(initialData)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [initialData])
 
 	const validateNewLocation = () => {
 		const newErrors: Record<string, string> = {}
@@ -134,22 +147,116 @@ export function TourLocationForm({
 		return Object.keys(newErrors).length === 0
 	}
 
-	const handleAddLocation = () => {
-		if (validateNewLocation()) {
-			setLocations([...locations, { ...newLocation }])
-			setNewLocation({
-				locationId: "",
-				dayOrder: 1,
-				startTime: "",
-				endTime: "",
-				notes: "",
-				travelTimeFromPrev: 0,
-				distanceFromPrev: 0,
-				estimatedStartTime: 0,
-				estimatedEndTime: 0,
+	// Helper: get last added location for a specific day
+	const getLastLocationOfDay = (day: number) => {
+		const sameDay = locations.filter((loc) => loc.dayOrder === day)
+		return sameDay.length > 0 ? sameDay[sameDay.length - 1] : null
+	}
+
+	// Helper: get coords by locationId from availableLocations
+	const getCoordsByLocationId = (id: string) => {
+		const loc = availableLocations.find((l) => l.id === id)
+		if (!loc) return null
+		return { latitude: loc.latitude, longitude: loc.longitude }
+	}
+
+	// Helper: fetch route distance/time (km, minutes)
+	const fetchRouteMetrics = async (
+		from: { latitude: number; longitude: number },
+		to: { latitude: number; longitude: number },
+	): Promise<{ distanceKm: number; durationMin: number } | null> => {
+		try {
+			const params = new URLSearchParams({
+				"api-version": "1.1",
+				apikey: String(SeccretKey.VIET_MAP_KEY ?? ""),
+				points_encoded: "false",
+				vehicle: "car",
+				point: `${from.latitude},${from.longitude}`,
 			})
-			setErrors({})
+			// Note: duplicate 'point' for destination
+			const url = `${VIETMAP_ROUTE_ENDPOINT}?${params.toString()}&point=${to.latitude},${to.longitude}`
+			const res = await axios.get(url)
+			const path = res?.data?.paths?.[0]
+			if (!path) return null
+			const distanceMeters = Number(path.distance ?? 0)
+			const timeMs = Number(path.time ?? 0)
+			return {
+				distanceKm: Math.round(distanceMeters / 1000),
+				durationMin: Math.round(timeMs / 60000),
+			}
+		} catch (err) {
+			console.error("Failed to fetch Vietmap route:", err)
+			return null
 		}
+	}
+
+	// Auto-compute distance/time when a previous location exists for the same day
+	useEffect(() => {
+		const compute = async () => {
+			if (!newLocation.locationId) return
+			const prev = getLastLocationOfDay(newLocation.dayOrder)
+			if (!prev) {
+				// first location of the day → zeroes
+				setNewLocation((p) => ({ ...p, travelTimeFromPrev: 0, distanceFromPrev: 0 }))
+				return
+			}
+			const fromCoords = getCoordsByLocationId(prev.locationId)
+			const toCoords = getCoordsByLocationId(newLocation.locationId)
+			if (!fromCoords || !toCoords) return
+			const metrics = await fetchRouteMetrics(fromCoords, toCoords)
+			if (metrics) {
+				setNewLocation((p) => ({
+					...p,
+					distanceFromPrev: metrics.distanceKm,
+					travelTimeFromPrev: metrics.durationMin,
+				}))
+			}
+		}
+		compute().catch((e) => console.error(e))
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [newLocation.locationId, newLocation.dayOrder])
+
+	const handleAddLocation = async () => {
+		if (!validateNewLocation()) return
+		// Prepare item with current, possibly auto-computed values
+		const itemToAdd: TourLocationBulkRequest = {
+			...newLocation,
+			startTime: normalizeTimeString(newLocation.startTime),
+			endTime: normalizeTimeString(newLocation.endTime),
+			estimatedStartTime: toSecondsSinceMidnight(newLocation.startTime),
+			estimatedEndTime: toSecondsSinceMidnight(newLocation.endTime),
+		}
+		const prev = getLastLocationOfDay(itemToAdd.dayOrder)
+		if (!prev) {
+			itemToAdd.travelTimeFromPrev = 0
+			itemToAdd.distanceFromPrev = 0
+		} else if (itemToAdd.distanceFromPrev === 0 && itemToAdd.travelTimeFromPrev === 0) {
+			// If inputs haven’t auto-computed yet, compute now
+			const fromCoords = getCoordsByLocationId(prev.locationId)
+			const toCoords = getCoordsByLocationId(itemToAdd.locationId)
+			if (fromCoords && toCoords) {
+				const metrics = await fetchRouteMetrics(fromCoords, toCoords)
+				if (metrics) {
+					itemToAdd.distanceFromPrev = metrics.distanceKm
+					itemToAdd.travelTimeFromPrev = metrics.durationMin
+				}
+			}
+		}
+
+		setLocations((list) => [...list, itemToAdd])
+		// Reset form
+		setNewLocation({
+			locationId: "",
+			dayOrder: itemToAdd.dayOrder,
+			startTime: "",
+			endTime: "",
+			notes: "",
+			travelTimeFromPrev: 0,
+			distanceFromPrev: 0,
+			estimatedStartTime: 0,
+			estimatedEndTime: 0,
+		})
+		setErrors({})
 	}
 
 	const handleRemoveLocation = (index: number) => {
@@ -161,7 +268,20 @@ export function TourLocationForm({
 			setErrors({ general: "Vui lòng thêm ít nhất một địa điểm" })
 			return
 		}
-		onSubmit(locations)
+		const payload = locations.map((loc) => ({
+			...loc,
+			startTime: normalizeTimeString(loc.startTime),
+			endTime: normalizeTimeString(loc.endTime),
+			estimatedStartTime:
+				typeof loc.estimatedStartTime === "number" && loc.estimatedStartTime > 0
+					? loc.estimatedStartTime
+					: toSecondsSinceMidnight(loc.startTime),
+			estimatedEndTime:
+				typeof loc.estimatedEndTime === "number" && loc.estimatedEndTime > 0
+					? loc.estimatedEndTime
+					: toSecondsSinceMidnight(loc.endTime),
+		}))
+		onSubmit(payload)
 	}
 
 	const getLocationsByDay = (day: number) => {
@@ -209,6 +329,19 @@ export function TourLocationForm({
 		}
 	}
 
+	// Helpers to format time fields for API
+	const normalizeTimeString = (time: string): string => {
+		if (!time) return "00:00:00"
+		const parts = time.split(":")
+		if (parts.length === 2) return `${time}:00`
+		return time
+	}
+
+	const toSecondsSinceMidnight = (time: string): number => {
+		const [h, m, s] = normalizeTimeString(time).split(":").map((v) => Number.parseInt(v, 10) || 0)
+		return h * 3600 + m * 60 + s
+	}
+
 	return (
 		<div className="space-y-6">
 			{/* Header */}
@@ -230,19 +363,9 @@ export function TourLocationForm({
 						<div className="space-y-2">
 							<Label className="flex items-center gap-2">
 								<MapPin className="w-4 h-4" />
-								Chọn Địa Điểm *
+								Chọn Địa Điểm <span className="text-red-500">*</span>
 							</Label>
 							<div className="space-y-2">
-								<div className="relative">
-									<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-									<Input
-										placeholder="Tìm kiếm địa điểm..."
-										value={searchTerm}
-										onChange={(e) => setSearchTerm(e.target.value)}
-										className="pl-10"
-										disabled={isLoading}
-									/>
-								</div>
 								<Select
 									value={newLocation.locationId}
 									onValueChange={(value) => setNewLocation({ ...newLocation, locationId: value })}
@@ -272,7 +395,7 @@ export function TourLocationForm({
 						<div className="space-y-2">
 							<Label className="flex items-center gap-2">
 								<Calendar className="w-4 h-4" />
-								Ngày Thứ *
+								Ngày Thứ <span className="text-red-500">*</span>
 							</Label>
 							<Select
 								value={newLocation.dayOrder.toString()}
@@ -296,7 +419,7 @@ export function TourLocationForm({
 						<div className="space-y-2">
 							<Label htmlFor="startTime" className="flex items-center gap-2">
 								<Clock className="w-4 h-4" />
-								Thời Gian Bắt Đầu *
+								Thời Gian Bắt Đầu <span className="text-red-500">*</span>
 							</Label>
 							<Input
 								id="startTime"
@@ -312,7 +435,7 @@ export function TourLocationForm({
 						<div className="space-y-2">
 							<Label htmlFor="endTime" className="flex items-center gap-2">
 								<Clock className="w-4 h-4" />
-								Thời Gian Kết Thúc *
+								Thời Gian Kết Thúc <span className="text-red-500">*</span>
 							</Label>
 							<Input
 								id="endTime"
@@ -331,7 +454,7 @@ export function TourLocationForm({
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="travelTimeFromPrev">Thời Gian Di Chuyển (phút)</Label>
+							<Label htmlFor="travelTimeFromPrev">Thời Gian Di Chuyển (phút) <span className="text-red-500">*</span></Label>
 							<Input
 								id="travelTimeFromPrev"
 								type="number"

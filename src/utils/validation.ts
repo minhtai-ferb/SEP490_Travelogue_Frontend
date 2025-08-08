@@ -12,3 +12,9 @@ export const isValidPassword = (value: string): boolean => {
 	return value.length >= 6
 }
 
+export const isValidDateIso = (dateStr: string | null | undefined) => {
+	if (!dateStr) return false
+	if (dateStr.startsWith("0001-01-01")) return false
+	const d = new Date(dateStr)
+	return !isNaN(d.getTime())
+}
