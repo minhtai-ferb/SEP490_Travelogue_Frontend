@@ -13,7 +13,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Badge } from "@/components/ui/badge"
 import { useTourguideAssign } from "@/services/tourguide"
 import { TourguideRequestStatus, TourguideRequestStatusDisplay, type TourGuideRequestItem } from "@/types/Tourguide"
-import { Check, Eye, X } from "lucide-react"
+import { Banknote, Check, Eye, Search, X } from "lucide-react"
+import toast from "react-hot-toast"
 
 export default function TourguideRequestsPage() {
 	const { getTourguideRequest, requestReview, loading } = useTourguideAssign()
@@ -25,6 +26,8 @@ export default function TourguideRequestsPage() {
 	const [pageSize, setPageSize] = useState(12)
 	const [rejectingId, setRejectingId] = useState<string | null>(null)
 	const [rejectReason, setRejectReason] = useState("")
+	const [approvingId, setApprovingId] = useState<string | null>(null)
+	const [approveReason, setApproveReason] = useState("")
 	const [openId, setOpenId] = useState<string | null>(null)
 
 	// Debounce
@@ -71,12 +74,19 @@ export default function TourguideRequestsPage() {
 		return (f + l).toUpperCase()
 	}
 
-	const handleApprove = async (id: string) => {
+	const handleApproveConfirm = async () => {
+		if (!approvingId) return
 		try {
-			await requestReview(id, { status: TourguideRequestStatus.Approved })
+			const payload: any = { status: TourguideRequestStatus.Approved }
+			if (approveReason?.trim()) payload.rejectionReason = approveReason.trim()
+			await requestReview(approvingId, payload)
+			setApprovingId(null)
+			setApproveReason("")
+			toast.success("Yêu cầu đã được chấp nhận")
 			await fetchData()
 		} catch (e) {
 			console.error(e)
+			toast.error("Lỗi khi thực hiện yêu cầu, hãy thử lại sau ít phút")
 		}
 	}
 
@@ -86,9 +96,11 @@ export default function TourguideRequestsPage() {
 			await requestReview(rejectingId, { status: TourguideRequestStatus.Rejected, rejectionReason: rejectReason })
 			setRejectingId(null)
 			setRejectReason("")
+			toast.success("Yêu cầu đã được từ chối")
 			await fetchData()
 		} catch (e) {
 			console.error(e)
+			toast.error("Lỗi khi thực hiện yêu cầu, hãy thử lại sau ít phút")
 		}
 	}
 
@@ -106,14 +118,34 @@ export default function TourguideRequestsPage() {
 		}
 	}
 
+	const resolveCertUrl = (url?: string) => {
+		if (!url) return "#"
+		if (/^https?:\/\//i.test(url)) return url
+		const base = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+		if (!base) return url
+		return `${base.replace(/\/$/, "")}/${url.replace(/^\//, "")}`
+	}
+
+	const isPending = (s?: TourguideRequestStatus | number) => Number(s) === Number(TourguideRequestStatus.Pending)
+
 	return (
-		<div className="max-w-full mx-auto space-y-4">
+		<div className="w-full mx-auto px-4 space-y-6">
+			<div className="flex items-start justify-between">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight">Quản lý yêu cầu hướng dẫn viên</h1>
+					<p className="text-sm text-muted-foreground">Duyệt, chấp nhận hoặc từ chối các yêu cầu đăng ký</p>
+				</div>
+			</div>
+
+			{/* Toolbar */}
 			<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
 				<div className="relative flex-1">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 					<Input
 						placeholder="Tìm theo tên hoặc email hướng dẫn viên"
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
+						className="pl-9"
 					/>
 				</div>
 				<Select value={String(status)} onValueChange={(v) => setStatus(v === "all" ? "all" : Number(v) as TourguideRequestStatus)}>
@@ -170,7 +202,9 @@ export default function TourguideRequestsPage() {
 								<div className="mt-3 text-sm text-gray-700 line-clamp-3">{it.introduction}</div>
 							)}
 
-							<div className="mt-3 text-xs text-gray-500">Mức giá đề xuất: {displayPrice(it.price)}</div>
+							<div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+								<Banknote className="w-3 h-3" /> {displayPrice(it.price)}
+							</div>
 
 							{it.certifications?.length > 0 && (
 								<div className="mt-3">
@@ -180,7 +214,7 @@ export default function TourguideRequestsPage() {
 											<li key={idx} className="truncate">
 												<span className="font-medium">{c.name}</span>
 												{c.certificateUrl ? (
-													<a className="ml-2 text-emerald-700 hover:underline" href={c.certificateUrl} target="_blank" rel="noreferrer">Xem</a>
+													<a className="ml-2 text-emerald-700 hover:underline" href={resolveCertUrl(c.certificateUrl)} target="_blank" rel="noreferrer">Xem</a>
 												) : null}
 											</li>
 										))}
@@ -192,14 +226,41 @@ export default function TourguideRequestsPage() {
 								<Button size="sm" variant="secondary" onClick={() => setOpenId(it.id)}>
 									<Eye className="w-4 h-4 mr-1" /> Xem chi tiết
 								</Button>
-								<Button size="sm" variant="outline" onClick={() => handleApprove(it.id)}>
-									<Check className="w-4 h-4 mr-1" /> Chấp nhận
-								</Button>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
-										<Button size="sm" variant="destructive" onClick={() => { setRejectingId(it.id); setRejectReason("") }}>
-											<X className="w-4 h-4 mr-1" /> Từ chối
-										</Button>
+										{isPending(it.status) ? (
+											<Button size="sm" variant="outline" onClick={() => { setApprovingId(it.id); setApproveReason("") }}>
+												<Check className="w-4 h-4 mr-1" /> Chấp nhận
+											</Button>
+										) : (
+											<Button size="sm" variant="outline" disabled className="hidden">
+												<Check className="w-4 h-4 mr-1" /> Đã chấp nhận
+											</Button>
+										)}
+									</AlertDialogTrigger>
+									<AlertDialogContent>
+										<AlertDialogHeader>
+											<AlertDialogTitle>Lý do chấp nhận (tuỳ chọn)</AlertDialogTitle>
+											<AlertDialogDescription>Bạn có thể ghi chú lý do chấp nhận yêu cầu này (không bắt buộc).</AlertDialogDescription>
+										</AlertDialogHeader>
+										<Textarea rows={3} placeholder="Nhập lý do (không bắt buộc)..." value={approveReason} onChange={(e) => setApproveReason(e.target.value)} />
+										<AlertDialogFooter>
+											<AlertDialogCancel onClick={() => { setApprovingId(null); setApproveReason("") }}>Hủy</AlertDialogCancel>
+											<AlertDialogAction onClick={handleApproveConfirm}>Xác nhận</AlertDialogAction>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
+								<AlertDialog>
+									<AlertDialogTrigger asChild>
+										{isPending(it.status) ? (
+											<Button size="sm" variant="destructive" onClick={() => { setRejectingId(it.id); setRejectReason("") }}>
+												<X className="w-4 h-4 mr-1" /> Từ chối
+											</Button>
+										) : (
+											<Button size="sm" variant="destructive" disabled className="hidden">
+												<X className="w-4 h-4 mr-1" /> Đã từ chối
+											</Button>
+										)}
 									</AlertDialogTrigger>
 									<AlertDialogContent>
 										<AlertDialogHeader>
@@ -271,7 +332,7 @@ export default function TourguideRequestsPage() {
 												<li key={idx}>
 													<span className="font-medium">{c.name}</span>
 													{c.certificateUrl ? (
-														<a className="ml-2 text-emerald-700 hover:underline" href={c.certificateUrl} target="_blank" rel="noreferrer">Xem</a>
+														<a className="ml-2 text-emerald-700 hover:underline" href={resolveCertUrl(c.certificateUrl)} target="_blank" rel="noreferrer">Xem</a>
 													) : null}
 												</li>
 											))}
@@ -281,9 +342,24 @@ export default function TourguideRequestsPage() {
 									)}
 								</div>
 								<div className="flex items-center justify-end gap-2 pt-2">
-									<Button size="sm" variant="outline" onClick={() => it && handleApprove(it.id)}>
-										<Check className="w-4 h-4 mr-1" /> Chấp nhận
-									</Button>
+									<AlertDialog open={approvingId === it.id}>
+										<AlertDialogTrigger asChild>
+											<Button size="sm" variant="outline" onClick={() => { setApprovingId(it.id); setApproveReason("") }}>
+												<Check className="w-4 h-4 mr-1" /> Chấp nhận
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>Lý do chấp nhận (tuỳ chọn)</AlertDialogTitle>
+												<AlertDialogDescription>Bạn có thể ghi chú lý do chấp nhận yêu cầu này (không bắt buộc).</AlertDialogDescription>
+											</AlertDialogHeader>
+											<Textarea rows={3} placeholder="Nhập lý do (không bắt buộc)..." value={approveReason} onChange={(e) => setApproveReason(e.target.value)} />
+											<AlertDialogFooter>
+												<AlertDialogCancel onClick={() => { setApprovingId(null); setApproveReason("") }}>Hủy</AlertDialogCancel>
+												<AlertDialogAction onClick={handleApproveConfirm}>Xác nhận</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
 											<Button size="sm" variant="destructive" onClick={() => { setRejectingId(it.id); setRejectReason(""); }}>
@@ -308,9 +384,6 @@ export default function TourguideRequestsPage() {
 					})()}
 				</SheetContent>
 			</Sheet>
-
-			{/* Simple pagination (client-side) */}
-			{/* For now, list uses full response without server paging; you can wire page & pageSize when backend supports. */}
 		</div>
 	)
 }
