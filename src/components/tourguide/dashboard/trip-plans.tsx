@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import type { TripPlan, TripPlanStatus } from "@/types/trip-plan"
+import { useEffect, useMemo, useState } from "react"
+import type { TripPlan } from "@/types/TripPlan"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { formatShortDate, formatPrice } from "@/utils/format"
+import { formatDate, formatPrice } from "@/utils/format"
+import { TripPlanStatus } from "@/types/Tripplan"
+import { useTourguideAssign } from "@/services/tourguide"
 
 const MOCK_PLANS: TripPlan[] = [
 	{
@@ -62,15 +64,25 @@ export function TripPlansSection() {
 	const [status, setStatus] = useState<TripPlanStatus | "all">("all")
 	const [open, setOpen] = useState(false)
 	const [selected, setSelected] = useState<TripPlan | null>(null)
-
-	const plans = MOCK_PLANS
+	const { getTourGuideSchedule, loading } = useTourguideAssign()
+	const [plans, setPlans] = useState<TripPlan[]>([])
+	useEffect(() => {
+		getTourGuideSchedule().then((res) => {
+			setPlans(res)
+		}).catch((err) => {
+			console.log(err)
+		})
+	}, [getTourGuideSchedule])
+	console.log(plans)
 	const filtered = useMemo(() => {
 		return plans.filter((p) => {
 			const s = search.toLowerCase()
 			const matches =
 				p.id.toLowerCase().includes(s) ||
-				p.customerName.toLowerCase().includes(s) ||
-				p.title.toLowerCase().includes(s)
+				p.customer?.name?.toLowerCase().includes(s) ||
+				p.title?.toLowerCase().includes(s) ||
+				p.customer?.email?.toLowerCase().includes(s) ||
+				p.customer?.phone?.toLowerCase().includes(s)
 			const statusOk = status === "all" || p.status === status
 			return matches && statusOk
 		})
@@ -124,7 +136,7 @@ export function TripPlansSection() {
 									</td>
 									<td className="py-2 pr-4">{p.title}</td>
 									<td className="py-2 pr-4">
-										{formatShortDate(p.startDate)} - {formatShortDate(p.endDate)}
+										{formatDate(p.startDate)} - {formatDate(p.endDate)}
 									</td>
 									<td className="py-2 pr-4">{p.participants}</td>
 									<td className="py-2 pr-4">{p.totalPrice ? formatPrice(p.totalPrice) : "-"}</td>
@@ -181,7 +193,7 @@ export function TripPlansSection() {
 									<div>
 										<Label>Thời gian</Label>
 										<div className="text-sm">
-											{formatShortDate(selected.startDate)} - {formatShortDate(selected.endDate)}
+											{formatDate(selected.startDate)} - {formatDate(selected.endDate)}
 										</div>
 									</div>
 									<div>

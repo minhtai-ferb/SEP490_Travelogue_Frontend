@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { formatDateTime, formatPrice } from "@/utils/format"
-import type { WalletTransaction } from "@/types/wallet"
+import { formatDate, formatPrice } from "@/utils/format"
+import type { WalletTransaction } from "@/types/Wallet"
 import { Badge } from "@/components/ui/badge"
 import { ArrowDownToLine, ArrowUpFromLine, WalletIcon } from 'lucide-react'
-import { useToast } from "@/hooks/use-toast"
+import toast from "react-hot-toast"
 
 export function WalletSection() {
 	const [user] = useAtom(userAtom)
@@ -21,18 +21,17 @@ export function WalletSection() {
 	const [depositOpen, setDepositOpen] = useState(false)
 	const [withdrawOpen, setWithdrawOpen] = useState(false)
 	const [amount, setAmount] = useState<number>(0)
-	const { toast } = useToast()
 
 	const transactions = useMemo(() => wallet?.transactions ?? [], [wallet])
 
 	const onDeposit = async () => {
 		if (amount <= 0) {
-			toast({ title: "Số tiền không hợp lệ", description: "Vui lòng nhập số tiền lớn hơn 0.", variant: "destructive" })
+			toast.error("Số tiền không hợp lệ")
 			return
 		}
 		const ok = await deposit(amount, "Nạp tiền thủ công (demo)")
 		if (ok) {
-			toast({ title: "Thành công", description: "Đã nạp tiền vào ví." })
+			toast.success("Thành công")
 			setDepositOpen(false)
 			setAmount(0)
 		}
@@ -40,12 +39,12 @@ export function WalletSection() {
 
 	const onWithdraw = async () => {
 		if (amount <= 0) {
-			toast({ title: "Số tiền không hợp lệ", description: "Vui lòng nhập số tiền lớn hơn 0.", variant: "destructive" })
+			toast.error("Số tiền không hợp lệ")
 			return
 		}
 		const ok = await withdraw(amount, "Yêu cầu rút tiền (demo)")
 		if (ok) {
-			toast({ title: "Thành công", description: "Yêu cầu rút tiền đã được xử lý." })
+			toast.success("Thành công")
 			setWithdrawOpen(false)
 			setAmount(0)
 		}
@@ -62,7 +61,7 @@ export function WalletSection() {
 					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 						<div>
 							<div className="text-3xl font-bold">{formatPrice(wallet?.balance ?? 0)}</div>
-							<div className="text-xs text-gray-500">Cập nhật: {wallet ? formatDateTime(wallet.updatedAt) : "-"}</div>
+							<div className="text-xs text-gray-500">Cập nhật: {wallet ? formatDate(wallet.updatedAt) : "-"}</div>
 							{error && <div className="text-sm text-red-600 mt-2">{error}</div>}
 						</div>
 						<div className="flex gap-2">
@@ -92,7 +91,7 @@ export function WalletSection() {
 							<tbody>
 								{transactions.map((t: WalletTransaction) => (
 									<tr key={t.id} className="border-b last:border-0">
-										<td className="py-2 pr-4">{formatDateTime(t.createdAt)}</td>
+										<td className="py-2 pr-4">{formatDate(t.createdAt)}</td>
 										<td className="py-2 pr-4 capitalize">
 											<span className="px-2 py-1 rounded-md bg-gray-100">{t.type}</span>
 										</td>
@@ -124,7 +123,6 @@ export function WalletSection() {
 				</CardContent>
 			</Card>
 
-			{/* Deposit Dialog */}
 			<Dialog open={depositOpen} onOpenChange={setDepositOpen}>
 				<DialogContent>
 					<DialogHeader>
@@ -146,7 +144,6 @@ export function WalletSection() {
 				</DialogContent>
 			</Dialog>
 
-			{/* Withdraw Dialog */}
 			<Dialog open={withdrawOpen} onOpenChange={setWithdrawOpen}>
 				<DialogContent>
 					<DialogHeader>

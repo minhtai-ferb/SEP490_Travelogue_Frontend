@@ -1,27 +1,35 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useAtom } from "jotai"
 import { userAtom } from "@/store/auth"
-import { useTourData } from "@/hooks/useTourData"
+import { useTourguideAssign } from "@/services/tourguide"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { TourList } from "@/components/tourguide/tour-list"
-import type { AssignedTour } from "@/types/tour"
+import type { AssignedTour } from "@/types/Tour"
 import { formatPrice } from "@/utils/format"
 import { CalendarDays, MapPin, Users } from 'lucide-react'
 import { LoadingSkeleton } from "@/components/common/loading-skeleton"
 
 export function ToursSection() {
 	const [user] = useAtom(userAtom)
-	const { tours, isLoading, error, refetch } = useTourData(user?.email)
+	const { getTourAssign, loading } = useTourguideAssign()
 	const [search, setSearch] = useState("")
 	const [status, setStatus] = useState<string>("all")
 	const [selectedTour, setSelectedTour] = useState<AssignedTour | null>(null)
 	const [open, setOpen] = useState(false)
+	const [tours, setTours] = useState<AssignedTour[]>([])
+	useEffect(() => {
+		if (user?.id) {
+			getTourAssign(user.id).then((res) => {
+				setTours(res)
+			})
+		}
+	}, [user?.id, getTourAssign])
 
 	const filtered = useMemo(() => {
 		return tours.filter((t) => {
@@ -56,11 +64,11 @@ export function ToursSection() {
 								<SelectItem value="completed">Đã hoàn thành</SelectItem>
 							</SelectContent>
 						</Select>
-						<Button variant="outline" onClick={refetch}>Tải lại</Button>
+						<Button variant="outline" onClick={() => { }}>Tải lại</Button>
 					</div>
 
-					{isLoading && <LoadingSkeleton />}
-					{!isLoading && <TourList tours={filtered} onViewDetails={onViewDetails} />}
+					{loading && <LoadingSkeleton />}
+					{!loading && <TourList tours={filtered} onViewDetails={onViewDetails} />}
 				</CardContent>
 			</Card>
 

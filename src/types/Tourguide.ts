@@ -19,3 +19,35 @@ export interface TourGuideSelection {
 	selectedGuide?: TourGuide
 	isSelecting: boolean
 }
+
+export type TripPlanStatus = "pending" | "confirmed" | "completed" | "cancelled"
+
+export interface TripPlan {
+	id: string
+	customerName: string
+	customerEmail: string
+	phone?: string
+	startDate: string // ISO
+	endDate: string // ISO
+	participants: number
+	title: string
+	notes?: string
+	status: TripPlanStatus
+	createdAt: string
+	totalPrice?: number
+}
+
+export type ScheduleType = "Booking" | "TourSchedule"
+
+export interface GuideScheduleItem {
+	id: string
+	tourGuideId: string
+	tourScheduleId: string | null
+	bookingId: string | null
+	date: string // ISO
+	note: string | null
+	tourName: string | null
+	customerName: string | null
+	price: number
+	scheduleType: ScheduleType
+}
