@@ -57,7 +57,6 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
       } else {
         navigate.push("/");
       }
-
       toast.success("Đăng nhập thành công!");
     } catch (error: any) {
       console.error("Login error:", error);

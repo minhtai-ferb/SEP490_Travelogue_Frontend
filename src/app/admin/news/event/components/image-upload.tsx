@@ -7,7 +7,7 @@ import { Trash2, Upload, X } from "lucide-react";
 import { Upload as AntUpload, message, Checkbox, Image } from "antd";
 import type { UploadProps } from "antd";
 import { useLocations } from "@/services/use-locations";
-import { MediaDto } from "../types/CreateLocation";
+import { MediaDto } from "@/services/use-news";
 import toast from "react-hot-toast";
 
 interface ImageUploadProps {
@@ -57,9 +57,7 @@ export function ImageUpload({
         const fileName = mediaUrl.split("/").pop() || mediaUrl;
         await deleteMediaByFileName(fileName);
 
-        const updatedMediaDtos = mediaDtos.filter(
-          (media) => media.mediaUrl !== mediaUrl
-        );
+        const updatedMediaDtos = mediaDtos.filter((media) => media.mediaUrl !== mediaUrl);
         onChange(updatedMediaDtos);
         message.success("Đã xóa hình ảnh thành công!");
       } catch (error) {
@@ -87,16 +85,16 @@ export function ImageUpload({
     accept: "image/*",
     showUploadList: false,
     beforeUpload: (file, fileList) => {
-      const isLt10M = file.size / 1024 / 1024 < 10;
-      if (!isLt10M) {
-        toast.error(`Vượt quá dung lượng cho phép (10MB)!`);
-        return AntUpload.LIST_IGNORE;
-      }
+    const isLt10M = file.size / 1024 / 1024 < 10;
+    if (!isLt10M) {
+      toast.error(`Vượt quá dung lượng cho phép (10MB)!`);
+      return AntUpload.LIST_IGNORE; 
+    }
 
-      const files = fileList || [file];
-      handleUpload(files);
-      return false;
-    },
+    const files = fileList || [file];
+    handleUpload(files);
+    return false; // Ngăn upload mặc định
+  },
   };
 
   const hasThumbnail = mediaDtos.some((media) => media.isThumbnail);

@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import useApiService from "@/hooks/useApi";
-import { MediaDto } from "@/app/(admin)/locations/create/types/CreateLocation";
+import { MediaDto } from "@/app/admin/locations/create/types/CreateLocation";
 
 export function useLocations() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -319,6 +319,7 @@ export function useLocations() {
     updateCraftVillageInfo,
     updateHistoricalLocationInfo,
     updateScenicSpotInfo,
-    loading: setIsLoading || loading,
+    loading: loading,
+    setIsLoading: setIsLoading,
   };
 }

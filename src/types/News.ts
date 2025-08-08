@@ -98,3 +98,24 @@ export enum TypeExperienceName {
   Spiritual = "Tâm linh",
   Extreme = "Mạo hiểm",
 }
+
+export function getTypeExperienceLabel(type?: TypeExperience) {
+  switch (type) {
+    case TypeExperience.Adventure:
+      return "Phiêu lưu";
+    case TypeExperience.Cultural:
+      return "Văn hóa";
+    case TypeExperience.Culinary:
+      return "Ẩm thực";
+    case TypeExperience.Ecotourism:
+      return "Du lịch sinh thái";
+    case TypeExperience.Leisure:
+      return "Giải trí";
+    case TypeExperience.Spiritual:
+      return "Tâm linh";
+    case TypeExperience.Extreme:
+      return "Mạo hiểm";
+    default:
+      return "Không xác định";
+  }
+}
