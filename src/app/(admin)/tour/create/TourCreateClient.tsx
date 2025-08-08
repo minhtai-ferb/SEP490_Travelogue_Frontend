@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import { TourWizard } from "../../../../components/tour-management/TourWizard"
-// Note: Tour creation now happens inside the wizard; no data is returned here
 
 export default function TourCreateClient() {
 	const router = useRouter()

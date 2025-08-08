@@ -51,3 +51,15 @@ export interface GuideScheduleItem {
 	price: number
 	scheduleType: ScheduleType
 }
+
+export enum TourguideRequestStatus {
+	Pending = 1,
+	Approved = 2,
+	Rejected = 3,
+}
+
+export const TourguideRequestStatusDisplay: Record<TourguideRequestStatus, string> = {
+	[TourguideRequestStatus.Pending]: "Chờ xác nhận",
+	[TourguideRequestStatus.Approved]: "Đã xác nhận",
+	[TourguideRequestStatus.Rejected]: "Từ chối",
+};

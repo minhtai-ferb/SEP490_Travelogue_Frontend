@@ -26,7 +26,7 @@ export function useTripPlan() {
 	);
 
 
-	const geTripPlanSearch = useCallback(
+	const getTripPlanSearch = useCallback(
 		async ({
 			title = '',
 			pageNumber = 1,
@@ -55,7 +55,7 @@ export function useTripPlan() {
 		async (id: string) => {
 			setLoading(true);
 			try {
-				const response = await callApi("get", `TripPlan/${id}`);
+				const response = await callApi("get", `trip-plans/${id}`);
 				return response?.data;
 			} catch (e: any) {
 				throw e;
@@ -66,25 +66,10 @@ export function useTripPlan() {
 		[callApi, setLoading]
 	);
 
-	const getDistrictById = useCallback(
-		async (id: string) => {
-			setLoading(true);
-			try {
-				const response = await callApi("get", `district/${id}`);
-				return response?.data;
-			} catch (e: any) {
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[callApi, setLoading]
-	);
 
 	return {
 		getAllTripPlan,
-		geTripPlanSearch,
-		getDistrictById,
+		getTripPlanSearch,
 		getTripPlanById,
 		loading: isLoading || loading,
 	};

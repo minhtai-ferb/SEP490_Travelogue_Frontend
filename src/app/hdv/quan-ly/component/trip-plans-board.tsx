@@ -1,84 +1,85 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import type { TripPlan, TripPlanStatus } from "@/types/Tripplan"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useTripPlan } from "@/services/trip-plan"
+import type { TourGuideTripplan, TripPlanStatus } from "@/types/Tripplan"
 import { CalendarCheck2, Search } from 'lucide-react'
-
-const MOCK: TripPlan[] = [
-	{
-		id: "TP-1001",
-		customerName: "Nguyễn Văn A",
-		customerEmail: "a@example.com",
-		startDate: new Date("2025-08-12T08:00:00Z"),
-		endDate: new Date("2025-08-14T16:00:00Z"),
-		participants: 4,
-		title: "Gia đình tham quan Tây Ninh 3N2Đ",
-		status: "pending",
-		createdAt: new Date().toISOString(),
-		totalPrice: 5600000,
-	},
-	{
-		id: "TP-1002",
-		customerName: "Trần Thị B",
-		customerEmail: "b@example.com",
-		startDate: "2025-08-20T08:00:00Z",
-		endDate: "2025-08-21T16:00:00Z",
-		participants: 2,
-		title: "Núi Bà Đen - Cặp đôi",
-		status: "confirmed",
-		createdAt: new Date().toISOString(),
-		totalPrice: 2400000,
-	},
-]
-
-function statusClass(s: TripPlanStatus) {
-	switch (s) {
-		case "pending":
-			return "bg-yellow-100 text-yellow-700"
-		case "confirmed":
-			return "bg-blue-100 text-blue-700"
-		case "completed":
-			return "bg-green-100 text-green-700"
-		case "cancelled":
-			return "bg-red-100 text-red-700"
-	}
-}
+import { useEffect, useState } from "react"
 
 export default function TripPlansBoard() {
 	const [search, setSearch] = useState("")
+	const [query, setQuery] = useState("")
 	const [status, setStatus] = useState<TripPlanStatus | "all">("all")
+	const { getTripPlanSearch } = useTripPlan()
+	const [loading, setLoading] = useState(false)
+	const [items, setItems] = useState<TourGuideTripplan[]>([])
+	const [page, setPage] = useState(1)
+	const [pageSize, setPageSize] = useState(10)
+	const skeletonCount = 6
 
-	const filtered = useMemo(() => {
-		return MOCK.filter((p) => {
-			const s = search.toLowerCase()
-			const ok =
-				p.id.toLowerCase().includes(s) ||
-				p.customerName.toLowerCase().includes(s) ||
-				p.title.toLowerCase().includes(s)
-			const st = status === "all" || p.status === status
-			return ok && st
-		})
-	}, [search, status])
+	const fetchData = async () => {
+		setLoading(true)
+		try {
+			const response = await getTripPlanSearch({
+				pageNumber: page,
+				pageSize: pageSize,
+				title: search,
+			})
+			const raw: any = response?.items
+			const data: TourGuideTripplan[] = Array.isArray(raw)
+				? raw
+				: []
+			setItems(data)
+		} catch (error) {
+			console.error(error)
+		} finally {
+			setLoading(false)
+		}
+	}
 
-	const done = filtered.filter((p) => p.status === "completed").length
-	const ratio = Math.round((done / Math.max(filtered.length, 1)) * 100)
+	// Debounce search input for better UX
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			setSearch(query)
+			setPage(1)
+		}, 400)
+		return () => clearTimeout(handler)
+	}, [query])
+
+	useEffect(() => {
+		fetchData()
+	}, [search, status, page, pageSize])
+
+	const formatDate = (d?: string | Date) => {
+		if (!d) return "—"
+		const date = typeof d === "string" ? new Date(d) : d
+		if (isNaN(date.getTime())) return "—"
+		return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
+	}
+
+	const getInitials = (name?: string | null) => {
+		if (!name) return "?"
+		const parts = name.trim().split(/\s+/)
+		const first = parts[0]?.[0] ?? ""
+		const last = parts.length > 1 ? parts[parts.length - 1][0] : ""
+		return (first + last).toUpperCase()
+	}
 
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+		<div className="gap-6">
 			{/* Center board like Study Plan grid */}
-			<div className="space-y-4">
+			<div className="space-y-4 max-w-full mx-auto">
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
 					<div className="relative flex-1">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 						<Input
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
 							placeholder="Tìm theo mã, tên khách, tiêu đề..."
 							className="pl-9"
 						/>
@@ -99,66 +100,87 @@ export default function TripPlansBoard() {
 
 				{/* Grid of cards */}
 				<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-					{filtered.map((p) => (
-						<Card key={p.id} className="border-green-200 bg-green-50/40">
-							<CardContent className="p-4">
-								<div className="flex items-start justify-between">
-									<div className="font-semibold">Yêu cầu {p.id}</div>
-									<Badge className={statusClass(p.status)} variant="secondary">
-										{p.status}
-									</Badge>
-								</div>
-								<div className="mt-2 text-sm text-gray-700">{p.title}</div>
-								<div className="mt-2 text-xs text-gray-600">
-									{new Date(p.startDate).toLocaleDateString("vi-VN")} -{" "}
-									{new Date(p.endDate).toLocaleDateString("vi-VN")} • {p.participants} khách
-								</div>
-								<div className="mt-3 flex justify-between items-center">
-									<div className="text-xs text-gray-500">{p.customerName}</div>
-									<Button size="sm" variant="outline">
-										Xử lý
-									</Button>
+					{loading && items.length === 0 && Array.from({ length: skeletonCount }).map((_, idx) => (
+						<Card key={`skeleton-${idx}`}>
+							<CardContent className="p-0">
+								<Skeleton className="h-36 w-full rounded-t-md" />
+								<div className="p-4 space-y-3">
+									<Skeleton className="h-5 w-3/4" />
+									<Skeleton className="h-4 w-full" />
+									<Skeleton className="h-4 w-2/3" />
+									<div className="flex items-center justify-between pt-2">
+										<div className="flex items-center gap-2">
+											<Skeleton className="h-8 w-8 rounded-full" />
+											<Skeleton className="h-4 w-24" />
+										</div>
+										<Skeleton className="h-8 w-20" />
+									</div>
 								</div>
 							</CardContent>
 						</Card>
 					))}
-					{filtered.length === 0 && (
-						<div className="col-span-full text-center text-gray-500 py-16">Không có bản ghi</div>
+
+					{!loading && items.map((p) => {
+						const hasImage = !!p.imageUrl
+						return (
+							<Card key={p.id} className="overflow-hidden hover:shadow-md transition-shadow">
+								<CardContent className="p-0">
+									{hasImage ? (
+										<img
+											src={p.imageUrl as string}
+											alt={p.name}
+											className="h-36 w-full object-cover"
+										/>
+									) : (
+										<div className="h-36 w-full bg-gradient-to-br from-emerald-50 to-teal-100" />
+									)}
+									<div className="p-4">
+										<div className="flex items-start justify-between gap-2">
+											<div className="font-semibold text-gray-900 line-clamp-1">{p.name || `Yêu cầu ${p.id}`}</div>
+										</div>
+										{p.description && (
+											<div className="mt-1 text-sm text-gray-600 line-clamp-2">{p.description}</div>
+										)}
+										<div className="mt-3 text-xs text-gray-500">
+											{formatDate(p.startDate)} – {formatDate(p.endDate)}
+										</div>
+										<div className="mt-4 flex items-center justify-between">
+											<div className="flex items-center gap-2">
+												<Avatar className="h-8 w-8">
+													<AvatarImage src={undefined} alt={p.ownerName} />
+													<AvatarFallback>{getInitials(p.ownerName)}</AvatarFallback>
+												</Avatar>
+												<div className="text-xs text-gray-600 line-clamp-1">{p.ownerName || "Chưa rõ chủ sở hữu"}</div>
+											</div>
+											{/* <Button size="sm" variant="outline">Xử lý</Button> */}
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+						)
+					})}
+
+					{!loading && items.length === 0 && (
+						<div className="col-span-full">
+							<Card className="bg-muted/30">
+								<CardContent className="py-12 text-center">
+									<div className="text-base font-medium text-gray-900">Không có kế hoạch phù hợp</div>
+									<div className="text-sm text-gray-500 mt-1">Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc.</div>
+								</CardContent>
+							</Card>
+						</div>
 					)}
 				</div>
-			</div>
 
-			{/* Right progress panel like PREP */}
-			<div className="space-y-4">
-				<Card>
-					<CardContent className="p-4">
-						<div className="flex items-center justify-between">
-							<div className="font-semibold">Tiến độ xử lý</div>
-							<CalendarCheck2 className="w-4 h-4 text-gray-500" />
-						</div>
-						<div className="mt-3">
-							<div className="text-sm text-gray-700">Tỉ lệ hoàn thành</div>
-							<Progress value={ratio} className="h-2 mt-2" />
-							<div className="text-xs text-gray-500 mt-1">
-								{done}/{filtered.length} yêu cầu đã hoàn thành
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="bg-blue-50">
-					<CardContent className="p-4">
-						<div className="font-semibold">Gợi ý hôm nay</div>
-						<div className="text-sm text-blue-900 mt-1">
-							Không có yêu cầu nào cần xử lý gấp. Hãy xem lại tiến độ và chuẩn bị cho tuần tới nhé!
-						</div>
-						<img
-							src="/reference/prep-study-plan.png"
-							alt="study plan reference"
-							className="mt-3 rounded-md border object-cover"
-						/>
-					</CardContent>
-				</Card>
+				{/* Pagination */}
+				<div className="flex items-center justify-end gap-2 pt-2">
+					<Button variant="outline" size="sm" disabled={page === 1 || loading} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+						Trang trước
+					</Button>
+					<Button variant="outline" size="sm" disabled={loading || items.length < pageSize} onClick={() => setPage((p) => p + 1)}>
+						Trang sau
+					</Button>
+				</div>
 			</div>
 		</div>
 	)
