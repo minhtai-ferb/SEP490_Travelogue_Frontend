@@ -164,8 +164,8 @@ export function useAuth() {
       localStorage.removeItem("token");
       setUser(null);
 
-      // Redirect to login page
-      router.push("/login");
+      // Redirect to auth page
+      router.push("/auth");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

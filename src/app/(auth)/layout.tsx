@@ -1,21 +1,24 @@
-'use client'
-import AuthLayout from "@/components/common/auth-layout"
-import Loading from "@/components/common/loading"
-import { useEffect, useState } from "react"
+"use client";
 
-export default function Home() {
+import Loading from "@/components/common/loading";
+import { useEffect, useState } from "react";
 
-	const [showContent, setShowContent] = useState(false)
+export default function Page({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const [showContent, setShowContent] = useState(false);
 
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setShowContent(true)
-		}, 3500) // delay in ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowContent(true);
+    }, 3500); // delay in ms
 
-		return () => clearTimeout(timer)
-	}, [])
+    return () => clearTimeout(timer);
+  }, []);
 
-	if (!showContent) return <Loading />
+  if (!showContent) return <Loading />;
 
-	return <AuthLayout />
+  return <>{children}</>;
 }
