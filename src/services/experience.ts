@@ -30,22 +30,16 @@ export function useExperience() {
 	const getExperienceSearch = useCallback(
 		async ({
 			title = '',
-			typeExperienceId = '',
 			locationId = '',
-			eventId = '',
-			districtId = '',
 			pageNumber = 1,
 			pageSize = 10,
 		}) => {
 			setLoading(true);
 			try {
-				const response = await callApi('get', '/experience/search-paged', {
+				const response = await callApi('get', '/news/experiences', {
 					params: {
 						title,
-						typeExperienceId,
 						locationId,
-						eventId,
-						districtId,
 						pageNumber,
 						pageSize,
 					},

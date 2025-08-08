@@ -262,7 +262,7 @@ function GuideProfileContent() {
 				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
 						<div className="flex items-center space-x-4">
-							<Link href="/dashboard">
+							<Link href="/admin/dashboard">
 								<Button variant="ghost" size="sm">
 									<ArrowLeft className="w-4 h-4 mr-2" />
 									Về Dashboard

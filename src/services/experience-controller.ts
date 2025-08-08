@@ -45,16 +45,12 @@ export function useExperienceController() {
       try {
         const queryParams = new URLSearchParams();
         if (title) queryParams.append("title", title);
-        if (typeExperienceId) queryParams.append("typeExperienceId", typeExperienceId);
-        if (districtId) queryParams.append("districtId", districtId);
-        if (locationId) queryParams.append("locationId", locationId);
-        if (eventId) queryParams.append("eventId", eventId);
         if (pageNumber) queryParams.append("pageNumber", pageNumber.toString());
         if (pageSize) queryParams.append("pageSize", pageSize.toString());
 
         const response = await callApi(
           "get",
-          `experience/search-paged?${queryParams.toString()}`
+          `news/experiences?${queryParams.toString()}`
         );
         return response;
       } catch (e: any) {

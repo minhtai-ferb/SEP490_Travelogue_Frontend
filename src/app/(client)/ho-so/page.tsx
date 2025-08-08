@@ -48,7 +48,7 @@ export default function SettingsPage() {
   const handleLogout = () => {
     logout();
     setShowLogoutConfirm(false);
-    setTimeout(() => router.push("/login"), 1500);
+    setTimeout(() => router.push("/auth"), 1500);
   };
 
   const handleResendVerification = async () => {
