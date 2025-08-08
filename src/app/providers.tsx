@@ -8,7 +8,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		<HeroUIProvider>
 			{children}
 			<Toaster
-				position="top-right"
+				position="top-center"
 				toastOptions={{
 					className: cn(
 						'bg-white text-gray-800 dark:bg-gray-800 dark:text-white',

@@ -73,7 +73,7 @@ export default function HeroSlider() {
 	const handleMenuToggle = () => setIsOpen(!isOpen)
 
 	const handleAdminPage = () => {
-		router.push("/dashboard");
+		router.push("/admin/dashboard");
 	};
 
 	const handleLogout = () => logout()
@@ -202,7 +202,7 @@ export default function HeroSlider() {
 													<button
 														key="btnKetnoi"
 														className="text-white border-2 border-blue-500 font-medium px-6 py-2 text-base rounded-xl hover:bg-blue-500 hover:border-white hover:text-white transition duration-300"
-														onClick={() => router.push("/login")}
+														onClick={() => router.push("/auth")}
 													>
 														Kết nối cùng chúng tôi
 													</button>
@@ -263,7 +263,7 @@ export default function HeroSlider() {
 											{user && (
 												<div>
 													<Link
-														href="/dashboard"
+														href="/admin/dashboard"
 														className="text-lg font-medium py-3 px-4 hover:bg-slate-700 rounded-lg transition duration-300 flex items-center gap-3"
 													>
 														Quản lý
@@ -340,7 +340,7 @@ export default function HeroSlider() {
 														variant="ghost"
 														className="w-full justify-start text-primary font-medium px-4 py-2 hover:bg-gray-100 rounded-md lg:hidden"
 														onClick={() => {
-															router.push("/login");
+															router.push("/auth");
 															setIsMobileMenuOpen(false);
 														}}
 													>
@@ -421,7 +421,7 @@ export default function HeroSlider() {
 									<div className="hidden md:flex items-center gap-4">
 										<button
 											className="text-white border-blue-500 text-nowrap border-2 font-medium px-8 md:py-3 text-base rounded-xl hover:bg-blue-500 hover:border-white duration-500"
-											onClick={() => router.push("/login")}
+											onClick={() => router.push("/auth")}
 										>
 											Kết nối cùng chúng tôi
 										</button>
@@ -585,7 +585,7 @@ export default function HeroSlider() {
 											<Button
 												variant="outline"
 												className="hidden md:flex border-primary text-primary hover:bg-primary/10"
-												onClick={() => router.push("/login")}
+												onClick={() => router.push("/auth")}
 											>
 												Kết nối cùng chúng tôi
 											</Button>
@@ -616,7 +616,7 @@ export default function HeroSlider() {
 												variant="ghost"
 												className="justify-start text-primary md:hidden"
 												onClick={() => {
-													router.push("/login")
+													router.push("/auth")
 													setIsMobileMenuOpen(false)
 												}}
 											>

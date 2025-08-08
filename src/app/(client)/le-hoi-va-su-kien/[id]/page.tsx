@@ -25,20 +25,11 @@ function EventDetail() {
 
 	const fetchEventDetail = async (id: string) => {
 		try {
-			const response = await api.get(`/event/${id}`)
+			const response = await api.get(`news/${id}`)
 			setEvent(response?.data?.data)
 		} catch (error) {
 			console.error('Error fetching event:', error)
 		}
-	}
-
-	const timeStringToDate = (timeStr?: string) => {
-		if (!timeStr || !timeStr.includes(':')) return new Date()
-
-		const [hours = '0', minutes = '0', seconds = '0'] = timeStr.split(':')
-		const now = new Date()
-		now.setHours(Number(hours), Number(minutes), Number(seconds))
-		return now
 	}
 
 	useEffect(() => {
@@ -116,12 +107,12 @@ function EventDetail() {
 							<div className="flex items-center space-x-2">
 								<FaCalendar className="text-blue-600" />
 								<span>
-									{format(timeStringToDate(event?.startTime), 'HH:mm')} - {format(timeStringToDate(event?.endTime), 'HH:mm')}
+									{event?.startTime} - {event?.endTime}
 								</span>
 							</div>
 							<div className="flex items-center space-x-2">
 								<FaClock className="text-blue-600" />
-								<span>{format(new Date(event?.startDate), 'dd/MM/yyyy')} - {format(new Date(event?.endDate), 'dd/MM/yyyy')}</span>
+								<span>{event?.startDate} - {event?.endDate}</span>
 							</div>
 							<div className="flex items-center space-x-2">
 								<FaMapMarkerAlt className="text-blue-600" />

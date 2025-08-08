@@ -67,7 +67,7 @@ export const HandmadeProductTayNinh = () => {
     setLoading(true)
     try {
       // Create an array of promises for all 4 months
-      const promises = months.map(({ month, year }) => api.get(`/event/filter-paged?month=${month}&year=${year}`))
+      const promises = months.map(({ month, year }) => api.get(`/news/events?month=${month}&year=${year}`))
 
       // Execute all promises in parallel
       const responses = await Promise.all(promises)
