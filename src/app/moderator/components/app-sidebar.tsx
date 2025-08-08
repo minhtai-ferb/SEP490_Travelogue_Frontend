@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { NavMain } from "@/app/(admin)/components/nav-main";
-import { NavSecondary } from "@/app/(admin)/components/nav-secondary";
-import { NavUser } from "@/app/(admin)/components/nav-user";
+import { NavMain } from "@/app/admin/components/nav-main";
+import { NavSecondary } from "@/app/admin/components/nav-secondary";
+import { NavUser } from "@/app/admin/components/nav-user";
 import {
 	Sidebar,
 	SidebarContent,
