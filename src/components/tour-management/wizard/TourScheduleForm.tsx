@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, DollarSign, Loader2 } from "lucide-react"
+import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, DollarSign, Loader2, Banknote } from "lucide-react"
 import type { ScheduleFormData } from "@/types/Tour"
 
 interface TourScheduleFormProps {
 	initialData?: ScheduleFormData[]
 	tourDays: number
+	onChange?: (data: ScheduleFormData[]) => void
 	onSubmit: (data: ScheduleFormData[]) => void
 	onPrevious: () => void
 	onCancel: () => void
@@ -21,6 +22,7 @@ interface TourScheduleFormProps {
 export function TourScheduleForm({
 	initialData = [],
 	tourDays,
+	onChange,
 	onSubmit,
 	onPrevious,
 	onCancel,
@@ -41,6 +43,11 @@ export function TourScheduleForm({
 			setSchedules(initialData)
 		}
 	}, [initialData])
+
+	useEffect(() => {
+		onChange?.(schedules)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [schedules])
 
 	useEffect(() => {
 		setNewSchedule((prev) => ({ ...prev, totalDays: tourDays }))
@@ -141,11 +148,11 @@ export function TourScheduleForm({
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"	>
 						<div className="space-y-2">
 							<Label htmlFor="departureDate" className="flex items-center gap-2">
 								<Calendar className="w-4 h-4" />
-								Ngày Khởi Hành *
+								Ngày Khởi Hành <span className="text-red-500">*</span>
 							</Label>
 							<Input
 								id="departureDate"
@@ -161,7 +168,7 @@ export function TourScheduleForm({
 						<div className="space-y-2">
 							<Label htmlFor="maxParticipant" className="flex items-center gap-2">
 								<Users className="w-4 h-4" />
-								Số Người Tối Đa *
+								Số Người Tối Đa <span className="text-red-500">*</span>
 							</Label>
 							<Input
 								id="maxParticipant"
@@ -180,8 +187,8 @@ export function TourScheduleForm({
 
 						<div className="space-y-2">
 							<Label htmlFor="adultPrice" className="flex items-center gap-2">
-								<DollarSign className="w-4 h-4" />
-								Giá Người Lớn (VNĐ) *
+								<Banknote className="w-4 h-4" />
+								Giá Người Lớn (VNĐ) <span className="text-red-500">*</span>
 							</Label>
 							<Input
 								id="adultPrice"
@@ -198,7 +205,7 @@ export function TourScheduleForm({
 
 						<div className="space-y-2">
 							<Label htmlFor="childrenPrice" className="flex items-center gap-2">
-								<DollarSign className="w-4 h-4" />
+								<Banknote className="w-4 h-4" />
 								Giá Trẻ Em (VNĐ)
 							</Label>
 							<Input

@@ -20,7 +20,22 @@ export interface TripDay {
 	day: number
 	activities: TripActivity[]
 }
-
+export interface TourGuideTripplan {
+	id: string
+	name: string
+	description: string
+	startDate: string | Date
+	endDate: string | Date
+	imageUrl: string | null
+	userId: string
+	ownerName: string
+	createdTime: string | Date
+	lastUpdatedTime: string | Date
+	createdBy: string
+	createdByName: string | null
+	lastUpdatedBy: string
+	lastUpdatedByName: string | null
+}
 export interface TripPlan {
 	id: string
 	title?: string
@@ -37,3 +52,4 @@ export interface TripPlan {
 	tourguide?: TourGuide
 }
 
+export type TripPlanStatus = "pending" | "confirmed" | "completed" | "cancelled"

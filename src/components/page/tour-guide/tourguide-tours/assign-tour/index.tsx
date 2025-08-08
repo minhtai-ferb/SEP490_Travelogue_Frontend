@@ -78,7 +78,7 @@ function MyToursContent() {
 	const [error, setError] = useState<string | null>(null)
 	const [isLoading, setLoading] = useState<boolean>(false)
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
-	const { getTourAssign } = useTourguideAssign()
+	const { getTourGuideSchedule } = useTourguideAssign()
 
 	const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
@@ -87,14 +87,14 @@ function MyToursContent() {
 		setLoading(true);
 		setError(null);
 		try {
-			const data = await getTourAssign(user?.email!);
+			const data = await getTourGuideSchedule();
 			setTours(data ?? MOCK_ASSIGNED_TOURS);
 		} catch {
 			setError("Không thể tải danh sách tour. Vui lòng thử lại sau.");
 		} finally {
 			setLoading(false);
 		}
-	}, [getTourAssign, user?.email]);
+	}, [getTourGuideSchedule, user?.email]);
 
 	useEffect(() => {
 		if (user?.email) fetchTours();
