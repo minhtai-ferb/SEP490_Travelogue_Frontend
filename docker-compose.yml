@@ -22,11 +22,11 @@ services:
     container_name: travelogue-fe
     env_file:
       - ./.env.production 
-    expose:
-      - "3000"               
+    # expose:
+    #   - "3000"               
     # CHỈ mở cổng để debug trực tiếp; khi đã dùng NPM thì có thể xóa 2 dòng ports
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     restart: unless-stopped
     networks:
       - web
