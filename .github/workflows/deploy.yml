@@ -40,20 +40,29 @@ jobs:
             echo "📝 Ghi file .env.production từ secret"
             echo "${{ secrets.FRONTEND_ENV_PRODUCTION }}" > .env.production
 
-            echo "🏗️ Build image Node 22"
-            docker compose build --pull
+            echo "🏗️ Building Docker image (without affecting running container)..."
+            if ! docker compose -f docker-compose.yml build; then
+              echo "❌ Build failed. Container still running. Abort."
+              exit 1
+            fi
 
-            echo "🚀 Khởi động container"
-            docker compose up -d --remove-orphans
+            echo "🧼 Build succeeded. Stopping old container..."
+            docker stop planbook-app || true
+            docker rm planbook-app || true
 
-            echo "⏳ Chờ container 'frontend' healthy (tối đa ~2 phút)"
-            ID=$(docker compose ps -q frontend)
-            timeout 120 sh -c '
-              while true; do
-                status=$(docker inspect -f "{{.State.Health.Status}}" '"$ID"' 2>/dev/null || echo "starting")
-                [ "$status" = "healthy" ] && break
-                [ "$status" = "unhealthy" ] && exit 1
-                sleep 5
-              done
-            ' && echo "✅ Deploy OK" || (echo "❌ Health check failed" && docker compose ps && docker compose logs --since=5m frontend | tail -n 300 && exit 1)
+            echo "🚀 Starting new container..."
+            docker compose -f docker-compose.yml up -d
 
+            echo "⏳ Waiting for container to initialize..."
+            sleep 20
+
+            echo "🩺 Performing health check..."
+            if curl -fs http://localhost:3000/health || curl -fs http://localhost:3000; then
+              echo "✅ Deployment successful!"
+              docker image prune -f
+            else
+              echo "❌ Health check failed. Rolling back..."
+              docker stop planbook-app || true
+              docker rm planbook-app || true
+              exit 1
+            fi
