@@ -88,7 +88,7 @@ export function TourDetails({ tour }: TourDetailsProps) {
 					<div className="flex items-center gap-4">
 						<div>
 							<p className="text-sm text-gray-600">Trạng Thái Hiện Tại</p>
-							<Badge className={`${statusColorMap[tour.statusText] || "bg-gray-100 text-gray-800"} text-sm mt-1`}>
+							<Badge className={`${statusColorMap[tour.statusText as keyof typeof statusColorMap] || "bg-gray-100 text-gray-800"} text-sm mt-1`}>
 								{tour.statusText}
 							</Badge>
 						</div>

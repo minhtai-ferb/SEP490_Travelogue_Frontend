@@ -1,22 +1,36 @@
-import type { TourStatus } from "@/types/Tour"
 
-export const STATUS_META: Record<TourStatus, { label: string; variant: string }> = {
+export const STATUS_META: Record<string, { label: string; variant: string }> = {
+	Draft: {
+		label: "Nháp",
+		variant: "bg-blue-100 text-blue-800",
+	},
+	Confirmed: {
+		label: "Đã xác nhận",
+		variant: "bg-green-100 text-green-800",
+	},
+	Cancelled: {
+		label: "Đã hủy bỏ",
+		variant: "bg-gray-100 text-gray-800",
+	},
 	upcoming: {
 		label: "Sắp diễn ra",
 		variant: "bg-blue-100 text-blue-800",
 	},
 	in_progress: {
 		label: "Đang diễn ra",
-		variant: "bg-green-100 text-green-800",
+		variant: "bg-yellow-100 text-yellow-800",
 	},
 	completed: {
 		label: "Đã hoàn thành",
-		variant: "bg-gray-100 text-gray-800",
+		variant: "bg-green-100 text-green-800",
 	},
 }
 
-export const getStatusBadge = (status: TourStatus) => {
-	return STATUS_META[status]
+export const getStatusBadge = (status: string) => {
+	return STATUS_META[status] || {
+		label: "Không xác định",
+		variant: "bg-gray-100 text-gray-800",
+	}
 }
 
 export const validateTourData = (tour: any): boolean => {

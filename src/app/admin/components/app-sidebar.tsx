@@ -1,16 +1,13 @@
 "use client";
 
 import {
-  BookOpen,
   Bot,
-  Calendar,
-  Earth,
   LifeBuoy,
   Map,
   MapPin,
   Newspaper,
   Send,
-  SquareTerminal,
+  SquareTerminal
 } from "lucide-react";
 import * as React from "react";
 
@@ -65,7 +62,7 @@ const data = {
       items: [
         {
           title: "Danh sách sự kiện",
-          url: "/admin/news/events/table",
+          url: "/admin/news/event/table",
         },
         {
           title: "Danh sách trải nghiệm",

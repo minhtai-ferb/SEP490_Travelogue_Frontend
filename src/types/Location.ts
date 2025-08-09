@@ -27,6 +27,25 @@ export interface TypeLocation {
     description: string;
 }
 
+// Main Location interface that components are trying to import
+export interface Location {
+    id: string;
+    name: string;
+    description: string;
+    content: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    rating?: string;
+    openTime?: string;
+    closeTime?: string;
+    category?: string;
+    districtId: string;
+    districtName: string;
+    heritageRankName?: string;
+    medias?: ListMedia[];
+    displayName?: string;
+}
 
 export interface LocationDTO {
     id: string;

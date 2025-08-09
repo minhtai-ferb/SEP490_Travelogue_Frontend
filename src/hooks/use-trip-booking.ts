@@ -112,7 +112,7 @@ export function useTripBooking({ plan, tourGuide }: UseTripBookingProps) {
 					...plan,
 					bookingId: bookingData.id,
 					tourGuide,
-					status: "booked",
+					status: 1,
 					progress: {
 						currentDay: 1,
 						completedActivities: [],

@@ -1,14 +1,13 @@
 "use client"
 
-import { useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CalendarDays, Trash2 } from 'lucide-react'
-import { useTourguideAssign } from "@/services/tourguide"
 import { useTour } from "@/services/tour"
+import { useTourguideAssign } from "@/services/tourguide"
 import type { ScheduleFormData } from "@/types/Tour"
+import { CalendarDays } from 'lucide-react'
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 
 interface Schedule {
@@ -34,7 +33,7 @@ export default function SchedulesDialog({
 	initialSchedules: Schedule[]
 	onRefetch: () => Promise<void> | void
 }) {
-	const { getTourGuideSchedule, loading: loadingSchedule } = useTourguideAssign()
+	const { updateTourSchedule, loading: loadingSchedule } = useTour()
 	const [editing, setEditing] = useState<Record<string, Partial<Schedule>>>({})
 	const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules)
 	const [confirmId, setConfirmId] = useState<string | null>(null)
@@ -58,7 +57,7 @@ export default function SchedulesDialog({
 				childrenPrice: s.childrenPrice,
 				totalDays: s.totalDays ?? undefined,
 			}
-			await getTourGuideSchedule()
+			await updateTourSchedule(tourId, s.scheduleId, payload)
 			setEditing((prev) => {
 				const copy = { ...prev }
 				delete copy[s.scheduleId]

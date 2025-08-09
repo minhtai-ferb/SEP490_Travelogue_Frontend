@@ -38,6 +38,7 @@ export interface TourGuideTripplan {
 }
 export interface TripPlan {
 	id: string
+	isAIGenerated: boolean
 	title?: string
 	startDate: Date
 	duration: number
@@ -50,6 +51,9 @@ export interface TripPlan {
 	preferences?: string
 	itinerary?: TripDay[]
 	tourguide?: TourGuide
+	statusText: TripPlanStatus
+	status: number
+	ownerName: string
 }
 
 export type TripPlanStatus = "pending" | "confirmed" | "completed" | "cancelled"

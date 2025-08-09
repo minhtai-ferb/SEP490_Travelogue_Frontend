@@ -20,7 +20,7 @@ export const getMonthDates = (currentMonth: Date, tour: Tour) => {
 	const year = currentMonth.getFullYear()
 	const month = currentMonth.getMonth()
 
-	return tour.dates.filter((date) => {
+	return tour?.dates?.filter((date: any) => {
 		const dateObj = new Date(date.date)
 		return dateObj.getFullYear() === year && dateObj.getMonth() === month
 	})

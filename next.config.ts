@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['dulich.tayninh.gov.vn', 'example.com', '.svg', 'res.cloudinary.com', 'i.imgur.com', 'img.freepik.com'],
   },
-
+  
 };
 
 export default nextConfig;

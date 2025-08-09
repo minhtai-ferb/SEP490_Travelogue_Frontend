@@ -53,13 +53,32 @@ export interface GuideScheduleItem {
 }
 
 export enum TourguideRequestStatus {
+	All = "",
 	Pending = 1,
 	Approved = 2,
 	Rejected = 3,
 }
 
 export const TourguideRequestStatusDisplay: Record<TourguideRequestStatus, string> = {
+	[TourguideRequestStatus.All]: "",
 	[TourguideRequestStatus.Pending]: "Chờ xác nhận",
 	[TourguideRequestStatus.Approved]: "Đã xác nhận",
 	[TourguideRequestStatus.Rejected]: "Từ chối",
 };
+
+export interface TourGuideCertification {
+	name: string
+	certificateUrl: string
+}
+
+export interface TourGuideRequestItem {
+	id: string
+	userId: string
+	email: string
+	fullName: string
+	introduction: string
+	price: number
+	status: TourguideRequestStatus | number
+	rejectionReason: string | null
+	certifications: TourGuideCertification[]
+}

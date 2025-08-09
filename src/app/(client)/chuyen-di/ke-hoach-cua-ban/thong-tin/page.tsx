@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -17,18 +17,61 @@ import { TripStats } from "@/components/page/trip-planner/detail/trip-detail-com
 import TripTourguide from "@/components/page/trip-planner/detail/trip-detail-component/trip-tourguide"
 import { BookingConfirmationModal } from "@/components/page/trip-planner/detail/trip-detail-component/booking-comfirmation"
 import { useTripBooking } from "@/hooks/use-trip-booking"
+import { useSearchParams } from "next/navigation"
 
-interface TripPlanDetailProps {
-	plan: TripPlan
-}
-
-export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
+export default function TripPlanDetailPage() {
+	const searchParams = useSearchParams()
+	const [plan, setPlan] = useState<TripPlan | null>(null)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 	const [activeTab, setActiveTab] = useState("overview")
 	const [showConfirmationModal, setShowConfirmationModal] = useState(false)
-	const [selectedTourGuide, setSelectedTourGuide] = useState(plan?.tourguide || null)
+	const [selectedTourGuide, setSelectedTourGuide] = useState<any>(null)
+
+	// Fetch trip plan data
+	useEffect(() => {
+		const fetchTripPlan = async () => {
+			try {
+				// Get plan ID from URL params or localStorage
+				const planId = searchParams.get('planId')
+
+				if (!planId) {
+					// Try to get from localStorage as fallback
+					const storedPlans = localStorage.getItem("userTripPlans")
+					if (storedPlans) {
+						const plans = JSON.parse(storedPlans)
+						if (plans.length > 0) {
+							setPlan(plans[0])
+							setSelectedTourGuide(plans[0]?.tourguide || null)
+						}
+					}
+				} else {
+					// Fetch from API or localStorage by ID
+					const storedPlans = localStorage.getItem("userTripPlans")
+					if (storedPlans) {
+						const plans = JSON.parse(storedPlans)
+						const foundPlan = plans.find((p: TripPlan) => p.id === planId)
+						if (foundPlan) {
+							setPlan(foundPlan)
+							setSelectedTourGuide(foundPlan?.tourguide || null)
+						} else {
+							setError("Không tìm thấy lịch trình")
+						}
+					}
+				}
+			} catch (err) {
+				setError("Có lỗi xảy ra khi tải dữ liệu")
+				console.error("Error fetching trip plan:", err)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchTripPlan()
+	}, [searchParams])
 
 	const { isBooking, bookingError, startTrip, calculateTotalPrice, clearError } = useTripBooking({
-		plan,
+		plan: plan || {} as TripPlan,
 		tourGuide: selectedTourGuide || undefined,
 	})
 
@@ -37,6 +80,7 @@ export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
 	}
 
 	const getEndDate = () => {
+		if (!plan) return new Date()
 		const endDate = new Date(plan.startDate)
 		endDate.setDate(endDate.getDate() + plan.duration - 1)
 		return endDate
@@ -56,6 +100,32 @@ export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {
 	}
 
 	const pricing = calculateTotalPrice()
+
+	if (loading) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+				<div className="text-center">
+					<div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+					<p className="text-gray-600">Đang tải lịch trình...</p>
+				</div>
+			</div>
+		)
+	}
+
+	if (error || !plan) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+				<div className="text-center">
+					<AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+					<h2 className="text-xl font-semibold text-gray-800 mb-2">Không tìm thấy lịch trình</h2>
+					<p className="text-gray-600 mb-4">{error || "Lịch trình không tồn tại hoặc đã bị xóa"}</p>
+					<Button onClick={() => window.history.back()}>
+						Quay lại
+					</Button>
+				</div>
+			</div>
+		)
+	}
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

@@ -82,6 +82,7 @@ export interface Tour {
 	minParticipants?: number
 	bookedCount?: number
 	isActive: boolean
+	dates: TourDate[]
 }
 
 export type TourStatus = "Draft" | "Confirmed" | "Cancelled"

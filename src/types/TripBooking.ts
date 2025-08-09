@@ -1,4 +1,4 @@
-import { TourGuide } from "./Tourguide"
+import { TourGuide, TripPlanStatus } from "./Tourguide"
 import type { TripPlan } from "./Tripplan"
 
 export interface TripBookingData {
@@ -29,7 +29,7 @@ export interface TripBookingData {
 export interface UserTripPlan extends TripPlan {
 	bookingId?: string
 	tourGuide?: TourGuide
-	status?: "planning" | "booked" | "active" | "completed"
+	status: number
 	progress?: {
 		currentDay?: number
 		completedActivities?: string[]

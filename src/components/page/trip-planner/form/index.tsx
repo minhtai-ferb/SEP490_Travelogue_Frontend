@@ -65,6 +65,9 @@ export default function TripPlanningForm({ onPlanCreated }: TripPlanningFormProp
 			preferences: preferences,
 			itinerary: generateSampleItinerary(),
 			isAIGenerated: useAI,
+			statusText: "pending",
+			status: 0,
+			ownerName: "Khách hàng",
 		}
 
 		onPlanCreated(plan)

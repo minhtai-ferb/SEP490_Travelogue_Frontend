@@ -5,9 +5,10 @@ import BookingConfirmationClient from "@/components/page/booking-confirmation"
 export async function generateMetadata({
 	searchParams,
 }: {
-	searchParams: { [key: string]: string | undefined }
+	searchParams: Promise<{ [key: string]: string | undefined }>
 }): Promise<Metadata> {
-	const bookingId = searchParams.bookingId
+	const resolvedSearchParams = await searchParams
+	const bookingId = resolvedSearchParams.bookingId
 
 	// You can fetch booking data here if needed
 	// const booking = await fetchBookingById(bookingId)
@@ -43,10 +44,6 @@ export async function generateMetadata({
 	}
 }
 
-export default function BookingConfirmationPage({
-	searchParams,
-}: {
-	searchParams: { [key: string]: string | undefined };
-}) {
-	return <BookingConfirmationClient bookingId={searchParams.bookingId || null} />
+export default async function BookingConfirmationPage() {
+	return <BookingConfirmationClient />
 }

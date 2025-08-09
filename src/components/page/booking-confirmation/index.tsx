@@ -31,14 +31,10 @@ interface BookingData {
 	leaderId?: string
 }
 
-interface BookingConfirmationProps {
-	bookingId: string | null
-}
-
-export default function BookingConfirmationClient({ bookingId }: BookingConfirmationProps) {
+export default function BookingConfirmationClient() {
 	const router = useRouter()
-	// const searchParams = useSearchParams()
-	// const bookingId = searchParams.get("bookingId")
+	const searchParams = useSearchParams()
+	const bookingId = searchParams.get("bookingId")
 
 	const [bookingData, setBookingData] = useState<BookingData | null>(null)
 	const [showAppDownload, setShowAppDownload] = useState(false)

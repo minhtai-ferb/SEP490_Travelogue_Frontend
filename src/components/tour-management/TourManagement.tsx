@@ -86,11 +86,11 @@ function TourManagement() {
 
 	// Actions
 	const handleView = (tour: TourDetail) => {
-		router.push(`/tour/${tour.tourId}`)
+		router.push(`/admin/tour/${tour.tourId}`)
 	}
 
 	const handleEdit = (tour: TourDetail) => {
-		router.push(`/tour/${tour.tourId}/edit`)
+		router.push(`/admin/tour/${tour.tourId}/edit`)
 	}
 
 	const handleDelete = (tour: TourDetail) => {
@@ -99,7 +99,7 @@ function TourManagement() {
 	}
 
 	const handleCreate = () => {
-		router.push("/tour/create")
+		router.push("/admin/tour/create")
 	}
 
 	const handleConfirmDelete = async () => {

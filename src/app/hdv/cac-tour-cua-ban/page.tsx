@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-	// const user = useAtom(userAtom)
 	return (
 		<div>
 			<MyToursContent />

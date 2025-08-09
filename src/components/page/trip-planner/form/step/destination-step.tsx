@@ -41,7 +41,7 @@ export function DestinationStep({ formData, updateFormData, onComplete, onBack }
 		} catch (error) {
 			console.error("Error generating trip plan:", error)
 			setIsGenerating(false)
-			return
+			return;
 		}
 
 		// Create the trip plan
@@ -57,6 +57,10 @@ export function DestinationStep({ formData, updateFormData, onComplete, onBack }
 			travelers: travelers,
 			itinerary: generateSampleItinerary(),
 			preferences: preferences,
+			isAIGenerated: false,
+			statusText: "pending",
+			status: 0,
+			ownerName: "Khách hàng",
 		}
 
 		onComplete(plan)

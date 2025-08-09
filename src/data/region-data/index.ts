@@ -138,114 +138,114 @@ export const menuItems = [
 	{ label: "Thông tin cần biết", href: "/thong-tin-can-biet" },
 ];
 
-export const MOCK_TOUR_DATA: Tour = {
-	id: "tay-ninh-tour-001",
-	title: "Tour khám phá Tây Ninh - Hành trình văn hóa và thiên nhiên",
-	location: "Tây Ninh, Việt Nam",
-	duration: "3 ngày 2 đêm",
-	maxGuests: 15,
-	activeSlot: 15,
-	rating: 4.8,
-	reviewCount: 124,
-	dates: [
-		{ date: "2025-07-15", available: true, price: 32900000, spotsLeft: 8, leaderId: "1" },
-		{ date: "2025-07-22", available: true, price: 32900000, spotsLeft: 12 },
-		{ date: "2025-08-08", available: true, price: 34900000, spotsLeft: 6, leaderId: "2" },
-		{ date: "2025-08-15", available: true, price: 34900000, spotsLeft: 15 },
-		{ date: "2025-08-22", available: false, price: 34900000, spotsLeft: 0, leaderId: "3" },
-		{ date: "2025-09-05", available: true, price: 36900000, spotsLeft: 10 },
-		{ date: "2025-09-12", available: true, price: 36900000, spotsLeft: 8, leaderId: "1" },
-		{ date: "2025-09-19", available: true, price: 36900000, spotsLeft: 14 },
-	],
-	description:
-		"Khám phá vẻ đẹp văn hóa và thiên nhiên của Tây Ninh qua hành trình 3 ngày 2 đêm đầy thú vị. Từ Tòa thánh Cao Đài với kiến trúc độc đáo đến núi Bà Đen hùng vĩ, và địa đạo Củ Chi lịch sử.",
-	badges: ["Bestseller", "3 ngày 2 đêm"],
-	images: [
-		{
-			id: "img-1",
-			url: "/placeholder.svg?height=600&width=800",
-			alt: "Tòa thánh Cao Đài",
-		},
-		{
-			id: "img-2",
-			url: "/placeholder.svg?height=600&width=800",
-			alt: "Núi Bà Đen",
-		},
-		{
-			id: "img-3",
-			url: "/placeholder.svg?height=600&width=800",
-			alt: "Địa đạo Củ Chi",
-		},
-		{
-			id: "img-4",
-			url: "/placeholder.svg?height=600&width=800",
-			alt: "Cảnh đẹp Tây Ninh",
-		},
-	],
-	itinerary: [
-		{
-			day: 1,
-			title: "Khám phá trung tâm Tây Ninh",
-			description:
-				"Tham quan Tòa thánh Cao Đài, khám phá văn hóa tôn giáo độc đáo và kiến trúc đặc sắc của ngôi thánh thất lớn nhất Việt Nam.",
-			time: "8:00 - 12:00",
-			activities: [
-				{ id: "act-1", name: "Tham quan Tòa thánh Cao Đài" },
-				{ id: "act-2", name: "Chụp ảnh kiến trúc" },
-				{ id: "act-3", name: "Tìm hiểu văn hóa tôn giáo" },
-			],
-		},
-		{
-			day: 2,
-			title: "Núi Bà Đen - Thiên đường du lịch",
-			description:
-				"Chinh phục đỉnh núi cao nhất Nam Bộ, trải nghiệm cáp treo hiện đại và thưởng thức không khí trong lành.",
-			time: "6:00 - 18:00",
-			activities: [
-				{ id: "act-4", name: "Đi cáp treo lên đỉnh núi" },
-				{ id: "act-5", name: "Tham quan chùa Bà" },
-				{ id: "act-6", name: "Ngắm cảnh toàn cảnh" },
-			],
-		},
-		{
-			day: 3,
-			title: "Địa đạo Củ Chi lịch sử",
-			description:
-				"Khám phá hệ thống địa đạo nổi tiếng, tìm hiểu lịch sử chiến tranh Việt Nam qua những câu chuyện thực tế.",
-			time: "8:00 - 16:00",
-			activities: [
-				{ id: "act-7", name: "Tham quan địa đạo" },
-				{ id: "act-8", name: "Bắn súng AK47" },
-				{ id: "act-9", name: "Thưởng thức bánh mì củ chi" },
-			],
-		},
-	],
-	amenities: [
-		{ id: "amenity-1", name: "Xe đưa đón", icon: "Car", included: true },
-		{ id: "amenity-2", name: "Bữa ăn", icon: "Coffee", included: true },
-		{ id: "amenity-4", name: "WiFi miễn phí", icon: "Wifi", included: true },
-	],
-	reviews: [
-		{
-			id: "review-1",
-			userName: "Minh Anh",
-			rating: 5,
-			comment:
-				"Chuyến đi tuyệt vời! Hướng dẫn viên nhiệt tình, lịch trình hợp lý. Đặc biệt ấn tượng với Tòa thánh Cao Đài.",
-			date: "2 tuần trước",
-		},
-		{
-			id: "review-2",
-			userName: "Thu Hà",
-			rating: 5,
-			comment: "Núi Bà Đen thật hùng vĩ, cáp treo hiện đại. Địa đạo Củ Chi rất thú vị và ý nghĩa.",
-			date: "1 tháng trước",
-		},
-	],
-	pricing: {
-		basePrice: 2890000,
-		originalPrice: 3200000,
-		serviceFee: 200000,
-		currency: "VND",
-	},
-}
+// export const MOCK_TOUR_DATA: Tour = {
+// 	tourId: "tay-ninh-tour-001",
+// 	title: "Tour khám phá Tây Ninh - Hành trình văn hóa và thiên nhiên",
+// 	location: "Tây Ninh, Việt Nam",
+// 	duration: "3 ngày 2 đêm",
+// 	maxGuests: 15,
+// 	activeSlot: 15,
+// 	rating: 4.8,
+// 	reviewCount: 124,
+// 	dates: [
+// 		{ date: "2025-07-15", available: true, price: 32900000, spotsLeft: 8, leaderId: "1" },
+// 		{ date: "2025-07-22", available: true, price: 32900000, spotsLeft: 12 },
+// 		{ date: "2025-08-08", available: true, price: 34900000, spotsLeft: 6, leaderId: "2" },
+// 		{ date: "2025-08-15", available: true, price: 34900000, spotsLeft: 15 },
+// 		{ date: "2025-08-22", available: false, price: 34900000, spotsLeft: 0, leaderId: "3" },
+// 		{ date: "2025-09-05", available: true, price: 36900000, spotsLeft: 10 },
+// 		{ date: "2025-09-12", available: true, price: 36900000, spotsLeft: 8, leaderId: "1" },
+// 		{ date: "2025-09-19", available: true, price: 36900000, spotsLeft: 14 },
+// 	],
+// 	description:
+// 		"Khám phá vẻ đẹp văn hóa và thiên nhiên của Tây Ninh qua hành trình 3 ngày 2 đêm đầy thú vị. Từ Tòa thánh Cao Đài với kiến trúc độc đáo đến núi Bà Đen hùng vĩ, và địa đạo Củ Chi lịch sử.",
+// 	badges: ["Bestseller", "3 ngày 2 đêm"],
+// 	images: [
+// 		{
+// 			id: "img-1",
+// 			url: "/placeholder.svg?height=600&width=800",
+// 			alt: "Tòa thánh Cao Đài",
+// 		},
+// 		{
+// 			id: "img-2",
+// 			url: "/placeholder.svg?height=600&width=800",
+// 			alt: "Núi Bà Đen",
+// 		},
+// 		{
+// 			id: "img-3",
+// 			url: "/placeholder.svg?height=600&width=800",
+// 			alt: "Địa đạo Củ Chi",
+// 		},
+// 		{
+// 			id: "img-4",
+// 			url: "/placeholder.svg?height=600&width=800",
+// 			alt: "Cảnh đẹp Tây Ninh",
+// 		},
+// 	],
+// 	itinerary: [
+// 		{
+// 			day: 1,
+// 			title: "Khám phá trung tâm Tây Ninh",
+// 			description:
+// 				"Tham quan Tòa thánh Cao Đài, khám phá văn hóa tôn giáo độc đáo và kiến trúc đặc sắc của ngôi thánh thất lớn nhất Việt Nam.",
+// 			time: "8:00 - 12:00",
+// 			activities: [
+// 				{ id: "act-1", name: "Tham quan Tòa thánh Cao Đài" },
+// 				{ id: "act-2", name: "Chụp ảnh kiến trúc" },
+// 				{ id: "act-3", name: "Tìm hiểu văn hóa tôn giáo" },
+// 			],
+// 		},
+// 		{
+// 			day: 2,
+// 			title: "Núi Bà Đen - Thiên đường du lịch",
+// 			description:
+// 				"Chinh phục đỉnh núi cao nhất Nam Bộ, trải nghiệm cáp treo hiện đại và thưởng thức không khí trong lành.",
+// 			time: "6:00 - 18:00",
+// 			activities: [
+// 				{ id: "act-4", name: "Đi cáp treo lên đỉnh núi" },
+// 				{ id: "act-5", name: "Tham quan chùa Bà" },
+// 				{ id: "act-6", name: "Ngắm cảnh toàn cảnh" },
+// 			],
+// 		},
+// 		{
+// 			day: 3,
+// 			title: "Địa đạo Củ Chi lịch sử",
+// 			description:
+// 				"Khám phá hệ thống địa đạo nổi tiếng, tìm hiểu lịch sử chiến tranh Việt Nam qua những câu chuyện thực tế.",
+// 			time: "8:00 - 16:00",
+// 			activities: [
+// 				{ id: "act-7", name: "Tham quan địa đạo" },
+// 				{ id: "act-8", name: "Bắn súng AK47" },
+// 				{ id: "act-9", name: "Thưởng thức bánh mì củ chi" },
+// 			],
+// 		},
+// 	],
+// 	amenities: [
+// 		{ id: "amenity-1", name: "Xe đưa đón", icon: "Car", included: true },
+// 		{ id: "amenity-2", name: "Bữa ăn", icon: "Coffee", included: true },
+// 		{ id: "amenity-4", name: "WiFi miễn phí", icon: "Wifi", included: true },
+// 	],
+// 	reviews: [
+// 		{
+// 			id: "review-1",
+// 			userName: "Minh Anh",
+// 			rating: 5,
+// 			comment:
+// 				"Chuyến đi tuyệt vời! Hướng dẫn viên nhiệt tình, lịch trình hợp lý. Đặc biệt ấn tượng với Tòa thánh Cao Đài.",
+// 			date: "2 tuần trước",
+// 		},
+// 		{
+// 			id: "review-2",
+// 			userName: "Thu Hà",
+// 			rating: 5,
+// 			comment: "Núi Bà Đen thật hùng vĩ, cáp treo hiện đại. Địa đạo Củ Chi rất thú vị và ý nghĩa.",
+// 			date: "1 tháng trước",
+// 		},
+// 	],
+// 	pricing: {
+// 		basePrice: 2890000,
+// 		originalPrice: 3200000,
+// 		serviceFee: 200000,
+// 		currency: "VND",
+// 	},
+// }

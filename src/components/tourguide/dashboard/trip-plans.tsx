@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import type { TripPlan } from "@/types/TripPlan"
+import type { TripPlan } from "@/types/Tripplan"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,36 +13,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { formatDate, formatPrice } from "@/utils/format"
 import { TripPlanStatus } from "@/types/Tripplan"
 import { useTourguideAssign } from "@/services/tourguide"
-
-const MOCK_PLANS: TripPlan[] = [
-	{
-		id: "TP-1001",
-		customerName: "Nguyễn Văn A",
-		customerEmail: "a@example.com",
-		phone: "0901234567",
-		startDate: "2025-08-12T08:00:00Z",
-		endDate: "2025-08-14T18:00:00Z",
-		participants: 4,
-		title: "Tây Ninh 3N2Đ - Gia đình",
-		notes: "Yêu cầu phòng gần nhau",
-		status: "pending",
-		createdAt: new Date().toISOString(),
-		totalPrice: 5600000,
-	},
-	{
-		id: "TP-1002",
-		customerName: "Trần Thị B",
-		customerEmail: "b@example.com",
-		phone: "0912345678",
-		startDate: "2025-08-20T08:00:00Z",
-		endDate: "2025-08-21T18:00:00Z",
-		participants: 2,
-		title: "Núi Bà Đen - Cặp đôi",
-		status: "confirmed",
-		createdAt: new Date().toISOString(),
-		totalPrice: 2400000,
-	},
-]
 
 function statusBadge(status: TripPlanStatus) {
 	switch (status) {
@@ -67,7 +37,7 @@ export function TripPlansSection() {
 	const { getTourGuideSchedule, loading } = useTourguideAssign()
 	const [plans, setPlans] = useState<TripPlan[]>([])
 	useEffect(() => {
-		getTourGuideSchedule().then((res) => {
+		getTourGuideSchedule(1, "2024-01-01", "2024-12-31", 1, 10).then((res: any) => {
 			setPlans(res)
 		}).catch((err) => {
 			console.log(err)
@@ -79,11 +49,8 @@ export function TripPlansSection() {
 			const s = search.toLowerCase()
 			const matches =
 				p.id.toLowerCase().includes(s) ||
-				p.customer?.name?.toLowerCase().includes(s) ||
-				p.title?.toLowerCase().includes(s) ||
-				p.customer?.email?.toLowerCase().includes(s) ||
-				p.customer?.phone?.toLowerCase().includes(s)
-			const statusOk = status === "all" || p.status === status
+				p.title?.toLowerCase().includes(s)
+			const statusOk = status === "all" || p.statusText === status
 			return matches && statusOk
 		})
 	}, [plans, search, status])
@@ -125,23 +92,22 @@ export function TripPlansSection() {
 							</tr>
 						</thead>
 						<tbody>
-							{filtered.map((p) => (
+							{filtered.map((p: any) => (
 								<tr key={p.id} className="border-b last:border-0">
 									<td className="py-2 pr-4 font-medium">{p.id}</td>
 									<td className="py-2 pr-4">
 										<div className="flex flex-col">
-											<span className="font-medium">{p.customerName}</span>
-											<span className="text-xs text-gray-500">{p.customerEmail}</span>
+											<span className="font-medium">{p?.ownerName || "Khách hàng"}</span>
 										</div>
 									</td>
 									<td className="py-2 pr-4">{p.title}</td>
 									<td className="py-2 pr-4">
-										{formatDate(p.startDate)} - {formatDate(p.endDate)}
+										{formatDate(p.startDate as any)} - {formatDate(p.duration as any)}
 									</td>
-									<td className="py-2 pr-4">{p.participants}</td>
-									<td className="py-2 pr-4">{p.totalPrice ? formatPrice(p.totalPrice) : "-"}</td>
+									<td className="py-2 pr-4">{p.travelers}</td>
+									<td className="py-2 pr-4">{p.budget ? formatPrice(p.budget) : "-"}</td>
 									<td className="py-2 pr-4">
-										<span className={`px-2 py-1 rounded-md text-xs ${statusBadge(p.status)}`}>{p.status}</span>
+										<span className={`px-2 py-1 rounded-md text-xs ${statusBadge(p.statusText as any)}`}>{p.statusText}</span>
 									</td>
 									<td className="py-2 pr-4 text-right">
 										<Button
@@ -185,20 +151,18 @@ export function TripPlansSection() {
 									<div>
 										<Label>Khách hàng</Label>
 										<div className="text-sm">
-											<div className="font-medium">{selected.customerName}</div>
-											<div className="text-gray-500">{selected.customerEmail}</div>
-											{selected.phone && <div className="text-gray-500">{selected.phone}</div>}
+											<div className="font-medium">{selected?.ownerName || "Khách hàng"}</div>
 										</div>
 									</div>
 									<div>
 										<Label>Thời gian</Label>
 										<div className="text-sm">
-											{formatDate(selected.startDate)} - {formatDate(selected.endDate)}
+											{formatDate(selected.startDate as any)} - {formatDate(selected.duration as any)}
 										</div>
 									</div>
 									<div>
 										<Label>Khách</Label>
-										<div className="text-sm">{selected.participants} người</div>
+										<div className="text-sm">{selected.travelers} người</div>
 									</div>
 								</div>
 
@@ -209,18 +173,18 @@ export function TripPlansSection() {
 
 								<div>
 									<Label>Ghi chú</Label>
-									<Textarea defaultValue={selected.notes || ""} placeholder="Ghi chú nội bộ..." />
+									<Textarea defaultValue={selected?.preferences || ""} placeholder="Ghi chú nội bộ..." />
 								</div>
 
 								<div className="flex items-center justify-between">
 									<div className="flex items-center gap-2">
-										<Badge variant="outline" className="text-xs">Trạng thái: {selected.status}</Badge>
+										<Badge variant="outline" className="text-xs">Trạng thái: {selected.statusText as any}</Badge>
 									</div>
 									<div className="flex gap-2">
-										<StatusButton status="pending" current={selected.status} onChange={(s) => setSelected({ ...selected, status: s })} />
-										<StatusButton status="confirmed" current={selected.status} onChange={(s) => setSelected({ ...selected, status: s })} />
-										<StatusButton status="completed" current={selected.status} onChange={(s) => setSelected({ ...selected, status: s })} />
-										<StatusButton status="cancelled" current={selected.status} onChange={(s) => setSelected({ ...selected, status: s })} />
+										<StatusButton status="pending" current={selected.statusText as any} onChange={(s) => setSelected({ ...selected, statusText: s as any })} />
+										<StatusButton status="confirmed" current={selected.statusText as any} onChange={(s) => setSelected({ ...selected, statusText: s as any })} />
+										<StatusButton status="completed" current={selected.statusText as any} onChange={(s) => setSelected({ ...selected, statusText: s as any })} />
+										<StatusButton status="cancelled" current={selected.statusText as any} onChange={(s) => setSelected({ ...selected, statusText: s as any })} />
 									</div>
 								</div>
 

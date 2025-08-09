@@ -12,11 +12,11 @@ export default function TourCreateClient() {
 	const [error, setError] = useState("")
 
 	const handleBack = () => {
-		router.push("/tour")
+		router.push("/admin/tour")
 	}
 
 	const handleComplete = () => {
-		router.push("/tour")
+		router.push("/admin/tour")
 	}
 
 	return (
