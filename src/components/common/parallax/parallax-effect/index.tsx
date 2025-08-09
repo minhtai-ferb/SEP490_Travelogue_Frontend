@@ -48,7 +48,7 @@ const getLocationTypeInfo = (type: TypeLocation | null) => {
 	}
 
 	// Map based on type name or id - adjust based on your TypeLocation structure
-	const typeKey = type.name?.toLowerCase() || type.displayName?.toLowerCase() || type.id
+	const typeKey = type.name?.toLowerCase() || type?.name?.toLowerCase() || type.id
 
 	const infoMap: Record<string, any> = {
 		"danh lam thắng cảnh": {
@@ -83,9 +83,8 @@ const getLocationTypeInfo = (type: TypeLocation | null) => {
 
 	return (
 		infoMap[typeKey] ||
-		infoMap[type.displayName?.toLowerCase()] ||
-		infoMap[type.name?.toLowerCase()] || {
-			title: type.displayName || type.name || "Địa điểm du lịch",
+		infoMap[type?.name?.toLowerCase()] || {
+			title: type?.name || "Địa điểm du lịch",
 			subtitle: "Khám phá những điểm đến tuyệt vời",
 			description: "Những địa điểm du lịch hấp dẫn đang chờ bạn khám phá.",
 			icon: Mountain,
@@ -146,7 +145,7 @@ export function ParallaxLocationIntro({ locationType, className, onLocationSelec
 					highlights: item.highlights || [],
 					location: item.location || item.address || "",
 					price: item.price || "Liên hệ",
-					category: item.category || locationType.displayName || "",
+					category: item.category || locationType?.name || "",
 					tags: item.tags || [],
 					facts: item.facts || [],
 				}))

@@ -204,13 +204,13 @@ const MapTayNinh = () => {
 						{/* Content */}
 						<motion.h1
 							className="relative z-20 text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-8 px-4"
-							variants={titleVariants}
+							variants={titleVariants as any}
 						>
 							Tây Ninh: Tự hào vùng đất di tích
 						</motion.h1>
 
 						<motion.div
-							variants={mapVariants}
+							variants={mapVariants as any}
 							initial="initial"
 							animate={selectedRegion ? "animate" : "initial"}
 							exit="exit"
@@ -226,7 +226,7 @@ const MapTayNinh = () => {
 
 						<motion.p
 							className="relative z-20 text-base md:text-lg text-white text-center max-w-3xl mx-auto mt-8"
-							variants={itemVariants}
+							variants={itemVariants as any}
 						>
 							Tây Ninh là tỉnh nằm ở miền Đông Nam Bộ, có 08 huyện và 01 thành phố thuộc tỉnh. Tây Ninh ngày nay là một
 							vùng đất địa linh, có tiềm năng, lợi thế để phát triển kinh tế - xã hội, nhất là tiềm năng về du lịch với
@@ -242,7 +242,7 @@ const MapTayNinh = () => {
 							backgroundRepeat: "no-repeat",
 						}}
 						className="relative min-h-[87vh] flex flex-col items-center justify-center py-12 px-4"
-						variants={detailVariants}
+						variants={detailVariants as any}
 						initial="hidden"
 						animate="visible"
 						exit="exit"
@@ -256,13 +256,13 @@ const MapTayNinh = () => {
 						{/* Title Section */}
 						<motion.h1
 							className="relative z-20 text-2xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-7"
-							variants={itemVariants}
+							variants={itemVariants as any}
 						>
 							Tây Ninh: Tự hào vùng đất di tích
 						</motion.h1>
 
 						{/* Back button */}
-						<motion.div className="absolute z-30 cursor-pointer top-20 right-40 duration-200" variants={itemVariants}>
+						<motion.div className="absolute z-30 cursor-pointer top-20 right-40 duration-200" variants={itemVariants as any}>
 							<div
 								className="cursor-pointer flex items-center border-3 z-50 border-white rounded-full px-3 py-3 hover:bg-white/10 duration-300"
 								onClick={resetMapView}
@@ -272,7 +272,7 @@ const MapTayNinh = () => {
 						</motion.div>
 
 						{/* Region image */}
-						<motion.div className="relative z-20 mt-4 mb-8" variants={itemVariants}>
+						<motion.div className="relative z-20 mt-4 mb-8" variants={itemVariants as any}>
 							<div className="relative w-60 h-60 mx-auto">
 								<Image
 									src={selectedRegion.image || "/placeholder.svg"}
@@ -284,7 +284,7 @@ const MapTayNinh = () => {
 						</motion.div>
 
 						{/* Region details */}
-						<motion.div className="relative z-20 text-center max-w-3xl mx-auto" variants={itemVariants}>
+						<motion.div className="relative z-20 text-center max-w-3xl mx-auto" variants={itemVariants as any}>
 							<h2 className="text-2xl md:text-3xl font-bold text-white mb-4">{regionDetails?.name}</h2>
 
 							<p className="text-base md:text-lg text-white">{regionDetails?.description}</p>

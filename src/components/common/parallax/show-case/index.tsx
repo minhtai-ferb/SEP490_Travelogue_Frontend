@@ -69,7 +69,7 @@ export function ParallaxShowcase() {
                 `}
 							>
 								<div className="text-left">
-									<div className="font-medium">{item?.displayName}</div>
+									<div className="font-medium">{item?.name}</div>
 									{/* <div className="text-xs opacity-70">{item.description}</div> */}
 								</div>
 							</Button>

@@ -1,16 +1,16 @@
 import type { TourStatus } from "@/types/Tour"
 
 export const STATUS_META: Record<TourStatus, { label: string; variant: string }> = {
-	upcoming: {
-		label: "Sắp diễn ra",
+	Draft: {
+		label: "Nháp",
 		variant: "bg-blue-100 text-blue-800",
 	},
-	in_progress: {
-		label: "Đang diễn ra",
+	Confirmed: {
+		label: "Đã xác nhận",
 		variant: "bg-green-100 text-green-800",
 	},
-	completed: {
-		label: "Đã hoàn thành",
+	Cancelled: {
+		label: "Đã hủy bỏ",
 		variant: "bg-gray-100 text-gray-800",
 	},
 }

@@ -37,7 +37,7 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 						<div>
 							<CardTitle className="text-2xl font-bold flex items-center gap-2">
 								{plan.title}
-								{plan.isAIGenerated && (
+								{plan?.isAIGenerated && (
 									<Badge variant="outline" className="ml-2 bg-primary/10 text-primary">
 										<Sparkles className="h-3.5 w-3.5 mr-1" />
 										AI Tối ưu
@@ -134,19 +134,19 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 												<path d="M7 19c.74-2.3 2.5-4 4.5-5a9.9 9.9 0 0 0-3-4c-1.66 1.37-2.5 3.44-2.5 5.5a9 9 0 0 0 1 4.5Z" />
 												<path d="M14 12c-1.8 0-3 1.2-3 3s1.2 3 3 3 3-1.2 3-3-1.2-3-3-3Z" />
 											</svg>
-											Nhà hàng & Quán ăn ({plan.restaurants.length})
+											Nhà hàng & Quán ăn ({plan.restaurants?.length})
 										</CardTitle>
 									</CardHeader>
 									<CardContent className="pt-0">
 										<ScrollArea className="h-48">
 											<ul className="space-y-2">
-												{plan.restaurants.map((rest) => (
+												{plan.restaurants?.map((rest) => (
 													<li key={rest.id} className="text-sm">
 														<div className="font-medium">{rest.name}</div>
 														<div className="text-xs text-muted-foreground">{rest.address}</div>
 													</li>
 												))}
-												{plan.restaurants.length === 0 && (
+												{plan.restaurants?.length === 0 && (
 													<li className="text-sm text-muted-foreground">Không có nhà hàng được chọn</li>
 												)}
 											</ul>
@@ -172,19 +172,19 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 												<path d="M18 22V10c0-2 2-4 4-4s4 2 4 4v12" />
 												<path d="M18 10H6" />
 											</svg>
-											Làng nghề truyền thống ({plan.craftVillages.length})
+											Làng nghề truyền thống ({plan.craftVillages?.length})
 										</CardTitle>
 									</CardHeader>
 									<CardContent className="pt-0">
 										<ScrollArea className="h-48">
 											<ul className="space-y-2">
-												{plan.craftVillages.map((village) => (
+												{plan.craftVillages?.map((village) => (
 													<li key={village.id} className="text-sm">
 														<div className="font-medium">{village.name}</div>
 														<div className="text-xs text-muted-foreground">{village.address}</div>
 													</li>
 												))}
-												{plan.craftVillages.length === 0 && (
+												{plan.craftVillages?.length === 0 && (
 													<li className="text-sm text-muted-foreground">Không có làng nghề được chọn</li>
 												)}
 											</ul>
@@ -210,7 +210,7 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 								</CardHeader>
 								<CardContent className="pt-0">
 									<div className="space-y-4">
-										{plan.itinerary.map((day) => (
+										{plan.itinerary?.map((day: any) => (
 											<div key={day.day} className="flex gap-4">
 												<div className="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
 													<span className="font-bold text-primary">Ngày {day.day}</span>
@@ -220,7 +220,7 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 														{formatDate(new Date(plan.startDate.getTime() + (day.day - 1) * 24 * 60 * 60 * 1000))}
 													</h4>
 													<ul className="mt-2 space-y-1">
-														{day.activities.slice(0, 3).map((activity, idx) => (
+														{day.activities?.slice(0, 3).map((activity: any, idx: any) => (
 															<li key={idx} className="text-sm flex items-start">
 																<span className="text-xs font-medium text-muted-foreground w-12">{activity.time}</span>
 																<span className="flex-1">{activity.title}</span>
@@ -244,7 +244,7 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 							<Card>
 								<CardContent className="p-6">
 									<div className="space-y-8">
-										{plan.itinerary.map((day) => (
+										{plan.itinerary?.map((day: any) => (
 											<div key={day.day} className="space-y-4">
 												<div className="flex items-center gap-4">
 													<div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -259,7 +259,7 @@ export default function TripPlanDetail({ plan }: TripPlanDetailProps) {
 												</div>
 
 												<div className="ml-6 pl-6 border-l-2 border-primary/20 space-y-6">
-													{day.activities.map((activity, idx) => (
+													{day.activities?.map((activity: any, idx: any) => (
 														<div key={idx} className="relative">
 															<div className="absolute -left-[33px] w-6 h-6 rounded-full bg-primary flex items-center justify-center">
 																<div className="w-2 h-2 rounded-full bg-white"></div>

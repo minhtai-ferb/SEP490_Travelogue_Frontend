@@ -2,7 +2,7 @@
 
 import { ImageGalleryExplore } from "@/components/common/image-glary/image-explore";
 import { favoritesAtom } from "@/store/favorites";
-import { Location } from "@/types/Location";
+import { Location } from "@/types/LocationCL";
 import {
 	addToast,
 	Button,
@@ -105,7 +105,7 @@ function FavoritesPlaces() {
 
 	const handleConfirmDelete = (id: string) => {
 		if (id) {
-			setSelectedLocation(locations?.find((loc) => loc?.id === id) || null)
+			setSelectedLocation(locations?.find((loc) => loc?.id === id) as Location || null)
 		}
 		onOpen()
 	}
@@ -184,7 +184,7 @@ function FavoritesPlaces() {
 						className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 					>
 						{sortedAndFilteredLocations.map((location) => (
-							<ListItem key={location.id} location={location} onDeleteConfirm={handleConfirmDelete} onClick={handleLocationClick} />
+							<ListItem key={location.id} location={location as Location} onDeleteConfirm={handleConfirmDelete} onClick={handleLocationClick} />
 						))}
 					</motion.div>
 				)}
@@ -265,4 +265,4 @@ function FavoritesPlaces() {
 	)
 }
 
-export default FavoritesPlaces
+export default FavoritesPlaces	

@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useDebounce } from "@/hooks/useDebounce"
 import { useTourguideAssign } from "@/services/tourguide"
 import { userAtom } from "@/store/auth"
-import { AssignedTour, TourStats } from "@/types/Tour"
+import { AssignedTour, TourStats, TourStatus } from "@/types/Tour"
 import { formatDate, formatPrice } from "@/utils/format"
 import { useAtom } from "jotai"
 import { ArrowLeft, Calendar, CalendarDays, Clock, List, MapPin, Users } from "lucide-react"
@@ -34,7 +34,7 @@ const MOCK_ASSIGNED_TOURS: AssignedTour[] = [
 		startDate: "2024-02-15T08:00:00Z",
 		endDate: "2024-02-15T18:00:00Z",
 		meetingLocation: "Bến xe Miền Tây, TP.HCM",
-		status: "upcoming",
+		status: "upcoming" as any,
 		participants: 15,
 		maxParticipants: 20,
 		description: "Tour khám phá núi Bà Đen, chùa Bà Đen và các điểm du lịch nổi tiếng tại Tây Ninh",
@@ -47,7 +47,7 @@ const MOCK_ASSIGNED_TOURS: AssignedTour[] = [
 		startDate: "2024-02-20T07:30:00Z",
 		endDate: "2024-02-20T17:30:00Z",
 		meetingLocation: "Công viên 23/9, Quận 1",
-		status: "upcoming",
+		status: "upcoming" as any,
 		participants: 12,
 		maxParticipants: 18,
 		description: "Tham quan thánh tòa Cao Đài và khám phá địa đạo Củ Chi lịch sử",
@@ -60,7 +60,7 @@ const MOCK_ASSIGNED_TOURS: AssignedTour[] = [
 		startDate: "2024-01-10T06:00:00Z",
 		endDate: "2024-01-11T20:00:00Z",
 		meetingLocation: "Sân bay Tân Sơn Nhất",
-		status: "completed",
+		status: "completed" as any,
 		participants: 18,
 		maxParticipants: 20,
 		description: "Tour trọn gói khám phá Tây Ninh với lưu trú qua đêm",
@@ -87,7 +87,7 @@ function MyToursContent() {
 		setLoading(true);
 		setError(null);
 		try {
-			const data = await getTourGuideSchedule();
+			const data = await getTourGuideSchedule(1, "2024-01-01", "2024-12-31", 1, 10);
 			setTours(data ?? MOCK_ASSIGNED_TOURS);
 		} catch {
 			setError("Không thể tải danh sách tour. Vui lòng thử lại sau.");
@@ -112,9 +112,9 @@ function MyToursContent() {
 	// Memoized stats - chỉ tính toán lại khi tours thay đổi
 	const tourStats = useMemo<TourStats>(() => {
 		return {
-			upcoming: tours.filter((t) => t.status === "upcoming").length,
-			completed: tours.filter((t) => t.status === "completed").length,
-			inProgress: tours.filter((t) => t.status === "in_progress").length,
+			upcoming: tours.filter((t) => t.status === "upcoming" as any).length,
+			completed: tours.filter((t) => t.status === "completed" as any).length,
+			inProgress: tours.filter((t) => t.status === "in_progress" as any).length,
 			total: tours.length,
 			totalParticipants: tours.reduce((sum, tour) => sum + tour.participants, 0),
 			totalRevenue: tours.reduce((sum, tour) => sum + tour.price * tour.participants, 0),

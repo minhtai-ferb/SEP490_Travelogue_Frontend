@@ -46,7 +46,7 @@ function TayNinhMapDynamic({ onPathClick }: TayNinhMapDynamicProps) {
 					{arrayDpath.map((item, index) => (
 						<motion.path
 							key={item.id}
-							variants={pathVariants}
+							variants={pathVariants as any}
 							initial="initial"
 							whileHover="hover"
 							animate={hoveredRegion === item.id ? "hover" : "initial"}

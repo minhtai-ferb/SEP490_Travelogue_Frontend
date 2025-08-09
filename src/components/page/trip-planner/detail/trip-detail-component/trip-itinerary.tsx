@@ -19,7 +19,7 @@ export function TripItinerary({ plan, formatDate }: TripItineraryProps) {
 			exit={{ opacity: 0, y: -20 }}
 			className="space-y-8"
 		>
-			{plan.itinerary.map((day, dayIndex) => (
+			{plan?.itinerary?.map((day: any, dayIndex: any) => (
 				<motion.div
 					key={day.day}
 					initial={{ opacity: 0, x: -20 }}
@@ -42,7 +42,7 @@ export function TripItinerary({ plan, formatDate }: TripItineraryProps) {
 
 					{/* Activities Timeline */}
 					<div className="ml-8 pl-8 border-l-4 border-gradient-to-b from-blue-200 to-purple-200 space-y-6 relative">
-						{day.activities.map((activity, activityIndex) => (
+						{day.activities?.map((activity: any, activityIndex: any) => (
 							<motion.div
 								key={activityIndex}
 								initial={{ opacity: 0, y: 20 }}

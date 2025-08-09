@@ -95,7 +95,7 @@ export function BookingConfirmationModal({
 									</h3>
 
 									<div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4">
-										<h4 className="font-bold text-lg text-gray-800 mb-2">{plan.destination}</h4>
+										<h4 className="font-bold text-lg text-gray-800 mb-2">{plan?.destinations?.[0]?.name}</h4>
 										<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
 											<div className="flex items-center gap-2">
 												<Calendar className="h-4 w-4 text-blue-500" />

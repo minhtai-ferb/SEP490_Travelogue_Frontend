@@ -11,11 +11,13 @@ export const metadata: Metadata = {
 }
 
 interface TourEditPageProps {
-	params: {
+	params: Promise<{
 		id: string
-	}
+	}>
 }
 
-export default function TourEditPage({ params }: TourEditPageProps) {
-	return <TourEditClient tourId={params.id} />
+export default async function TourEditPage({ params }: TourEditPageProps) {
+	const { id } = await params
+	return <TourEditClient tourId={id} />
 }
+

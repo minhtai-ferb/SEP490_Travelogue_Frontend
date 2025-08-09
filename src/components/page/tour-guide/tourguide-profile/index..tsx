@@ -148,12 +148,12 @@ function GuideProfileContent() {
 			// Make API call
 			const response = await axiosInstance.post("/tourguides/profile", formData)
 
-			if (!response) {
+			if (!response || !response.data) {
 				// const errorData = await response.json()
-				throw new Error(response?.message || "Có lỗi xảy ra khi cập nhật thông tin")
+				throw new Error(response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin")
 			}
 
-			const updatedProfile = await response.json()
+			const updatedProfile = await response.data
 
 			// Update local state with response data
 			setProfile((prev) => ({

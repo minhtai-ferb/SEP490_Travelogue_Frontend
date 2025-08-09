@@ -40,9 +40,9 @@ function CalendarPicker({ tour }: CalendarPickerProps) {
 		}
 		// Navigate to booking form with selected date
 		const searchParams = new URLSearchParams({
-			tourId: tour.id,
+			tourId: tour?.tourId as string,
 			selectedDate: date.date,
-			price: tour?.pricing?.basePrice.toString() || "0",
+			price: tour?.adultPrice?.toString() || "0",
 			spotsLeft: date.spotsLeft.toString(),
 		})
 
@@ -77,18 +77,17 @@ function CalendarPicker({ tour }: CalendarPickerProps) {
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					{/* Debug info - có thể xóa sau */}
 					<div className="mb-4 p-2 bg-gray-100 rounded text-sm">
 						<div>Tháng hiện tại: {currentMonth.toLocaleDateString("vi-VN")}</div>
 						<div>Số tour trong tháng: {getMonthDates(currentMonth, tour).length}</div>
-						<div>Tổng số tour: {tour.dates.length}</div>
+						{/* <div>Tổng số tour: {tour?.schedules?.length}</div> */}
 					</div>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
 						id="tour-dates"
 					>
 						{getMonthDates(currentMonth, tour).length > 0 ? (
-							getMonthDates(currentMonth, tour).map((date, index) => (
+							getMonthDates(currentMonth, tour).map((date: any, index: any) => (
 								<motion.div
 									key={date.date}
 									initial={{ opacity: 0, y: 20 }}

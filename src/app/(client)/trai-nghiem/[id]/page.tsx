@@ -3,7 +3,7 @@
 import { ImageGallery } from '@/components/common/image-glary'
 // import { MapView } from '@/components/common/map-view'
 import { useLocationController } from '@/services/location-controller'
-import { Location } from '@/types/Location'
+import { Location } from '@/types/LocationCL'
 import { motion } from 'framer-motion'
 import { ArrowBigLeft } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
@@ -94,7 +94,7 @@ function DetailExperience() {
 							transition={{ delay: 0.2 }}
 							className="text-xl text-white font-light"
 						>
-							{location.typeLocationName}
+							{location.heritageRankName}
 						</motion.p>
 					</div>
 				</div>
@@ -117,7 +117,7 @@ function DetailExperience() {
 						<h2 className="text-2xl font-sans text-olive-green mb-4">Xếp hạng</h2>
 						<div className="flex items-center mb-2">
 							<FaStar className="text-bronze mr-2" />
-							<p className="text-charcoal">{location.typeLocationName}</p>
+							<p className="text-charcoal">{location.heritageRankName}</p>
 						</div>
 					</motion.div>
 

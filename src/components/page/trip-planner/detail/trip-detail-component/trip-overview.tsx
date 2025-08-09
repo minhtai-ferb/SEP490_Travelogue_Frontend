@@ -33,7 +33,7 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 								<div>
 									<div>Điểm du lịch</div>
 									<Badge variant="secondary" className="bg-blue-200 text-blue-700 text-xs">
-										{plan.destinations.length} địa điểm
+										{plan.destinations?.length} địa điểm
 									</Badge>
 								</div>
 							</CardTitle>
@@ -41,7 +41,7 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 						<CardContent className="pt-0">
 							<ScrollArea className="h-48">
 								<div className="space-y-3">
-									{plan.destinations.map((dest, index) => (
+									{plan.destinations?.map((dest: any, index: any) => (
 										<motion.div
 											key={dest.id}
 											initial={{ opacity: 0, y: 10 }}
@@ -70,7 +70,7 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 								<div>
 									<div>Nhà hàng</div>
 									<Badge variant="secondary" className="bg-orange-200 text-orange-700 text-xs">
-										{plan.restaurants.length} nhà hàng
+										{plan.restaurants?.length} nhà hàng
 									</Badge>
 								</div>
 							</CardTitle>
@@ -78,8 +78,8 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 						<CardContent className="pt-0">
 							<ScrollArea className="h-48">
 								<div className="space-y-3">
-									{plan.restaurants.length > 0 ? (
-										plan.restaurants.map((rest, index) => (
+									{plan.restaurants && plan.restaurants?.length > 0 ? (
+										plan.restaurants?.map((rest: any, index: any) => (
 											<motion.div
 												key={rest.id}
 												initial={{ opacity: 0, y: 10 }}
@@ -114,7 +114,7 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 								<div>
 									<div>Làng nghề</div>
 									<Badge variant="secondary" className="bg-green-200 text-green-700 text-xs">
-										{plan.craftVillages.length} làng nghề
+										{plan.craftVillages?.length} làng nghề
 									</Badge>
 								</div>
 							</CardTitle>
@@ -122,8 +122,8 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 						<CardContent className="pt-0">
 							<ScrollArea className="h-48">
 								<div className="space-y-3">
-									{plan.craftVillages.length > 0 ? (
-										plan.craftVillages.map((village, index) => (
+									{plan.craftVillages && plan.craftVillages?.length > 0 ? (
+										plan.craftVillages?.map((village: any, index: any) => (
 											<motion.div
 												key={village.id}
 												initial={{ opacity: 0, y: 10 }}
@@ -182,7 +182,7 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 					</CardHeader>
 					<CardContent className="pt-0">
 						<div className="space-y-6">
-							{plan.itinerary.map((day, dayIndex) => (
+							{plan.itinerary?.map((day: any, dayIndex: any) => (
 								<motion.div
 									key={day.day}
 									initial={{ opacity: 0, x: -20 }}
@@ -198,7 +198,7 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 											{formatDate(new Date(plan.startDate.getTime() + (day.day - 1) * 24 * 60 * 60 * 1000))}
 										</h4>
 										<div className="space-y-2">
-											{day.activities.slice(0, 3).map((activity, idx) => (
+											{day.activities?.slice(0, 3).map((activity: any, idx: any) => (
 												<div key={idx} className="flex items-start gap-3 text-sm">
 													<Badge variant="outline" className="text-xs font-medium min-w-[50px] justify-center">
 														{activity.time}
@@ -206,9 +206,9 @@ export function TripOverview({ plan, formatDate }: TripOverviewProps) {
 													<span className="flex-1 text-gray-700">{activity.title}</span>
 												</div>
 											))}
-											{day.activities.length > 3 && (
+											{day.activities?.length > 3 && (
 												<div className="text-sm text-gray-500 ml-[62px]">
-													+ {day.activities.length - 3} hoạt động khác
+													+ {day.activities?.length - 3} hoạt động khác
 												</div>
 											)}
 										</div>

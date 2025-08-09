@@ -111,10 +111,11 @@ export function TourForm({ tour, onSubmit, onCancel, isLoading = false }: TourFo
 
 		if (validateForm()) {
 			// Calculate finalPrice as the adult price (or you can implement your own logic)
-			const submitData: Partial<CreateTourRequest | UpdateTourRequest> = {
+			const submitData: Partial<any | any> = {
 				...formData,
 				finalPrice: formData.adultPrice,
 				status: getStatusNumber(formData.statusText),
+				statusText: formData.statusText as any,
 				tourType: getTourTypeNumber(formData.tourTypeText),
 			}
 			onSubmit(submitData)
@@ -124,8 +125,7 @@ export function TourForm({ tour, onSubmit, onCancel, isLoading = false }: TourFo
 	const getStatusNumber = (statusText: TourStatus): number => {
 		const statusMap: Record<TourStatus, number> = {
 			Draft: 0,
-			Published: 1,
-			Active: 2,
+			Confirmed: 1,
 			Cancelled: 3,
 		}
 		return statusMap[statusText] || 0
