@@ -1,0 +1,59 @@
+import { TourGuide } from "./Tourguide"
+
+export interface TripLocation {
+	id: string
+	name: string
+	type: "destination" | "restaurant" | "craftVillage"
+	address: string
+	description: string
+	imageUrl: string
+}
+
+export interface TripActivity {
+	time: string
+	title: string
+	description: string
+	location: string
+}
+
+export interface TripDay {
+	day: number
+	activities: TripActivity[]
+}
+export interface TourGuideTripplan {
+	id: string
+	name: string
+	description: string
+	startDate: string | Date
+	endDate: string | Date
+	imageUrl: string | null
+	userId: string
+	ownerName: string
+	createdTime: string | Date
+	lastUpdatedTime: string | Date
+	createdBy: string
+	createdByName: string | null
+	lastUpdatedBy: string
+	lastUpdatedByName: string | null
+}
+export interface TripPlan {
+	id: string
+	isAIGenerated: boolean
+	title?: string
+	startDate: Date
+	duration: number
+	destinations: TripLocation[]
+	restaurants?: TripLocation[]
+	craftVillages?: TripLocation[]
+	budget: number
+	estimatedCost?: number
+	travelers: number
+	preferences?: string
+	itinerary?: TripDay[]
+	tourguide?: TourGuide
+	statusText: TripPlanStatus
+	status: number
+	ownerName: string
+}
+
+export type TripPlanStatus = "pending" | "confirmed" | "completed" | "cancelled"
