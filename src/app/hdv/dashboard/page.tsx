@@ -5,7 +5,7 @@ import dayjs from "dayjs"
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import "./component/calendar/calendar-styles.css"
 
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "./component/app-sidebar"
 
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
@@ -132,66 +132,63 @@ export default function Page() {
 	}, [])
 
 	return (
-		<SidebarProvider>
-			<AppSidebar />
-			<SidebarInset>
-				<header className="bg-background sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">
-					<SidebarTrigger className="-ml-1" />
-					<Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-					<Breadcrumb>
-						<BreadcrumbList>
-							<BreadcrumbItem>
-								<BreadcrumbPage>{monthLabel}</BreadcrumbPage>
-							</BreadcrumbItem>
-						</BreadcrumbList>
-					</Breadcrumb>
-				</header>
+		<div className="min-h-[calc(100vh-64px)]">
+			<header className="bg-background sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+				<SidebarTrigger className="-ml-1" />
+				<Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+				<Breadcrumb>
+					<BreadcrumbList>
+						<BreadcrumbItem>
+							<BreadcrumbPage>{monthLabel}</BreadcrumbPage>
+						</BreadcrumbItem>
+					</BreadcrumbList>
+				</Breadcrumb>
+			</header>
 
-				<div className="flex flex-1 flex-col gap-4 p-4">
-					<Card className="border-0 shadow-none bg-gradient-to-r from-sky-50 to-blue-50">
-						<CardContent className="p-4">
-							<CalendarToolbar
-								label={monthLabel}
-								onPrev={() => onNavigate(dayjs(month).subtract(1, "month").toDate())}
-								onNext={() => onNavigate(dayjs(month).add(1, "month").toDate())}
-								onToday={() => onNavigate(new Date())}
-								right={<Legend counts={counts as any} filter={filter} onChange={(s) => setFilter(s as any)} />}
-							/>
-						</CardContent>
-					</Card>
-
-					<div className="bg-card rounded-xl border p-2">
-						<BigCalendar
-							localizer={localizer}
-							events={events}
-							startAccessor="start"
-							endAccessor="end"
-							defaultView="month"
-							view="month"
-							onNavigate={onNavigate}
-							date={month}
-							popup
-							messages={{
-								next: "Sau",
-								previous: "Trước",
-								today: "Hôm nay",
-								month: "Tháng",
-								week: "Tuần",
-								day: "Ngày",
-								agenda: "Lịch",
-							}}
-							components={{
-								event: EventChip,
-							}}
-							eventPropGetter={eventPropGetter}
-							style={{ height: "calc(100vh - 160px)" }}
-							onSelectEvent={onSelectEvent}
+			<div className="flex flex-1 flex-col gap-4 p-4">
+				<Card className="border-0 shadow-none bg-gradient-to-r from-sky-50 to-blue-50">
+					<CardContent className="p-4">
+						<CalendarToolbar
+							label={monthLabel}
+							onPrev={() => onNavigate(dayjs(month).subtract(1, "month").toDate())}
+							onNext={() => onNavigate(dayjs(month).add(1, "month").toDate())}
+							onToday={() => onNavigate(new Date())}
+							right={<Legend counts={counts as any} filter={filter} onChange={(s) => setFilter(s as any)} />}
 						/>
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 
-				<EventDetailDialog open={detailOpen} onOpenChange={setDetailOpen} item={selected} />
-			</SidebarInset>
-		</SidebarProvider>
+				<div className="bg-card rounded-xl border p-2">
+					<BigCalendar
+						localizer={localizer}
+						events={events}
+						startAccessor="start"
+						endAccessor="end"
+						defaultView="month"
+						view="month"
+						onNavigate={onNavigate}
+						date={month}
+						popup
+						messages={{
+							next: "Sau",
+							previous: "Trước",
+							today: "Hôm nay",
+							month: "Tháng",
+							week: "Tuần",
+							day: "Ngày",
+							agenda: "Lịch",
+						}}
+						components={{
+							event: EventChip,
+						}}
+						eventPropGetter={eventPropGetter}
+						style={{ height: "calc(100vh - 160px)" }}
+						onSelectEvent={onSelectEvent}
+					/>
+				</div>
+			</div>
+
+			<EventDetailDialog open={detailOpen} onOpenChange={setDetailOpen} item={selected} />
+		</div>
 	)
 }

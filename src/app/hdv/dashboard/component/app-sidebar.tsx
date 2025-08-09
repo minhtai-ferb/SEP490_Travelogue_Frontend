@@ -20,6 +20,7 @@ import {
 import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import Link from "next/link"
+import { FaCertificate } from "react-icons/fa"
 
 
 const data = {
@@ -59,12 +60,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavUser user={dataUser} />
 			</SidebarHeader>
 			<SidebarContent>
-
-				<SidebarSeparator className="mx-0" />
 				<DatePicker />
 				<SidebarSeparator className="mx-0" />
-				<SidebarSeparator className="mx-0" />
-				<SidebarMenu>
+				<SidebarMenu className="flex flex-col gap-2 justify-center ml-3">
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
 							<Link href="/hdv/dashboard">
@@ -78,6 +76,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							<Link href="/hdv/profile">
 								<User />
 								<span>Hồ sơ cá nhân</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+							<Link href="/hdv/dashboard/dang-ky-chung-chi">
+								<FaCertificate />
+								<span>Đăng ký chứng chỉ</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

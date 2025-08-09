@@ -1,11 +1,15 @@
-import React from 'react'
+"use client"
 
-function layout({ children }: { children: React.ReactNode }) {
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "./dashboard/component/app-sidebar"
+
+export default function HdvLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<div className='flex flex-col gap-4'>
-			{children}
-		</div>
+		<SidebarProvider>
+			<AppSidebar />
+			<SidebarInset>
+				{children}
+			</SidebarInset>
+		</SidebarProvider>
 	)
 }
-
-export default layout

@@ -15,6 +15,11 @@ export const LOCATION_API_URL = {
 export const TOUR_GUIDE_API_URL = {
 	TOUR_GUIDE_PROFILE: "/tour-guide/:id",
 	TOUR_GUIDE_SCHEDULE: "/tour-guide/schedules",
+	TOUR_GUIDE_CERTIFICATION: "/tour-guide/certification",
+}
+
+export const MEDIA_API_URL = {
+	UPLOAD_MULTIPLE_CERTIFICATIONS: "/media/upload-multiple-certifications",
 }
 
 export const USER_API_URL = {
