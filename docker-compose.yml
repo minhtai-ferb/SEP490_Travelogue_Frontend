@@ -17,11 +17,11 @@ services:
   # Frontend Next.js (Node 22)
   frontend:
     build:
-      context: ./app
+      context: ./app/SEP490_Travelogue_Frontend
       dockerfile: Dockerfile
     container_name: travelogue-fe
     env_file:
-      - ./app/.env.production
+      - ./app/SEP490_Travelogue_Frontend/.env.production
     # có thể bỏ expose ports khi ổn định; NPM gọi nội bộ qua mạng 'web'
     expose:
       - "3000"
