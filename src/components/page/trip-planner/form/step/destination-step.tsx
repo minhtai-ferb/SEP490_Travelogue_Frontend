@@ -58,6 +58,9 @@ export function DestinationStep({ formData, updateFormData, onComplete, onBack }
 			itinerary: generateSampleItinerary(),
 			preferences: preferences,
 			isAIGenerated: false,
+			statusText: "pending",
+			status: 0,
+			ownerName: "Khách hàng",
 		}
 
 		onComplete(plan)

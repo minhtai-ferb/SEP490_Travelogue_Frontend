@@ -56,6 +56,9 @@ export function PreferencesStep({ formData, updateFormData, onBack, onComplete }
 			itinerary: generateSampleItinerary(),
 			tourguide: undefined,
 			isAIGenerated: false,
+			statusText: "pending",
+			status: 0,
+			ownerName: "Khách hàng",
 		}
 
 		onComplete(plan)

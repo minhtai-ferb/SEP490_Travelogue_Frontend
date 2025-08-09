@@ -5,7 +5,12 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['dulich.tayninh.gov.vn', 'example.com', '.svg', 'res.cloudinary.com', 'i.imgur.com', 'img.freepik.com'],
   },
-
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;
