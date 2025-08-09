@@ -46,6 +46,14 @@ jobs:
             echo "🚀 Khởi động container"
             docker compose up -d --remove-orphans
 
-            echo "⏳ Chờ ứng dụng khởi động"
-            sleep 15
-            curl -fsS http://localhost:3000 > /dev/null && echo "✅ Deploy OK" || (echo "❌ Health check failed" && exit 1)
+            echo "⏳ Chờ container 'frontend' healthy (tối đa ~2 phút)"
+            ID=$(docker compose ps -q frontend)
+            timeout 120 sh -c '
+              while true; do
+                status=$(docker inspect -f "{{.State.Health.Status}}" '"$ID"' 2>/dev/null || echo "starting")
+                [ "$status" = "healthy" ] && break
+                [ "$status" = "unhealthy" ] && exit 1
+                sleep 5
+              done
+            ' && echo "✅ Deploy OK" || (echo "❌ Health check failed" && docker compose ps && docker compose logs --since=5m frontend | tail -n 300 && exit 1)
+
