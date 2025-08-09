@@ -1,9 +1,10 @@
 import "@/app/globals.css";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Provider } from "jotai";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
-import Head from "next/head"; 
+import Head from "next/head";
 import '@ant-design/v5-patch-for-react-19';
 
 
