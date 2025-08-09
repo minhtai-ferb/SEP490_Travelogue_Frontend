@@ -45,7 +45,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 	}, [tourId, getTourDetail])
 
 	const handleBack = () => {
-		router.push("/tour")
+		router.push("/admin/tour")
 	}
 
 	const handleTourUpdate = (updatedTour: TourDetail) => {

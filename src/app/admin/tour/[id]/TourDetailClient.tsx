@@ -60,7 +60,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 	}, [tourId, getTourDetail])
 
 	const handleEdit = () => {
-		router.push(`/tour/${tourId}/edit`)
+		router.push(`/admin/tour/${tourId}/edit`)
 	}
 
 	const handleDelete = () => {
@@ -73,7 +73,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 		try {
 			setActionLoading(true)
 			await deleteTour(tour.tourId)
-			router.push("/tour")
+			router.push("/admin/tour")
 		} catch (error: any) {
 			console.error("Error deleting tour:", error)
 			setError(error.message || "Có lỗi khi xóa tour")
@@ -84,7 +84,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 	}
 
 	const handleBack = () => {
-		router.push("/tour")
+		router.push("/admin/tour")
 	}
 
 	const formatDate = (dateString: string) => {
