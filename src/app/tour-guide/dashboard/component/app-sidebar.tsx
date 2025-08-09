@@ -65,7 +65,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<SidebarMenu className="flex flex-col gap-2 justify-center ml-3">
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
-							<Link href="/hdv/dashboard">
+							<Link href="/tour-guide/dashboard">
 								<LayoutDashboard />
 								<span>Tổng quan</span>
 							</Link>
@@ -73,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
-							<Link href="/hdv/profile">
+							<Link href="/tour-guide/profile">
 								<User />
 								<span>Hồ sơ cá nhân</span>
 							</Link>
@@ -81,7 +81,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
-							<Link href="/hdv/dashboard/dang-ky-chung-chi">
+							<Link href="/tour-guide/dashboard/dang-ky-chung-chi">
 								<FaCertificate />
 								<span>Đăng ký chứng chỉ</span>
 							</Link>
