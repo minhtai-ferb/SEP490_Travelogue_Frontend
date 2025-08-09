@@ -5,9 +5,9 @@ services:
     container_name: npm
     restart: unless-stopped
     ports:
-      - "80:80"     # HTTP
-      - "81:81"     # UI quản trị
-      - "443:443"   # HTTPS
+      - "80:80"      # HTTP
+      - "81:81"      # UI quản trị
+      - "443:443"    # HTTPS
     volumes:
       - ./nginx-data:/data
       - ./nginx-letsencrypt:/etc/letsencrypt
@@ -17,21 +17,21 @@ services:
   # Frontend Next.js (Node 22)
   frontend:
     build:
-      context: ./app/SEP490_Travelogue_Frontend
+      context: .               
       dockerfile: Dockerfile
     container_name: travelogue-fe
     env_file:
-      - ./app/SEP490_Travelogue_Frontend/.env.production
-    # có thể bỏ expose ports khi ổn định; NPM gọi nội bộ qua mạng 'web'
+      - ./.env.production 
     expose:
-      - "3000"
+      - "3000"               
+    # CHỈ mở cổng để debug trực tiếp; khi đã dùng NPM thì có thể xóa 2 dòng ports
     ports:
-      - "3000:3000"   # chỉ để debug trực tiếp (có thể xóa dòng này sau)
+      - "3000:3000"
     restart: unless-stopped
     networks:
       - web
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000" ]
       interval: 30s
       timeout: 5s
       retries: 5
