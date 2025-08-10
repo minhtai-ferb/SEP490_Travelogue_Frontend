@@ -47,8 +47,8 @@ jobs:
             fi
 
             echo "🧼 Build succeeded. Stopping old container..."
-            docker stop planbook-app || true
-            docker rm planbook-app || true
+            docker stop frontend || true
+            docker rm frontend || true
 
             echo "🚀 Starting new container..."
             docker compose -f docker-compose.yml up -d
@@ -57,12 +57,27 @@ jobs:
             sleep 20
 
             echo "🩺 Performing health check..."
-            if curl -fs http://localhost:3000/health || curl -fs http://localhost:3000; then
-              echo "✅ Deployment successful!"
-              docker image prune -f
-            else
-              echo "❌ Health check failed. Rolling back..."
-              docker stop planbook-app || true
-              docker rm planbook-app || true
+            ID=$(docker compose -f "$COMPOSE_FILE" ps -q "$SERVICE")
+            if [ -z "$ID" ]; then
+              echo "❌ Không tìm thấy container ID"
               exit 1
             fi
+            echo "🩺 Chờ container healthy (tối đa 120s)..."
+            deadline=$((SECONDS+120))
+            while [ "$SECONDS" -lt "$deadline" ]; do
+              status=$(docker inspect -f '{{.State.Health.Status}}' "$ID" 2>/dev/null || echo starting)
+              if [ "$status" = "healthy" ]; then
+                echo "✅ Deployment thành công: $status"
+                docker image prune -f --filter "until=168h" || true
+                exit 0
+              elif [ "$status" = "unhealthy" ]; then
+                echo "❌ Healthcheck fail: $status"
+                docker compose -f "$COMPOSE_FILE" logs --since=10m "$SERVICE" | tail -n 200 || true
+                exit 1
+              fi
+              sleep 3
+            done
+
+            echo "❌ Timeout chờ healthy"
+            docker compose -f "$COMPOSE_FILE" logs --since=10m "$SERVICE" | tail -n 200 || true
+            exit 1
