@@ -1,0 +1,68 @@
+name: Deploy Frontend to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+            APP_DIR="${{ secrets.VPS_APP_DIR }}" 
+
+            echo "📂 Vào thư mục dự án"
+            if [ ! -d "$APP_DIR/.git" ]; then
+              mkdir -p "$APP_DIR"
+              git clone ${{ secrets.REPO_SSH_URL }} "$APP_DIR"
+            fi
+            cd "$APP_DIR"
+
+            echo "🔄 Đồng bộ code nhánh main"
+            git fetch --all
+            git checkout main
+            git reset --hard origin/main
+            git clean -fd
+
+            echo "📝 Ghi file .env.production từ secret"
+            echo "${{ secrets.FRONTEND_ENV_PRODUCTION }}" > .env.production
+
+            echo "🏗️ Building Docker image (without affecting running container)..."
+            if ! docker compose -f docker-compose.yml build; then
+              echo "❌ Build failed. Container still running. Abort."
+              exit 1
+            fi
+
+            echo "🧼 Build succeeded. Stopping old container..."
+            docker stop planbook-app || true
+            docker rm planbook-app || true
+
+            echo "🚀 Starting new container..."
+            docker compose -f docker-compose.yml up -d
+
+            echo "⏳ Waiting for container to initialize..."
+            sleep 20
+
+            echo "🩺 Performing health check..."
+            if curl -fs http://localhost:3000/health || curl -fs http://localhost:3000; then
+              echo "✅ Deployment successful!"
+              docker image prune -f
+            else
+              echo "❌ Health check failed. Rolling back..."
+              docker stop planbook-app || true
+              docker rm planbook-app || true
+              exit 1
+            fi

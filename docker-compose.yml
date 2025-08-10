@@ -1,0 +1,44 @@
+services:
+  # Reverse proxy có UI: chiếm cổng 80/443/81
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - "80:80"      # HTTP
+      - "81:81"      # UI quản trị
+      - "443:443"    # HTTPS
+    volumes:
+      - ./nginx-data:/data
+      - ./nginx-letsencrypt:/etc/letsencrypt
+    networks:
+      - web
+
+  # Frontend Next.js (Node 22)
+  frontend:
+    build:
+      context: .               
+      dockerfile: Dockerfile
+    container_name: travelogue-fe
+    env_file:
+      - .env.production 
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+    expose:
+      - "3000"               
+    # CHỈ mở cổng để debug trực tiếp; khi đã dùng NPM thì có thể xóa 2 dòng ports
+    # ports:
+    #   - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - web
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 5s
+      timeout: 120s
+      retries: 10
+      start_period: 20s
+
+networks:
+  web:
+    driver: bridge
