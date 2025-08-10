@@ -57,7 +57,7 @@ jobs:
             sleep 20
 
             echo "🩺 Performing health check..."
-            ID=$(docker compose -f "$COMPOSE_FILE" ps -q "$SERVICE")
+            ID=$(docker compose ps -q frontend)
             if [ -z "$ID" ]; then
               echo "❌ Không tìm thấy container ID"
               exit 1
