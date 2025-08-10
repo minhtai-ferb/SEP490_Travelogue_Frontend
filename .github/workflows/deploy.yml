@@ -47,8 +47,8 @@ jobs:
             fi
 
             echo "🧼 Build succeeded. Stopping old container..."
-            docker stop frontend || true
-            docker rm frontend || true
+            docker compose -f docker-compose.yml stop frontend || true
+            docker compose -f docker-compose.yml rm -f frontend || true
 
             echo "🚀 Starting new container..."
             docker compose -f docker-compose.yml up -d

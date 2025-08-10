@@ -27,8 +27,8 @@ services:
     expose:
       - "3000"               
     # CHỈ mở cổng để debug trực tiếp; khi đã dùng NPM thì có thể xóa 2 dòng ports
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     restart: unless-stopped
     networks:
       - web
@@ -45,4 +45,5 @@ services:
 
 networks:
   web:
-    driver: bridge
+    external: true
+    name: web
