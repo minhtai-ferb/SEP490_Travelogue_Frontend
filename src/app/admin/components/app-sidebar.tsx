@@ -7,7 +7,8 @@ import {
   MapPin,
   Newspaper,
   Send,
-  SquareTerminal
+  SquareTerminal,
+  Ticket,
 } from "lucide-react";
 import * as React from "react";
 
@@ -30,28 +31,17 @@ import { usePathname } from "next/navigation";
 const data = {
   navMain: [
     {
-      title: "Chuyến tham quan",
-      url: "/admin/tour",
-      icon: Map,
-      items: [
-        {
-          title: "Danh sách chuyến tham quan",
-          url: "/admin/tour",
-        },
-      ],
-    },
-    {
       title: "Địa điểm",
       url: "/admin/locations",
       icon: MapPin,
       items: [
         {
-          title: "Danh sách địa điểm",
-          url: "/admin/locations/table",
+          title: "Danh sách quận huyện",
+          url: "/admin/districs",
         },
         {
-          title: "Danh sách quận huyện",
-          url: "/admin/districts",
+          title: "Danh sách địa điểm",
+          url: "/admin/locations/table",
         },
       ],
     },
@@ -71,6 +61,17 @@ const data = {
         {
           title: "Danh sách tin tức",
           url: "/admin/news/new/table",
+        },
+      ],
+    },
+    {
+      title: "Chuyến tham quan",
+      url: "/admin/tour",
+      icon: Map,
+      items: [
+        {
+          title: "Danh sách chuyến tham quan",
+          url: "/admin/tour",
         },
       ],
     },
@@ -108,6 +109,21 @@ const data = {
         // },
       ],
     },
+    {
+      title: "Quản lý các đặt chỗ",
+      url: "/admin/booking",
+      icon: Ticket,
+      items: [
+        {
+          title: "Đặt chỗ chuyến tham quan",
+          url: "/admin/booking",
+        },
+        {
+          title: "Đặt hướng dẫn viên",
+          url: "/admin/booking/tour-guide",
+        },
+      ],
+    }
   ],
 };
 

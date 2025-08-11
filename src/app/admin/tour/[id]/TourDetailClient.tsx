@@ -141,7 +141,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 							<Badge variant="outline" className="text-xs">
 								{TourTypeLabels[tour.tourType as keyof typeof TourTypeLabels]}
 							</Badge>
-							<span className="text-sm text-gray-500">ID: {tour.tourId}</span>
+							{/* <span className="text-sm text-gray-500">ID: {tour.tourId}</span> */}
 						</div>
 					</div>
 				</div>
