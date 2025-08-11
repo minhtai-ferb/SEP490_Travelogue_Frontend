@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { ArrowRight, X, Loader2 } from "lucide-react"
-import { TourType, TourTypeLabels, type CreateTourRequest } from "@/types/Tour"
+import { TourTypeLabels, type CreateTourRequest } from "@/types/Tour"
 
 interface TourBasicFormProps {
 	initialData?: CreateTourRequest | null
@@ -24,7 +24,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 		description: "",
 		content: "",
 		totalDays: 1,
-		tourType: TourType.International,
+		tourType: 1,
 	})
 
 	const [errors, setErrors] = useState<Record<string, string>>({})
@@ -191,7 +191,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							<h4 className="font-medium text-blue-900 mb-2">Thông Tin Tour</h4>
 							<div className="space-y-1 text-sm text-blue-800">
 								<p>
-									<strong>Loại:</strong> {formData.tourType}
+									<strong>Loại:</strong> {TourTypeLabels[formData.tourType]}
 								</p>
 								<p>
 									<strong>Thời gian:</strong> {formData.totalDays} ngày{" "}

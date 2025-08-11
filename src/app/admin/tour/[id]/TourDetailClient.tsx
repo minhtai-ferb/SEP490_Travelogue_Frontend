@@ -1,18 +1,18 @@
 "use client"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Edit, Trash2, AlertCircle, Loader2, MapPin, Clock, DollarSign, Calendar } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import type { TourDetail } from "@/types/Tour"
-import { useTour } from "@/services/tour"
-import { TourTypeLabels } from "@/types/Tour"
 import { DeleteConfirmation } from "@/components/tour-management/DeleteConfirmation"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
+import { useTour } from "@/services/tour"
+import type { TourDetail } from "@/types/Tour"
+import { TourTypeLabels } from "@/types/Tour"
+import { AlertCircle, ArrowLeft, Calendar, Clock, DollarSign, Edit, Loader2, MapPin, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 interface TourDetailClientProps {
 	tourId: string
@@ -221,15 +221,13 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 											<div className="flex items-center justify-between mb-2">
 												<div className="flex items-center gap-2">
 													<Calendar className="w-4 h-4 text-blue-500" />
-													<span className="font-semibold">
-														{new Date(schedule.departureDate).toLocaleDateString("vi-VN")}
-													</span>
+													<span className="font-semibold">{formatDate(schedule?.startTime || "")}</span>
 												</div>
 												<Badge variant="outline" className="bg-green-50 text-green-700">
 													{schedule.currentBooked}/{schedule.maxParticipant} người
 												</Badge>
 											</div>
-											<p className="text-sm text-gray-600 mb-2">{formatDate(schedule.departureDate)}</p>
+											<p className="text-sm text-gray-600 mb-2">{formatDate(schedule?.startTime || "")} - {formatDate(schedule?.endTime || "")}</p>
 											<div className="grid grid-cols-2 gap-4 text-sm">
 												<div className="flex items-center gap-1">
 													<DollarSign className="w-3 h-3 text-green-500" />
@@ -368,7 +366,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 								<div key={schedule.scheduleId} className="space-y-2">
 									<div className="flex items-center justify-between text-sm">
 										<span className="text-gray-600">
-											{new Date(schedule.departureDate).toLocaleDateString("vi-VN")}
+											{formatDate(schedule?.startTime || "")} - {formatDate(schedule?.endTime || "")}
 										</span>
 										<span className="font-medium">
 											{schedule.currentBooked}/{schedule.maxParticipant}

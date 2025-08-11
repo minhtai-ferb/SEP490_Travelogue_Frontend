@@ -38,7 +38,6 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 	const [error, setError] = useState("")
 	const [createdTourId, setCreatedTourId] = useState<string | null>(null)
 
-	// Form data states
 	const [basicInfo, setBasicInfo] = useState<CreateTourRequest | null>(null)
 	const [schedules, setSchedules] = useState<ScheduleFormData[]>([])
 	const [locationsState, setLocationsState] = useState<TourLocationBulkRequest[]>([])
@@ -67,12 +66,12 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			// Step 1: Create basic tour
 			const response = await createTour(data)
 
-			if (response) {
-				setCreatedTourId(response.tourId)
+			if (response && typeof (response as any).tourId === "string") {
+				setCreatedTourId((response as any).tourId)
 				setBasicInfo(data)
 				handleNext()
 			} else {
-				throw new Error(response.message || "Failed to create tour")
+				throw new Error("Failed to create tour")
 			}
 		} catch (error: any) {
 			console.error("Error creating tour:", error)
