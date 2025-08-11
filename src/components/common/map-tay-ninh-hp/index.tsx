@@ -11,8 +11,8 @@ import Image from "next/image"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useDistrictManager } from "@/services/district-manager"
 import { District } from "@/interfaces/district"
-import { Button } from "@heroui/react"
 import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 const MapTayNinh = () => {
 	const [selectedRegion, setSelectedRegion] = useState<Region | null>(null)
