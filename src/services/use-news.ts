@@ -12,7 +12,7 @@ export type NewsCreateModel = {
   title: string;
   description: string;
   content: string;
-  newsCategory: number; 
+  newsCategory: number;
   locationId?: string;
   startDate?: string; // ISO string nếu là Event
   endDate?: string;   // ISO string nếu là Event
@@ -21,7 +21,7 @@ export type NewsCreateModel = {
   mediaDtos?: MediaDto[];
 };
 
-export type NewsUpdateModel = Partial<NewsCreateModel>; 
+export type NewsUpdateModel = Partial<NewsCreateModel>;
 
 export function useNews() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -134,7 +134,7 @@ export function useNews() {
         qs.append("pageNumber", String(pageNumber));
         qs.append("pageSize", String(pageSize));
         const res = await callApi("get", `news/new/search-paged?${qs.toString()}`);
-        return res; 
+        return res;
       } catch (e: any) {
         throw e;
       } finally {
@@ -165,12 +165,14 @@ export function useNews() {
         const qs = new URLSearchParams();
         if (title) qs.append("title", title);
         if (locationId) qs.append("locationId", locationId);
-        if (typeExperience !== undefined) qs.append("typeExperience", String(typeExperience));
+        if (typeof typeExperience === "number" && Number.isFinite(typeExperience)) {
+          qs.append("typeExperience", String(typeExperience));
+        }
         if (isHighlighted !== undefined) qs.append("isHighlighted", String(isHighlighted));
         qs.append("pageNumber", String(pageNumber));
         qs.append("pageSize", String(pageSize));
         const res = await callApi("get", `news/experience/search-paged?${qs.toString()}`);
-        return res; 
+        return res;
       } catch (e: any) {
         throw e;
       } finally {
@@ -186,7 +188,7 @@ export function useNews() {
       setIsLoading(true);
       try {
         const res = await callApi("get", `news/${id}`);
-        return res?.data; 
+        return res?.data;
       } catch (e: any) {
         throw e;
       } finally {
@@ -213,7 +215,7 @@ export function useNews() {
         qs.append("pageNumber", String(pageNumber));
         qs.append("pageSize", String(pageSize));
         const res = await callApi("get", `news/search-paged?${qs.toString()}`);
-        return res; 
+        return res;
       } catch (e: any) {
         throw e;
       } finally {
@@ -228,7 +230,7 @@ export function useNews() {
       setIsLoading(true);
       try {
         const res = await callApi("put", `news/${id}`, data);
-        return res?.data; 
+        return res?.data;
       } catch (e: any) {
         throw e;
       } finally {
