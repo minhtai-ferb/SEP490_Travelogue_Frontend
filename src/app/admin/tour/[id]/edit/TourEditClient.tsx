@@ -46,7 +46,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 	}, [tourId, getTourDetail])
 
 	const handleBack = () => {
-		router.push("/admin/tour")
+		router.push("/admin/tour/table")
 	}
 
 	const handleTourUpdate = (updatedTour: TourDetail) => {
@@ -101,20 +101,20 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
 				<TabsList className="grid w-full grid-cols-3">
 					<TabsTrigger value="basic">Thông Tin Cơ Bản</TabsTrigger>
-					<TabsTrigger value="schedules">Lịch Trình</TabsTrigger>
 					<TabsTrigger value="itinerary">Hành Trình</TabsTrigger>
+					<TabsTrigger value="schedules">Lịch Trình</TabsTrigger>				
 				</TabsList>
 
 				<TabsContent value="basic">
 					<TourBasicInfoForm tour={tour} onUpdate={handleTourUpdate} />
 				</TabsContent>
 
-				<TabsContent value="schedules">
-					<TourScheduleManager tour={tour} onUpdate={handleTourUpdate} />
-				</TabsContent>
-
 				<TabsContent value="itinerary">
 					<TourItineraryManager tour={tour} onUpdate={handleTourUpdate} />
+				</TabsContent>
+
+				<TabsContent value="schedules">
+					<TourScheduleManager tour={tour} onUpdate={handleTourUpdate} />
 				</TabsContent>
 			</Tabs>
 		</div>

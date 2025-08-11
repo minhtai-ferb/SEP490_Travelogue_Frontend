@@ -1,5 +1,3 @@
-'use client';
-
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import TourEditClient from "./TourEditClient"
 
