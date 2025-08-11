@@ -88,12 +88,28 @@ export function useUserManager() {
     [callApi, setLoading]
   );
 
+  const removeRoleFromUser = useCallback(
+    async (userId: string, roleId: string) => {
+      setLoading(true);
+      try {
+        const response = await callApi("delete", `user/remove-user-from-role?userId=${userId}&roleId=${roleId}`);
+        return response?.data;
+      } catch (error: any) {
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
   return {
     getListUser,
     getUserById,
     updateUser,
     getAllRoles,
     assignRoleToUser,
+    removeRoleFromUser,
     loading: isLoading || loading,
   };
 }

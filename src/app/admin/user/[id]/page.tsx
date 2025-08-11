@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { SidebarInset } from "@/components/ui/sidebar";
-import HeaderView from "./components/header-view";
 import LoadingContent from "@/components/common/loading-content";
 import { useUserManager } from "@/services/user-manager";
 import { User } from "@/types/Users";
@@ -11,6 +10,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import UserProfileCard from "./components/user-info";
 import UserSystemStatusCard from "./components/status-account-info";
+import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
+
+const crumbs: Crumb[] = [
+  { label: "Danh sách người dùng", href: "/admin/user/table" },
+  { label: "Chi tiết người dùng" }
+];
 
 export default function UserDetailView() {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +37,7 @@ export default function UserDetailView() {
 
   return (
     <SidebarInset>
-      <HeaderView />
+      <BreadcrumbHeader items={crumbs} />
       <div className="p-6 space-y-6">
         {loading || !userData ? (
           <LoadingContent />

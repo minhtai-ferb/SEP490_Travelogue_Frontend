@@ -4,18 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TableProps } from "antd";
 import type { District } from "@/types/District";
-import { useLocationController } from "@/services/location-controller";
 import { useDistrictManager } from "@/services/district-manager";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Spin, Modal } from "antd";
 import { LocationFilterBar } from "./components/location-filter-bar";
 import { DeleteLocationDialog } from "./components/delete-location-dialog";
@@ -40,6 +30,7 @@ export default function ManageLocation() {
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
   const { getAllDistrict } = useDistrictManager();
   const { loading, searchAllLocations, deleteLocation } = useLocations();
+  const [loadingButton, setLoadingButton] = useState(false);
   const [data, setData] = useState<LocationTable[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
@@ -85,10 +76,14 @@ export default function ManageLocation() {
     fetchLocations();
   }, [selectedOption, selectedType, currentPage, pageSize]);
 
-  const handleViewDetails = (record: LocationTable) =>
-    router.push(`/locations/view/${record.id}`);
-  const handleEdit = (record: LocationTable) =>
-    router.push(`/locations/edit/${record.id}`);
+  const handleViewDetails = (record: LocationTable) => {
+    setLoadingButton(true);
+    router.push(`/admin/locations/view/${record.id}`);
+  };
+  const handleEdit = (record: LocationTable) => {
+    setLoadingButton(true);
+    router.push(`/admin/locations/edit/${record.id}`);
+  };
   const handleDeleteConfirm = (record: LocationTable) => {
     setLocationToDelete(record);
     setDeleteDialogOpen(true);
@@ -187,7 +182,7 @@ export default function ManageLocation() {
       <HeaderLocationTable />
       <div className="flex flex-1 flex-col gap-4 p-4">
         {(typeof loading === "boolean" ? loading : false) ||
-        data.length === 0 ? (
+        data.length === 0 || loadingButton ? (
           <LoadingContent />
         ) : (
           <>
@@ -196,6 +191,7 @@ export default function ManageLocation() {
               onChangeTypeLocation={onChangeTypeLocation}
               onChangeDistrict={onChangeDistrict}
               onSearch={onSearch}
+              setLoading={setLoadingButton}
             />
 
             <LocationTableComponent
