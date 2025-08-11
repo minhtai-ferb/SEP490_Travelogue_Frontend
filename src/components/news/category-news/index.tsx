@@ -9,7 +9,7 @@ import { ChevronRight, Clock } from "lucide-react"
 import { useNews } from "@/services/use-news"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { News, NewsCategory } from "@/types/News"
+import { News, NewsCategory, NewsCategoryName } from "@/types/News"
 import { toAbsoluteUrl } from "@/lib/url"
 interface CategoryNewsProps {
 	category: NewsCategory | "News" | "Event" | "Experience"
@@ -56,15 +56,25 @@ export default function CategoryNews({ category, title, limit = 3 }: CategoryNew
 	const [news, setNews] = useState<News[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 
+	const getTypeByName = (name: string) => {
+		switch (name) {
+			case "News":
+				return NewsCategory.News
+			case "Event":
+				return NewsCategory.Event
+			case "Experience":
+				return NewsCategory.Experience
+		}
+	}
+
 	useEffect(() => {
 		const fetchCategoryNews = async () => {
 			setIsLoading(true)
 			try {
-				const categoryId = resolveCategoryId(category)
-				const response = await getByCategory(categoryId)
+				const response = await getByCategory(getTypeByName(category as string))
 
-				if (response?.data) {
-					setNews(response.data)
+				if (response) {
+					setNews(response)
 				}
 			} catch (error) {
 				console.error(`Error fetching ${category} news:`, error)
@@ -98,7 +108,7 @@ export default function CategoryNews({ category, title, limit = 3 }: CategoryNew
 				</div>
 			</div>
 
-			{news.length === 0 ? (
+			{news?.length === 0 ? (
 				<div className="text-center py-8 text-gray-500">Không có tin tức nào trong danh mục này</div>
 			) : (
 				<div className="space-y-4">
@@ -136,7 +146,7 @@ export default function CategoryNews({ category, title, limit = 3 }: CategoryNew
 
 					{/* List of other articles */}
 					<div className="space-y-3">
-						{news.slice(1, 4).map((item) => (
+						{news?.slice(1, 4).map((item) => (
 							<Link key={item.id} href={`/tin-tuc/bai-bao/${item.id}`} className="block group">
 								<div className="flex gap-3 items-start py-2 border-b border-gray-100">
 									<div className="flex-shrink-0 w-20 h-20 overflow-hidden rounded">
