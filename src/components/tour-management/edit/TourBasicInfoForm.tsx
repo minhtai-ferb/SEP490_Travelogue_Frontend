@@ -1,4 +1,5 @@
-"use client"
+'use client';
+
 import { useState } from "react"
 import type React from "react"
 
@@ -126,11 +127,14 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 									<SelectValue placeholder="Chọn loại tour" />
 								</SelectTrigger>
 								<SelectContent>
-									{Object.entries(TourTypeLabels).map(([key, label]) => (
-										<SelectItem key={key} value={key}>
-											{label}
-										</SelectItem>
-									))}
+									{/* Map theo enum backend (1..7) */}
+									{Object.entries(TourTypeLabels)
+										.filter(([key]) => Number(key) >= 1 && Number(key) <= 7)
+										.map(([key, label]) => (
+											<SelectItem key={key} value={key}>
+												{label}
+											</SelectItem>
+										))}
 								</SelectContent>
 							</Select>
 						</div>

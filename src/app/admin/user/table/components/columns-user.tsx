@@ -141,7 +141,7 @@ export const columns: ColumnDef<User>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link href={`/user/${id}`}>
+            <Link href={`/admin/user/${id}`}>
               <DropdownMenuItem>
                 <Eye className="h-4 w-4 mr-2" />
                 View

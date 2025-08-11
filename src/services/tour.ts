@@ -1,14 +1,12 @@
 import { TOUR_API_URL } from "@/constants/api";
 import useApiService from "@/hooks/useApi";
 import { isLoadingAtom } from "@/store/auth";
-import { ScheduleFormData } from "@/types/Tour";
+import type { CreateTourRequest, ScheduleFormData, TourLocationBulkRequest } from "@/types/Tour";
 import { useAtom } from "jotai";
-import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 export function useTour() {
-	const { callApi, loading, setIsLoading } = useApiService();
-	const router = useRouter();
+	const { callApi, loading } = useApiService();
 	const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
 	const getAllTour = useCallback(
@@ -40,7 +38,7 @@ export function useTour() {
 		[callApi, setLoading]
 	);
 
-	const createTour = useCallback(async (data: any) => {
+	const createTour = useCallback(async (data: CreateTourRequest) => {
 		setLoading(true);
 		try {
 			const response = await callApi("post", TOUR_API_URL.ALL_TOURS, data);
@@ -52,7 +50,7 @@ export function useTour() {
 		}
 	}, [callApi, setLoading]);
 
-	const updateTourInfo = useCallback(async (id: string, data: any) => {
+	const updateTourInfo = useCallback(async (id: string, data: Partial<CreateTourRequest>) => {
 		setLoading(true);
 		try {
 			const response = await callApi("put", `${TOUR_API_URL.ALL_TOURS}/${id}`, data);
@@ -64,7 +62,7 @@ export function useTour() {
 		}
 	}, [callApi, setLoading]);
 
-	const updateTourSchedule = useCallback(async (tourId: string, scheduleId: string, data: any) => {
+	const updateTourSchedule = useCallback(async (tourId: string, scheduleId: string, data: ScheduleFormData) => {
 		setLoading(true);
 		try {
 			const response = await callApi("put", `${TOUR_API_URL.TOUR_UPDATE_SCHEDULE}${scheduleId}`, data, { params: { tourId } });
@@ -102,7 +100,7 @@ export function useTour() {
 	}, [callApi, setLoading]);
 
 
-	const createTourBulk = useCallback(async (tourId: string, data: any) => {
+	const createTourBulk = useCallback(async (tourId: string, data: TourLocationBulkRequest[]) => {
 		setLoading(true);
 		try {
 			const response = await callApi(

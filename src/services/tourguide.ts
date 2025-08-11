@@ -1,6 +1,6 @@
 "use client";
 
-import { TOUR_API_URL, TOUR_GUIDE_API_URL, USER_API_URL } from "@/constants/api";
+import { TOUR_API_URL, TOUR_GUIDE_API_URL, USER_API_URL, MEDIA_API_URL } from "@/constants/api";
 import useApiService from "@/hooks/useApi";
 import { isLoadingAtom } from "@/store/auth";
 import { TourguideRequestStatus } from "@/types/Tourguide";
@@ -70,6 +70,36 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	);
 
+	const uploadCertifications = useCallback(
+		async (files: File[]) => {
+			const formData = new FormData();
+			files.forEach((f) => formData.append("certifications", f));
+			setLoading(true);
+			try {
+				const response = await callApi("post", MEDIA_API_URL.UPLOAD_MULTIPLE_CERTIFICATIONS, formData);
+				return response?.data as string[]; // array of URLs
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
+	const createCertification = useCallback(
+		async (payload: { name: string; certificateUrl: string }) => {
+			setLoading(true);
+			try {
+				const response = await callApi("post", TOUR_GUIDE_API_URL.TOUR_GUIDE_CERTIFICATION, payload);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
 	const getTourguideRequest = useCallback(
 		async (status: TourguideRequestStatus) => {
 			const params = {
@@ -107,6 +137,8 @@ export function useTourguideAssign() {
 		getTourGuideSchedule,
 		getTourguideRequest,
 		requestReview,
+		uploadCertifications,
+		createCertification,
 		loading: isLoading || loading,
 	};
 }

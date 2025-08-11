@@ -10,8 +10,6 @@ import { PaginationBar } from "./PaginationBar"
 import { TopBar } from "./TopBar"
 import { ToursTable } from "./ToursTable"
 
-// Deprecated: columns/status options now live inside atomic components
-
 function TourManagement() {
 	const router = useRouter()
 	const [tours, setTours] = useState<TourDetail[]>([])
@@ -51,11 +49,9 @@ function TourManagement() {
 		fetchAllTours()
 	}, [])
 
-	// Filter tours based on search and filters
 	useEffect(() => {
 		let filtered = tours
 
-		// Search filter
 		if (searchValue) {
 			filtered = filtered.filter(
 				(tour) =>

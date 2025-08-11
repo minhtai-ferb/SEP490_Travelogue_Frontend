@@ -1,4 +1,5 @@
-"use client"
+'use client';
+
 import { useState } from "react"
 import type React from "react"
 
@@ -26,12 +27,12 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 	const [editingSchedule, setEditingSchedule] = useState<TourSchedule | null>(null)
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const [formData, setFormData] = useState<ScheduleFormData>({
-		scheduleId: "",
 		departureDate: "",
 		maxParticipant: 20,
 		totalDays: tour.totalDays,
 		adultPrice: tour.adultPrice,
 		childrenPrice: tour.childrenPrice,
+		tourGuideId: undefined,
 	})
 
 	const { createTourSchedule, updateTourSchedule, deleteTourSchedule, getTourDetail } = useTour()
@@ -58,6 +59,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 				totalDays: schedule.totalDays,
 				adultPrice: schedule.adultPrice,
 				childrenPrice: schedule.childrenPrice,
+				tourGuideId: undefined,
 			})
 		} else {
 			resetForm()
@@ -225,6 +227,16 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 												setFormData((prev) => ({ ...prev, childrenPrice: Number.parseFloat(e.target.value) || 0 }))
 											}
 											required
+										/>
+									</div>
+
+									<div className="space-y-2">
+										<Label htmlFor="tourGuideId">Hướng Dẫn Viên (ID)</Label>
+										<Input
+											id="tourGuideId"
+											placeholder="UUID hướng dẫn viên"
+											value={formData.tourGuideId || ""}
+											onChange={(e) => setFormData((prev) => ({ ...prev, tourGuideId: e.target.value || undefined }))}
 										/>
 									</div>
 

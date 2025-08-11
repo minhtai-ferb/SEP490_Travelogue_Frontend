@@ -15,6 +15,7 @@ import { SeccretKey } from "@/secret/secret"
 import {
 	AlertTriangle,
 	ArrowLeft,
+	ArrowRight,
 	Calendar,
 	CheckCircle,
 	Clock,
@@ -24,6 +25,7 @@ import {
 	Trash2
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { LocationSelect } from "./LocationSelect"
 
 const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route"
 
@@ -365,31 +367,14 @@ export function TourLocationForm({
 								<MapPin className="w-4 h-4" />
 								Chọn Địa Điểm <span className="text-red-500">*</span>
 							</Label>
-							<div className="space-y-2">
-								<Select
-									value={newLocation.locationId}
-									onValueChange={(value) => setNewLocation({ ...newLocation, locationId: value })}
-									disabled={isLoading || loadingLocations}
-								>
-									<SelectTrigger className={errors.locationId ? "border-red-500" : ""}>
-										<SelectValue placeholder={loadingLocations ? "Đang tải..." : "Chọn địa điểm"} />
-									</SelectTrigger>
-									<SelectContent>
-										{filteredLocations.map((location) => (
-											<SelectItem key={location.id} value={location.id}>
-												<div className="flex flex-col h-full">
-													<span className="font-medium">{location.name}</span>
-													<span className="text-xs text-gray-500">{location.address}</span>
-													<Badge variant="outline" className="text-xs w-fit mt-1">
-														{location.category}
-													</Badge>
-												</div>
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-							{errors.locationId && <p className="text-sm text-red-500">{errors.locationId}</p>}
+							<LocationSelect
+								locations={filteredLocations}
+								value={newLocation.locationId}
+								onChange={(value) => setNewLocation({ ...newLocation, locationId: value })}
+								placeholder={loadingLocations ? "Đang tải..." : "Chọn địa điểm"}
+								disabled={isLoading || loadingLocations}
+								error={errors.locationId}
+							/>
 						</div>
 
 						<div className="space-y-2">
@@ -661,7 +646,8 @@ export function TourLocationForm({
 					</Button>
 					<Button onClick={handleSubmit} disabled={isLoading} className="flex items-center gap-2">
 						{isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-						Hoàn thành
+						Tiếp theo
+						<ArrowRight className="w-4 h-4" />
 					</Button>
 				</div>
 			</div>

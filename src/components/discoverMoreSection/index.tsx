@@ -1,21 +1,23 @@
 import Link from "next/link";
 import { Pointer } from "../ui/pointer";
 import { motion } from "motion/react";
+import { toAbsoluteUrl } from "@/lib/url";
 
 interface DiscoverSectionProps {
 	imageUrl: string;
 	id: string;
-	description: string;
+	description?: string;
 	height?: string;
+	title: string;
 }
 
-function DiscoverSection({ id, imageUrl, description, height = '250px' }: DiscoverSectionProps) {
+function DiscoverSection({ id, imageUrl, height = '250px', title, description }: DiscoverSectionProps) {
 	return (
 		<Link href={`/trai-nghiem/thong-tin/${id}`}>
 			<div
 				className="relative flex flex-col rounded-xl w-full max-w-[15rem] sm:max-w-[18rem] md:max-w-[20rem] lg:w-60 group"
 				style={{
-					backgroundImage: `url("${imageUrl}")`,
+					backgroundImage: `url("${toAbsoluteUrl(imageUrl)}")`,
 					backgroundSize: "cover",
 					backgroundPosition: "center",
 					backgroundRepeat: "no-repeat",
@@ -29,7 +31,7 @@ function DiscoverSection({ id, imageUrl, description, height = '250px' }: Discov
 				<div className="flex z-10 items-center gap-2 sm:gap-3 mt-auto py-2 sm:py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 					<div className="h-8 w-2 sm:h-10 sm:w-3 bg-white"></div>
 					<p className="text-white text-base sm:text-lg font-medium">
-						{description.length >= 45 ? description.slice(0, 45) + "..." : description}
+						{title.length >= 45 ? title.slice(0, 45) + "..." : title} {description && description.length >= 45 ? description.slice(0, 45) + "..." : description}
 					</p>
 				</div>
 				<Pointer>

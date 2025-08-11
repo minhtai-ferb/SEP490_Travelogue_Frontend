@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { User } from "@/types/Users";
 import toast from "react-hot-toast";
 import { GoogleLoginButton } from "@/components/common/google-button";
+import { routeByRole } from "@/types/Roles";
 
 interface LoginFormProps {
   onSwitchMode: () => void;
@@ -51,11 +52,13 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
       const response = await login(data);
       const user = response as User;
       if (!user || !user.roles || user.roles.length === 0) {
-        throw new Error("Bạn không có quyền truy cập hệ thống");
-      } else if (user.roles.includes("Admin")) {
-        navigate.push("/admin/dashboard");
+        toast.error("Bạn không có quyền truy cập hệ thống");
+      } else if (user.roles.length === 1) {
+        const only = user.roles[0];
+        localStorage.setItem("activeRole", only);
+        navigate.push(routeByRole[only] ?? "/");
       } else {
-        navigate.push("/");
+        navigate.push("/auth/choose-role");
       }
       toast.success("Đăng nhập thành công!");
     } catch (error: any) {
@@ -71,20 +74,16 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
     setError("");
 
     try {
-      await loginWithGoogle()
-      navigate.push("/")
-      addToast({
-        title: "Đăng nhập thành công!",
-        description: "Chào mừng bạn đến với Goyoung Tây Ninh",
-        color: "success",
-      })
+      await loginWithGoogle();
+      navigate.push("/");
+      toast.success("Đăng nhập bằng Google thành công!");
     } catch (error: any) {
-      console.error("Google login error:", error)
-      setError(error?.message || "Đã xảy ra lỗi khi đăng nhập với Google")
+      console.error("Google login error:", error);
+      setError(error?.message || "Đã xảy ra lỗi khi đăng nhập với Google");
     } finally {
-      setIsGooglePending(false)
+      setIsGooglePending(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

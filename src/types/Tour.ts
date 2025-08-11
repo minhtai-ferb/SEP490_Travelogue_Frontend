@@ -8,6 +8,7 @@ export interface TourImage {
 export interface TourActivity {
 	id: string
 	tourPlanLocationId: string
+	locationId?: string
 	name: string
 	description?: string
 	startTimeFormatted: string
@@ -98,12 +99,12 @@ export interface CreateTourRequest {
 
 
 export interface ScheduleFormData {
-	scheduleId?: string
 	departureDate: string
 	maxParticipant: number
 	totalDays: number
 	adultPrice: number
 	childrenPrice: number
+	tourGuideId?: string
 }
 
 export interface UpdateTourRequest extends Partial<CreateTourRequest> {
@@ -183,16 +184,7 @@ export interface LocationResponse {
 	statusCode: number
 }
 
-export enum TourType {
-	International = 1,
-	Leisure = 2,
-	Adventure = 3,
-	Ecotourism = 4,
-	Cultural = 5,
-	Spiritual = 6,
-	Culinary = 7,
-	Extreme = 8,
-}
+
 
 export interface Location {
 	id: string
@@ -211,15 +203,15 @@ export interface Location {
 	medias: LocationMedia[]
 }
 
-export const TourTypeLabels: Record<TourType, string> = {
-	1: "Du lịch trong nước",
-	2: "Du lịch nghỉ dưỡng",
-	3: "Du lịch khám phá",
-	4: "Du lịch sinh thái",
-	5: "Du lịch văn hóa",
-	6: "Du lịch tâm linh",
-	7: "Du lịch ẩm thực",
-	8: "Du lịch mạo hiểm",
+
+export const TourTypeLabels: Record<number, string> = {
+	1: "Du lịch nghỉ dưỡng",
+	2: "Du lịch khám phá",
+	3: "Du lịch sinh thái",
+	4: "Du lịch văn hóa",
+	5: "Du lịch tâm linh",
+	6: "Du lịch ẩm thực",
+	7: "Du lịch mạo hiểm",
 }
 
 
@@ -253,6 +245,8 @@ export interface TourDay {
 export interface TourSchedule {
 	scheduleId: string
 	departureDate: string
+	startTime: string
+	endTime: string
 	maxParticipant: number
 	currentBooked: number
 	totalDays: number
@@ -262,6 +256,7 @@ export interface TourSchedule {
 
 
 export interface TourLocationBulkRequest {
+	tourPlanLocationId?: string
 	locationId: string
 	dayOrder: number
 	startTime: string
