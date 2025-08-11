@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useNews } from "@/services/use-news"
-import { NewsCategory, NewsCategoryName, type Experience } from "@/types/News"
+import { type Experience } from "@/types/News"
 import { Building, Calendar, ChevronLeft, ChevronRight, MapPin } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -204,32 +205,34 @@ function InfoExperience() {
 					</Card>
 
 					{/* Related News */}
-					{related.length > 0 && (
+					{related?.length > 0 && (
 						<Card>
 							<CardContent className="p-6">
 								<h2 className="text-xl font-bold mb-4">Bài viết liên quan</h2>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-									{related.map((item) => {
+									{related?.map((item) => {
 										const thumb = item.medias?.find(m => m.isThumbnail)?.mediaUrl || item.medias?.[0]?.mediaUrl
 										return (
-											<div key={item.id} className="flex gap-3 items-start">
-												<div className="relative w-24 h-24 rounded-md overflow-hidden bg-muted flex-shrink-0">
-													{thumb && (
-														<Image src={thumb} alt={item.title} fill className="object-cover" />
-													)}
-												</div>
-												<div className="min-w-0">
-													<div className="flex items-center gap-2 mb-1">
-														{item.categoryName && (
-															<Badge variant="secondary">{getCategoryName(item.categoryName)}</Badge>
+											<Link href={item.categoryName === "News" ? `/tin-tuc/bai-bao/${item.id}` : `/trai-nghiem/thong-tin/${item.id}`} key={item.id}>
+												<div key={item.id} className="flex gap-3 items-start">
+													<div className="relative w-24 h-24 rounded-md overflow-hidden bg-muted flex-shrink-0">
+														{thumb && (
+															<Image src={thumb} alt={item.title} fill className="object-cover" />
 														)}
 													</div>
-													<h3 className="font-medium truncate">{item.title}</h3>
-													{item.description && (
-														<p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-													)}
+													<div className="min-w-0">
+														<div className="flex items-center gap-2 mb-1">
+															{item.categoryName && (
+																<Badge variant="secondary">{getCategoryName(item.categoryName)}</Badge>
+															)}
+														</div>
+														<h3 className="font-medium truncate">{item.title}</h3>
+														{item.description && (
+															<p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+														)}
+													</div>
 												</div>
-											</div>
+											</Link>
 										)
 									})}
 								</div>

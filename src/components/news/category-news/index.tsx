@@ -114,7 +114,7 @@ export default function CategoryNews({ category, title, limit = 3 }: CategoryNew
 				<div className="space-y-4">
 					{/* Featured article in category */}
 					{news[0] && (
-						<Link href={`/tin-tuc/bai-bao/${news[0].id}`} className="block group">
+						<Link href={category === "News" ? `/tin-tuc/bai-bao/${news[0]?.id}` : `/trai-nghiem/thong-tin/${news[0]?.id}`} className="block group">
 							<Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow">
 								<div className="relative">
 									<Image
@@ -147,7 +147,7 @@ export default function CategoryNews({ category, title, limit = 3 }: CategoryNew
 					{/* List of other articles */}
 					<div className="space-y-3">
 						{news?.slice(1, 4).map((item) => (
-							<Link key={item.id} href={`/tin-tuc/bai-bao/${item.id}`} className="block group">
+							<Link key={item.id} href={category === "News" ? `/tin-tuc/bai-bao/${item.id}` : `/trai-nghiem/thong-tin/${item.id}`} className="block group">
 								<div className="flex gap-3 items-start py-2 border-b border-gray-100">
 									<div className="flex-shrink-0 w-20 h-20 overflow-hidden rounded">
 										<Image
