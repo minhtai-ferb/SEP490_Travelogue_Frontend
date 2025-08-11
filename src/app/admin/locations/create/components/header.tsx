@@ -19,11 +19,11 @@ function HeaderCreateLocation() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="#">Quản lý địa điểm</BreadcrumbLink>
+            <BreadcrumbLink href="/admin/locations">Quản lý địa điểm</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/locations/table">
+            <BreadcrumbLink href="/admin/locations/table">
               Danh sách địa điểm
             </BreadcrumbLink>
           </BreadcrumbItem>

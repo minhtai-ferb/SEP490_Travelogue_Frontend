@@ -14,6 +14,7 @@ import {
 import { useUserManager } from "@/services/user-manager";
 import { addToast } from "@heroui/react";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 interface Role {
   id: string;
@@ -34,7 +35,7 @@ export const AssignRoleDialog: React.FC<AssignRoleDialogProps> = ({
   const [roles, setRoles] = useState<Role[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<Role[]>([]);
-  const { assignRoleToUser, getAllRoles } = useUserManager();
+  const { assignRoleToUser, removeRoleFromUser, getAllRoles } = useUserManager();
   const [loading, setLoading] = useState(false);
 
   // Khi mở dialog thì fetch roles
@@ -67,43 +68,48 @@ export const AssignRoleDialog: React.FC<AssignRoleDialogProps> = ({
         currentRoles.includes(role.name)
       );
       
-      // Tìm những role mới chưa có
-      const newRoles = selectedRoles.filter(selectedRole => 
+      console.log("currentRoleObjects: ", currentRoleObjects);
+      console.log("selectedRoles: ", selectedRoles);
+      
+      // Tìm những role mới cần thêm
+      const rolesToAdd = selectedRoles.filter(selectedRole => 
         !currentRoleObjects.some(currentRole => currentRole.id === selectedRole.id)
       );
       
-      console.log("currentRoleObjects: ", currentRoleObjects);
-      console.log("newRoles to assign: ", newRoles);
+      // Tìm những role cần xóa
+      const rolesToRemove = currentRoleObjects.filter(currentRole => 
+        !selectedRoles.some(selectedRole => selectedRole.id === currentRole.id)
+      );
       
-      if (newRoles.length === 0) {
-        addToast({
-          title: "Không có thay đổi",
-          description: "Không có vai trò mới nào được thêm.",
-          color: "warning",
-        });
+      console.log("rolesToAdd: ", rolesToAdd);
+      console.log("rolesToRemove: ", rolesToRemove);
+      
+      if (rolesToAdd.length === 0 && rolesToRemove.length === 0) {
+        toast.error("Không có thay đổi nào được thực hiện.");
         setOpen(false);
         return;
       }
 
-      // Chỉ gán những role mới
-      await Promise.all(
-        newRoles.map((role) => assignRoleToUser(userId, role.id))
-      );
+      // Thêm role mới
+      if (rolesToAdd.length > 0) {
+        await Promise.all(
+          rolesToAdd.map((role) => assignRoleToUser(userId, role.id))
+        );
+      }
       
-      addToast({
-        title: "Cập nhật vai trò thành công",
-        description: `Đã thêm ${newRoles.length} vai trò mới cho người dùng.`,
-        color: "success",
-      });
+      // Xóa role không còn chọn
+      if (rolesToRemove.length > 0) {
+        await Promise.all(
+          rolesToRemove.map((role) => removeRoleFromUser(userId, role.id))
+        );
+      }
+      
+      toast.success("Vai trò đã được cập nhật thành công.");
       onRolesUpdated?.(selectedRoles);
       setOpen(false);
     } catch (err) {
-      addToast({
-        title: "Cập nhật vai trò thất bại",
-        description: "Đã xảy ra lỗi khi cập nhật vai trò cho người dùng.",
-        color: "danger",
-      });
-      console.error("Lỗi khi gán vai trò:", err);
+      toast.error("Cập nhật vai trò thất bại");   
+      console.error("Lỗi khi cập nhật vai trò:", err);
     }
   };
 

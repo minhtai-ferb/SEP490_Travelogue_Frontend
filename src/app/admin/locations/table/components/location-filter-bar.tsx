@@ -12,6 +12,7 @@ interface Props {
   onChangeDistrict: (value: string) => void;
   onChangeTypeLocation?: (value: string) => void;
   onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export function LocationFilterBar({
@@ -19,6 +20,7 @@ export function LocationFilterBar({
   onChangeDistrict,
   onChangeTypeLocation,
   onSearch,
+  setLoading
 }: Props) {
   const router = useRouter();
 
@@ -49,7 +51,10 @@ export function LocationFilterBar({
       <Input onChange={onSearch} placeholder="Tìm kiếm theo tên địa điểm" />
       <Button
         className="bg-blue-500 text-white"
-        onClick={() => router.push("/locations/create")}
+        onClick={() => {
+          router.push("/admin/locations/create");
+          setLoading(true);
+        }}
       >
         Tạo mới địa điểm
       </Button>
