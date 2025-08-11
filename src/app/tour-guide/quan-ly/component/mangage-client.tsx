@@ -24,12 +24,7 @@ export default function ManagerClient() {
 						<span className="text-sm text-gray-500 hidden sm:block">Giao diện thân thiện để quản lý công việc</span>
 					</div>
 					<div className="flex items-center gap-2">
-						{/* <Button variant="ghost" size="icon" aria-label="Thông báo">
-							<Bell className="w-5 h-5" />
-						</Button>
-						<Button variant="ghost" size="icon" aria-label="Trợ giúp">
-							<HelpCircle className="w-5 h-5" />
-						</Button> */}
+
 					</div>
 				</div>
 			</header>
