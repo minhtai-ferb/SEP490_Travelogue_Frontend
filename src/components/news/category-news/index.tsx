@@ -6,31 +6,62 @@ import Image from "next/image"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { ChevronRight, Clock } from "lucide-react"
-import { useNewsManager } from "@/services/news-services"
-import type { NewsItem } from "@/interfaces/news"
+import { useNews } from "@/services/use-news"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-
+import { News, NewsCategory } from "@/types/News"
+import { toAbsoluteUrl } from "@/lib/url"
 interface CategoryNewsProps {
-	category?: { id: string; category: string; }
+	category: NewsCategory | "News" | "Event" | "Experience"
+	title?: string
 	limit?: number
 }
 
-export default function CategoryNews({ category, limit = 3 }: CategoryNewsProps) {
-	const { getNewsSearchPaged } = useNewsManager()
-	const [news, setNews] = useState<NewsItem[]>([])
+function resolveCategoryId(category: CategoryNewsProps["category"]): NewsCategory | undefined {
+	if (typeof category === "number") return category as NewsCategory
+	switch (category) {
+		case "News":
+			return NewsCategory.News
+		case "Event":
+			return NewsCategory.Event
+		case "Experience":
+			return NewsCategory.Experience
+		default:
+			return undefined
+	}
+}
+
+function resolveCategoryLabel(category: CategoryNewsProps["category"], fallback?: string) {
+	if (fallback) return fallback
+	if (typeof category === "number") {
+		if (category === NewsCategory.News) return "Tin tức"
+		if (category === NewsCategory.Event) return "Sự kiện"
+		if (category === NewsCategory.Experience) return "Trải nghiệm"
+		return String(category)
+	}
+	switch (category) {
+		case "News":
+			return "Tin tức"
+		case "Event":
+			return "Sự kiện"
+		case "Experience":
+			return "Trải nghiệm"
+		default:
+			return String(category)
+	}
+}
+
+export default function CategoryNews({ category, title, limit = 3 }: CategoryNewsProps) {
+	const { getByCategory } = useNews()
+	const [news, setNews] = useState<News[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 
 	useEffect(() => {
 		const fetchCategoryNews = async () => {
 			setIsLoading(true)
 			try {
-				const response = await getNewsSearchPaged({
-					title: "",
-					categoryId: category?.id, // Use the passed category directly
-					pageNumber: 1,
-					pageSize: limit,
-				})
+				const categoryId = resolveCategoryId(category)
+				const response = await getByCategory(categoryId)
 
 				if (response?.data) {
 					setNews(response.data)
@@ -43,10 +74,10 @@ export default function CategoryNews({ category, limit = 3 }: CategoryNewsProps)
 		}
 
 		fetchCategoryNews()
-	}, [category, limit, getNewsSearchPaged])
+	}, [category, limit, getByCategory])
 
 	if (isLoading) {
-		return <CategoryNewsSkeleton category={category?.category} />
+		return <CategoryNewsSkeleton category={category} />
 	}
 
 	return (
@@ -55,10 +86,10 @@ export default function CategoryNews({ category, limit = 3 }: CategoryNewsProps)
 				<div className="flex items-center justify-between">
 					<div className="flex items-center">
 						<div className="w-1 h-6 bg-blue-500 mr-3"></div>
-						<h2 className="text-xl font-bold uppercase">{category?.category}</h2>
+						<h2 className="text-xl font-bold uppercase">{title}</h2>
 					</div>
 					<Link
-						href={`/tin-tuc/phan-loai/${category?.id}`}
+						href={`/tin-tuc/phan-loai/${typeof category === "number" ? category : category}`}
 						className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center"
 					>
 						Xem tất cả
@@ -78,7 +109,7 @@ export default function CategoryNews({ category, limit = 3 }: CategoryNewsProps)
 								<div className="relative">
 									<Image
 										src={
-											news[0].medias[0]?.mediaUrl ||
+											toAbsoluteUrl(news[0].medias?.[0]?.mediaUrl) ||
 											`/placeholder.svg?height=300&width=600&text=${encodeURIComponent(news[0].title || '')}`
 										}
 										alt={news[0].title || "News image"}
@@ -111,7 +142,7 @@ export default function CategoryNews({ category, limit = 3 }: CategoryNewsProps)
 									<div className="flex-shrink-0 w-20 h-20 overflow-hidden rounded">
 										<Image
 											src={
-												item.medias[0]?.url ||
+												toAbsoluteUrl(item.medias?.[0]?.mediaUrl) ||
 												`/placeholder.svg?height=80&width=80&text=${encodeURIComponent(item.title?.substring(0, 10) || "")}`
 											}
 											alt={item.title || "News thumbnail"}

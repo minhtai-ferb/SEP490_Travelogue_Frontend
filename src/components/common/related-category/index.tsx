@@ -38,6 +38,16 @@ export default function RelatedNews({ relatedNews, maxItems = 3 }: RelatedNewsPr
 		console.log('relatedNews', displayedNews);
 	}, [])
 
+	const getNamebyCategory = (category: string) => {
+		switch (category) {
+			case "News":
+				return "Tin tức"
+			case "Event":
+				return "Sự kiện"
+			case "Experience":
+				return "Trải nghiệm"
+		}
+	}
 
 	return (
 		<div className="space-y-6">
@@ -70,7 +80,7 @@ export default function RelatedNews({ relatedNews, maxItems = 3 }: RelatedNewsPr
 								/>
 								{news.categoryName && (
 									<span className="absolute top-3 left-3 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
-										{news.categoryName}
+										{getNamebyCategory(news.categoryName)}
 									</span>
 								)}
 							</div>
