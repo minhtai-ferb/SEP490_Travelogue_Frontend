@@ -1,14 +1,14 @@
-import type { Metadata } from "next"
+'use client';
+
+import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import TourEditClient from "./TourEditClient"
 
-export const metadata: Metadata = {
-	title: "Chỉnh Sửa Tour | Dashboard",
-	description: "Chỉnh sửa thông tin tour du lịch",
-	robots: {
-		index: false,
-		follow: false,
-	},
-}
+
+const crumbs: Crumb[] = [
+  { label: "Quản lý chuyến tham quan", href: "/admin/tour" },
+  { label: "Danh sách chuyến tham quan", href: "/admin/tour/table" },
+  { label: "Chỉnh sửa chuyến tham quan" },
+];
 
 interface TourEditPageProps {
 	params: Promise<{
@@ -18,6 +18,11 @@ interface TourEditPageProps {
 
 export default async function TourEditPage({ params }: TourEditPageProps) {
 	const { id } = await params
-	return <TourEditClient tourId={id} />
+	return (
+		<>
+			<BreadcrumbHeader items={crumbs} />
+			<TourEditClient tourId={id} />
+		</>
+	)
 }
 

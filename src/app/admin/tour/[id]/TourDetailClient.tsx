@@ -1,4 +1,5 @@
-"use client"
+'use client';
+
 import { DeleteConfirmation } from "@/components/tour-management/DeleteConfirmation"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -131,10 +132,6 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 			{/* Header */}
 			<div className="flex items-center justify-between mb-6">
 				<div className="flex items-center gap-4">
-					<Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-						<ArrowLeft className="w-4 h-4" />
-						Quay lại
-					</Button>
 					<div>
 						<h1 className="text-3xl font-bold">{tour.name}</h1>
 						<div className="flex items-center gap-2 mt-2">

@@ -1,4 +1,5 @@
-"use client"
+'use client';
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -82,10 +83,6 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 		<div className="container mx-auto p-6 max-w-7xl">
 			{/* Header */}
 			<div className="flex items-center gap-4 mb-6">
-				<Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-					<ArrowLeft className="w-4 h-4" />
-					Quay lại
-				</Button>
 				<div className="flex-1">
 					<h1 className="text-3xl font-bold">Chỉnh Sửa Tour</h1>
 					<p className="text-gray-600 mt-1">{tour.name}</p>

@@ -50,12 +50,12 @@ export default function SchedulesDialog({
 
 	const saveOne = async (s: Schedule) => {
 		try {
-			const payload = {
+			const payload: ScheduleFormData = {
 				departureDate: s.departureDate,
 				maxParticipant: s.maxParticipant,
 				adultPrice: s.adultPrice,
 				childrenPrice: s.childrenPrice,
-				totalDays: s.totalDays ?? undefined,
+				totalDays: s.totalDays || 1, // Đảm bảo luôn có giá trị, mặc định là 1
 			}
 			await updateTourSchedule(tourId, s.scheduleId, payload)
 			setEditing((prev) => {
