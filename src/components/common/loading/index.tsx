@@ -15,9 +15,9 @@ export default function Loading() {
           clearInterval(timer)
           return 100
         }
-        return prev + 2
+        return prev + 1
       })
-    }, 50)
+    }, 5)
 
     return () => clearInterval(timer)
   }, [])
