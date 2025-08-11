@@ -11,7 +11,7 @@ function ManageUser() {
 
   useEffect(() => {
     setLoading(true);
-    router.push("/user/table");
+    router.push("/admin/user/table");
   }, []);
 
   if (loading) {

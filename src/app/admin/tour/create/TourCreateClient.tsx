@@ -12,21 +12,17 @@ export default function TourCreateClient() {
 	const [error, setError] = useState("")
 
 	const handleBack = () => {
-		router.push("/admin/tour")
+		router.push("/admin/tour/table")
 	}
 
 	const handleComplete = () => {
-		router.push("/admin/tour")
+		router.push("/admin/tour/table")
 	}
 
 	return (
 		<div className="container mx-auto p-6 max-w-6xl">
 			{/* Header */}
 			<div className="flex items-center gap-4 mb-6">
-				<Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-					<ArrowLeft className="w-4 h-4" />
-					Quay lại
-				</Button>
 				<div>
 					<h1 className="text-3xl font-bold">Tạo Tour Mới</h1>
 					<p className="text-gray-600 mt-1">Tạo tour du lịch mới với wizard 3 bước</p>

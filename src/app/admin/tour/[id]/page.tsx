@@ -1,22 +1,24 @@
-import type { Metadata } from "next"
-import TourDetailClient from "./TourDetailClient"
-
-export const metadata: Metadata = {
-	title: "Chi Tiết Tour | Dashboard",
-	description: "Xem chi tiết thông tin tour du lịch",
-	robots: {
-		index: false,
-		follow: false,
-	},
-}
+import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
+import TourDetailClient from "./TourDetailClient";
 
 interface TourDetailPageProps {
-	params: Promise<{
-		id: string
-	}>
+  params: Promise<{
+    id: string;
+  }>;
 }
 
+const crumbs: Crumb[] = [
+  { label: "Quản lý chuyến tham quan", href: "/admin/tour" },
+  { label: "Danh sách chuyến tham quan", href: "/admin/tour/table" },
+  { label: "Chi tiết chuyến tham quan", href: "/admin/tour/[id]" },
+];
+
 export default async function TourDetailPage({ params }: TourDetailPageProps) {
-	const { id } = await params
-	return <TourDetailClient tourId={id} />
+  const { id } = await params;
+  return (
+    <>
+      <BreadcrumbHeader items={crumbs} />
+      <TourDetailClient tourId={id} />
+    </>
+  );
 }

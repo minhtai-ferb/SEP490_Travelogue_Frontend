@@ -12,13 +12,13 @@ const VerifySuccess = ({ params }: { params: Promise<{ token: string }> }) => {
   const [countdown, setCountdown] = useState(5);
   const [error, setError] = useState<string | null>(null);
   const [done, setdone] = useState(false);
-  const {verifyEmail, loading} = useAuth();
+  const { verifyEmail, loading } = useAuth();
 
   const { token } = use(params);
 
   useEffect(() => {
     const verify = async () => {
-      try {     
+      try {
         if (token) {
           console.log("Token exists:", token);
         } else {
@@ -30,10 +30,10 @@ const VerifySuccess = ({ params }: { params: Promise<{ token: string }> }) => {
         const userData = localStorage.getItem("USER");
         if (userData) {
           const parsedUserData = JSON.parse(userData);
-          parsedUserData.isEmailVerified = true; 
+          parsedUserData.isEmailVerified = true;
           localStorage.setItem("USER", JSON.stringify(parsedUserData));
         }
-        
+
         setdone(true);
       } catch (error: any) {
         console.log("Verification failed", error);

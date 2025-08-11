@@ -79,7 +79,14 @@ export enum NewsCategory {
   Experience = 3,
 }
 
+export enum NewsCategoryName {
+  News = "Tin tức",
+  Event = "Sự kiện",
+  Experience = "Trải nghiệm",
+}
+
 export enum TypeExperience {
+  All = 0,
   Adventure = 1,
   Cultural = 2,
   Culinary = 3,
@@ -90,6 +97,7 @@ export enum TypeExperience {
 }
 
 export enum TypeExperienceName {
+  All = "Tất cả",
   Adventure = "Phiêu lưu",
   Cultural = "Văn hóa",
   Culinary = "Ẩm thực",
@@ -101,6 +109,8 @@ export enum TypeExperienceName {
 
 export function getTypeExperienceLabel(type?: TypeExperience) {
   switch (type) {
+    case TypeExperience.All:
+      return "Tất cả";
     case TypeExperience.Adventure:
       return "Phiêu lưu";
     case TypeExperience.Cultural:

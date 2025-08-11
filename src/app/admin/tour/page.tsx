@@ -1,16 +1,26 @@
-import TourManagement from "@/components/tour-management/TourManagement"
-import type { Metadata } from "next"
+"use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import LoadingContent from "@/components/common/loading-content";
+import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 
-export const metadata: Metadata = {
-	title: "Quản Lý Tour | Dashboard",
-	description: "Quản lý danh sách tour du lịch",
-	robots: {
-		index: false,
-		follow: false,
-	},
+const crumbs: Crumb[] = [{ label: "Quản lý chuyến tham quan" }];
+
+function ManageLocation() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    router.push("/admin/tour/table");
+  }, []);
+
+  if (loading) {
+    return <LoadingContent />;
+  }
+
+  return <BreadcrumbHeader items={crumbs} />;
 }
 
-export default function ToursPage() {
-	return <TourManagement />
-}
+export default ManageLocation;
