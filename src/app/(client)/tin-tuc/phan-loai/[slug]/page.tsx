@@ -2,23 +2,8 @@
 
 import type React from "react";
 
-import { useState, useEffect, use } from "react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  ChevronRight,
-  Clock,
-  Filter,
-  Home,
-  Search,
-  ArrowUpRight,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,9 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useNewsManager } from "@/services/news-services";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { NewsItem } from "@/interfaces/news";
-import { useNewsCategory } from "@/services/news-category";
+import { useNews } from "@/services/use-news";
+import { NewsCategory } from "@/types/News";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import {
+  ArrowUpRight,
+  ChevronRight,
+  Clock,
+  Filter,
+  Home,
+  Search,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { use, useEffect, useState } from "react";
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }>; }) {
 
@@ -46,27 +46,33 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 9;
 
-  const { getNewsSearchPaged } = useNewsManager();
-  const { getCategoryById } = useNewsCategory();
+  const { getByCategory } = useNews();
+
+  const getTypeByName = (name: string) => {
+    switch (name) {
+      case "News":
+        return NewsCategory.News
+      case "Event":
+        return NewsCategory.Event
+      case "Experience":
+        return NewsCategory.Experience
+    }
+  }
 
   // Get category ID from slug (this would be replaced with your actual mapping)
   const fetchNews = async (page: number, resetResults = false) => {
     setIsLoading(true);
+    const categoryNum = getTypeByName(slug)
     try {
-      const responseNewsCategory = await getCategoryById(slug);
+      const responseNewsCategory = await getByCategory(categoryNum);
       setCategory(responseNewsCategory?.data);
-      const response = await getNewsSearchPaged({
-        title: searchTerm,
-        categoryId: slug,
-        pageNumber: page,
-        pageSize: itemsPerPage,
-      });
+      const response = await getByCategory(categoryNum);
 
-      if (response?.data) {
+      if (response) {
         if (resetResults) {
-          setNewsItems(response.data);
+          setNewsItems(response);
         } else {
-          setNewsItems((prev) => [...prev, ...response.data]);
+          setNewsItems((prev) => [...prev, ...response]);
         }
 
         setTotalItems(response.totalCount || 0);
@@ -318,7 +324,7 @@ function NewsCard({ item }: NewsCardProps) {
             <div></div>
           )}
 
-          <Link href={`/tin-tuc/bai-bao/${item.id}`}>
+          <Link href={item.categoryName === "News" ? `/tin-tuc/bai-bao/${item.id}` : `/trai-nghiem/thong-tin/${item?.id}`}>
             <Button
               variant="ghost"
               size="sm"

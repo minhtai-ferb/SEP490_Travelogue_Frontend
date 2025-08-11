@@ -197,9 +197,7 @@ function InfoExperience() {
 							<h2 className="text-2xl font-bold mb-4">Giới thiệu</h2>
 							<div className="prose max-w-none">
 								{contentParagraphs.map((paragraph, index) => (
-									<p key={index} className="mb-4 text-muted-foreground">
-										{paragraph}
-									</p>
+									<div key={index} className="mb-4 text-muted-foreground" dangerouslySetInnerHTML={{ __html: paragraph }} />
 								))}
 							</div>
 						</CardContent>

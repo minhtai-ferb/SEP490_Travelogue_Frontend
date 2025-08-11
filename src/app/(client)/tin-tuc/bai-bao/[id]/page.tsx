@@ -7,9 +7,9 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Clock, Share2, Bookmark, ChevronLeft } from "lucide-react";
 import { use, useEffect, useState } from "react";
-import { useNewsManager } from "@/services/news-services";
 import { NewsItem } from "@/interfaces/news";
 import RelatedNews from "@/components/common/related-category";
+import { useNews } from "@/services/use-news";
 
 export default function ArticlePage({
   params,
@@ -20,14 +20,12 @@ export default function ArticlePage({
   const [detail, setDetail] = useState<NewsItem>()
 
   const { id } = use(params);
-  const { getDetailNews } = useNewsManager()
+  const { getNewsById } = useNews()
 
-
-  // This would be fetched from an API in a real application
   const fetchDetailNews = async (id: string) => {
     try {
-      const response = await getDetailNews(id);
-      setDetail(response?.data)
+      const response = await getNewsById(id);
+      setDetail(response)
 
     } catch (error) {
       console.error(error);
@@ -116,28 +114,6 @@ export default function ArticlePage({
           dangerouslySetInnerHTML={{ __html: detail?.content || "" }}
         />
 
-        {/* Related articles */}
-        {/* <div className="border-t pt-8">
-          <h2 className="text-2xl font-bold mb-6">Bài viết liên quan</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {detail?.relatedNews?.slice(0, 3).map((related) => (
-              <Link
-                key={related.id}
-                href={`/tin-tuc/phan-loai/${related.id}`}
-                className="group"
-              >
-                <div className="space-y-2">
-                  <span className="text-sm font-bold text-gray-600">
-                    {related?.categoryName}
-                  </span>
-                  <h3 className="font-bold group-hover:text-gray-600 transition-colors">
-                    {related?.title}
-                  </h3>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div> */}
         <RelatedNews relatedNews={detail?.relatedNews || []} />
       </article>
     </main>
