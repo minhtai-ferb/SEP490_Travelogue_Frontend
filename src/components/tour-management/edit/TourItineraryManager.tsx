@@ -11,6 +11,8 @@ import type { TourDetail, TourDay, TourLocationBulkRequest } from "@/types/Tour"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { TourLocationForm } from "@/components/tour-management/wizard/TourLocationForm"
 import { useTour } from "@/services/tour"
+import TourLocationUpdateForm from "@/components/tour-management/edit/TourLocationUpdateForm"
+
 
 interface TourItineraryManagerProps {
 	tour: TourDetail
@@ -23,6 +25,56 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const { createTourBulk, getTourDetail } = useTour()
+	const [isEditOpen, setIsEditOpen] = useState(false)
+	const [editing, setEditing] = useState<{ dayNumber: number; activityIndex: number } | null>(null)
+
+
+	const openEditDialog = (dayNumber: number, activityIndex: number) => {
+		setEditing({ dayNumber, activityIndex })
+		setIsEditOpen(true)
+	}
+
+	const getActivityInitialPayload = (): (TourLocationBulkRequest & { prevOfDay?: { locationId: string } | null }) | null => {
+		if (!editing) return null
+		const day = tour.days.find(d => d.dayNumber === editing.dayNumber)
+		if (!day) return null
+		const acts = [...day.activities].sort((a, b) => a.startTime.localeCompare(b.startTime))
+		const activity = acts[editing.activityIndex]
+		if (!activity) return null
+		const initial: TourLocationBulkRequest = {
+			tourPlanLocationId: activity.tourPlanLocationId,
+			locationId: (activity as any).locationId || activity.id,
+			dayOrder: editing.dayNumber,
+			startTime: (activity as any).startTime || activity.startTimeFormatted,
+			endTime: (activity as any).endTime || activity.endTimeFormatted,
+			notes: activity.notes || "",
+			travelTimeFromPrev: activity.travelTimeFromPrev || 0,
+			distanceFromPrev: activity.distanceFromPrev || 0,
+			estimatedStartTime: 0,
+			estimatedEndTime: 0,
+		}
+		const prev = acts[editing.activityIndex - 1]
+		const prevOfDay = prev ? { locationId: (prev as any).locationId || prev.id } : null
+		return Object.assign(initial, { prevOfDay })
+	}
+
+	const handleSingleUpdate = async (payload: TourLocationBulkRequest) => {
+		try {
+			setIsSaving(true)
+			setError("")
+			setSuccess("")
+			await createTourBulk(tour.tourId, [payload])
+			const updated = await getTourDetail(tour.tourId)
+			onUpdate(updated)
+			setSuccess("Cập nhật địa điểm thành công!")
+			setIsEditOpen(false)
+			setEditing(null)
+		} catch (e: any) {
+			setError(e?.response?.data?.message || e.message || "Có lỗi khi cập nhật địa điểm")
+		} finally {
+			setIsSaving(false)
+		}
+	}
 
 	const formatTime = (time: string) => {
 		return time.substring(0, 5) // HH:MM format
@@ -111,6 +163,27 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 
 	return (
 		<div className="space-y-6">
+			<Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+				<DialogContent className="max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>Chỉnh sửa địa điểm</DialogTitle>
+					</DialogHeader>
+					{(() => {
+						const init = getActivityInitialPayload()
+						if (!init) return null
+						const { prevOfDay, ...initialData } = init
+						return (
+							<TourLocationUpdateForm
+								tourDays={tour.totalDays}
+								initial={initialData}
+								prevOfDay={prevOfDay}
+								onCancel={() => setIsEditOpen(false)}
+								onSubmit={handleSingleUpdate}
+							/>
+						)
+					})()}
+				</DialogContent>
+			</Dialog>
 			{error && (
 				<Alert className="border-red-200 bg-red-50">
 					<AlertCircle className="h-4 w-4 text-red-600" />
@@ -205,7 +278,7 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 									Cập Nhật Địa Điểm
 								</Button>
 							</DialogTrigger>
-							<DialogContent className="max-w-4xl">
+							<DialogContent className="overflow-y-scroll max-h-[90vh] max-w-4xl">
 								<DialogHeader>
 									<DialogTitle>Cập Nhật Địa Điểm Tour</DialogTitle>
 								</DialogHeader>
@@ -315,7 +388,7 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 																			/>
 																		)}
 																		<div className="flex flex-col gap-1">
-																			<Button variant="ghost" size="sm">
+																			<Button variant="ghost" size="sm" onClick={() => openEditDialog(day.dayNumber, index)}>
 																				<Edit className="w-4 h-4" />
 																			</Button>
 																			<Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">

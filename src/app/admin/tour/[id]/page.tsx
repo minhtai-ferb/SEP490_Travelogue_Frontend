@@ -8,9 +8,8 @@ interface TourDetailPageProps {
 }
 
 const crumbs: Crumb[] = [
-  { label: "Quản lý chuyến tham quan", href: "/admin/tour" },
-  { label: "Danh sách chuyến tham quan", href: "/admin/tour/table" },
-  { label: "Chi tiết chuyến tham quan", href: "/admin/tour/[id]" },
+  { label: "Quản lý chuyến tham quan", href: "/admin/tour/table" },
+  { label: "Chi tiết chuyến tham quan" },
 ];
 
 export default async function TourDetailPage({ params }: TourDetailPageProps) {

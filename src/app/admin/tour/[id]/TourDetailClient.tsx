@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { useTour } from "@/services/tour"
 import type { TourDetail } from "@/types/Tour"
 import { TourTypeLabels } from "@/types/Tour"
-import { AlertCircle, ArrowLeft, Calendar, Clock, DollarSign, Edit, Loader2, MapPin, Trash2 } from "lucide-react"
+import { AlertCircle, ArrowLeft, Calendar, Clock, DollarSign, Edit, Loader2, MapPin } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -150,10 +150,10 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 						<Edit className="w-4 h-4" />
 						Chỉnh sửa
 					</Button>
-					<Button variant="destructive" onClick={handleDelete} className="flex items-center gap-2">
+					{/* <Button variant="destructive" onClick={handleDelete} className="flex items-center gap-2">
 						<Trash2 className="w-4 h-4" />
 						Xóa
-					</Button>
+					</Button> */}
 				</div>
 			</div>
 
