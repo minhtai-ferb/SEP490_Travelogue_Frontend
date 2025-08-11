@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, UserCircle2, BadgeCheck, MapPin, Store, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Cookies from "js-cookie";
 import { routeByRole } from "@/types/Roles";
 import { getActiveRoleFromStorage, getStoredUser, setActiveRole } from "@/utils/auth-storage";
 
@@ -16,9 +15,6 @@ const roleMeta: Record<string, { label: string; desc: string; icon: any }> = {
   CraftVillageOwner: { label: "Đại diện làng nghề", desc: "Cập nhật thông tin làng nghề, sản phẩm", icon: Store },
   User: { label: "Người dùng", desc: "Khám phá điểm đến, lên kế hoạch chuyến đi", icon: UserCircle2 },
 };
-
-const USER_KEY = "USER";
-const ACTIVE_KEY = "activeRole";
 
 
 export default function ChooseRolePage() {
@@ -37,11 +33,11 @@ export default function ChooseRolePage() {
         return;
       }
 
-      const active = getActiveRoleFromStorage(r);
-      if (active) {
-        router.replace(routeByRole[active] ?? "/");
-        return;
-      }
+      // const active = getActiveRoleFromStorage(r);
+      // if (active) {
+      //   router.replace(routeByRole[active] ?? "/");
+      //   return;
+      // }
 
       if (r.length === 1) {
         const only = r[0];

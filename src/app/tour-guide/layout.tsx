@@ -2,10 +2,11 @@
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "./dashboard/component/app-sidebar"
-import { ensureRole } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export default function HdvLayout({ children }: { children: React.ReactNode }) {
-	ensureRole("TourGuide");
+	const router = useRouter();
+	
 	return (
 		<SidebarProvider>
 			<AppSidebar />
