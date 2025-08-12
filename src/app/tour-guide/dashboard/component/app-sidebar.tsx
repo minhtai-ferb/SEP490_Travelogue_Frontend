@@ -1,26 +1,25 @@
 "use client"
 
+import { LayoutDashboard, User, Wallet } from "lucide-react"
 import * as React from "react"
-import { Plus, User, LayoutDashboard } from "lucide-react"
 
 // import { Calendars } from "./calendar"
-import { DatePicker } from "./date-picker"
-import { NavUser } from "./nav-user"
 import {
 	Sidebar,
 	SidebarContent,
-	SidebarFooter,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarRail,
-	SidebarSeparator,
+	SidebarSeparator
 } from "@/components/ui/sidebar"
 import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import Link from "next/link"
-import { FaCertificate } from "react-icons/fa"
+import { GrCertificate } from "react-icons/gr"
+import { NavUser } from "./nav-user"
+
 
 
 const data = {
@@ -60,14 +59,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavUser user={dataUser} />
 			</SidebarHeader>
 			<SidebarContent>
-				<DatePicker />
+				{/* <DatePicker /> */}
 				<SidebarSeparator className="mx-0" />
-				<SidebarMenu className="flex flex-col gap-2 justify-center ml-3">
+				<SidebarMenu className="flex flex-col gap-2 justify-center pl-3">
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
 							<Link href="/tour-guide/dashboard">
 								<LayoutDashboard />
 								<span>Tổng quan</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+							<Link href="/tour-guide/dashboard/vi-cua-toi">
+								<Wallet />
+								<span>Ví của tôi</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
@@ -82,15 +89,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
 							<Link href="/tour-guide/dashboard/dang-ky-chung-chi">
-								<FaCertificate />
-								<span>Đăng ký chứng chỉ</span>
+								<GrCertificate className="w-4 h-4" />
+								<span>Chứng chỉ của tôi</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
 				<SidebarSeparator className="mx-0" />
 			</SidebarContent>
-			<SidebarFooter>
+			{/* <SidebarFooter>
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton>
@@ -99,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
-			</SidebarFooter>
+			</SidebarFooter> */}
 
 			<SidebarRail />
 		</Sidebar>
