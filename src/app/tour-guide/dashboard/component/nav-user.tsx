@@ -5,8 +5,8 @@ import {
 	Bell,
 	ChevronsUpDown,
 	CreditCard,
-	LogOut,
-	Sparkles,
+	Home,
+	LogOut
 } from "lucide-react"
 
 import {
@@ -29,8 +29,8 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar"
-import { signOut } from "@/services/firebase-auth"
 import { useAuth } from "@/services/useAuth"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
 	user,
@@ -44,6 +44,7 @@ export function NavUser({
 	const { isMobile } = useSidebar()
 
 	const { logout } = useAuth()
+	const router = useRouter()
 
 	return (
 		<SidebarMenu>
@@ -84,25 +85,33 @@ export function NavUser({
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuGroup>
+						{/* <DropdownMenuGroup>
 							<DropdownMenuItem>
 								<Sparkles />
 								Upgrade to Pro
 							</DropdownMenuItem>
-						</DropdownMenuGroup>
+						</DropdownMenuGroup> */}
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem>
 								<BadgeCheck />
-								Account
+								Tài khoản
 							</DropdownMenuItem>
-							<DropdownMenuItem>
+							{/* <DropdownMenuItem onClick={() => {
+								router.push("/tour-guide/dashboard/transaction")
+							}}>
 								<CreditCard />
-								Billing
-							</DropdownMenuItem>
+								Giao dịch
+							</DropdownMenuItem> */}
 							<DropdownMenuItem>
 								<Bell />
-								Notifications
+								Thông báo
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => {
+								router.push("/")
+							}}>
+								<Home />
+								Trang người dùng
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
