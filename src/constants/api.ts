@@ -27,3 +27,10 @@ export const USER_API_URL = {
 	GET_USER_REQUEST: "/user/tour-guide-request",
 	REQUEST_REVIEW: "/user/:requestId/review",
 }
+
+export const CRAFT_VILLAGE_API_URL = {
+	GET_CRAFT_VILLAGE_REQUEST: "/user/craft-village-request",
+	CREATE_CRAFT_VILLAGE_REQUEST: '/user/craft-village-request',
+	CRAFT_VILLAGE_REQUEST_BY_ID: '/user/craft-village-request/:id',
+	UPDATE_CRAFT_VILLAGE_REQUEST: '/user/craft-village-request/:id/review'
+}
