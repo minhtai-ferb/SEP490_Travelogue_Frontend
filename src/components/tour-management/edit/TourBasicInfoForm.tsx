@@ -14,6 +14,7 @@ import { Loader2, Save, AlertCircle } from "lucide-react"
 import { useTour } from "@/services/tour"
 import { TourTypeLabels } from "@/types/Tour"
 import type { TourDetail } from "@/types/Tour"
+import toast from "react-hot-toast";
 
 interface TourBasicInfoFormProps {
 	tour: TourDetail
@@ -42,14 +43,15 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 
 		try {
 			const response = await updateTourInfo(tour.tourId, formData)
-			setSuccess("Cập nhật thông tin tour thành công!")
 
 			// Update the tour data
 			const updatedTour = { ...tour, ...formData }
 			onUpdate(updatedTour)
+			setSuccess("Cập nhật thông tin tour thành công!")
 		} catch (error: any) {
-			console.error("Error updating tour:", error)
 			setError(error.message || "Có lỗi khi cập nhật tour")
+			toast.error(error?.response?.data?.message || "Có lỗi khi cập nhật tour")
+			console.error("Error updating tour:", error)
 		} finally {
 			setIsLoading(false)
 		}
@@ -75,9 +77,9 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 				)}
 
 				{success && (
-					<Alert className="mb-6 border-green-200 bg-green-50">
-						<AlertCircle className="h-4 w-4 text-green-600" />
-						<AlertDescription className="text-green-800">{success}</AlertDescription>
+					<Alert className="mb-6 border-green-200 bg-green-50 flex items-center align-middle">
+						<AlertCircle className="h-6 w-6 text-green-600" color="green" />
+						<AlertDescription className="text-green-800 text-xl mt-1 ml-2">{success}</AlertDescription>
 					</Alert>
 				)}
 

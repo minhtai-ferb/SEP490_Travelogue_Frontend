@@ -8,8 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComp } from "@/components/ui/calendar"
-import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, Loader2, Banknote, Copy, Sparkles } from "lucide-react"
+import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, Loader2, Banknote, Copy, Sparkles, UserCircle2, User } from "lucide-react"
 import type { ScheduleFormData } from "@/types/Tour"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTourguideAssign } from "@/services/tourguide"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { TourGuideItem } from "@/types/Tourguide"
 
 interface TourScheduleFormProps {
 	initialData?: ScheduleFormData[]
@@ -41,6 +45,9 @@ export function TourScheduleForm({
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [openDatePicker, setOpenDatePicker] = useState(false)
 	const [quickAddOpen, setQuickAddOpen] = useState(false)
+	const { getTourGuide } = useTourguideAssign()
+	const [guides, setGuides] = useState<Array<TourGuideItem>>([])
+	const [guidesLoading, setGuidesLoading] = useState(false)
 
 	useEffect(() => {
 		if (initialData.length > 0) {
@@ -56,6 +63,40 @@ export function TourScheduleForm({
 	useEffect(() => {
 		setNewSchedule((prev) => ({ ...prev, totalDays: tourDays }))
 	}, [tourDays])
+
+	// Fetch available tour guides once
+	useEffect(() => {
+		let mounted = true
+		const fetchGuides = async () => {
+			try {
+				setGuidesLoading(true)
+				const res: any = await getTourGuide()
+				const list: any[] = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : []
+				const normalized = list.map((g: any) => ({
+					id: g.id || g.userId || g.tourGuideId,
+					userName: g.userName || g.userName || g.email || "Chưa rõ",
+					avatarUrl: g.avatarUrl || "",
+					email: g.email || "",
+					sex: g.sex || 0,
+					sexText: g.sexText || "",
+					address: g.address || "",
+					price: g.price || 0,
+					introduction: g.introduction || "",
+					averageRating: g.averageRating || 0,
+					totalReviews: g.totalReviews || 0,
+				}))
+				if (mounted) setGuides(normalized.filter((g) => !!g.id) as TourGuideItem[])
+			} catch {
+				if (mounted) setGuides([])
+			} finally {
+				if (mounted) setGuidesLoading(false)
+			}
+		}
+		fetchGuides()
+		return () => {
+			mounted = false
+		}
+	}, [getTourGuide])
 
 	const validateNewSchedule = () => {
 		const newErrors: Record<string, string> = {}
@@ -74,6 +115,11 @@ export function TourScheduleForm({
 
 		if (newSchedule.childrenPrice < 0) {
 			newErrors.childrenPrice = "Giá trẻ em không được âm"
+		}
+
+		// Optional: validate tourGuideId existence when selected
+		if (newSchedule.tourGuideId && !guides.find((g) => g.id === newSchedule.tourGuideId)) {
+			newErrors.tourGuideId = "Hướng dẫn viên không hợp lệ"
 		}
 
 		// Check for duplicate dates
@@ -185,13 +231,13 @@ export function TourScheduleForm({
 			{/* Add New Schedule */}
 			<Card>
 				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
+					<CardTitle className="flex items-center gap-2 text-lg">
 						<Plus className="w-5 h-5" />
 						Thêm Lịch Trình Mới
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"	>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="departureDate" className="flex items-center gap-2">
 								<Calendar className="w-4 h-4" />
@@ -281,6 +327,45 @@ export function TourScheduleForm({
 							<p className="text-xs text-gray-500">{formatCurrency(newSchedule.childrenPrice)}</p>
 							{errors.childrenPrice && <p className="text-sm text-red-500">{errors.childrenPrice}</p>}
 						</div>
+
+						<div className="space-y-2">
+							<div className="space-y-1 md:w-1/2">
+								<Label htmlFor="tourGuideId" className="flex items-center gap-2">
+									<User className="w-4 h-4" />
+									Hướng Dẫn Viên
+								</Label>
+								<Select
+									value={newSchedule.tourGuideId}
+									onValueChange={(val) => setNewSchedule({ ...newSchedule, tourGuideId: val === "none" ? undefined : val })}
+									disabled={isLoading || guidesLoading}
+								>
+									<SelectTrigger id="tourGuideId" className={errors.tourGuideId ? "border-red-500" : ""} disabled={isLoading || guidesLoading}>
+										<SelectValue placeholder={guidesLoading ? "Đang tải..." : "Chọn hướng dẫn viên"} />
+									</SelectTrigger>
+									<SelectContent className="overflow-y-auto w-full max-h-[300px]">
+										<SelectItem value="none" className="cursor-pointer hover:bg-gray-100 p-2 rounded-md">Không chỉ định</SelectItem>
+										{guides.map((g) => (
+											<SelectItem key={g.id} value={g.id} className="cursor-pointer hover:bg-gray-100 p-2 rounded-md">
+												<div className="flex items-center gap-2">
+													<Avatar className="w-6 h-6">
+														<AvatarImage src={g.avatarUrl} />
+														<AvatarFallback>
+															{g.userName.charAt(0).toUpperCase()}
+														</AvatarFallback>
+													</Avatar>
+													<div className="flex flex-col">
+														<span className="text-sm font-medium">{g.userName}</span>
+														<span className="text-xs text-gray-500">{g.email}</span>
+													</div>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.tourGuideId && <p className="text-sm text-red-500">{errors.tourGuideId}</p>}
+							</div>
+							<div className="space-y-1"></div>
+						</div>
 					</div>
 
 					<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mt-4 gap-3">
@@ -352,6 +437,7 @@ export function TourScheduleForm({
 										<TableHead>Giá Người Lớn</TableHead>
 										<TableHead>Giá Trẻ Em</TableHead>
 										<TableHead>Doanh Thu Dự Kiến</TableHead>
+										<TableHead>Hướng Dẫn Viên</TableHead>
 										<TableHead className="text-center">Hành Động</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -381,6 +467,11 @@ export function TourScheduleForm({
 											<TableCell>
 												<span className="font-semibold text-purple-600">
 													{(schedule.adultPrice * schedule.maxParticipant).toLocaleString()} VNĐ
+												</span>
+											</TableCell>
+											<TableCell>
+												<span className="text-sm">
+													{guides.find((g) => g.id === schedule.tourGuideId)?.userName || "—"}
 												</span>
 											</TableCell>
 											<TableCell className="text-center">
