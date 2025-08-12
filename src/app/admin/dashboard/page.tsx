@@ -4,7 +4,6 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 
 import { SidebarInset } from "@/components/ui/sidebar";
 import React from "react";
-import { BookingStatsChart } from "./components/chart-area-interactive";
 
 const crumb: Crumb[] = [{ label: "Dashboard", href: "/admin/dashboard" }];
 
