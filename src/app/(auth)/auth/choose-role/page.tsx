@@ -29,7 +29,7 @@ export default function ChooseRolePage() {
       const r: string[] = user?.roles ?? [];
 
       if (!user || !r?.length) {
-        router.replace("/auth/login");
+        router.replace("/auth");
         return;
       }
 
