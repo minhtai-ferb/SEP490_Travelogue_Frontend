@@ -90,7 +90,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 							</BreadcrumbItem>
 							<BreadcrumbSeparator className="text-white" />
 							<BreadcrumbItem>
-								<BreadcrumbLink className="text-white">{tour.name}</BreadcrumbLink>
+								<BreadcrumbLink href="#" className="text-white">{tour.name}</BreadcrumbLink>
 							</BreadcrumbItem>
 						</BreadcrumbList>
 					</Breadcrumb>
