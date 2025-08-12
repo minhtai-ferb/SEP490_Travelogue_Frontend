@@ -13,6 +13,20 @@ export function useTourguideAssign() {
 	const router = useRouter();
 	const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
+	const getTourGuide = useCallback(
+		async () => {
+			setLoading(true);
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.TOUR_GUIDE);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
 	const getTourguideProfile = useCallback(
 		async (id: string) => {
 			setLoading(true);
@@ -132,6 +146,7 @@ export function useTourguideAssign() {
 	)
 
 	return {
+		getTourGuide,
 		getTourguideProfile,
 		getTourAssign,
 		getTourGuideSchedule,

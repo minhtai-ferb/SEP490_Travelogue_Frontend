@@ -8,6 +8,7 @@ import { useState } from "react"
 import { TourBasicForm } from "./wizard/TourBasicForm"
 import { TourLocationForm } from "./wizard/TourLocationForm"
 import { TourScheduleForm } from "./wizard/TourScheduleForm"
+import { toast } from "react-hot-toast"
 
 interface TourWizardProps {
 	onComplete: () => void
@@ -95,6 +96,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			await createTourSchedule(createdTourId, data)
 			setSchedules(data)
 			// Tour creation completed
+			toast.success("Tạo lịch trình tour thành công")
 			onComplete()
 		} catch (error: any) {
 			console.error("Error creating schedules:", error)
@@ -119,6 +121,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			setLocationsState(data)
 			await createTourBulk(createdTourId, data)
 			// Proceed to next step (schedules)
+			toast.success("Cập nhật địa điểm tour thành công")
 			handleNext()
 		} catch (error: any) {
 			console.error("Error updating locations:", error)
