@@ -5,14 +5,11 @@ import AccountInfo from "./ho-so-ca-nhan/account-info";
 import PasswordSecurity from "./doi-mat-khau/password-security";
 import AvatarUpload from "./avatar-upload/avatar-upload";
 
-interface Props {
-  activeTab: string;
-  onChangeTab: (val: string) => void;
-}
 
-export default function SettingsTabs({ activeTab, onChangeTab }: Props) {
+
+export default function SettingsTabs() {
   return (
-    <Tabs value={activeTab} onValueChange={onChangeTab} className="w-full">
+    <Tabs defaultValue="account" className="w-full">
       <TabsList className="mb-6 border-b w-full justify-start md:text-2xl text-sm rounded-none bg-transparent p-0 h-auto">
         <TabsTrigger
           value="account"

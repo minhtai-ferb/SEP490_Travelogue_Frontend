@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { addToast } from "@heroui/react";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
 import { useAuth } from "@/services/useAuth";
+import toast from "react-hot-toast";
 
 export default function VerificationAlert() {
   const [user] = useAtom(userAtom);
-  const { resendEmailVerification } = useAuth();
+  const { resendEmailVerification , logout } = useAuth();
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
@@ -24,20 +24,13 @@ export default function VerificationAlert() {
       } else {
         console.error("User email is undefined. Cannot resend verification email.");
       }
+      logout(); 
       setResendSuccess(true);
-      addToast({
-        title: "Gửi mail thành công",
-        description: "Email xác thực đã được gửi!",
-        color: "success",
-      });
+      toast.success("Đã gửi lại email xác thực thành công!");
       setTimeout(() => setResendSuccess(false), 5000);
     } catch (error) {
       console.error("Failed to resend verification email:", error);
-      addToast({
-        title: "error",
-        description: "Gửi lại email xác thực thất bại. Vui lòng thử lại sau.",
-        color: "danger",
-      });
+      toast.error("Gửi lại email xác thực thất bại. Vui lòng thử lại sau.");
     } finally {
       setIsResending(false);
     }

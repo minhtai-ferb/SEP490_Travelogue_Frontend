@@ -17,11 +17,19 @@ type Props = {
   value: BookingFilter;
   onChange: (next: BookingFilter) => void;
   onReset: () => void;
-  onApply: () => void; // gọi API chỉ với status/type/date
+  onApply: () => void;
 };
 
-export default function BookingFilterBar({ value, onChange, onReset, onApply }: Props) {
-  const onChangeRange = (dates: [Dayjs | null, Dayjs | null] | null, dateStrings: [string, string]) => {
+export default function BookingFilterBar({
+  value,
+  onChange,
+  onReset,
+  onApply,
+}: Props) {
+  const onChangeRange = (
+    dates: [Dayjs | null, Dayjs | null] | null,
+    dateStrings: [string, string]
+  ) => {
     if (!dates || !dates[0] || !dates[1]) {
       return onChange({ ...value, startDate: undefined, endDate: undefined });
     }
@@ -33,22 +41,37 @@ export default function BookingFilterBar({ value, onChange, onReset, onApply }: 
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-4">
-      <Select
-        allowClear placeholder="Trạng thái" style={{ width: 180 }}
-        options={[
-          { value: 0, label: "Chờ xác nhận" },
-          { value: 1, label: "Đã xác nhận" },
-          { value: 2, label: "Đã hủy" },
-          { value: 3, label: "Hết hạn" },
-        //   { value: 4, label: "Hoàn thành" },
-        //   { value: 5, label: "Thanh toán thất bại" },
-        ]}
-        value={value.status}
-        onChange={(v) => onChange({ ...value, status: v as number | undefined })}
-      />
+    <div className="flex flex-row items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <span className="whitespace-nowrap text-sm">Tìm kiếm:</span>
+        <Input
+          allowClear
+          placeholder="Tìm tour / khách hàng"
+          style={{ width: 360 }}
+          value={value.keyword}
+          onChange={(e) => onChange({ ...value, keyword: e.target.value })}
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <Select
+          allowClear
+          placeholder="Trạng thái"
+          style={{ width: 180 }}
+          options={[
+            { value: 0, label: "Chờ xác nhận" },
+            { value: 1, label: "Đã xác nhận" },
+            { value: 2, label: "Đã hủy" },
+            { value: 3, label: "Hết hạn" },
+            //   { value: 4, label: "Hoàn thành" },
+            //   { value: 5, label: "Thanh toán thất bại" },
+          ]}
+          value={value.status}
+          onChange={(v) =>
+            onChange({ ...value, status: v as number | undefined })
+          }
+        />
 
-      <Select
+        {/* <Select
         allowClear placeholder="Loại booking" style={{ width: 180 }}
         options={[
           { value: 1, label: "Tour" },
@@ -58,25 +81,26 @@ export default function BookingFilterBar({ value, onChange, onReset, onApply }: 
         ]}
         value={value.bookingType}
         onChange={(v) => onChange({ ...value, bookingType: v as number | undefined })}
-      />
+      /> */}
 
-      <RangePicker
-        onChange={onChangeRange}
-        value={value.startDate && value.endDate ? [dayjs(value.startDate), dayjs(value.endDate)] : null}
-        format="DD/MM/YYYY"
-      />
+        <RangePicker
+          onChange={onChangeRange}
+          value={
+            value.startDate && value.endDate
+              ? [dayjs(value.startDate), dayjs(value.endDate)]
+              : null
+          }
+          format="DD/MM/YYYY"
+        />
 
-      <Input
-        allowClear
-        placeholder="Tìm tour / hướng dẫn viên / khách hàng (lọc local)"
-        style={{ width: 360 }}
-        value={value.keyword}
-        onChange={(e) => onChange({ ...value, keyword: e.target.value })}
-      />
-
-      <div className="ml-auto flex gap-2">
-        <Button variant="outline" onClick={onReset}>Xóa lọc</Button>
-        <Button className="bg-blue-500 text-white" onClick={onApply}>Áp dụng</Button>
+        <div className="ml-auto flex gap-2">
+          <Button variant="outline" onClick={onReset}>
+            Xóa lọc
+          </Button>
+          <Button className="bg-blue-500 text-white" onClick={onApply}>
+            Áp dụng
+          </Button>
+        </div>
       </div>
     </div>
   );

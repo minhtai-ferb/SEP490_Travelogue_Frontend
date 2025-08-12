@@ -64,13 +64,6 @@ const isDefaultDate = (iso?: string) =>
 const fmtDate = (iso?: string | null) =>
   !iso || isDefaultDate(iso) ? "—" : new Date(iso).toLocaleString("vi-VN");
 
-const getSubject = (r: BookingItem) =>
-  r.tourName ??
-  r.workshopName ??
-  r.tourGuideName ??
-  r.tripPlanName ??
-  "(không rõ)";
-
 const statusTag = (r: BookingItem) => {
   const map: Record<number, { color: string; text: string }> = {
     0: { color: "gold", text: r.statusText || "Đang chờ" },
@@ -101,18 +94,30 @@ export function BookingTableComponent({
       ellipsis: true,
       width: 180,
     },
+    // {
+    //   title: "Loại đặt chỗ",
+    //   dataIndex: "bookingTypeText",
+    //   key: "bookingTypeText",
+    //   width: 140,
+    //   render: (t: string) => <Tag>{t}</Tag>,
+    // },
     {
-      title: "Loại đặt chỗ",
-      dataIndex: "bookingTypeText",
-      key: "bookingTypeText",
+      title: "Chuyến tham quan",
+      key: "tourName",
+      ellipsis: true,
       width: 140,
-      render: (t: string) => <Tag>{t}</Tag>,
+      render: (_: any, r: BookingItem) => (
+        <Tooltip title={r.tourName || "—"}>
+          {r.tourName || "—"}
+        </Tooltip>
+      ),
     },
     {
-      title: "Đối tượng",
-      key: "subject",
-      ellipsis: true,
-      render: (_: any, r: BookingItem) => getSubject(r),
+      title: "Khởi hành",
+      dataIndex: "departureDate",
+      key: "departureDate",
+      width: 170,
+      render: (v: string | null) => fmtDate(v ?? undefined),
     },
     {
       title: "Ngày đặt",
@@ -123,13 +128,7 @@ export function BookingTableComponent({
       sorter: (a: BookingItem, b: BookingItem) =>
         new Date(a.bookingDate).getTime() - new Date(b.bookingDate).getTime(),
     },
-    {
-      title: "Khởi hành",
-      dataIndex: "departureDate",
-      key: "departureDate",
-      width: 170,
-      render: (v: string | null) => fmtDate(v ?? undefined),
-    },
+    
     {
       title: "Trạng thái",
       key: "status",

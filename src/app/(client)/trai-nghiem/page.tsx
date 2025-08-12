@@ -44,6 +44,7 @@ import { Avatar, Divider, Dropdown, DropdownItem, DropdownMenu as DropdownMenuHe
 import { PersonIcon } from "@radix-ui/react-icons"
 import DiscoverMore from "../le-hoi-va-su-kien/components/discover-more"
 import { ROLES } from "@/config/rbacConfig"
+import Loading from "@/components/common/loading"
 
 // Navigation data
 const menuItems = [
@@ -191,6 +192,7 @@ export default function HeroSlider() {
 												<TravelogueButton
 													key="user"
 													label={user?.fullName || ""}
+													avatarUrl={user?.avatarUrl}
 													icon={<Avatar className="w-10 h-10" />}
 													className="w-full flex items-center gap-3 text-lg font-semibold text-white bg-slate-700 p-3 rounded-lg transition duration-300"
 												/>
@@ -361,6 +363,7 @@ export default function HeroSlider() {
 										<DropdownMenuTrigger asChild>
 											<TravelogueButton
 												label={user.fullName || "Travelogue"}
+												avatarUrl={user?.avatarUrl}
 												icon={<PersonIcon />}
 												className="bg-transparent border hover:bg-blue-500"
 											/>
@@ -540,6 +543,7 @@ export default function HeroSlider() {
 											<DropdownMenuTrigger asChild>
 												<TravelogueButton
 													label={user?.fullName || ""}
+													avatarUrl={user?.avatarUrl}
 													icon={<PersonIcon />}
 													className="bg-transparent md:flex hidden border bg-blue-500 hover:bg-blue-300 hover:text-slate-500"
 												/>

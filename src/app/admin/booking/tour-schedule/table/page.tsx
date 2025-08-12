@@ -41,7 +41,7 @@ export default function BookingManagePage() {
     const pn = opts?.resetPage ? 1 : pageNumber;
     const res = await getBookingsPaged({
       status: filter.status,
-      bookingType: filter.bookingType,
+      bookingType: 1,
       startDate: filter.startDate,
       endDate: filter.endDate,
       pageNumber: pn,
@@ -65,7 +65,7 @@ export default function BookingManagePage() {
   const onReset = async () => {
     const empty = {
       status: undefined,
-      bookingType: undefined,
+      bookingType: 1,
       startDate: undefined,
       endDate: undefined,
       keyword: "",
@@ -87,7 +87,6 @@ export default function BookingManagePage() {
     );
   }, [rawItems, filter.keyword]);
 
-  // Khi có keyword => dùng client pagination trên filteredLocal
   const isClientPaging = Boolean((filter.keyword ?? "").trim());
 
   const [clientPage, setClientPage] = useState(1);
