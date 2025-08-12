@@ -1,3 +1,5 @@
+import { TourGuideItem } from "./Tourguide"
+
 export interface TourImage {
 	id: string
 	url: string
@@ -105,6 +107,7 @@ export interface ScheduleFormData {
 	adultPrice: number
 	childrenPrice: number
 	tourGuideId?: string
+	tourGuide?: TourGuideItem[]
 }
 
 export interface UpdateTourRequest extends Partial<CreateTourRequest> {

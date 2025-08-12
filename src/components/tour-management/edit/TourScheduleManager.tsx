@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
@@ -9,15 +9,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Plus, Edit, Trash2, Calendar, Users, DollarSign, AlertCircle, CheckCircle, AlertTriangle } from "lucide-react"
+import { Loader2, Plus, Edit, Trash2, Calendar, Users, DollarSign, AlertCircle, CheckCircle, AlertTriangle, Clock } from "lucide-react"
 import { useTour } from "@/services/tour"
 import type { ScheduleFormData, TourDetail, TourSchedule } from "@/types/Tour"
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTourguideAssign } from "@/services/tourguide"
+import type { TourGuideItem } from "@/types/Tourguide"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { formatPriceSimple } from "@/utils/format"
 interface TourScheduleManagerProps {
 	tour: TourDetail
 	onUpdate: (updatedTour: TourDetail) => void
+}
+
+const DeleteConfirmDialog = ({ open, onOpenChange, onConfirm, loading, title, description }: { open: boolean, onOpenChange: (open: boolean) => void, onConfirm: () => void, loading: boolean, title: string, description: string }) => {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>{title}</DialogTitle>
+					<DialogDescription>{description}</DialogDescription>
+				</DialogHeader>
+				<DialogFooter>
+					<Button variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
+					<Button variant="destructive" onClick={onConfirm} disabled={loading}>
+						{loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+						Xóa
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	)
 }
 
 export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps) {
@@ -32,10 +56,24 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 		totalDays: tour.totalDays,
 		adultPrice: tour.adultPrice,
 		childrenPrice: tour.childrenPrice,
-		tourGuideId: undefined,
+		tourGuideId: (Array.isArray((tour as any)?.tourGuide) && (tour as any)?.tourGuide?.[0]?.id) || undefined,
 	})
-
+	const [tourGuide, setTourGuide] = useState<TourGuideItem[]>([])
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const { createTourSchedule, updateTourSchedule, deleteTourSchedule, getTourDetail } = useTour()
+	const { getTourGuide } = useTourguideAssign()
+	const fetchTourGuide = useCallback(async () => {
+		try {
+			const response = await getTourGuide()
+			setTourGuide(response)
+		} catch (error) {
+			console.error("Error fetching tour guide:", error)
+		}
+	}, [getTourGuide])
+
+	useEffect(() => {
+		fetchTourGuide()
+	}, [])
 
 	const resetForm = () => {
 		setFormData({
@@ -44,6 +82,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 			totalDays: tour.totalDays,
 			adultPrice: tour.adultPrice,
 			childrenPrice: tour.childrenPrice,
+			tourGuideId: undefined,
 		})
 		setEditingSchedule(null)
 		setError("")
@@ -54,12 +93,12 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 		if (schedule) {
 			setEditingSchedule(schedule)
 			setFormData({
-				departureDate: schedule.departureDate.split("T")[0],
+				departureDate: (schedule.startTime || (schedule as any).departureDate || "").split("T")[0],
 				maxParticipant: schedule.maxParticipant,
 				totalDays: schedule.totalDays,
 				adultPrice: schedule.adultPrice,
 				childrenPrice: schedule.childrenPrice,
-				tourGuideId: undefined,
+				tourGuideId: (schedule as any)?.tourGuide?.id || undefined,
 			})
 		} else {
 			resetForm()
@@ -102,8 +141,6 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 	}
 
 	const handleDelete = async (scheduleId: string) => {
-		if (!confirm("Bạn có chắc chắn muốn xóa lịch trình này?")) return
-
 		setIsLoading(true)
 		setError("")
 		setSuccess("")
@@ -120,17 +157,31 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 			setError(error.message || "Có lỗi khi xóa lịch trình")
 		} finally {
 			setIsLoading(false)
+			setIsDeleteDialogOpen(false)
 		}
 	}
 
 	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString("vi-VN", {
+		if (!dateString) return ""
+		const d = new Date(dateString)
+		if (isNaN(d.getTime())) return ""
+		return d.toLocaleDateString("vi-VN", {
 			year: "numeric",
 			month: "long",
 			day: "numeric",
 			weekday: "long",
 		})
 	}
+
+	const formatShortDate = (dateString: string) => {
+		if (!dateString) return ""
+		const d = new Date(dateString)
+		if (isNaN(d.getTime())) return ""
+		return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
+	}
+
+	const getScheduleDate = (s: TourSchedule) => s.startTime || (s as any).departureDate || ""
+	const scheduleRows = useMemo(() => tour.schedules.map((s) => ({ s, dateStr: getScheduleDate(s) })), [tour.schedules])
 
 	const getAvailabilityStatus = (schedule: TourSchedule) => {
 		const available = schedule.maxParticipant - schedule.currentBooked
@@ -148,16 +199,16 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 	return (
 		<div className="space-y-6">
 			{error && (
-				<Alert className="border-red-200 bg-red-50">
-					<AlertCircle className="h-4 w-4 text-red-600" />
-					<AlertDescription className="text-red-800">{error}</AlertDescription>
+				<Alert className="border-red-200 bg-red-50 align-middle">
+					<AlertCircle className="h-5 w-5" color="red" />
+					<AlertDescription className="text-red-800 text-lg mt-1">{error}</AlertDescription>
 				</Alert>
 			)}
 
 			{success && (
 				<Alert className="border-green-200 bg-green-50">
-					<CheckCircle className="h-4 w-4 text-green-600" />
-					<AlertDescription className="text-green-800">{success}</AlertDescription>
+					<CheckCircle className="h-4 w-4" color="green" />
+					<AlertDescription className="text-green-800 text-xl">{success}</AlertDescription>
 				</Alert>
 			)}
 
@@ -182,7 +233,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 										<Input
 											id="departureDate"
 											type="date"
-											value={formData.departureDate}
+											value={formData?.departureDate || ""}
 											onChange={(e) => setFormData((prev) => ({ ...prev, departureDate: e.target.value }))}
 											required
 										/>
@@ -230,14 +281,77 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 										/>
 									</div>
 
-									<div className="space-y-2">
-										<Label htmlFor="tourGuideId">Hướng Dẫn Viên (ID)</Label>
-										<Input
-											id="tourGuideId"
-											placeholder="UUID hướng dẫn viên"
+									<div className="space-y-6">
+										<Label htmlFor="tourGuideId">Hướng Dẫn Viên</Label>
+										<Select
+											required
+											disabled={!tourGuide?.length}
 											value={formData.tourGuideId || ""}
-											onChange={(e) => setFormData((prev) => ({ ...prev, tourGuideId: e.target.value || undefined }))}
-										/>
+											onValueChange={(value) =>
+												setFormData((prev) => ({
+													...prev,
+													tourGuideId: value || undefined,
+												}))
+											}
+										>
+											<SelectTrigger className="w-full h-12">
+												<SelectValue
+													placeholder="Chọn hướng dẫn viên"
+													defaultValue={formData.tourGuide?.[0]?.id}
+												/>
+											</SelectTrigger>
+
+											<SelectContent className="max-h-[400px] overflow-y-auto">
+												{/* No guide available */}
+												{!tourGuide?.length && (
+													<SelectItem value="none">Không có hướng dẫn viên</SelectItem>
+												)}
+
+												{/* Available guides list */}
+												{tourGuide?.map((guide) => (
+													<SelectItem value={guide.id} key={guide.id} className="flex items-center gap-2">
+														<div className="flex items-center gap-2">
+															<Avatar className="w-10 h-10 rounded-full">
+																<AvatarImage src={guide.avatarUrl} />
+																<AvatarFallback>{guide.userName.charAt(0)}</AvatarFallback>
+															</Avatar>
+															<div>
+																<p className="font-medium">{guide.userName}</p>
+																<p className="text-sm text-gray-500">{guide.introduction}</p>
+																<p className="text-sm text-gray-500">{formatPriceSimple(guide.price)}</p>
+															</div>
+														</div>
+													</SelectItem>
+												))}
+
+												{/* Currently selected guide (if not already in list) */}
+												{formData.tourGuide?.[0] &&
+													!tourGuide?.some((g) => g.id === formData.tourGuide?.[0]?.id) && (
+														<SelectItem
+															value={formData.tourGuide[0].id}
+															key={formData.tourGuide[0].id}
+															className="flex items-center gap-2"
+														>
+															<Avatar className="w-10 h-10 rounded-full">
+																<AvatarImage src={formData.tourGuide[0].avatarUrl} />
+																<AvatarFallback>
+																	{formData.tourGuide[0].userName.charAt(0)}
+																</AvatarFallback>
+															</Avatar>
+															<div>
+																<p className="font-medium">{formData.tourGuide[0].userName}</p>
+																<p className="text-sm text-gray-500">
+																	{formData.tourGuide[0].introduction}
+																</p>
+																<p className="text-sm text-gray-500">
+																	{formatPriceSimple(formData.tourGuide[0].price)}
+																</p>
+															</div>
+														</SelectItem>
+													)}
+											</SelectContent>
+										</Select>
+
 									</div>
 
 									<div className="flex gap-2 pt-4">
@@ -277,10 +391,11 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead>Ngày Khởi Hành</TableHead>
+										<TableHead>Ngày khởi hành</TableHead>
 										<TableHead>Số Người</TableHead>
-										<TableHead>Giá Người Lớn</TableHead>
-										<TableHead>Giá Trẻ Em</TableHead>
+										<TableHead>Giá người lớn</TableHead>
+										<TableHead>Giá trẻ em</TableHead>
+										<TableHead>Thời gian</TableHead>
 										<TableHead>Trạng Thái</TableHead>
 										<TableHead className="text-center">Hành Động</TableHead>
 									</TableRow>
@@ -288,14 +403,13 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 								<TableBody>
 									{tour.schedules.map((schedule) => {
 										const availability = getAvailabilityStatus(schedule)
+										const dateStr = getScheduleDate(schedule)
 										return (
 											<TableRow key={schedule.scheduleId}>
 												<TableCell>
 													<div>
-														<p className="font-medium">
-															{new Date(schedule.departureDate).toLocaleDateString("vi-VN")}
-														</p>
-														<p className="text-sm text-gray-500">{formatDate(schedule.departureDate)}</p>
+														<p className="font-medium">{formatShortDate(dateStr)}</p>
+														<p className="text-sm text-gray-500">{formatDate(dateStr)}</p>
 													</div>
 												</TableCell>
 												<TableCell>
@@ -309,16 +423,20 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 												<TableCell>
 													<div className="flex items-center gap-1">
 														<DollarSign className="w-4 h-4 text-green-600" />
-														<span className="font-semibold text-green-600">
-															{schedule.adultPrice.toLocaleString()} VNĐ
-														</span>
+														<span className="font-semibold text-green-600">{formatPriceSimple(schedule.adultPrice)}</span>
 													</div>
 												</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-1">
 														<DollarSign className="w-4 h-4 text-blue-600" />
-														<span className="font-semibold text-blue-600">
-															{schedule.childrenPrice.toLocaleString()} VNĐ
+														<span className="font-semibold text-blue-600">{formatPriceSimple(schedule.childrenPrice)}</span>
+													</div>
+												</TableCell>
+												<TableCell>
+													<div className="flex items-center gap-2 text-sm text-gray-600">
+														<Clock className="w-4 h-4" />
+														<span>
+															{formatShortDate(schedule.startTime)}
 														</span>
 													</div>
 												</TableCell>
@@ -338,7 +456,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 														<Button
 															variant="ghost"
 															size="sm"
-															onClick={() => handleDelete(schedule.scheduleId)}
+															onClick={() => { setEditingSchedule(schedule); setIsDeleteDialogOpen(true) }}
 															disabled={isLoading}
 															className="text-red-500 hover:text-red-700"
 														>
@@ -355,6 +473,14 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 					)}
 				</CardContent>
 			</Card>
+			<DeleteConfirmDialog
+				open={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+				onConfirm={() => handleDelete(editingSchedule?.scheduleId || "")}
+				loading={isLoading}
+				title="Xóa lịch trình"
+				description="Bạn có chắc chắn muốn xóa lịch trình này?"
+			/>
 		</div>
 	)
 }
