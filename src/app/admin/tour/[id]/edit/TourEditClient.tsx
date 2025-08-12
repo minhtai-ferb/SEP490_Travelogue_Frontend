@@ -46,7 +46,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 	}, [tourId, getTourDetail])
 
 	const handleBack = () => {
-		router.push("/admin/tour/table")
+		router.push("/admin/tour")
 	}
 
 	const handleTourUpdate = (updatedTour: TourDetail) => {
@@ -85,7 +85,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 			<div className="flex items-center gap-4 mb-6">
 				<div className="flex-1">
 					<h1 className="text-3xl font-bold">Chỉnh Sửa Tour</h1>
-					<p className="text-gray-600 mt-1">{tour.name}</p>
+					<p className="text-gray-600 mt-1 text-2xl">{tour.name}</p>
 				</div>
 				<div className="flex items-center gap-2">
 					<div
@@ -102,7 +102,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 				<TabsList className="grid w-full grid-cols-3">
 					<TabsTrigger value="basic">Thông Tin Cơ Bản</TabsTrigger>
 					<TabsTrigger value="itinerary">Hành Trình</TabsTrigger>
-					<TabsTrigger value="schedules">Lịch Trình</TabsTrigger>				
+					<TabsTrigger value="schedules">Lịch Trình</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="basic">
