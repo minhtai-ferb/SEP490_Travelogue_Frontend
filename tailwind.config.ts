@@ -19,7 +19,7 @@ export default {
 			},
 			fontFamily: {
 				fleur: [
-					'Fleur De Leah"',
+					'Fleur De Leah',
 					'cursive'
 				],
 				poppin: [
