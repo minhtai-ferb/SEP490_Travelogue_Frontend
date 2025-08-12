@@ -336,7 +336,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											<DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem className="cursor-pointer">
-												<Link href={`${!checkRole(ROLES.TOUR_GUIDE) ? '/ho-so' : '/ho-so-tourguide'}`} className="flex items-center">
+												<Link href={`/ho-so`} className="flex items-center">
 													<User className="mr-2 h-4 w-4 text-primary" />
 													<span>Hồ sơ</span>
 												</Link>

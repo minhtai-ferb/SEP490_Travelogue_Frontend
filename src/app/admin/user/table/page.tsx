@@ -20,6 +20,7 @@ import { addToast } from "@heroui/react";
 import { Loader2 } from "lucide-react";
 import { map } from "leaflet";
 import LoadingContent from "@/components/common/loading-content";
+import toast from "react-hot-toast";
 
 function ManageUser() {
   const [searchValue, setSearchValue] = useState("");
@@ -62,11 +63,7 @@ function ManageUser() {
           "Đã xảy ra lỗi khi lấy dữ liệu người dùng";
 
         // Display error using toast
-        addToast({
-          title: "Lỗi khi lấy dữ liệu người dùng",
-          description: errorMessage,
-          color: "danger",
-        });
+        toast.error(errorMessage);
       }
     };
 
