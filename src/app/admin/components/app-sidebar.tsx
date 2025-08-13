@@ -96,7 +96,11 @@ const data = {
         },
         {
           title: "Xác thực hướng dẫn viên",
-          url: "/admin/user/requests",
+          url: "/admin/user/requests/tourguide",
+        },
+        {
+          title: "Yêu cầu làng nghề",
+          url: "/admin/user/requests/craftvillage",
         },
       ],
     },
