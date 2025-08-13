@@ -2,14 +2,15 @@
 
 import { useCraftVillage } from "@/services/use-craftvillage"
 import { useEffect, useState } from "react"
-import type { CraftVillageRequestResponse } from "@/types/CraftVillage"
+import { CraftVillageRequestResponse, CraftVillageRequestStatus, ReviewCraftVillageRequest } from "@/types/CraftVillage"
 import CraftVillageDetailView from "./component"
 import { Card, CardContent } from "@/components/ui/card"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { toast } from "react-hot-toast"
 
 function CraftVillageClient({ id }: { id: string }) {
-	const { getCraftVillageRequestById } = useCraftVillage()
+	const { getCraftVillageRequestById, reviewCraftVillageRequest } = useCraftVillage()
 	const [loading, setLoading] = useState(false)
 	const [data, setData] = useState<CraftVillageRequestResponse | null>(null)
 	const [error, setError] = useState<string | null>(null)
@@ -29,6 +30,19 @@ function CraftVillageClient({ id }: { id: string }) {
 			setError(error?.message || "Có lỗi xảy ra khi tải dữ liệu")
 		} finally {
 			setLoading(false)
+		}
+	}
+
+	const handleReview = async (id: string, data: ReviewCraftVillageRequest) => {
+		try {
+			const response = await reviewCraftVillageRequest(id, data)
+			if (response) {
+				toast.success(data.status === CraftVillageRequestStatus.Approved ? "Đã duyệt đơn đăng ký" : "Đã từ chối đơn đăng ký")
+				fetchData()
+			}
+		} catch (error: any) {
+			console.log(error)
+			toast.error(data.status === CraftVillageRequestStatus.Approved ? "Duyệt đơn đăng ký thất bại" : "Từ chối đơn đăng ký thất bại")
 		}
 	}
 
@@ -119,6 +133,12 @@ function CraftVillageClient({ id }: { id: string }) {
 				{/* Main Content */}
 				<CraftVillageDetailView
 					data={data}
+					onApprove={() => {
+						handleReview(data.Id, { status: CraftVillageRequestStatus.Approved })
+					}}
+					onReject={() => {
+						handleReview(data.Id, { status: CraftVillageRequestStatus.Rejected })
+					}}
 					showActions={true}
 				/>
 			</div>
