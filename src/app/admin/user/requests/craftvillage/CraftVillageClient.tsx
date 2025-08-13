@@ -11,6 +11,9 @@ import { toast } from "react-hot-toast";
 import { CraftVillageTable } from "./component/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMemo } from "react";
 
 function CraftVillageClient() {
 	const router = useRouter()
@@ -21,6 +24,8 @@ function CraftVillageClient() {
 	const [reviewReason, setReviewReason] = useState("")
 	const [selectedId, setSelectedId] = useState<string | null>(null)
 	const [submitting, setSubmitting] = useState(false)
+	const [search, setSearch] = useState("")
+	const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("all")
 
 	const { getCraftVillageRequest, loading, reviewCraftVillageRequest } = useCraftVillage()
 
@@ -118,10 +123,54 @@ function CraftVillageClient() {
 
 	const confirmDisabled = submitting || (reviewAction === "reject" && reviewReason.trim().length === 0)
 
+	const filteredData = useMemo(() => {
+		const query = search.trim().toLowerCase()
+		return (dataTable || []).filter((row) => {
+			const matchStatus =
+				statusFilter === "all" ||
+				(statusFilter === "pending" && row.Status === CraftVillageRequestStatus.Pending) ||
+				(statusFilter === "approved" && row.Status === CraftVillageRequestStatus.Approved) ||
+				(statusFilter === "rejected" && row.Status === CraftVillageRequestStatus.Rejected)
+			if (!matchStatus) return false
+			if (!query) return true
+			const haystack = `${row.Name || ""} ${row.OwnerFullName || ""} ${row.OwnerEmail || ""} ${row.Address || ""}`.toLowerCase()
+			return haystack.includes(query)
+		})
+	}, [dataTable, search, statusFilter])
+
 	return (
 		<div className="space-y-3">
 			<div className="flex flex-col gap-3 p-4">
-				<CraftVillageTable columns={columns} data={dataTable} />
+				<div className="flex flex-col md:flex-row md:items-center gap-3">
+					<div className="flex-1">
+						<Input
+							placeholder="Tìm kiếm theo tên làng nghề, người đăng ký, email, địa chỉ..."
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							disabled={loading}
+						/>
+					</div>
+					<div className="w-full md:w-56">
+						<Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+							<SelectTrigger>
+								<SelectValue placeholder="Lọc theo trạng thái" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">Tất cả trạng thái</SelectItem>
+								<SelectItem value="pending">Chờ duyệt</SelectItem>
+								<SelectItem value="approved">Đã duyệt</SelectItem>
+								<SelectItem value="rejected">Từ chối</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<Button variant="outline" onClick={() => { setSearch(""); setStatusFilter("all") }} disabled={loading}>
+						Xóa lọc
+					</Button>
+				</div>
+
+				<div className="text-sm text-muted-foreground">Tổng: {filteredData.length} mục</div>
+
+				<CraftVillageTable columns={columns} data={filteredData} />
 			</div>
 
 			<Dialog open={isReviewOpen} onOpenChange={(o) => {
