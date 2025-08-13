@@ -40,6 +40,7 @@ export const WALLET_API_URL = {
 	GET_WALLET: "wallet",
 	GET_WALLET_TRANSACTIONS: "wallet/transactions",
 	WITHDRAWAL_REQUEST: "wallet/withdrawal-request",
+	MY_WITHDRAWAL_REQUESTS: "wallet/my-withdrawal-requests/filter",
 	WITHDRAWAL_REQUESTS_FILTER: "wallet/withdrawal-requests/filter",
 	APPROVE_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/approve",
 	REJECT_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/reject"
