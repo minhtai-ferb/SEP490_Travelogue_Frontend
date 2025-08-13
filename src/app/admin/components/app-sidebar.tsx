@@ -92,11 +92,15 @@ const data = {
       items: [
         {
           title: "Người dùng",
-          url: "/admin/user",
+          url: "/admin/user/table",
         },
         {
           title: "Xác thực hướng dẫn viên",
-          url: "/admin/user/requests",
+          url: "/admin/user/requests/tourguide",
+        },
+        {
+          title: "Xác thực làng nghề",
+          url: "/admin/user/requests/craftvillage",
         },
       ],
     },
@@ -112,6 +116,10 @@ const data = {
         {
           title: "Đặt hướng dẫn viên",
           url: "/admin/booking/tour-guide/table",
+        },
+        {
+          title: "Đặt trải nghiệm làng nghề",
+          url: "/admin/booking/workshop/table",
         },
       ],
     },

@@ -114,6 +114,20 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	)
 
+	const deleteCertification = useCallback(
+		async (fileName: string) => {
+			setLoading(true);
+			try {
+				const response = await callApi("delete", MEDIA_API_URL.DELETE_CERTIFICATION.replace("{fileName}", fileName));
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
 	const getTourguideRequest = useCallback(
 		async (status: TourguideRequestStatus) => {
 			const params = {
@@ -145,6 +159,37 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	)
 
+	const createTourGuideRequest = useCallback(
+		async (data: any) => {
+			setLoading(true);
+			try {
+				const response = await callApi("post", TOUR_GUIDE_API_URL.CREATE_TOUR_GUIDE_REQUEST, data);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
+	const getTourGuideRequestLatest = useCallback(
+		async (userId : string) => {
+			setLoading(true);
+			const params = {
+				userId: userId,
+			};
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.GET_TOUR_GUIDE_REQUEST_LATEST, { params });
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
@@ -154,6 +199,9 @@ export function useTourguideAssign() {
 		requestReview,
 		uploadCertifications,
 		createCertification,
+		createTourGuideRequest,
+		deleteCertification,
+		getTourGuideRequestLatest,
 		loading: isLoading || loading,
 	};
 }

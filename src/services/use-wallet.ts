@@ -120,10 +120,14 @@ export const useWallet = () => {
 		}
 	}, [callApi, setIsLoading])
 
-	const getWithdrawalRequestsByUserId = useCallback(async (userId: string) => {
+	const getMyWithdrawalRequests = useCallback(async (status?: number, fromDate?: string, toDate?: string) => {
+		const params = { status, FromDate: fromDate, ToDate: toDate }
+		console.log("params", params)
 		try {
 			setIsLoading(true)
-			const res = await callApi("get", WALLET_API_URL.WITHDRAWAL_REQUESTS_FILTER, { userId })
+			console.log("callApi", WALLET_API_URL.MY_WITHDRAWAL_REQUESTS, params)
+			const res = await callApi("get", WALLET_API_URL.MY_WITHDRAWAL_REQUESTS, params)
+			console.log("res", res)
 			return res?.data
 		} catch (error) {
 			console.error(error)
@@ -141,7 +145,7 @@ export const useWallet = () => {
 		approveWithdrawalRequest,
 		rejectWithdrawalRequest,
 		getWalletTransactions,
-		getWithdrawalRequestsByUserId,
+		getMyWithdrawalRequests,
 		loading,
 	}
 }

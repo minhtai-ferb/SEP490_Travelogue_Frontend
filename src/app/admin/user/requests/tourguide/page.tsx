@@ -26,7 +26,7 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 
 const crumbs: Crumb[] = [
   { label: "Quản lý tài khoản", href: "/admin/user" },
-  { label: "Yêu cầu hướng dẫn viên", href: "/admin/user/requests" },
+  { label: "Yêu cầu hướng dẫn viên", href: "/admin/user/requests/tourguide" },
 ];
 
 export default function TourguideRequestsPage() {

@@ -16,8 +16,8 @@ const FOOTER_LINK = {
 			href: '#'
 		},
 		{
-			text: "Đối tác",
-			href: '#'
+			text: "Đăng ký đối tác",
+			href: '/ho-so/gia-nhap'
 		},
 		{
 			text: "Liên hệ",

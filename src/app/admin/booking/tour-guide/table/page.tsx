@@ -13,8 +13,7 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 const crumb: Crumb[] = [
   { label: "Quản lý đặt chỗ", href: "/admin/booking" },
   {
-    label: "Quản lý đặt chỗ chuyến tham quan",
-    href: "/admin/booking/tour-schedule",
+    label: "Quản lý đặt hướng dẫn viên"
   },
 ];
 export default function BookingManagePage() {

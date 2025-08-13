@@ -56,7 +56,6 @@ export interface UnifiedHeaderProps {
 }
 
 function UnifiedHeader({ config }: UnifiedHeaderProps) {
-	const textRef = useRef<HTMLParagraphElement>(null)
 	const router = useRouter()
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 	const [isOpen, setIsOpen] = useState(false)
@@ -64,10 +63,6 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 	const [user] = useAtom(userAtom)
 	const { logout } = useAuth()
-
-	const handleAdminPage = () => {
-		router.push("/admin/dashboard")
-	}
 
 	// Handle scroll effect
 	useEffect(() => {
@@ -258,6 +253,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 											{user ? (
 												<TravelogueButton
 													key="user"
+													avatarUrl={user?.avatarUrl}
 													label={user?.fullName || ""}
 													icon={<Avatar className="w-10 h-10" />}
 													className="w-full flex items-center gap-3 text-lg font-semibold text-white bg-slate-700 p-3 rounded-lg transition duration-300"
@@ -325,6 +321,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 										<DropdownMenuTrigger asChild>
 											<TravelogueButton
 												label={user?.fullName || ""}
+												avatarUrl={user?.avatarUrl}
 												icon={<PersonIcon />}
 												className={cn(
 													"bg-transparent border hover:bg-blue-500",
@@ -450,6 +447,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 										<DropdownMenuTrigger asChild>
 											<TravelogueButton
 												label={user?.fullName || "Travelogue"}
+												avatarUrl={user?.avatarUrl}
 												icon={<PersonIcon />}
 												className="bg-transparent hidden md:flex border bg-blue-500 hover:bg-blue-300 hover:text-slate-500"
 											/>
