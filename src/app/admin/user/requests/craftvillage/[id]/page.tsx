@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import CraftVillageClient from "./CraftVillageClient"
+import CraftVillageClient from "./CraftVillageDetailClient"
 
 
 export const metadata: Metadata = {

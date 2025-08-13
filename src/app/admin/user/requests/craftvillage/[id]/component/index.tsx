@@ -1,4 +1,5 @@
 "use client"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -19,7 +20,11 @@ import {
 	Star,
 	WorkflowIcon as Workshop,
 } from "lucide-react"
-import { type CraftVillageRequestResponse, CraftVillageRequestStatus } from "@/types/CraftVillage"
+import { type CraftVillageRequestResponse, CraftVillageRequestStatus, type ReviewCraftVillageRequest } from "@/types/CraftVillage"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import VietmapGL from "@/components/vietmap-gl"
+import { SeccretKey } from "@/secret/secret"
 
 interface CraftVillageDetailViewProps {
 	data: CraftVillageRequestResponse
@@ -27,6 +32,9 @@ interface CraftVillageDetailViewProps {
 	onReject?: () => void
 	showActions?: boolean
 	loading?: boolean
+	isReviewRequestOpen?: boolean
+	setIsReviewRequestOpen?: (isOpen: boolean) => void
+	onSubmitReview?: (payload: ReviewCraftVillageRequest) => void
 }
 
 export default function CraftVillageDetailView({
@@ -35,6 +43,9 @@ export default function CraftVillageDetailView({
 	onReject,
 	showActions = false,
 	loading = false,
+	isReviewRequestOpen = false,
+	setIsReviewRequestOpen = () => { },
+	onSubmitReview,
 }: CraftVillageDetailViewProps) {
 	// Helper functions
 	const formatTime = (ticks: number) => {
@@ -91,6 +102,11 @@ export default function CraftVillageDetailView({
 
 	const statusConfig = getStatusConfig(data.Status)
 
+	const [reviewAction, setReviewAction] = useState<'approve' | 'reject'>("approve")
+	const [rejectionReason, setRejectionReason] = useState<string>("")
+
+	const canSubmit = reviewAction === "approve" || (reviewAction === "reject" && rejectionReason.trim().length > 0)
+
 	return (
 		<div className="max-w-6xl mx-auto space-y-6">
 			{/* Header Section */}
@@ -126,7 +142,7 @@ export default function CraftVillageDetailView({
 						{showActions && data.Status === CraftVillageRequestStatus.Pending && (
 							<div className="flex gap-2">
 								<Button
-									onClick={onReject}
+									onClick={() => setIsReviewRequestOpen(true)}
 									variant="outline"
 									disabled={loading}
 									className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
@@ -134,7 +150,7 @@ export default function CraftVillageDetailView({
 									<XCircle className="w-4 h-4 mr-2" />
 									Từ chối
 								</Button>
-								<Button onClick={onApprove} disabled={loading} className="bg-green-600 hover:bg-green-700">
+								<Button onClick={() => setIsReviewRequestOpen(true)} disabled={loading} className="bg-green-600 hover:bg-green-700">
 									<CheckCircle className="w-4 h-4 mr-2" />
 									Duyệt
 								</Button>
@@ -202,10 +218,20 @@ export default function CraftVillageDetailView({
 							</div>
 
 							<div className="bg-gray-50 rounded-lg p-4">
-								<Button variant="outline" className="w-full bg-transparent">
-									<MapPin className="w-4 h-4 mr-2" />
-									Xem trên bản đồ
-								</Button>
+								<VietmapGL
+									apiKey={SeccretKey.VIET_MAP_KEY || ""}
+									center={[data.Latitude, data.Longitude]}
+									zoom={15}
+									markers={[
+										{
+											lngLat: [data.Longitude, data.Latitude],
+											popupHTML: `<div>
+												<h3>${data.Name}</h3>
+												<p>${data.Address}</p>
+											</div>`,
+										},
+									]}
+								/>
 							</div>
 						</CardContent>
 					</Card>
@@ -351,6 +377,59 @@ export default function CraftVillageDetailView({
 					</Card>
 				</div>
 			</div>
+			<Dialog open={isReviewRequestOpen} onOpenChange={setIsReviewRequestOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Duyệt đơn đăng ký</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-4">
+						<div className="flex gap-2">
+							<Button
+								type="button"
+								variant={reviewAction === "approve" ? "default" : "outline"}
+								className={reviewAction === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
+								onClick={() => setReviewAction("approve")}
+							>
+								<CheckCircle className="w-4 h-4 mr-2" /> Duyệt
+							</Button>
+							<Button
+								type="button"
+								variant={reviewAction === "reject" ? "destructive" : "outline"}
+								onClick={() => setReviewAction("reject")}
+							>
+								<XCircle className="w-4 h-4 mr-2" /> Từ chối
+							</Button>
+						</div>
+
+						<div className="space-y-2">
+							<label className="text-sm font-medium">Lý do {reviewAction === "reject" ? "(bắt buộc)" : "(không bắt buộc)"}</label>
+							<Textarea
+								rows={4}
+								placeholder={reviewAction === "reject" ? "Nhập lý do từ chối..." : "Nhập ghi chú khi duyệt (tuỳ chọn)..."}
+								value={rejectionReason}
+								onChange={(e) => setRejectionReason(e.target.value)}
+							/>
+						</div>
+
+						<DialogFooter>
+							<Button onClick={() => setIsReviewRequestOpen(false)} variant="outline">Hủy</Button>
+							<Button
+								type="button"
+								disabled={!canSubmit || loading}
+								onClick={() => {
+									onSubmitReview?.({
+										status: reviewAction === "approve" ? CraftVillageRequestStatus.Approved : CraftVillageRequestStatus.Rejected,
+										rejectionReason: reviewAction === "reject" ? rejectionReason.trim() : undefined,
+									})
+									setIsReviewRequestOpen(false)
+								}}
+							>
+								Xác nhận
+							</Button>
+						</DialogFooter>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

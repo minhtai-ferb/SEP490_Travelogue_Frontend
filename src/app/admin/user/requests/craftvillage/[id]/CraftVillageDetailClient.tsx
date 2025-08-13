@@ -9,11 +9,15 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "react-hot-toast"
 
+
+
 function CraftVillageClient({ id }: { id: string }) {
 	const { getCraftVillageRequestById, reviewCraftVillageRequest } = useCraftVillage()
 	const [loading, setLoading] = useState(false)
 	const [data, setData] = useState<CraftVillageRequestResponse | null>(null)
 	const [error, setError] = useState<string | null>(null)
+	const [isReviewRequestOpen, setIsReviewRequestOpen] = useState(false)
+
 
 	const fetchData = async () => {
 		try {
@@ -134,12 +138,16 @@ function CraftVillageClient({ id }: { id: string }) {
 				<CraftVillageDetailView
 					data={data}
 					onApprove={() => {
-						handleReview(data.Id, { status: CraftVillageRequestStatus.Approved })
+						setIsReviewRequestOpen(true)
 					}}
 					onReject={() => {
-						handleReview(data.Id, { status: CraftVillageRequestStatus.Rejected })
+						setIsReviewRequestOpen(true)
 					}}
 					showActions={true}
+					isReviewRequestOpen={isReviewRequestOpen}
+					setIsReviewRequestOpen={setIsReviewRequestOpen}
+					onSubmitReview={(payload) => handleReview(data.Id, payload)}
+					loading={loading}
 				/>
 			</div>
 		</div>
