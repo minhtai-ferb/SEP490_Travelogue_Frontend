@@ -13,17 +13,37 @@ const useApiService = () => {
       method: "get" | "post" | "put" | "delete" | "patch",
       url: string,
       data?: any,
-      params?: Record<string, any> // optional & typed
+      params?: Record<string, any>
     ) => {
       try {
         setIsLoading(true);
-        const response = await api[method](url, data, params);
+        const isGetLike = method === "get" || method === "delete";
+
+        if (isGetLike) {
+          // Axios.get/delete signature: (url, config)
+          // Back-compat: allow callers to pass either a plain query object (data)
+          // or a full axios config containing { params } as the third arg.
+          let config: any = undefined;
+          if (params) {
+            config = { params };
+          } else if (data) {
+            if (typeof data === "object" && data !== null && Object.prototype.hasOwnProperty.call(data, "params")) {
+              config = data; // already an axios config
+            } else {
+              config = { params: data };
+            }
+          }
+          const response = await api[method](url, config);
+          return response.data;
+        }
+
+        // Axios post/put/patch signature: (url, data, config)
+        const config = params ? { params } : undefined;
+        const response = await api[method](url, data, config);
         return response.data;
       } catch (e: any) {
-        // console.log ("Unauthorized access detected.", e?.response?.data);
         console.error(e);
         toast.error(e?.response?.data?.Message || "Error");
-        // toast.error(e?.response?.data || "Operation failed");
         throw e;
       } finally {
         setIsLoading(false);
