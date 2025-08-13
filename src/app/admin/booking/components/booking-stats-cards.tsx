@@ -36,7 +36,7 @@ export function BookingStatsCards({ data }: BookingStatsCardsProps) {
       <Card>
         <CardHeader className="pb-2 space-y-4">
           <div className="flex flex-row justify-between items-center">
-            <CardTitle className="text-lg">Chuyến tham quan</CardTitle>
+            <CardTitle className="text-lg" style={{ color: "hsl(var(--chart-1))" }}>Chuyến tham quan</CardTitle>
             <CardTitle
               className="text-2xl"
               style={{ color: "hsl(var(--chart-1))" }}
@@ -61,10 +61,10 @@ export function BookingStatsCards({ data }: BookingStatsCardsProps) {
       <Card>
         <CardHeader className="pb-2 space-y-4">
           <div className="flex flex-row justify-between items-center">
-            <CardTitle className="text-lg">Hướng dẫn viên</CardTitle>
+            <CardTitle className="text-lg" style={{ color: "hsl(var(--chart-2))" }}>Hướng dẫn viên</CardTitle>
             <CardTitle
               className="text-2xl"
-              style={{ color: "hsl(var(--chart-1))" }}
+              style={{ color: "hsl(var(--chart-2))" }}
             >
               {totalTourGuide.toLocaleString()}
             </CardTitle>
@@ -84,10 +84,10 @@ export function BookingStatsCards({ data }: BookingStatsCardsProps) {
       <Card>
         <CardHeader className="pb-2 space-y-4">
           <div className="flex flex-row justify-between items-center">
-            <CardTitle className="text-lg">Trải nghiệm làng nghề</CardTitle>
+            <CardTitle className="text-lg" style={{ color: "hsl(var(--chart-5))" }}>Trải nghiệm làng nghề</CardTitle>
             <CardTitle
               className="text-2xl"
-              style={{ color: "hsl(var(--chart-1))" }}
+              style={{ color: "hsl(var(--chart-5))" }}
             >
               {totalWorkshop.toLocaleString()}
             </CardTitle>

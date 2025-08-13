@@ -32,16 +32,16 @@ import { BookingStatsCards } from "./booking-stats-cards";
 
 const chartConfig = {
   bookingSchedule: {
-    label: "Booking Schedule",
+    label: "Chuyến tham quan",
     color: "hsl(var(--chart-1))",
   },
   bookingTourGuide: {
-    label: "Booking Tour Guide",
+    label: "Hướng dẫn viên",
     color: "hsl(var(--chart-2))",
   },
   bookingWorkshop: {
-    label: "Booking Workshop",
-    color: "hsl(var(--chart-3))",
+    label: "Trải nghiệm làng nghề",
+    color: "hsl(var(--chart-5))",
   },
 } satisfies ChartConfig;
 
@@ -195,7 +195,7 @@ export function BookingStatsChart({ setTimeRange, timeRange }: Props) {
                   />
                 </linearGradient>
                 <linearGradient
-                  id="fillbookingWorkshop"
+                  id="fillBookingWorkshop"
                   x1="0"
                   y1="0"
                   x2="0"

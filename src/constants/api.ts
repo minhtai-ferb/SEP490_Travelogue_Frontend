@@ -1,3 +1,5 @@
+import { GET } from "@/services/newsService";
+
 export const TOUR_API_URL = {
   ALL_TOURS: "tour",
   TOUR_ASSIGNED: "/tour/guide/email",
@@ -18,11 +20,12 @@ export const TOUR_GUIDE_API_URL = {
   TOUR_GUIDE_SCHEDULE: "/tour-guide/schedules",
   TOUR_GUIDE_CERTIFICATION: "/tour-guide/certification",
   CREATE_TOUR_GUIDE_REQUEST: "/user/tour-guide-request",
+  GET_TOUR_GUIDE_REQUEST_LATEST: "/user/latest-tour-guide-request",
 };
 
 export const MEDIA_API_URL = {
   UPLOAD_MULTIPLE_CERTIFICATIONS: "/media/upload-multiple-certifications",
-  DELETE_CERTIFICATION: "/api/media/certification/{fileName}",
+  DELETE_CERTIFICATION: "/media/certification/{fileName}",
 };
 
 export const USER_API_URL = {

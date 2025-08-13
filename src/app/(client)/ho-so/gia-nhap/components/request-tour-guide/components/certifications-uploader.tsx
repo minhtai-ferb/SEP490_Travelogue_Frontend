@@ -128,7 +128,8 @@ export default function CertificationUploader({
   };
 
   const handleRemove = async (certificateUrl: string) => {
-    await deleteCertification(certificateUrl)
+    const fileName = certificateUrl.split("/").pop() || "";
+    await deleteCertification(fileName)
       .then(() => {
         setItems((prev) =>
           prev.filter((item) => item.certificateUrl !== certificateUrl)

@@ -173,6 +173,23 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	)
 
+	const getTourGuideRequestLatest = useCallback(
+		async (userId : string) => {
+			setLoading(true);
+			const params = {
+				userId: userId,
+			};
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.GET_TOUR_GUIDE_REQUEST_LATEST, { params });
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
@@ -184,6 +201,7 @@ export function useTourguideAssign() {
 		createCertification,
 		createTourGuideRequest,
 		deleteCertification,
+		getTourGuideRequestLatest,
 		loading: isLoading || loading,
 	};
 }
