@@ -2,10 +2,14 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useBankAccount } from "@/services/use-bankaccount"
+import { useWallet } from "@/services/use-wallet"
 import { getStoredUser } from "@/utils/auth-storage"
 import { formatPriceSimple } from "@/utils/format"
+import { formatDate } from "date-fns"
 import { Plus } from "lucide-react"
 import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
@@ -14,17 +18,17 @@ import "swiper/css/effect-cards"
 import { EffectCards } from "swiper/modules"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { useWalletData, WithdrawalPayload } from "../hooks/useWalletData"
+import { BankAccountData } from "../molecules/BankAccountCard"
+import { Badge } from "../molecules/seraui/badge"
 import NewBankAccountForm, { NewBankAccountPayload } from "../organisms/NewBankAccountForm"
 import TransactionsList from "../organisms/TransactionsList"
 import WalletSummaryCard from "../organisms/WalletSummaryCard"
-import WalletTwoColumn from "../templates/WalletTwoColumn"
 import WithdrawalRequestForm from "../organisms/WithdrawalRequestForm"
-import { useWallet } from "@/services/use-wallet"
-import { BankAccountData } from "../molecules/BankAccountCard"
+import WalletTwoColumn from "../templates/WalletTwoColumn"
 
 export default function WalletPage() {
 	const user = useMemo(() => getStoredUser(), [])
-	const { balance, accounts, transactions, withdrawalRequests, refetchAll } = useWalletData(user?.id)
+	const { balance, accounts, transactions, withdrawalRequests, refetchAll, status, setStatus, fromDate, setFromDate, toDate, setToDate } = useWalletData(user?.id)
 	const [open, setOpen] = useState(false)
 	const [selectedTxn, setSelectedTxn] = useState<any | null>(null)
 	const [openAddAccount, setOpenAddAccount] = useState(false)
@@ -33,6 +37,13 @@ export default function WalletPage() {
 	const { deleteBankAccount, updateBankAccount, createBankAccount, loading: isLoadingCreateBankAccount } = useBankAccount()
 	const { createWithdrawalRequest, loading: isLoadingCreateWithdrawalRequest } = useWallet()
 	const [selectedBankAccount, setSelectedBankAccount] = useState<any | null>(null)
+
+	const colorStatus = {
+		1: "bg-yellow-500 text-yellow-100",
+		2: "bg-green-500 text-white",
+		3: "bg-red-500 text-white",
+	}
+
 	const handleAddAccount = async (payload: NewBankAccountPayload) => {
 		try {
 			const res = await createBankAccount(payload)
@@ -132,7 +143,7 @@ export default function WalletPage() {
 													<div className="relative z-10 flex flex-col justify-center items-center">
 														<div className="text-sm text-blue-100">{acc.bankName}</div>
 														<div className="text-lg font-semibold">{acc.bankOwnerName}</div>
-														<div className="text-base font-mono tracking-wider">{String(acc.bankAccountNumber || "").replace(/\d(?=\d{4})/g, "*")}</div>
+														<div className="text-base font-mono tracking-wider">{String(acc.bankAccountNumber)}</div>
 													</div>
 												</div>
 											</div>
@@ -145,20 +156,87 @@ export default function WalletPage() {
 						</CardContent>
 					</Card>
 
-					<Card className="">
+					<Card className="space-y-3">
 						<CardHeader>
-							<div className="flex items-center justify-between">
+							<div className="flex flex-col items-center justify-between gap-2">
 								<CardTitle>Các yêu cầu rút tiền</CardTitle>
+								<div className="flex flex-col gap-2">
+									<Select
+										value={status?.toString() || ""}
+										onValueChange={(value) => setStatus(Number(value))}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="Chọn trạng thái" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value={`${undefined}`}>Tất cả</SelectItem>
+											<SelectItem value="1">Chờ xác nhận</SelectItem>
+											<SelectItem value="2">Đã xác nhận</SelectItem>
+											<SelectItem value="3">Đã từ chối</SelectItem>
+										</SelectContent>
+									</Select>
+									<Input
+										type="date"
+										value={fromDate || ""}
+										onChange={(e) => setFromDate(e.target.value)}
+									/>
+									<Input
+										type="date"
+										value={toDate || ""}
+										onChange={(e) => setToDate(e.target.value)}
+									/>
+									<Button variant="default" size="sm" onClick={() => refetchAll()}>
+										Lọc
+									</Button>
+								</div>
 							</div>
 						</CardHeader>
 						<CardContent>
 							{withdrawalRequests?.length ? (
 								<div className="space-y-3">
 									{withdrawalRequests.map((wr: any) => (
-										<div key={wr.id} className="p-3 border rounded-lg text-sm">
-											<div className="font-medium">{wr?.bankAccount?.bankOwnerName} • {String(wr?.bankAccount?.bankAccountNumber || "").replace(/\d(?=\d{4})/g, "*")} • {wr?.bankAccount?.bankName}</div>
-											<div className="text-gray-500">{formatPriceSimple(wr.amount || 0)}</div>
-										</div>
+										<Dialog key={wr.id}>
+											<DialogTrigger asChild>
+												<div key={wr.id} className="p-3 border rounded-lg text-sm cursor-pointer">
+													<div className="font-medium">{wr?.bankAccount?.bankOwnerName} • {String(wr?.bankAccount?.bankAccountNumber || "").replace(/\d(?=\d{4})/g, "*")} • {wr?.bankAccount?.bankName}</div>
+													<div className="text-blue-500 font-semibold">{formatPriceSimple(wr.amount || 0)}</div>
+												</div>
+											</DialogTrigger>
+											<DialogContent>
+												<DialogTitle>
+													<div className="text-blue-500 font-medium flex items-center gap-2">
+														Thông tin yêu cầu
+														<Badge className={`${colorStatus[wr.status as keyof typeof colorStatus]}`} size="sm">
+															{wr.statusText}
+														</Badge>
+													</div>
+												</DialogTitle>
+												<div className="space-y-3 text-sm">
+													<div className="space-y-3 text-sm">
+														<div className="flex justify-between">
+															<span className="text-gray-500">Số tiền</span>
+															<span className="font-semibold text-blue-500">{formatPriceSimple(wr.amount || 0)}</span>
+														</div>
+														<div className="flex justify-between">
+															<span className="text-gray-500">Thời gian</span>
+															<span className="text-blue-500 font-sans font-medium">{formatDate(wr.requestTime || wr.createdAt || wr.date || "", "HH:mm dd/MM/yyyy")}</span>
+														</div>
+													</div>
+													<div className="flex justify-center w-full">
+														<div className="relative rounded-xl cursor-pointer w-full">
+															<div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-4 text-white relative overflow-hidden h-[150px] flex flex-col justify-center items-center">
+																<div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
+																<div className="relative z-10 flex flex-col justify-center items-center">
+																	<div className="text-sm text-blue-100">{wr?.bankAccount?.bankName}</div>
+																	<div className="text-lg font-semibold">{wr?.bankAccount?.bankOwnerName}</div>
+																	<div className="text-base font-mono tracking-wider">{String(wr?.bankAccount?.bankAccountNumber)}</div>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</DialogContent>
+										</Dialog>
 									))}
 								</div>
 							) : (
