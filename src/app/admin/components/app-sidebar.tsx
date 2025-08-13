@@ -92,14 +92,14 @@ const data = {
       items: [
         {
           title: "Người dùng",
-          url: "/admin/user",
+          url: "/admin/user/table",
         },
         {
           title: "Xác thực hướng dẫn viên",
           url: "/admin/user/requests/tourguide",
         },
         {
-          title: "Yêu cầu làng nghề",
+          title: "Xác thực làng nghề",
           url: "/admin/user/requests/craftvillage",
         },
       ],
