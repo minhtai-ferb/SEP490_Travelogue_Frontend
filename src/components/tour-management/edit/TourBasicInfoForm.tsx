@@ -15,6 +15,7 @@ import { useTour } from "@/services/tour"
 import { TourTypeLabels } from "@/types/Tour"
 import type { TourDetail } from "@/types/Tour"
 import toast from "react-hot-toast";
+import { ImageUpload } from "@/app/admin/locations/create/components/image-upload"
 
 interface TourBasicInfoFormProps {
 	tour: TourDetail
@@ -28,6 +29,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 		content: tour.content || "",
 		totalDays: tour.totalDays,
 		tourType: tour.tourType,
+		medias: tour.medias || [],
 	})
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState("")
@@ -49,7 +51,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 			onUpdate(updatedTour)
 			setSuccess("Cập nhật thông tin tour thành công!")
 		} catch (error: any) {
-			setError(error.message || "Có lỗi khi cập nhật tour")
+			setError(error?.response?.data?.message || "Có lỗi khi cập nhật tour")
 			toast.error(error?.response?.data?.message || "Có lỗi khi cập nhật tour")
 			console.error("Error updating tour:", error)
 		} finally {
@@ -61,6 +63,11 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 		setFormData((prev) => ({ ...prev, [field]: value }))
 		setError("")
 		setSuccess("")
+	}
+
+
+	const handleImageChange = (mediaDtos: { mediaUrl: string; isThumbnail: boolean }[]) => {
+		setFormData((prev) => ({ ...prev, mediaDtos }))
 	}
 
 	return (
@@ -151,6 +158,11 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 								onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
 								required
 							/>
+						</div>
+
+						<div className="md:col-span-2 space-y-2">
+							<Label>Hình ảnh</Label>
+							<ImageUpload mediaDtos={formData.medias} onChange={handleImageChange} isLoading={isLoading} />
 						</div>
 					</div>
 
