@@ -5,11 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTourguideAssign } from "@/services/tourguide";
+import { useCraftVillage } from "@/services/use-craftvillage";
 import RegisterTourGuideClient from "./request-tour-guide/page";
 import { FormRequest } from "./request-craft-village/FormRequest";
 import { Loader2 } from "lucide-react";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
+import CraftVillageForm from "./request-craft-village";
 
 // (tuỳ chọn) type tối thiểu cho dữ liệu trả về
 type TourGuideRequestLatest = {
@@ -25,12 +27,44 @@ type TourGuideRequestLatest = {
   certifications?: { name: string; certificateUrl: string }[];
 } | null;
 
+type CraftVillageLatest = {
+  id: string;
+  ownerId: string;
+  ownerEmail: string;
+  ownerFullName: string;
+  name: string;
+  description: string;
+  content: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  openTime: string; // HH:mm:ss
+  closeTime: string; // HH:mm:ss
+  districtId: string;
+  phoneNumber: string;
+  email: string;
+  website: string;
+  workshopsAvailable: boolean;
+  signatureProduct: string;
+  yearsOfHistory: number;
+  isRecognizedByUnesco: boolean;
+  status: number;
+  statusText: string;
+  rejectionReason?: string | null;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  medias?: { mediaUrl: string; isThumbnail: boolean }[];
+} | null;
+
 export default function RequestsTabs() {
   const [user] = useAtom(userAtom);
   const { getTourGuideRequestLatest } = useTourguideAssign();
+  const { getLastestCraftVillageRequest } = useCraftVillage();
   const [latest, setLatest] = useState<TourGuideRequestLatest>(null);
+  const [latestCraftVillage, setLatestCraftVillage] = useState<CraftVillageLatest | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("tour-guide");
 
   const fetchLatest = useCallback(async () => {
     setLoading(true);
@@ -43,7 +77,6 @@ export default function RequestsTabs() {
     }
     try {
       const res = await getTourGuideRequestLatest(user.id);
-      // Giả định API trả về null hoặc object
       if (
         res &&
         (res.statusText === "Chờ xác nhận" || res.statusText === "Đã xác nhận")
@@ -65,8 +98,43 @@ export default function RequestsTabs() {
     fetchLatest();
   }, [fetchLatest]);
 
+  const fetchCraftLatest = useCallback(async () => {
+    setLoading(true);
+    setErrorMsg("");
+    if (!user?.id) {
+      setErrorMsg("Không tìm thấy thông tin người dùng.");
+      setLatestCraftVillage(null);
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await getLastestCraftVillageRequest(user.id);
+      const data = (res && (res.data ?? res)) || null;
+      setLatestCraftVillage(data);
+    } catch (e: any) {
+      setErrorMsg(
+        e?.message || "Không thể tải trạng thái đăng ký làng nghề."
+      );
+      setLatestCraftVillage(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [getLastestCraftVillageRequest, user?.id]);
+
   return (
-    <Tabs defaultValue="tour-guide" className="w-full">
+    <Tabs
+      defaultValue="tour-guide"
+      onValueChange={(v) => {
+        setActiveTab(v);
+        if (v === "craft-village") {
+          fetchCraftLatest();
+        }
+        if (v === "tour-guide") {
+          fetchLatest();
+        }
+      }}
+      className="w-full"
+    >
       <TabsList className="mb-6 border-b w-full justify-start md:text-2xl text-sm rounded-none bg-transparent p-0 h-auto">
         <TabsTrigger
           value="tour-guide"
@@ -158,11 +226,10 @@ export default function RequestsTabs() {
                     Trạng thái
                   </span>
                   <span
-                    className={`inline-flex w-fit items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      latest.statusText === "Đã xác nhận"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
+                    className={`inline-flex w-fit items-center px-3 py-1 rounded-full text-sm font-medium ${latest.statusText === "Đã xác nhận"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-amber-100 text-amber-700"
+                      }`}
                   >
                     {latest.statusText}
                   </span>
@@ -250,7 +317,97 @@ export default function RequestsTabs() {
       </TabsContent>
 
       <TabsContent value="craft-village">
-        <FormRequest />
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Đang kiểm tra trạng
+            thái đăng ký...
+          </div>
+        ) : errorMsg ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Không tải được trạng thái</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-destructive">{errorMsg}</p>
+              <Button size="sm" variant="outline" onClick={fetchCraftLatest}>
+                Thử lại
+              </Button>
+            </CardContent>
+          </Card>
+        ) : latestCraftVillage === null ? (
+          <CraftVillageForm />
+        ) : (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Trạng thái đăng ký làng nghề</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Tên làng nghề</span>
+                  <p className="font-medium text-sm">{latestCraftVillage?.name}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Email</span>
+                  <p className="font-medium text-sm">{latestCraftVillage?.email}</p>
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Địa chỉ</span>
+                  <p className="font-medium text-sm">{latestCraftVillage.address}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Giờ mở cửa</span>
+                  <p className="font-medium text-sm">{latestCraftVillage.openTime}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Giờ đóng cửa</span>
+                  <p className="font-medium text-sm">{latestCraftVillage.closeTime}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Trạng thái</span>
+                  <span className={`inline-flex w-fit items-center px-3 py-1 rounded-full text-sm font-medium ${latestCraftVillage.statusText === "Đã duyệt"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : latestCraftVillage.statusText === "Từ chối"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-amber-100 text-amber-700"}`}>
+                    {latestCraftVillage.statusText}
+                  </span>
+                </div>
+              </div>
+
+              {latestCraftVillage.medias && latestCraftVillage.medias.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Hình ảnh</span>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {latestCraftVillage.medias.map((m, idx) => (
+                      <img key={`${m.mediaUrl}-${idx}`} src={m.mediaUrl} alt="media" className="w-full h-28 object-cover rounded-md border" />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {latestCraftVillage.statusText === "Từ chối" && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                  <div className="text-sm text-red-700">
+                    {latestCraftVillage.rejectionReason || "Không có lý do cụ thể từ hệ thống."}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4 border-t justify-end">
+                <Button size="default" onClick={fetchCraftLatest}>Tải lại</Button>
+                {latestCraftVillage.statusText !== "Chờ duyệt" && (
+                  <Button size="default" variant="outline" onClick={() => setLatestCraftVillage(null)}>
+                    Đăng ký lại
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </TabsContent>
     </Tabs>
   );

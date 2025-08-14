@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMemo } from "react";
+import { Check, Eye, X } from "lucide-react";
 
 function CraftVillageClient() {
 	const router = useRouter()
@@ -54,30 +55,30 @@ function CraftVillageClient() {
 	const columns: ColumnDef<CraftVillageRequestResponse>[] = [
 		{
 			header: "Tên làng nghề",
-			accessorKey: "Name",
+			accessorKey: "name",
 		},
 		{
 			header: "Tên người đăng ký",
-			accessorKey: "OwnerFullName",
+			accessorKey: "ownerFullName",
 		},
 		{
 			header: "Email",
-			accessorKey: "OwnerEmail",
+			accessorKey: "ownerEmail",
 		},
 		{
 			header: "Trạng thái",
-			accessorKey: "Status",
+			accessorKey: "status",
 			cell: ({ row }) => {
-				const status = row.original.Status
-				return <Badge variant="outline">{status === CraftVillageRequestStatus.Pending ? "Chờ duyệt" : status === CraftVillageRequestStatus.Approved ? "Đã duyệt" : "Từ chối"}</Badge>
+				const status = row.original.status
+				return <Badge variant="outline" className={status === CraftVillageRequestStatus.Pending ? "bg-yellow-500 text-white" : status === CraftVillageRequestStatus.Approved ? "bg-green-500 text-white" : "bg-red-500 text-white"}>{status === CraftVillageRequestStatus.Pending ? "Chờ duyệt" : status === CraftVillageRequestStatus.Approved ? "Đã duyệt" : "Từ chối"}</Badge>
 			}
 		},
 		{
 			header: "Ngày đăng ký",
 			accessorKey: "ReviewedAt",
 			cell: ({ row }) => {
-				const reviewedAt = row.original.ReviewedAt
-				return <Badge variant="outline">{reviewedAt?.ticks ? new Date(reviewedAt.ticks).toLocaleDateString() : "Chưa duyệt"}</Badge>
+				const reviewedAt = row.original.reviewedAt
+				return <Badge variant="outline">{reviewedAt ? new Date(reviewedAt).toLocaleDateString() : "Chưa duyệt"}</Badge>
 			}
 		},
 		{
@@ -85,32 +86,41 @@ function CraftVillageClient() {
 			accessorKey: "Action",
 			cell: ({ row }) => {
 				return (
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => {
-								setSelectedId(row.original.Id)
-								setReviewAction("approve")
-								setReviewReason("")
-								setIsReviewOpen(true)
-							}}
-						>
-							Duyệt
+					<div className="flex gap-2 justify-start">
+						{row.original.status === CraftVillageRequestStatus.Pending && (
+							<>
+								<Button
+									variant="default"
+									size="sm"
+									onClick={() => {
+										setSelectedId(row.original.id)
+										setReviewAction("approve")
+										setReviewReason("")
+										setIsReviewOpen(true)
+									}}
+								>
+									<Check className="w-4 h-4 mr-2" />
+									Duyệt
+								</Button>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() => {
+										setSelectedId(row.original.id)
+										setReviewAction("reject")
+										setReviewReason("")
+										setIsReviewOpen(true)
+									}}
+								>
+									<X className="w-4 h-4 mr-2" />
+									Từ chối
+								</Button>
+							</>
+						)}
+						<Button variant="outline" size="sm" onClick={() => handleView(row.original.id)}>
+							<Eye className="w-4 h-4 mr-2" />
+							Xem
 						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => {
-								setSelectedId(row.original.Id)
-								setReviewAction("reject")
-								setReviewReason("")
-								setIsReviewOpen(true)
-							}}
-						>
-							Từ chối
-						</Button>
-						<Button variant="outline" size="sm" onClick={() => handleView(row.original.Id)}>Xem</Button>
 					</div>
 				)
 			}
@@ -128,12 +138,12 @@ function CraftVillageClient() {
 		return (dataTable || []).filter((row) => {
 			const matchStatus =
 				statusFilter === "all" ||
-				(statusFilter === "pending" && row.Status === CraftVillageRequestStatus.Pending) ||
-				(statusFilter === "approved" && row.Status === CraftVillageRequestStatus.Approved) ||
-				(statusFilter === "rejected" && row.Status === CraftVillageRequestStatus.Rejected)
+				(statusFilter === "pending" && row.status === CraftVillageRequestStatus.Pending) ||
+				(statusFilter === "approved" && row.status === CraftVillageRequestStatus.Approved) ||
+				(statusFilter === "rejected" && row.status === CraftVillageRequestStatus.Rejected)
 			if (!matchStatus) return false
 			if (!query) return true
-			const haystack = `${row.Name || ""} ${row.OwnerFullName || ""} ${row.OwnerEmail || ""} ${row.Address || ""}`.toLowerCase()
+			const haystack = `${row.name || ""} ${row.ownerFullName || ""} ${row.ownerEmail || ""} ${row.address || ""}`.toLowerCase()
 			return haystack.includes(query)
 		})
 	}, [dataTable, search, statusFilter])

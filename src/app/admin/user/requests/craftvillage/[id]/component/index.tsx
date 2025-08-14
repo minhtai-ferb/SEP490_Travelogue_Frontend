@@ -1,5 +1,4 @@
 "use client"
-import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -25,6 +24,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Textarea } from "@/components/ui/textarea"
 import VietmapGL from "@/components/vietmap-gl"
 import { SeccretKey } from "@/secret/secret"
+import dayjs from "dayjs"
 
 interface CraftVillageDetailViewProps {
 	data: CraftVillageRequestResponse
@@ -35,37 +35,24 @@ interface CraftVillageDetailViewProps {
 	isReviewRequestOpen?: boolean
 	setIsReviewRequestOpen?: (isOpen: boolean) => void
 	onSubmitReview?: (payload: ReviewCraftVillageRequest) => void
+	reviewAction?: "approve" | "reject" | null
+	setReviewAction?: (action: "approve" | "reject" | null) => void
+	reviewReason?: string
+	setReviewReason?: (reason: string) => void
 }
 
 export default function CraftVillageDetailView({
 	data,
-	onApprove,
-	onReject,
 	showActions = false,
 	loading = false,
 	isReviewRequestOpen = false,
 	setIsReviewRequestOpen = () => { },
 	onSubmitReview,
+	reviewAction,
+	setReviewAction,
+	reviewReason,
+	setReviewReason,
 }: CraftVillageDetailViewProps) {
-	// Helper functions
-	const formatTime = (ticks: number) => {
-		const totalMinutes = Math.floor(ticks / 600000000)
-		const hours = Math.floor(totalMinutes / 60)
-		const minutes = totalMinutes % 60
-		return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
-	}
-
-	const formatDate = (ticks: number) => {
-		if (!ticks) return "Chưa có"
-		const date = new Date(ticks / 10000)
-		return date.toLocaleDateString("vi-VN", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		})
-	}
 
 	const getStatusConfig = (status: CraftVillageRequestStatus) => {
 		switch (status) {
@@ -100,12 +87,9 @@ export default function CraftVillageDetailView({
 		}
 	}
 
-	const statusConfig = getStatusConfig(data.Status)
+	const statusConfig = getStatusConfig(data.status)
 
-	const [reviewAction, setReviewAction] = useState<'approve' | 'reject'>("approve")
-	const [rejectionReason, setRejectionReason] = useState<string>("")
-
-	const canSubmit = reviewAction === "approve" || (reviewAction === "reject" && rejectionReason.trim().length > 0)
+	const canSubmit = reviewAction === "approve" || (reviewAction === "reject" && (reviewReason?.trim()?.length || 0) >= 10)
 
 	return (
 		<div className="max-w-6xl mx-auto space-y-6">
@@ -116,33 +100,37 @@ export default function CraftVillageDetailView({
 						<div className="flex-1">
 							<div className="flex items-center gap-3 mb-2">
 								<Building className="w-6 h-6 text-blue-600" />
-								<CardTitle className="text-2xl font-bold text-gray-900">{data.Name}</CardTitle>
+								<CardTitle className="text-2xl font-bold text-gray-900">{data.name}</CardTitle>
 							</div>
 							<div className="flex items-center gap-2 mb-3">
 								<Badge className={`${statusConfig.color} border`}>
 									{statusConfig.icon}
 									<span className="ml-1">{statusConfig.label}</span>
 								</Badge>
-								{data.IsRecognizedByUnesco && (
+								{data.isRecognizedByUnesco && (
 									<Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
 										<Star className="w-3 h-3 mr-1" />
 										UNESCO
 									</Badge>
 								)}
-								{data.WorkshopsAvailable && (
+								{data.workshopsAvailable && (
 									<Badge variant="outline" className="text-purple-600 bg-purple-50 border-purple-200">
 										<Workshop className="w-3 h-3 mr-1" />
 										Workshop
 									</Badge>
 								)}
 							</div>
-							<p className="text-gray-600 leading-relaxed">{data.Description}</p>
+							<p className="text-gray-600 leading-relaxed">{data.description}</p>
 						</div>
 
-						{showActions && data.Status === CraftVillageRequestStatus.Pending && (
+						{showActions && data.status === CraftVillageRequestStatus.Pending && (
 							<div className="flex gap-2">
 								<Button
-									onClick={() => setIsReviewRequestOpen(true)}
+									onClick={() => {
+										setReviewAction?.("reject")
+										setReviewReason?.("")
+										setIsReviewRequestOpen(true)
+									}}
 									variant="outline"
 									disabled={loading}
 									className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
@@ -150,7 +138,11 @@ export default function CraftVillageDetailView({
 									<XCircle className="w-4 h-4 mr-2" />
 									Từ chối
 								</Button>
-								<Button onClick={() => setIsReviewRequestOpen(true)} disabled={loading} className="bg-green-600 hover:bg-green-700">
+								<Button onClick={() => {
+									setReviewAction?.("approve")
+									setReviewReason?.("")
+									setIsReviewRequestOpen(true)
+								}} disabled={loading} className="bg-green-600 hover:bg-green-700">
 									<CheckCircle className="w-4 h-4 mr-2" />
 									Duyệt
 								</Button>
@@ -174,7 +166,7 @@ export default function CraftVillageDetailView({
 						<CardContent className="space-y-4">
 							<div>
 								<h4 className="font-semibold text-gray-900 mb-2">Nội dung mô tả</h4>
-								<p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{data.Content}</p>
+								<p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{data.content}</p>
 							</div>
 
 							<Separator />
@@ -182,11 +174,11 @@ export default function CraftVillageDetailView({
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-2">Sản phẩm đặc trưng</h4>
-									<p className="text-gray-700">{data.SignatureProduct}</p>
+									<p className="text-gray-700">{data.signatureProduct}</p>
 								</div>
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-2">Số năm lịch sử</h4>
-									<p className="text-gray-700">{data.YearsOfHistory} năm</p>
+									<p className="text-gray-700">{data.yearsOfHistory} năm</p>
 								</div>
 							</div>
 						</CardContent>
@@ -203,31 +195,31 @@ export default function CraftVillageDetailView({
 						<CardContent className="space-y-4">
 							<div>
 								<h4 className="font-semibold text-gray-900 mb-2">Địa chỉ</h4>
-								<p className="text-gray-700">{data.Address}</p>
+								<p className="text-gray-700">{data?.address}</p>
 							</div>
 
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-1">Vĩ độ</h4>
-									<p className="text-gray-700 font-mono text-sm">{data.Latitude}</p>
+									<p className="text-gray-700 font-mono text-sm">{data?.latitude}</p>
 								</div>
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-1">Kinh độ</h4>
-									<p className="text-gray-700 font-mono text-sm">{data.Longitude}</p>
+									<p className="text-gray-700 font-mono text-sm">{data?.longitude}</p>
 								</div>
 							</div>
 
 							<div className="bg-gray-50 rounded-lg p-4">
 								<VietmapGL
 									apiKey={SeccretKey.VIET_MAP_KEY || ""}
-									center={[data.Latitude, data.Longitude]}
+									center={[data?.longitude as number, data?.latitude as number]}
 									zoom={15}
 									markers={[
 										{
-											lngLat: [data.Longitude, data.Latitude],
+											lngLat: [data?.longitude, data?.latitude],
 											popupHTML: `<div>
-												<h3>${data.Name}</h3>
-												<p>${data.Address}</p>
+												<h3>${data?.name}</h3>
+												<p>${data?.address}</p>
 											</div>`,
 										},
 									]}
@@ -237,7 +229,7 @@ export default function CraftVillageDetailView({
 					</Card>
 
 					{/* Rejection Reason (if rejected) */}
-					{data.Status === CraftVillageRequestStatus.Rejected && data.RejectionReason && (
+					{data?.status === CraftVillageRequestStatus.Rejected && data?.rejectionReason && (
 						<Card className="border-red-200 bg-red-50">
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2 text-red-700">
@@ -246,7 +238,7 @@ export default function CraftVillageDetailView({
 								</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<p className="text-red-700">{data.RejectionReason}</p>
+								<p className="text-red-700">{data?.rejectionReason}</p>
 							</CardContent>
 						</Card>
 					)}
@@ -265,29 +257,29 @@ export default function CraftVillageDetailView({
 						<CardContent className="space-y-4">
 							<div>
 								<h4 className="font-semibold text-gray-900 mb-1">Người đăng ký</h4>
-								<p className="text-gray-700">{data.OwnerFullName}</p>
+								<p className="text-gray-700">{data?.ownerFullName}</p>
 							</div>
 
 							<div className="flex items-center gap-2">
 								<Phone className="w-4 h-4 text-gray-500" />
-								<span className="text-gray-700">{data.PhoneNumber}</span>
+								<span className="text-gray-700">{data?.phoneNumber}</span>
 							</div>
 
 							<div className="flex items-center gap-2">
 								<Mail className="w-4 h-4 text-gray-500" />
-								<span className="text-gray-700">{data.Email}</span>
+								<span className="text-gray-700">{data?.email}</span>
 							</div>
 
-							{data.Website && (
+							{data?.website && (
 								<div className="flex items-center gap-2">
 									<Globe className="w-4 h-4 text-gray-500" />
 									<a
-										href={data.Website.startsWith("http") ? data.Website : `https://${data.Website}`}
+										href={data?.website?.startsWith("http") ? data?.website : `https://${data?.website}`}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="text-blue-600 hover:underline"
 									>
-										{data.Website}
+										{data?.website}
 									</a>
 								</div>
 							)}
@@ -305,11 +297,11 @@ export default function CraftVillageDetailView({
 						<CardContent>
 							<div className="flex items-center justify-between">
 								<span className="text-gray-700">Mở cửa:</span>
-								<span className="font-semibold">{formatTime(data.OpenTime.ticks)}</span>
+								<span className="font-semibold">{data?.openTime}</span>
 							</div>
 							<div className="flex items-center justify-between mt-2">
 								<span className="text-gray-700">Đóng cửa:</span>
-								<span className="font-semibold">{formatTime(data.CloseTime.ticks)}</span>
+								<span className="font-semibold">{data?.closeTime}</span>
 							</div>
 						</CardContent>
 					</Card>
@@ -331,17 +323,17 @@ export default function CraftVillageDetailView({
 								</Badge>
 							</div>
 
-							{data.ReviewedAt && (
+							{data?.reviewedAt && (
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-1">Thời gian duyệt</h4>
-									<p className="text-gray-700 text-sm">{formatDate(data.ReviewedAt.ticks)}</p>
+									<p className="text-gray-700 text-sm">{dayjs(data?.reviewedAt).format("DD/MM/YYYY HH:mm")}</p>
 								</div>
 							)}
 
-							{data.ReviewedBy && (
+							{data?.reviewedBy && (
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-1">Người duyệt</h4>
-									<p className="text-gray-700">{data.ReviewedBy}</p>
+									<p className="text-gray-700">{data?.reviewedBy}</p>
 								</div>
 							)}
 						</CardContent>
@@ -358,7 +350,7 @@ export default function CraftVillageDetailView({
 						<CardContent className="space-y-3">
 							<div className="flex items-center justify-between">
 								<span className="text-gray-700">Workshop/Trải nghiệm</span>
-								{data.WorkshopsAvailable ? (
+								{data?.workshopsAvailable ? (
 									<CheckCircle className="w-5 h-5 text-green-500" />
 								) : (
 									<XCircle className="w-5 h-5 text-gray-400" />
@@ -367,7 +359,7 @@ export default function CraftVillageDetailView({
 
 							<div className="flex items-center justify-between">
 								<span className="text-gray-700">Công nhận UNESCO</span>
-								{data.IsRecognizedByUnesco ? (
+								{data?.isRecognizedByUnesco ? (
 									<CheckCircle className="w-5 h-5 text-green-500" />
 								) : (
 									<XCircle className="w-5 h-5 text-gray-400" />
@@ -377,38 +369,43 @@ export default function CraftVillageDetailView({
 					</Card>
 				</div>
 			</div>
-			<Dialog open={isReviewRequestOpen} onOpenChange={setIsReviewRequestOpen}>
+			<Dialog open={isReviewRequestOpen} onOpenChange={(open) => {
+				setIsReviewRequestOpen(open)
+				if (!open) {
+					setReviewAction?.(null)
+					setReviewReason?.("")
+				}
+			}}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Duyệt đơn đăng ký</DialogTitle>
+						<DialogTitle>
+							{reviewAction === "approve" ? "Xác nhận duyệt đơn đăng ký" : reviewAction === "reject" ? "Từ chối đơn đăng ký" : "Duyệt đơn đăng ký"}
+						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4">
-						<div className="flex gap-2">
-							<Button
-								type="button"
-								variant={reviewAction === "approve" ? "default" : "outline"}
-								className={reviewAction === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
-								onClick={() => setReviewAction("approve")}
-							>
-								<CheckCircle className="w-4 h-4 mr-2" /> Duyệt
-							</Button>
-							<Button
-								type="button"
-								variant={reviewAction === "reject" ? "destructive" : "outline"}
-								onClick={() => setReviewAction("reject")}
-							>
-								<XCircle className="w-4 h-4 mr-2" /> Từ chối
-							</Button>
-						</div>
+						{reviewAction === "approve" && (
+							<p className="text-sm text-gray-600">
+								Bạn có chắc chắn muốn duyệt đơn đăng ký này? Hành động này sẽ chấp nhận làng nghề vào hệ thống.
+							</p>
+						)}
 
 						<div className="space-y-2">
-							<label className="text-sm font-medium">Lý do {reviewAction === "reject" ? "(bắt buộc)" : "(không bắt buộc)"}</label>
+							<label className="text-sm font-medium">{reviewAction === "reject" ? "Lý do từ chối (tối thiểu 10 ký tự)" : "Ghi chú (tuỳ chọn)"}</label>
 							<Textarea
 								rows={4}
-								placeholder={reviewAction === "reject" ? "Nhập lý do từ chối..." : "Nhập ghi chú khi duyệt (tuỳ chọn)..."}
-								value={rejectionReason}
-								onChange={(e) => setRejectionReason(e.target.value)}
+								placeholder={reviewAction === "reject" ? "Nhập lý do từ chối chi tiết để người dùng hiểu rõ..." : "Nhập ghi chú khi duyệt (tuỳ chọn)..."}
+								value={reviewReason}
+								onChange={(e) => setReviewReason?.(e.target.value)}
 							/>
+							{reviewAction === "reject" && (
+								<div className="text-xs">
+									{(reviewReason?.trim()?.length || 0) < 10 ? (
+										<span className="text-red-500">Lý do cần ít nhất 10 ký tự.</span>
+									) : (
+										<span className="text-gray-500">{reviewReason?.trim()?.length || 0} ký tự</span>
+									)}
+								</div>
+							)}
 						</div>
 
 						<DialogFooter>
@@ -419,12 +416,15 @@ export default function CraftVillageDetailView({
 								onClick={() => {
 									onSubmitReview?.({
 										status: reviewAction === "approve" ? CraftVillageRequestStatus.Approved : CraftVillageRequestStatus.Rejected,
-										rejectionReason: reviewAction === "reject" ? rejectionReason.trim() : undefined,
+										rejectionReason: reviewReason?.trim() || undefined,
 									})
 									setIsReviewRequestOpen(false)
+									setReviewAction?.(null)
+									setReviewReason?.("")
 								}}
+								className={reviewAction === "reject" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
 							>
-								Xác nhận
+								{reviewAction === "approve" ? "Duyệt" : reviewAction === "reject" ? "Từ chối" : "Xác nhận"}
 							</Button>
 						</DialogFooter>
 					</div>

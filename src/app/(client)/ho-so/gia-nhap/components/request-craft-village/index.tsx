@@ -1,9 +1,9 @@
 "use client"
 
-import { FormRequest } from "./FormRequest"
+import RegisterCraftVillageRequestForm from "./RegisterCraftVillageRequestForm"
 
 export default function CraftVillageForm() {
-	return <FormRequest />
+	return <RegisterCraftVillageRequestForm />
 }
 
 

@@ -67,12 +67,28 @@ export function useCraftVillage() {
 		}
 	}, [callApi, setIsLoading])
 
+
+	const getLastestCraftVillageRequest = useCallback(async (userId: string) => {
+		setIsLoading(true)
+		try {
+			const response = await callApi("get", `${CRAFT_VILLAGE_API_URL.LASTEST_CRAFT_VILLAGE_REQUEST}${userId}`)
+			return response?.data
+		}
+		catch (error) {
+			throw error
+		}
+		finally {
+			setIsLoading(false)
+		}
+	}, [callApi, setIsLoading])
+
 	return {
 		getCraftVillageRequest,
 		getCraftVillageRequestById,
 		createCraftVillageRequest,
 		reviewCraftVillageRequest,
 		patchCraftVillageRequest,
+		getLastestCraftVillageRequest,
 		loading
 	}
 }

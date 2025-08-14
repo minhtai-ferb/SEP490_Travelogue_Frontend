@@ -34,26 +34,27 @@ export const USER_API_URL = {
 };
 
 export const CRAFT_VILLAGE_API_URL = {
-	GET_CRAFT_VILLAGE_REQUEST: "user/craft-village-request",
-	CREATE_CRAFT_VILLAGE_REQUEST: "user/craft-village-request",
-	CRAFT_VILLAGE_REQUEST_BY_ID: "user/craft-village-request/:id",
-	UPDATE_CRAFT_VILLAGE_REQUEST: "user/craft-village-request/:id/review"
+  GET_CRAFT_VILLAGE_REQUEST: "user/craft-village-request",
+  CREATE_CRAFT_VILLAGE_REQUEST: "user/craft-village-request",
+  CRAFT_VILLAGE_REQUEST_BY_ID: "user/craft-village-request/:id",
+  UPDATE_CRAFT_VILLAGE_REQUEST: "user/craft-village-request/:id/review",
+  LASTEST_CRAFT_VILLAGE_REQUEST: "user/latest-craft-village-request/"
 }
 
 export const WALLET_API_URL = {
-	GET_WALLET_BALANCE: "wallet/balance",
-	GET_WALLET: "wallet",
-	GET_WALLET_TRANSACTIONS: "wallet/transactions",
-	WITHDRAWAL_REQUEST: "wallet/withdrawal-request",
-	MY_WITHDRAWAL_REQUESTS: "wallet/my-withdrawal-requests/filter",
-	WITHDRAWAL_REQUESTS_FILTER: "wallet/withdrawal-requests/filter",
-	APPROVE_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/approve",
-	REJECT_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/reject"
+  GET_WALLET_BALANCE: "wallet/balance",
+  GET_WALLET: "wallet",
+  GET_WALLET_TRANSACTIONS: "wallet/transactions",
+  WITHDRAWAL_REQUEST: "wallet/withdrawal-request",
+  MY_WITHDRAWAL_REQUESTS: "wallet/my-withdrawal-requests/filter",
+  WITHDRAWAL_REQUESTS_FILTER: "wallet/withdrawal-requests/filter",
+  APPROVE_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/approve",
+  REJECT_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/reject"
 }
 
 export const BANK_ACCOUNT_API_URL = {
-	GET_BANK_ACCOUNT: "bank-account",
-	CREATE_BANK_ACCOUNT: "bank-account",
-	UPDATE_BANK_ACCOUNT: "bank-account/:id",
-	DELETE_BANK_ACCOUNT: "bank-account/:id",
+  GET_BANK_ACCOUNT: "bank-account",
+  CREATE_BANK_ACCOUNT: "bank-account",
+  UPDATE_BANK_ACCOUNT: "bank-account/:id",
+  DELETE_BANK_ACCOUNT: "bank-account/:id",
 }

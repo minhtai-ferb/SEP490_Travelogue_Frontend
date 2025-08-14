@@ -5,16 +5,20 @@ export interface CraftVillageRequest {
 	address: string
 	latitude: number
 	longitude: number
-	openTime: { ticks: number }
-	closeTime: { ticks: number }
+	openTime: string
+	closeTime: string
 	districtId: string
 	phoneNumber: string
 	email: string
-	website: string | null
+	website: string
 	workshopsAvailable: boolean
 	signatureProduct: string
 	yearsOfHistory: number
 	isRecognizedByUnesco: boolean
+	mediaDtos: {
+		mediaUrl: string
+		isThumbnail: boolean
+	}[]
 }
 
 export interface ReviewCraftVillageRequest {
@@ -23,35 +27,35 @@ export interface ReviewCraftVillageRequest {
 }
 
 export enum CraftVillageRequestStatus {
-	Pending = 0,
-	Approved = 1,
-	Rejected = 2,
+	Pending = 1,
+	Approved = 2,
+	Rejected = 3,
 }
 
 export interface CraftVillageRequestResponse {
-	Id: string
-	OwnerId: string
-	OwnerEmail: string
-	OwnerFullName: string
-	Name: string
-	Description: string
-	Content: string
-	Address: string
-	Latitude: number
-	Longitude: number
-	OpenTime: { ticks: number }
-	CloseTime: { ticks: number }
-	DistrictId: string
-	PhoneNumber: string
-	Email: string
-	Website: string
-	LocationId: string
-	WorkshopsAvailable: boolean
-	SignatureProduct: string
-	YearsOfHistory: number
-	IsRecognizedByUnesco: boolean
-	Status: CraftVillageRequestStatus
-	RejectionReason: string
-	ReviewedAt: { ticks: number }
-	ReviewedBy: string
+	id: string
+	ownerId: string
+	ownerEmail: string
+	ownerFullName: string
+	name: string
+	description: string
+	content: string
+	address: string
+	latitude: number
+	longitude: number
+	openTime: string
+	closeTime: string
+	districtId: string
+	phoneNumber: string
+	email: string
+	website: string
+	locationId: string
+	workshopsAvailable: boolean
+	signatureProduct: string
+	yearsOfHistory: number
+	isRecognizedByUnesco: boolean
+	status: CraftVillageRequestStatus
+	rejectionReason: string
+	reviewedAt: string
+	reviewedBy: string
 }
