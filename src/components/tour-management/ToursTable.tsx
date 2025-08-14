@@ -38,7 +38,7 @@ function renderCell(
         </div>
       )
     case "tourTypeText":
-      return <span className="text-sm">{tour.tourTypeText}</span>
+      return <span className="text-sm">{tour.tourTypeText == "Draft" ? "Nháp" : tour.tourTypeText == "Confirmed" ? "Đã xác nhận" : tour.tourTypeText == "Cancelled" ? "Đã hủy" : tour.tourTypeText}</span>
     case "totalDaysText":
       return <span className="text-sm">{tour.totalDaysText}</span>
     case "adultPrice":
@@ -46,7 +46,7 @@ function renderCell(
     case "childrenPrice":
       return <span className="text-sm font-semibold text-blue-600">{tour.childrenPrice?.toLocaleString()} VNĐ</span>
     case "statusText":
-      return <StatusBadge statusText={tour.statusText} />
+      return <StatusBadge statusText={tour.statusText == "Draft" ? "Nháp" : tour.statusText == "Confirmed" ? "Đã xác nhận" : tour.statusText == "Cancelled" ? "Đã hủy" : tour.statusText} />
     case "actions":
       return <RowActions tour={tour} onView={handlers.onView} onEdit={handlers.onEdit} onDelete={handlers.onDelete} />
     default:

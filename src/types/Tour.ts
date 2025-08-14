@@ -1,3 +1,4 @@
+import { MediaDto } from "@/app/admin/locations/create/types/CreateLocation"
 import { TourGuideItem } from "./Tourguide"
 
 export interface TourImage {
@@ -242,6 +243,7 @@ export interface TourDetail {
 	tourGuide: any[]
 	promotions: any[]
 	days: TourDay[]
+	medias: MediaDto[]
 }
 
 export interface TourDay {
