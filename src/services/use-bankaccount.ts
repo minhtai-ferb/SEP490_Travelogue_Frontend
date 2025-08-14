@@ -44,10 +44,19 @@ export const useBankAccount = () => {
 		return safeApiCall(() => callApi("put", url, data))
 	}, [callApi, safeApiCall])
 
+	// const deleteBankAccount = useCallback(async (bankAccountId: string) => {
+	// 	const url = BANK_ACCOUNT_API_URL.DELETE_BANK_ACCOUNT.replace(":id", bankAccountId)
+	// 	return safeApiCall(() => callApi("delete", url))
+	// }, [callApi, safeApiCall])
+
 	const deleteBankAccount = useCallback(async (bankAccountId: string) => {
-		const url = BANK_ACCOUNT_API_URL.DELETE_BANK_ACCOUNT.replace(":id", bankAccountId)
-		return safeApiCall(() => callApi("delete", url))
-	}, [callApi, safeApiCall])
+		try {
+			const res = await callApi("delete", BANK_ACCOUNT_API_URL.DELETE_BANK_ACCOUNT.replace(":id", bankAccountId))
+			return res
+		} catch (error) {
+			throw error
+		}
+	}, [callApi])
 
 	return {
 		getBankAccount,

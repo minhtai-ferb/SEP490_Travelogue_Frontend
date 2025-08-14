@@ -103,7 +103,7 @@ export default function WithdrawalRequestForm({ accounts, availableBalance, onSu
 					<SelectContent>
 						{accounts.map(acc => (
 							<SelectItem key={acc.id} value={acc.id}>
-								{acc.bankOwnerName || ""} — {(acc.bankAccountNumber || "").replace(/\d(?=\d{4})/g, "*")} — {acc.bankName}
+								{acc.bankOwnerName || ""} — {(acc.bankAccountNumber || "")} — {acc.bankName}
 							</SelectItem>
 						))}
 					</SelectContent>

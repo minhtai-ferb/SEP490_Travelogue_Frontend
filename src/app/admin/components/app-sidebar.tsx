@@ -123,14 +123,14 @@ const data = {
         },
       ],
     },
-      {
+    {
       title: "Chuyến tham quan",
       url: "/admin/tour",
       icon: Map,
       items: [
         {
           title: "Danh sách chuyến tham quan",
-          url: "/admin/tour",
+          url: "/admin/tour/table",
         },
       ],
     },
