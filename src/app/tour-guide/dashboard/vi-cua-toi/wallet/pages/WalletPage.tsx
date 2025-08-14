@@ -25,8 +25,7 @@ import TransactionsList from "../organisms/TransactionsList"
 import WalletSummaryCard from "../organisms/WalletSummaryCard"
 import WithdrawalRequestForm from "../organisms/WithdrawalRequestForm"
 import WalletTwoColumn from "../templates/WalletTwoColumn"
-import { ProgressiveBlurDemo } from "../molecules/scroll"
-import ProgressiveBlur from "../molecules/scroll/progressiveblur"
+import { WithdrawalCard } from "../organisms/WithdrawalCard"
 
 export default function WalletPage() {
 	const user = useMemo(() => getStoredUser(), [])
@@ -181,99 +180,7 @@ export default function WalletPage() {
 						</CardContent>
 					</Card>
 
-					<Card className="space-y-3">
-						<CardHeader>
-							<div className="flex flex-col items-center justify-between gap-2">
-								<CardTitle>Các yêu cầu rút tiền</CardTitle>
-								<div className="flex flex-col gap-2">
-									<Select
-										value={status?.toString() || "all"}
-										onValueChange={(value) => setStatus(value === "all" ? "all" : Number(value))}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Chọn trạng thái" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="all">Tất cả</SelectItem>
-											<SelectItem value="1">Chờ xác nhận</SelectItem>
-											<SelectItem value="2">Đã xác nhận</SelectItem>
-											<SelectItem value="3">Đã từ chối</SelectItem>
-										</SelectContent>
-									</Select>
-									<Input
-										type="date"
-										value={fromDate || ""}
-										onChange={(e) => setFromDate(e.target.value)}
-									/>
-									<Input
-										type="date"
-										value={toDate || ""}
-										onChange={(e) => setToDate(e.target.value)}
-									/>
-									<Button variant="default" size="sm" onClick={() => refetchAll()}>
-										Lọc
-									</Button>
-								</div>
-							</div>
-						</CardHeader>
-						<CardContent>
-							{withdrawalRequests?.length ? (
-								<div className="space-y-3">
-									{withdrawalRequests.map((wr: any) => (
-										<Dialog key={wr.id}>
-											<DialogTrigger asChild>
-												<div key={wr.id} className="p-3 border rounded-lg text-sm cursor-pointer">
-													<Badge className={`${colorStatus[wr.status as keyof typeof colorStatus]} text-white items-end`} size="sm">
-														{wr.statusText}
-													</Badge>
-													<div className="font-medium">{wr?.bankAccount?.bankOwnerName} • {String(wr?.bankAccount?.bankAccountNumber || "")} • {wr?.bankAccount?.bankName}</div>
-													<div className="text-blue-500 font-semibold">{formatPriceSimple(wr.amount || 0)}</div>
-												</div>
-											</DialogTrigger>
-											<ProgressiveBlur position="bottom" height="40%" />
-											<DialogContent>
-												<DialogTitle>
-													<div className="text-blue-500 font-medium flex items-center gap-2">
-														Thông tin yêu cầu
-														<Badge className={`${colorStatus[wr.status as keyof typeof colorStatus]}`} size="sm">
-															{wr.statusText}
-														</Badge>
-													</div>
-												</DialogTitle>
-												<div className="space-y-3 text-sm">
-													<div className="space-y-3 text-sm">
-														<div className="flex justify-between">
-															<span className="text-gray-500">Số tiền</span>
-															<span className="font-semibold text-blue-500">{formatPriceSimple(wr.amount || 0)}</span>
-														</div>
-														<div className="flex justify-between">
-															<span className="text-gray-500">Thời gian</span>
-															<span className="text-blue-500 font-sans font-medium">{formatDate(wr.requestTime || wr.createdAt || wr.date || "", "HH:mm dd/MM/yyyy")}</span>
-														</div>
-													</div>
-													<div className="flex justify-center w-full">
-														<div className="relative rounded-xl cursor-pointer w-full">
-															<div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-4 text-white relative overflow-hidden h-[150px] flex flex-col justify-center items-center">
-																<div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
-																<div className="relative z-10 flex flex-col justify-center items-center">
-																	<div className="text-sm text-blue-100">{wr?.bankAccount?.bankName}</div>
-																	<div className="text-lg font-semibold">{wr?.bankAccount?.bankOwnerName}</div>
-																	<div className="text-base font-mono tracking-wider">{String(wr?.bankAccount?.bankAccountNumber)}</div>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-											</DialogContent>
-
-										</Dialog>
-									))}
-								</div>
-							) : (
-								<div className="text-sm text-gray-500">Không có yêu cầu rút tiền nào.</div>
-							)}
-						</CardContent>
-					</Card>
+					<WithdrawalCard withdrawalRequests={withdrawalRequests} status={status} setStatus={setStatus} fromDate={fromDate || ""} setFromDate={setFromDate} toDate={toDate || ""} setToDate={setToDate} onRefresh={refetchAll} loading={loading} />
 
 					<Dialog open={!!selectedTxn} onOpenChange={(o) => !o && setSelectedTxn(null)}>
 						<DialogContent className="sm:max-w-lg">
