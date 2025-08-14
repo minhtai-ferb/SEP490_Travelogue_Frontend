@@ -170,9 +170,9 @@ export default function RequestDetailModal({
             <Descriptions.Item label="Người yêu cầu">
               <Space direction="vertical" size={0}>
                 <span className="font-medium">{data.userName}</span>
-                <span className="text-[12px] text-gray-500">
+                {/* <span className="text-[12px] text-gray-500">
                   User ID: {data.userId}
-                </span>
+                </span> */}
               </Space>
             </Descriptions.Item>
             <Descriptions.Item label="Số tiền">
@@ -184,8 +184,8 @@ export default function RequestDetailModal({
                   data.status === WithdrawalStatus.PENDING
                     ? "gold"
                     : data.status === WithdrawalStatus.APPROVED
-                    ? "green"
-                    : "red"
+                      ? "green"
+                      : "red"
                 }
               >
                 {getWithdrawalStatusText(data.status)}
@@ -205,9 +205,9 @@ export default function RequestDetailModal({
                 </div>
               </div>
             </Descriptions.Item>
-            <Descriptions.Item label="Wallet ID">
+            {/* <Descriptions.Item label="Wallet ID">
               {data.walletId}
-            </Descriptions.Item>
+            </Descriptions.Item> */}
           </Descriptions>
         )}
       </Modal>
