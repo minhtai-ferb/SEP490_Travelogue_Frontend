@@ -108,7 +108,7 @@ export function NavUser({
 								Thông báo
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => {
-								router.push("/")
+								router.push("/auth/choose-role")
 							}}>
 								<Home />
 								Trang người dùng
