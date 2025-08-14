@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
   // Chưa đăng nhập / không đọc được roles
   if (!roles) {
     const url = req.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/auth";
     return NextResponse.redirect(url);
   }
 
