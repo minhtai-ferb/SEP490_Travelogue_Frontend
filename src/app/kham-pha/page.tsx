@@ -1,38 +1,25 @@
 "use client"
 
+import { LocationType } from "@/app/admin/locations/create/types/CreateLocation"
+import { FavoriteButton } from "@/components/common/favorites/favorite-button"
 import { ImageGalleryExplore } from "@/components/common/image-glary/image-explore"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import VietmapGL from "@/components/vietmap-gl"
 import { cn } from "@/lib/utils"
 import { SeccretKey } from "@/secret/secret"
 import { useLocationController } from "@/services/location-controller"
-import type { HistoricalSite, Rank } from "@/types/History"
+import { isFavoriteAtom } from "@/store/favorites"
 import type { Location } from "@/types/Location"
-import {
-	Button,
-	CardBody,
-	Card as CardHero,
-	Divider,
-	Drawer,
-	DrawerBody,
-	DrawerContent,
-	DrawerFooter,
-	DrawerHeader,
-	Dropdown,
-	DropdownItem,
-	DropdownMenu,
-	DropdownTrigger,
-	Image as ImageUI,
-	useDisclosure,
-} from "@heroui/react"
+import { useAtom } from "jotai"
 import { List, MapPin, X } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import backgroundImage from "../../../public/vongxoay.jpg"
-import { FavoriteButton } from "@/components/common/favorites/favorite-button"
-import { isFavoriteAtom } from "@/store/favorites"
-import { useAtom } from "jotai"
 
 const provinceBounds: [[number, number], [number, number]] = [
 	[105.811944, 10.952222],
@@ -41,12 +28,11 @@ const provinceBounds: [[number, number], [number, number]] = [
 
 export default function CustomVietmapDemo() {
 	const router = useRouter()
-	const [selectedRank, setSelectedRank] = useState<number | undefined>(undefined)
-	const [allRanks, setAllRanks] = useState<Rank[]>([])
+	const [selectedType, setSelectedType] = useState<LocationType>(LocationType.HistoricalSite)
 	const [listHistorical, setListHistorical] = useState<Location[]>([])
 	const [selected, setSelected] = useState<string | null>(null)
-	const { isOpen, onOpen, onOpenChange } = useDisclosure()
-	const { getAllRank, searchLocation } = useLocationController()
+	const [isOpen, setIsOpen] = useState(false)
+	const { searchLocation } = useLocationController()
 	const [isHovered, setIsHovered] = useState(false)
 	const [isLoading, setIsLoading] = useState(true)
 	const [drawerInfo, setDrawerInfo] = useState<Location>()
@@ -55,63 +41,42 @@ export default function CustomVietmapDemo() {
 	const [isFavorite] = useAtom(isFavoriteAtom)
 
 	// Fetch historical sites based on selected rank
-	const handleLoadListHistory = async (heritageRank?: number) => {
+
+	const handleLoadListHistory = useCallback(async () => {
 		setIsLoading(true)
 		try {
 			const response = await searchLocation({
 				title: "",
-				typeId: "",
+				type: selectedType.toString(),
 				districtId: "",
-				heritageRank,
 				pageNumber: 1,
 				pageSize: 100000,
 			})
-			setListHistorical(response?.data)
-			setMapZoom(8)
+			setListHistorical(response?.data || [])
 		} catch (error) {
-			console.error("Error fetching historical sites:", error)
+			console.error("Error fetching locations:", error)
 		} finally {
 			setIsLoading(false)
 		}
-	}
+	}, [searchLocation, selectedType])
 
-	// Handle rank selection from dropdown
-	const handleRankSelection = (key: any) => {
-		if (selected) {
-			setSelected(null)
-		}
 
-		if (key === "all") {
-			setSelectedRank(undefined)
-			handleLoadListHistory()
-		} else {
-			// Find the rank object by display name
-			const rank = allRanks.find((r) => r.displayName === key)
-			if (rank) {
-				setSelectedRank(rank.id)
-				handleLoadListHistory(rank.id)
-			}
-		}
-	}
-
-	const fetchAllRanks = async () => {
-		try {
-			const response = await getAllRank()
-			setAllRanks(response)
-		} catch (error) {
-			console.error("Error fetching ranks:", error)
-		}
-	}
+	const typeOptions: { id: LocationType; label: string }[] = [
+		{ id: LocationType.HistoricalSite, label: "Địa điểm lịch sử" },
+		{ id: LocationType.CraftVillage, label: "Làng nghề" },
+		{ id: LocationType.Cuisine, label: "Ẩm thực" },
+		{ id: LocationType.ScenicSpot, label: "Danh lam thắng cảnh" },
+		{ id: LocationType.Other, label: "Khác" },
+	]
 
 	// Load data on mount
 	useEffect(() => {
 		const initializeData = async () => {
-			await fetchAllRanks()
 			await handleLoadListHistory()
 		}
 
 		initializeData()
-	}, [])
+	}, [handleLoadListHistory])
 
 	const fetchLocationDetail = async (id: string) => {
 		try {
@@ -375,7 +340,7 @@ export default function CustomVietmapDemo() {
 												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
 													<Image src="/icon/rank.png" alt="Rank Icon" width={20} height={20} />
 													<p className="text-xs sm:text-sm text-gray-800 font-medium">
-														Xếp hạng: {site.heritageRankName}
+														Xếp hạng: {site.category}
 													</p>
 												</div>
 												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
@@ -401,112 +366,103 @@ export default function CustomVietmapDemo() {
 			>
 				{/* Filter dropdown */}
 				<div className="absolute top-2 right-2 z-10 w-fit">
-					<Dropdown backdrop="blur">
-						<DropdownTrigger>
-							<Button
-								variant="bordered"
-								className="bg-blue-500 text-white font-semibold backdrop-blur-sm"
-								color="primary"
-							>
-								Bộ lọc
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button className="bg-blue-500 text-white font-semibold">
+								{typeOptions.find(t => t.id === selectedType)?.label || "Bộ lọc"}
 							</Button>
-						</DropdownTrigger>
-						<DropdownMenu
-							aria-label="Filter Options"
-							variant="shadow"
-							color="primary"
-							onAction={(key) => handleRankSelection(key)}
-						>
-							<>
-								{allRanks?.map((rank) => (
-									<DropdownItem key={rank.displayName} className="font-semibold">
-										{rank.displayName}
-									</DropdownItem>
-								))}
-							</>
-							<DropdownItem key="all" className="font-semibold">
+						</DropdownMenuTrigger>
+						<DropdownMenuContent>
+							{typeOptions.map((opt) => (
+								<DropdownMenuItem
+									key={opt.id}
+									onSelect={() => {
+										setSelectedType(opt.id)
+									}}
+								>
+									{opt.label}
+								</DropdownMenuItem>
+							))}
+							<DropdownMenuItem
+								onSelect={() => {
+									setSelectedType("" as unknown as LocationType)
+								}}
+							>
 								Tất cả
-							</DropdownItem>
-						</DropdownMenu>
-					</Dropdown>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 
 				{/* Selected site info card */}
 				{selectedSite && (
 					<div className="absolute bottom-2 w-full z-10 px-3">
-						<CardHero isBlurred className="border-none bg-background/60 dark:bg-default-100/50 max-w-full" shadow="md">
-							<CardBody className="p-3 md:p-4">
-								<div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center">
-									{/* Left side with title and info - takes full width on mobile */}
-									<div className="flex flex-col md:col-span-6 gap-2 md:gap-4">
-										<div className="flex items-center gap-2 justify-between">
-											<div className="flex items-center gap-2">
-												<MapPin className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
-												<h1 className="font-bold text-foreground/90 text-base md:text-lg lg:text-xl line-clamp-1">
-													{selectedSite?.name}
-												</h1>
-											</div>
-											{selectedSite && <FavoriteButton location={selectedSite} />}
+						<div className="rounded-lg border bg-white/90 backdrop-blur-md shadow-md p-3 md:p-4 max-w-full">
+							<div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center">
+								{/* Left side with title and info - takes full width on mobile */}
+								<div className="flex flex-col md:col-span-6 gap-2 md:gap-4">
+									<div className="flex items-center gap-2 justify-between">
+										<div className="flex items-center gap-2">
+											<MapPin className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
+											<h1 className="font-bold text-foreground/90 text-base md:text-lg lg:text-xl line-clamp-1">
+												{selectedSite?.name}
+											</h1>
 										</div>
-										<div className="flex flex-col gap-1">
-											<div className="flex items-center bg-[#CEF3FE] space-x-2 p-1">
-												<Image
-													src="/icon/rank.png"
-													alt="Rank Icon"
-													width={16}
-													height={16}
-													className="w-4 h-4 md:w-5 md:h-5"
-												/>
-												<p className="text-xs md:text-sm text-gray-800 font-bold line-clamp-1">
-													{selectedSite?.heritageRankName}
-												</p>
-											</div>
-											<div className="flex items-center bg-[#CEF3FE] space-x-2 p-1">
-												<Image
-													src="/icon/place.png"
-													alt="Location Icon"
-													width={16}
-													height={16}
-													className="w-4 h-4 md:w-5 md:h-5"
-												/>
-												<p className="text-xs md:text-sm text-gray-800 font-bold line-clamp-1">
-													{selectedSite?.districtName}
-												</p>
-											</div>
+										{selectedSite && <FavoriteButton location={selectedSite} />}
+									</div>
+									<div className="flex flex-col gap-1">
+										<div className="flex items-center bg-[#CEF3FE] space-x-2 p-1">
+											<Image
+												src="/icon/rank.png"
+												alt="Rank Icon"
+												width={16}
+												height={16}
+												className="w-4 h-4 md:w-5 md:h-5"
+											/>
+											<p className="text-xs md:text-sm text-gray-800 font-bold line-clamp-1">
+												{selectedSite?.category}
+											</p>
 										</div>
-
-										<div className="pt-1 md:pt-2">
-											<Button
-												color="primary"
-												variant="flat"
-												onPress={onOpen}
-												className="justify-center w-full text-xs md:text-sm py-1 md:py-2"
-												onPressChange={() => setSelected(selectedSite?.id)}
-											>
-												Xem Thông Tin
-											</Button>
+										<div className="flex items-center bg-[#CEF3FE] space-x-2 p-1">
+											<Image
+												src="/icon/place.png"
+												alt="Location Icon"
+												width={16}
+												height={16}
+												className="w-4 h-4 md:w-5 md:h-5"
+											/>
+											<p className="text-xs md:text-sm text-gray-800 font-bold line-clamp-1">
+												{selectedSite?.districtName}
+											</p>
 										</div>
 									</div>
 
-									{/* Right side with image - hidden on very small screens, visible on larger mobile and up */}
-									<div className="hidden sm:block md:col-span-6">
-										<ImageUI
+									<div className="pt-1 md:pt-2">
+										<Button
+											className="justify-center w-full text-xs md:text-sm py-1 md:py-2 bg-blue-600 hover:bg-blue-700 text-white"
+											onClick={() => {
+												setSelected(selectedSite?.id)
+												setIsOpen(true)
+											}}
+										>
+											Xem Thông Tin
+										</Button>
+									</div>
+								</div>
+
+								{/* Right side with image - hidden on very small screens, visible on larger mobile and up */}
+								<div className="hidden sm:block md:col-span-6">
+									<div className="relative w-full aspect-video">
+										<Image
 											alt="Site thumbnail"
-											className="object-cover rounded-lg w-full aspect-video"
-											shadow="md"
-											src={
-												selectedSite?.medias?.find((media) => media.isThumbnail)?.mediaUrl ||
-												"https://heroui.com/images/album-cover.png" ||
-												"/placeholder_image.jpg" ||
-												"/placeholder_image.jpg" ||
-												"/placeholder_image.jpg" ||
-												"/placeholder_image.jpg"
-											}
+											className="object-cover rounded-lg"
+											src={selectedSite?.medias?.find((media) => media.isThumbnail)?.mediaUrl || "/placeholder_image.jpg"}
+											fill
 										/>
 									</div>
 								</div>
-							</CardBody>
-						</CardHero>
+							</div>
+						</div>
 					</div>
 				)}
 
@@ -520,82 +476,72 @@ export default function CustomVietmapDemo() {
 				/>
 			</div>
 
-			{/* Drawer for detailed view */}
-			<Drawer isOpen={isOpen} onOpenChange={onOpenChange} hideCloseButton size="full">
-				<DrawerContent className="bg-gray-100">
-					{(onClose) => (
-						<>
-							<DrawerHeader className="flex items-center justify-between p-4 border-b">
-								<div className="flex items-center gap-2">
-									<h2 className="text-xl font-bold">{drawerInfo?.name}</h2>
-									{drawerInfo && <FavoriteButton location={drawerInfo} />}
-								</div>
-								<Button color="danger" variant="light" isIconOnly onPress={onClose} className="rounded-full">
-									<X className="h-5 w-5" />
-								</Button>
-							</DrawerHeader>
-							<DrawerBody className="p-0 overflow-y-auto">
-								{drawerInfo && (
-									<div className="flex flex-col">
-										<div className="w-full">
-											{drawerInfo?.medias && (
-												<ImageGalleryExplore
-													images={drawerInfo.medias.map((media) => ({
-														url: media.mediaUrl,
-														alt: media.fileType || "Image description",
-														isThumbnail: media.isThumbnail || false,
-													}))}
-												/>
-											)}
-										</div>
-										<div className="p-4 sm:p-6">
-											<h3 className="text-xl sm:text-2xl font-bold text-blue-500 py-4">{drawerInfo?.name}</h3>
-											<div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-4">
-												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
-													<Image src="/icon/rank.png" alt="Rank Icon" width={24} height={24} />
-													<p className="text-sm sm:text-base text-gray-800 font-bold">
-														Xếp loại: {drawerInfo?.heritageRankName}
-													</p>
-												</div>
-												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
-													<Image src="/icon/place.png" alt="Rank Icon" width={24} height={24} />
-													<p className="text-sm sm:text-base text-gray-900 font-bold">{drawerInfo?.districtName}</p>
-												</div>
-											</div>
-											<Divider className="my-4" />
-											<div className="space-y-4">
-												<div>
-													<h4 className="text-lg font-semibold text-gray-900 mb-2">Mô tả</h4>
-													<p className="text-gray-700 text-sm sm:text-base">{drawerInfo?.description}</p>
-												</div>
-												<Divider className="my-4" />
-												<div>
-													<h4 className="text-lg font-semibold text-gray-900 mb-2">Giới thiệu</h4>
-													<p className="text-gray-700 text-sm sm:text-base">{drawerInfo?.content}</p>
-												</div>
-											</div>
-										</div>
-									</div>
+			{/* Detail Sheet (replacing heroui Drawer) */}
+			<Sheet open={isOpen} onOpenChange={setIsOpen}>
+				<SheetContent side="bottom" className="bg-gray-100 h-[90vh] overflow-y-auto p-0">
+					<SheetHeader className="flex items-center justify-between p-4 border-b">
+						<div className="flex items-center gap-2">
+							<SheetTitle className="text-xl font-bold">{drawerInfo?.name}</SheetTitle>
+							{drawerInfo && <FavoriteButton location={drawerInfo} />}
+						</div>
+					</SheetHeader>
+					{drawerInfo && (
+						<div className="flex flex-col">
+							<div className="w-full">
+								{drawerInfo?.medias && (
+									<ImageGalleryExplore
+										images={drawerInfo.medias.map((media) => ({
+											url: media.mediaUrl,
+											alt: media.fileType || "Image description",
+											isThumbnail: media.isThumbnail || false,
+										}))}
+									/>
 								)}
-							</DrawerBody>
-							<DrawerFooter className="border-t">
-								<div className="flex justify-between w-full lg:hidden">
-									<Button
-										color="primary"
-										onPress={() => {
-											onClose()
-											// Ensure the map is visible when returning
-											setIsSidebarOpen(false)
-										}}
-									>
-										Xem trên bản đồ
-									</Button>
+							</div>
+							<div className="p-4 sm:p-6">
+								<h3 className="text-xl sm:text-2xl font-bold text-blue-500 py-4">{drawerInfo?.name}</h3>
+								<div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mb-4">
+									<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
+										<Image src="/icon/rank.png" alt="Rank Icon" width={24} height={24} />
+										<p className="text-sm sm:text-base text-gray-800 font-bold">
+											Xếp loại: {drawerInfo?.category}
+										</p>
+									</div>
+									<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
+										<Image src="/icon/place.png" alt="Rank Icon" width={24} height={24} />
+										<p className="text-sm sm:text-base text-gray-900 font-bold">{drawerInfo?.districtName}</p>
+									</div>
 								</div>
-							</DrawerFooter>
-						</>
+								<Separator className="my-4" />
+								<div className="space-y-4">
+									<div>
+										<h4 className="text-lg font-semibold text-gray-900 mb-2">Mô tả</h4>
+										<p className="text-gray-700 text-sm sm:text-base" dangerouslySetInnerHTML={{ __html: drawerInfo?.description || "" }} />
+									</div>
+									<Separator className="my-4" />
+									<div>
+										<h4 className="text-lg font-semibold text-gray-900 mb-2">Giới thiệu</h4>
+										<div className="prose max-w-none text-gray-700 text-sm sm:text-base" dangerouslySetInnerHTML={{ __html: drawerInfo?.content || "" }} />
+									</div>
+								</div>
+							</div>
+						</div>
 					)}
-				</DrawerContent>
-			</Drawer>
+					<SheetFooter className="border-t p-4 lg:hidden">
+						<div className="flex justify-between w-full">
+							<Button
+								onClick={() => {
+									setIsOpen(false)
+									setIsSidebarOpen(false)
+								}}
+								className="bg-blue-600 hover:bg-blue-700 text-white"
+							>
+								Xem trên bản đồ
+							</Button>
+						</div>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
 		</div>
 	)
 }

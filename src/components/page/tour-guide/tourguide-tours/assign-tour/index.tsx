@@ -201,7 +201,7 @@ function MyToursContent() {
 
 						<div className="flex items-center space-x-3">
 							<Avatar className="text-blue-500 font-bold">
-								<AvatarImage src={user?.avatar || "/placeholder.svg"} />
+								<AvatarImage src={user?.avatarUrl || "/placeholder.svg"} />
 								<AvatarFallback>
 									{user && user?.fullName
 										? user?.fullName[0]

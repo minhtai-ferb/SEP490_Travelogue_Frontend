@@ -10,33 +10,29 @@ import UnifiedHeader from "@/components/common/common-header"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { useEffect, useState } from "react"
-
+import { NewsCategory } from "@/types/News"
 export default function News() {
 	// Get current date for the "Today's Information" section
 	// const currentDate = format(new Date(), "MMMM d, yyyy")
 	const currentDate = format(new Date(), "d MMMM, yyyy", { locale: vi })
-	const { getNewsCategory } = useNewsCategory()
 
-	const [categoryNews, setCategoryNews] = useState([])
-
-
-	const fetchCategoryNews = async () => {
-		// TODO: Fetch category news using API endpoint
-		try {
-			const response = await getNewsCategory()
-			setCategoryNews(response?.data)
-		} catch (error) {
-			console.error('====================================');
-			console.error(error);
-			console.error('====================================');
+	const categories = [
+		{
+			id: 1,
+			name: "Tin tức",
+			category: "News",
+		},
+		{
+			id: 2,
+			name: "Sự kiện",
+			category: "Event",
+		},
+		{
+			id: 3,
+			name: "Trải nghiệm",
+			category: "Experience",
 		}
-
-	}
-
-	useEffect(() => {
-		fetchCategoryNews()
-	}, [])
-
+	]
 
 	return (
 		<main className="min-h-screen bg-background relative">
@@ -89,11 +85,9 @@ export default function News() {
 
 					{/* Category sections */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-						{
-							categoryNews?.map((category: any) => (
-								<CategoryNews category={category} limit={3} key={category.id} />
-							))
-						}
+						{categories?.map((item) => (
+							<CategoryNews category={item.category as any} title={item.name} limit={3} key={item.id} />
+						))}
 					</div>
 				</div>
 			</div>

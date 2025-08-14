@@ -1,19 +1,23 @@
 import DiscoverSection from '@/components/discoverMoreSection'
-import { useExperience } from '@/services/experience'
-import { Experience } from '@/types/Experience'
+import { useNews } from '@/services/use-news'
+import { Experience } from '@/types/News'
 import React, { useEffect, useState } from 'react'
+import { toAbsoluteUrl } from '@/lib/url'
 
 function DiscoverMore() {
 
 	const [data, setData] = useState<Experience[]>([])
 
-	const { getAllExperience } = useExperience()
+	const { getPagedExperiences } = useNews()
 
 	const fetchExperience = async () => {
 		try {
-			const res = await getAllExperience()
+			const res = await getPagedExperiences({
+				pageNumber: 1,
+				pageSize: 100,
+			})
 			// Shuffle the array to randomize the experiences
-			const shuffled = res.sort(() => 0.5 - Math.random())
+			const shuffled = res.data.sort(() => 0.5 - Math.random())
 			// Select only the first 4 experiences
 			const selected = shuffled.slice(0, 4)
 			setData(selected)
@@ -36,8 +40,8 @@ function DiscoverMore() {
 					<DiscoverSection
 						key={index}
 						id={item.id}
-						description={item.description}
-						imageUrl={item?.medias?.[0]?.mediaUrl || ''}
+						title={item.title}
+						imageUrl={toAbsoluteUrl(item?.medias?.[0]?.mediaUrl)}
 					/>
 				))}
 			</div>

@@ -38,7 +38,7 @@ export function ParallaxShowcase() {
 	// 2) Accept only the typeId, not the full object
 	const fetchLocationsByType = async (typeId: string) => {
 		try {
-			const locations = await searchLocation({ typeId })
+			const locations = await searchLocation({ type: typeId })
 		} catch (error) {
 			console.error("Error fetching locations:", error)
 		}

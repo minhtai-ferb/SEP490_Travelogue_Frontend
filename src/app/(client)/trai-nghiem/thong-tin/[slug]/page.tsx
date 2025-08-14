@@ -3,18 +3,38 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useExperience } from "@/services/experience"
-import type { Experience } from "@/types/Experience"
+import { useNews } from "@/services/use-news"
+import { type Experience } from "@/types/News"
 import { Building, Calendar, ChevronLeft, ChevronRight, MapPin } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
+type RelatedItem = {
+	id: string
+	title: string
+	description?: string
+	categoryName?: string
+	newsCategory?: number
+	medias?: { mediaUrl: string; isThumbnail?: boolean }[]
+}
+
+type RichExperience = Experience & {
+	startDate?: string
+	endDate?: string
+	categoryName?: string
+	typeExperienceText?: string
+	relatedNews?: RelatedItem[]
+	districtName?: string
+	eventName?: string
+}
+
 function InfoExperience() {
-	const { getExperienceById } = useExperience()
-	const [experienceDetail, setExperienceDetail] = useState<Experience>()
+	const [experienceDetail, setExperienceDetail] = useState<RichExperience>()
 	const [loading, setLoading] = useState(true)
 	const [currentImageIndex, setCurrentImageIndex] = useState(0)
+	const { getNewsById } = useNews()
 	const { slug } = useParams()
 	const router = useRouter()
 
@@ -22,8 +42,8 @@ function InfoExperience() {
 	const fetchExperiences = async (id: string) => {
 		try {
 			setLoading(true)
-			const response = await getExperienceById(id)
-			setExperienceDetail(response)
+			const response = await getNewsById(id)
+			setExperienceDetail(response as RichExperience)
 		} catch (error) {
 			console.error(error)
 		} finally {
@@ -48,33 +68,15 @@ function InfoExperience() {
 		setCurrentImageIndex((prev) => (prev === (experienceDetail.medias?.length ?? 0) - 1 ? 0 : prev + 1))
 	}
 
-	// Extract restaurant information from content
-	const extractRestaurants = (content: string) => {
-		const addressSection = content.split("ĐỊA CHỈ THƯỞNG THỨC")[1]
-		if (!addressSection) return []
-
-		return addressSection
-			.split("\n")
-			.filter((line) => line.trim().startsWith("Nhà hàng"))
-			.map((line) => {
-				const parts = line.split("-")
-				if (parts.length < 2) return null
-				return {
-					name: parts[0].trim(),
-					address: parts[1].replace("ĐC:", "").trim(),
-				}
-			})
-			.filter(Boolean)
+	const formatDate = (iso?: string) => {
+		if (!iso) return ""
+		const d = new Date(iso)
+		return isNaN(d.getTime()) ? "" : d.toLocaleDateString("vi-VN")
 	}
 
-	// Format content for better readability
 	const formatContent = (content: string) => {
 		if (!content) return []
-
-		// Remove the restaurant section for the main content
-		const mainContent = content.split("ĐỊA CHỈ THƯỞNG THỨC")[0]
-
-		return mainContent.split("\n").filter((paragraph) => paragraph.trim().length > 0)
+		return content.split("\n").filter((paragraph) => paragraph.trim().length > 0)
 	}
 
 	if (loading) {
@@ -97,8 +99,25 @@ function InfoExperience() {
 		)
 	}
 
-	const restaurants = extractRestaurants(experienceDetail.content || "")
 	const contentParagraphs = formatContent(experienceDetail.content || "")
+	const start = formatDate(experienceDetail.startDate)
+	const end = formatDate(experienceDetail.endDate)
+	const related = experienceDetail.relatedNews || []
+	const heroImage = experienceDetail.medias?.find(m => m.isThumbnail)?.mediaUrl || experienceDetail.medias?.[0]?.mediaUrl
+
+	const getCategoryName = (category: string) => {
+		if (!category) return ""
+		switch (category) {
+			case "News":
+				return "Tin tức"
+			case "Event":
+				return "Sự kiện"
+			case "Experience":
+				return "Trải nghiệm"
+			default:
+				return ""
+		}
+	}
 
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -114,25 +133,27 @@ function InfoExperience() {
 				<span className="text-sm text-muted-foreground">/ Trải nghiệm / {experienceDetail?.title}</span>
 			</div>
 			{/* Hero Section */}
-			<div className="relative rounded-xl overflow-hidden mb-8 h-[50vh] md:h-[60vh]">
-				{experienceDetail.medias && experienceDetail.medias.length > 0 && (
+			<div className="relative rounded-xl overflow-hidden mb-8 h-[50vh] md:h-[60vh] bg-muted">
+				{heroImage ? (
 					<>
 						<Image
-							src={experienceDetail.medias[currentImageIndex].mediaUrl || "/placeholder_image.jpg"}
+							src={experienceDetail.medias?.[currentImageIndex]?.mediaUrl || heroImage}
 							alt={experienceDetail.title}
 							fill
-							className="object-contain"
+							className="object-cover"
 							quality={100}
 							priority
 						/>
 						<div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 md:p-10">
-							<Badge className="mb-3 self-start bg-amber-500 hover:bg-amber-600 text-white">Ẩm thực đặc sản</Badge>
+							{experienceDetail.categoryName && (
+								<Badge variant="secondary" className="mb-3 self-start bg-amber-500 hover:bg-amber-600 text-white">{getCategoryName(experienceDetail.categoryName)}</Badge>
+							)}
 							<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">{experienceDetail.title}</h1>
-							<p className="text-white/90 max-w-3xl text-lg">{experienceDetail.description}</p>
+							{experienceDetail.description && (
+								<p className="text-white/90 max-w-3xl text-lg">{experienceDetail.description}</p>
+							)}
 						</div>
-
-						{/* Image navigation */}
-						{experienceDetail.medias.length > 1 && (
+						{experienceDetail.medias && experienceDetail.medias.length > 1 && (
 							<>
 								<Button
 									variant="ghost"
@@ -156,6 +177,16 @@ function InfoExperience() {
 							</>
 						)}
 					</>
+				) : (
+					<div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10 bg-gradient-to-r from-blue-100 to-indigo-100">
+						{experienceDetail.categoryName && (
+							<Badge variant="secondary" className="mb-3 self-start bg-amber-500 hover:bg-amber-600 text-white">{getCategoryName(experienceDetail.categoryName)}</Badge>
+						)}
+						<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">{experienceDetail.title}</h1>
+						{experienceDetail.description && (
+							<p className="text-muted-foreground max-w-3xl text-lg">{experienceDetail.description}</p>
+						)}
+					</div>
 				)}
 			</div>
 
@@ -167,13 +198,47 @@ function InfoExperience() {
 							<h2 className="text-2xl font-bold mb-4">Giới thiệu</h2>
 							<div className="prose max-w-none">
 								{contentParagraphs.map((paragraph, index) => (
-									<p key={index} className="mb-4 text-muted-foreground">
-										{paragraph}
-									</p>
+									<div key={index} className="mb-4 text-muted-foreground" dangerouslySetInnerHTML={{ __html: paragraph }} />
 								))}
 							</div>
 						</CardContent>
 					</Card>
+
+					{/* Related News */}
+					{related?.length > 0 && (
+						<Card>
+							<CardContent className="p-6">
+								<h2 className="text-xl font-bold mb-4">Bài viết liên quan</h2>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									{related?.map((item) => {
+										const thumb = item.medias?.find(m => m.isThumbnail)?.mediaUrl || item.medias?.[0]?.mediaUrl
+										return (
+											<Link href={item.categoryName === "News" ? `/tin-tuc/bai-bao/${item.id}` : `/trai-nghiem/thong-tin/${item.id}`} key={item.id}>
+												<div key={item.id} className="flex gap-3 items-start">
+													<div className="relative w-24 h-24 rounded-md overflow-hidden bg-muted flex-shrink-0">
+														{thumb && (
+															<Image src={thumb} alt={item.title} fill className="object-cover" />
+														)}
+													</div>
+													<div className="min-w-0">
+														<div className="flex items-center gap-2 mb-1">
+															{item.categoryName && (
+																<Badge variant="secondary">{getCategoryName(item.categoryName)}</Badge>
+															)}
+														</div>
+														<h3 className="font-medium truncate">{item.title}</h3>
+														{item.description && (
+															<p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+														)}
+													</div>
+												</div>
+											</Link>
+										)
+									})}
+								</div>
+							</CardContent>
+						</Card>
+					)}
 
 					{/* Image Gallery */}
 					{experienceDetail.medias && experienceDetail.medias.length > 1 && (
@@ -203,11 +268,15 @@ function InfoExperience() {
 
 				{/* Sidebar */}
 				<div className="space-y-6">
-					{/* Location Info */}
+					{/* Info */}
 					<Card className="shadow-md">
 						<CardContent className="p-6">
 							<h2 className="text-xl font-bold mb-4">Thông tin</h2>
-
+							{experienceDetail?.categoryName && (
+								<div className="mb-4">
+									<Badge variant="secondary" className="mb-3 self-start bg-amber-500 hover:bg-amber-600 text-white">{getCategoryName(experienceDetail?.categoryName)}</Badge>
+								</div>
+							)}
 							{experienceDetail.locationName && (
 								<div className="flex items-start gap-3 mb-4">
 									<MapPin className="h-5 w-5 text-red-500 mt-0.5" />
@@ -235,6 +304,24 @@ function InfoExperience() {
 										<h3 className="font-medium">Sự kiện liên quan</h3>
 										<p className="text-muted-foreground">{experienceDetail.eventName}</p>
 									</div>
+								</div>
+							)}
+
+							{(start || end) && (
+								<div className="flex items-start gap-3 mt-4">
+									<Calendar className="h-5 w-5 text-blue-500 mt-0.5" />
+									<div>
+										<h3 className="font-medium">Thời gian</h3>
+										<p className="text-muted-foreground">
+											{start}{start && end ? " - " : ""}{end}
+										</p>
+									</div>
+								</div>
+							)}
+
+							{experienceDetail.typeExperienceText && (
+								<div className="mt-4">
+									<Badge>{experienceDetail.typeExperienceText}</Badge>
 								</div>
 							)}
 						</CardContent>

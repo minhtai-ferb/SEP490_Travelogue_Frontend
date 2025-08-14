@@ -9,6 +9,7 @@ import { signInWithGoogle, signOut as firebaseSignOut } from "./firebase-auth";
 import Cookies from "js-cookie";
 import { add } from "date-fns";
 import { addToast } from "@heroui/react";
+import { clearActiveRole, clearStoredUser } from "@/utils/auth-storage";
 
 export function useAuth() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -48,7 +49,7 @@ export function useAuth() {
           title: "Đăng nhập thất bại!",
           description: e?.response?.data?.message || "Vui lòng thử lại",
           color: "danger",
-        })
+        });
       } finally {
         setLoading(false);
       }
@@ -160,8 +161,13 @@ export function useAuth() {
         await firebaseSignOut();
       }
 
+      Cookies.remove("jwtToken", { path: "/" });
+      Cookies.remove("refreshToken", { path: "/" });
+      Cookies.remove("activeRole", { path: "/" });
+
       // Clear local storage and state
-      localStorage.removeItem("token");
+      clearActiveRole();
+      clearStoredUser();
       setUser(null);
 
       // Redirect to auth page
@@ -228,11 +234,7 @@ export function useAuth() {
   );
 
   const changePassword = useCallback(
-    async (
-      email: string,
-      newPassword: string,
-      confirmPassword: string
-    ) => {
+    async (email: string, newPassword: string, confirmPassword: string) => {
       setLoading(true);
       try {
         const response = await callApi("post", "auth/change-password", {

@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useDistrictManager } from "@/services/district-manager";
 import { District } from "@/types/District";
+import { ro } from "date-fns/locale";
 import { Loader2, Upload, X } from "lucide-react"; // Added Upload and X icons
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
@@ -29,7 +30,8 @@ import { FaCamera, FaMapMarkerAlt } from "react-icons/fa"; // Added FaCamera
 
 const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [district, setDistrict] = useState<District>();
-  const { getDistrictById, loading, updateDistrictImage } = useDistrictManager(); // Add updateDistrictImage function
+  const { getDistrictById, loading, updateDistrictImage } =
+    useDistrictManager(); // Add updateDistrictImage function
   const router = useRouter();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -37,28 +39,26 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [uploading, setUploading] = useState(false);
 
   const { id } = use(params);
-
-  useEffect(() => {
-    const fetchDistrict = async () => {
-      try {
-        const response: District = await getDistrictById(id);
-        if (!response) {
-          throw new Error("No data returned from API getDistrictById");
-        }
-
-        setDistrict(response);
-      } catch (error: any) {
-        console.error("====================================");
-        console.error(error);
-        console.error("====================================");
-        const errorMessage =
-          error?.response?.data.Message ||
-          "Đã xảy ra lỗi khi lấy dữ liệu quận huyện";
-
-        toast.error(errorMessage); // Use toast to show error message
+  const fetchDistrict = async () => {
+    try {
+      const response: District = await getDistrictById(id);
+      if (!response) {
+        throw new Error("No data returned from API getDistrictById");
       }
-    };
 
+      setDistrict(response);
+    } catch (error: any) {
+      console.error("====================================");
+      console.error(error);
+      console.error("====================================");
+      const errorMessage =
+        error?.response?.data.Message ||
+        "Đã xảy ra lỗi khi lấy dữ liệu quận huyện";
+
+      toast.error(errorMessage); // Use toast to show error message
+    }
+  };
+  useEffect(() => {
     fetchDistrict();
   }, [getDistrictById, id]);
 
@@ -92,10 +92,6 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       formData.append("Description", district?.description);
       formData.append("ImageUpload", selectedImage);
 
-      // Retrieve DistrictId using FormData.get
-      const districtId = formData.get("DistrictId");
-      console.log("DistrictId:", districtId);
-
       // Alternatively, iterate through FormData entries
       for (const [key, value] of formData.entries()) {
         console.log(`${key}:`, value);
@@ -106,14 +102,15 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       setDistrict(updatedDistrict);
       toast.success("Hình ảnh đã được cập nhật");
 
+      fetchDistrict();
+
       setIsImageModalOpen(false);
       setSelectedImage(null);
       setImagePreview(null);
     } catch (error: any) {
       console.error("Error uploading image:", error);
 
-      toast.error(
-        error?.message || "Đã xảy ra lỗi khi cập nhật hình ảnh")
+      toast.error(error?.response.data.Message || "Đã xảy ra lỗi khi cập nhật hình ảnh");
     } finally {
       setUploading(false);
     }
@@ -155,9 +152,11 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
           <div
             className="bg-cover bg-center h-48 rounded-t-lg relative"
             style={{
-              backgroundImage: `url(${district?.medias && district.medias.length > 0
-                ? district?.medias[0]?.mediaUrl
-                : "/thanh_pho_tay_ninh.jpg"})`
+              backgroundImage: `url(${
+                district?.medias && district.medias.length > 0
+                  ? district?.medias[0]?.mediaUrl
+                  : "/thanh_pho_tay_ninh.jpg"
+              })`,
             }}
           >
             {/* Add overlay button to update image */}
@@ -185,7 +184,9 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
           {/* Content section */}
           <div className="bg-white shadow-lg rounded-b-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Chi tiết quận huyện</h2>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Chi tiết quận huyện
+              </h2>
               <div className="flex gap-3">
                 <button
                   className="text-sm font-medium text-white bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition"
@@ -201,7 +202,9 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
             <div className="border-t border-gray-200 pt-4 mt-2">
               <h3 className="text-lg font-medium mb-3">Thông tin</h3>
-              <p className="text-gray-700 mb-4 leading-relaxed">{district?.description}</p>
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                {district?.description}
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-gray-50 p-3 rounded">
@@ -210,7 +213,11 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </div>
                 <div className="bg-gray-50 p-3 rounded">
                   <span className="text-gray-500 text-sm">Cập nhật:</span>
-                  <p className="font-medium">{district?.createdTime ? new Date(district.createdTime).toLocaleDateString() : "N/A"}</p>
+                  <p className="font-medium">
+                    {district?.createdTime
+                      ? new Date(district.createdTime).toLocaleDateString()
+                      : "N/A"}
+                  </p>
                 </div>
               </div>
 
@@ -263,7 +270,10 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </button>
               </div>
             ) : (
-              <div className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => document.getElementById('image-upload')?.click()}>
+              <div
+                className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => document.getElementById("image-upload")?.click()}
+              >
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">

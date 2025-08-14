@@ -20,6 +20,7 @@ import { useLocations } from "@/services/use-locations";
 import ContentEditor from "./content-editor";
 import { ImageUpload } from "./image-upload";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface LocationFormData {
   name: string;
@@ -115,8 +116,6 @@ export function CreateLocationForm() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    console.log("Submitting form data:", formData, locationTypeData);
-
     try {
       // Create main location
       const locationResponse = await createLocation(formData);
@@ -141,13 +140,12 @@ export function CreateLocationForm() {
           locationTypeData.historicalLocation
         );
       }
-
       // Success notification
-      alert("Tạo địa điểm thành công!");
-      router.push("/locations/table");
+      toast.success("Địa điểm đã được tạo thành công!");
+      router.push("/admin/locations/table");
     } catch (error) {
       console.error("Error creating location:", error);
-      alert("Có lỗi xảy ra khi tạo địa điểm");
+      toast.error("Có lỗi xảy ra khi tạo địa điểm");
     } finally {
       setIsSubmitting(false);
     }

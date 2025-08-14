@@ -19,7 +19,7 @@ function HeaderLocationTable() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="#">Quản lý địa điểm</BreadcrumbLink>
+            <BreadcrumbLink href="/admin/locations">Quản lý địa điểm</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>

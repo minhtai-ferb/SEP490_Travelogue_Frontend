@@ -7,7 +7,9 @@ import {
   MapPin,
   Newspaper,
   Send,
-  SquareTerminal
+  SquareTerminal,
+  Banknote,
+  Ticket,
 } from "lucide-react";
 import * as React from "react";
 
@@ -26,32 +28,23 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAtom } from "jotai";
+import { userAtom } from "@/store/auth";
 
 const data = {
   navMain: [
-    {
-      title: "Chuyến tham quan",
-      url: "/admin/tour",
-      icon: Map,
-      items: [
-        {
-          title: "Danh sách chuyến tham quan",
-          url: "/admin/tour",
-        },
-      ],
-    },
     {
       title: "Địa điểm",
       url: "/admin/locations",
       icon: MapPin,
       items: [
         {
-          title: "Danh sách địa điểm",
-          url: "/admin/locations/table",
+          title: "Danh sách quận huyện",
+          url: "/admin/districs",
         },
         {
-          title: "Danh sách quận huyện",
-          url: "/admin/districts",
+          title: "Danh sách địa điểm",
+          url: "/admin/locations/table",
         },
       ],
     },
@@ -100,37 +93,65 @@ const data = {
       items: [
         {
           title: "Người dùng",
-          url: "/admin/user",
+          url: "/admin/user/table",
         },
-        // {
-        //   title: "Kiểm soát viên",
-        //   url: "#",
-        // },
+        {
+          title: "Xác thực hướng dẫn viên",
+          url: "/admin/user/requests/tourguide",
+        },
+        {
+          title: "Xác thực làng nghề",
+          url: "/admin/user/requests/craftvillage",
+        },
+      ],
+    },
+    {
+      title: "Quản lý yêu cầu rút tiền",
+      url: "/admin/request-withdrawal/request-table",
+      icon: Banknote,
+      items: [
+        {
+          title: "Danh sách yêu cầu rút tiền",
+          url: "/admin/request-withdrawal/request-table",
+        },
+      ],
+    },
+    {
+      title: "Quản lý các đặt chỗ",
+      url: "/admin/booking",
+      icon: Ticket,
+      items: [
+        {
+          title: "Đặt chỗ chuyến tham quan",
+          url: "/admin/booking/tour-schedule/table",
+        },
+        {
+          title: "Đặt hướng dẫn viên",
+          url: "/admin/booking/tour-guide/table",
+        },
+        {
+          title: "Đặt trải nghiệm làng nghề",
+          url: "/admin/booking/workshop/table",
+        },
+      ],
+    },
+      {
+      title: "Chuyến tham quan",
+      url: "/admin/tour",
+      icon: Map,
+      items: [
+        {
+          title: "Danh sách chuyến tham quan",
+          url: "/admin/tour",
+        },
       ],
     },
   ],
 };
 
-export function getUserFromLocalStorage() {
-  const [user, setUser] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("USER");
-      setUser(storedUser ? JSON.parse(storedUser) : null);
-    }
-  }, []);
-
-  return user;
-}
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname(); // Get the current URL path
-  const user = getUserFromLocalStorage() || {
-    name: "Guest",
-    email: "guest@example.com",
-    avatar: "",
-  };
+  const [user, setUser] = useAtom(userAtom);
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -150,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Traveloge</span>
-                  <span className="truncate text-xs">goyoung.tayninh.vn</span>
+                  <span className="truncate text-xs">travelogue.onl</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -176,7 +197,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser
+          user={{
+            fullName: user?.fullName ?? "Guest",
+            email: user?.email ?? "guest@example.com",
+            avatar: user?.avatarUrl ?? "/default-avatar.png",
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

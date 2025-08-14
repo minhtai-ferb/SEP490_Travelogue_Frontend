@@ -26,6 +26,7 @@ import { HistoricalLocationForm } from "./components/historical-location-form";
 import { CraftVillageForm } from "./components/craft-village-form";
 import { CuisineForm } from "./components/cuisine-form";
 import { useLocations } from "@/services/use-locations";
+import toast from "react-hot-toast";
 
 interface LocationData {
   id: string;
@@ -159,11 +160,11 @@ export default function EditLocationPage() {
           break;
       }
 
-      message.success("Cập nhật địa điểm thành công!");
-      router.push("/locations/table");
+      toast.success("Cập nhật địa điểm thành công!");
+      router.push("/admin/locations/table");
     } catch (error) {
       console.error("Error updating location:", error);
-      message.error("Có lỗi xảy ra khi cập nhật địa điểm");
+      toast.error("Có lỗi xảy ra khi cập nhật địa điểm");
     } finally {
       setIsSubmitting(false);
     }

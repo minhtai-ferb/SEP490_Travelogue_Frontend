@@ -8,25 +8,25 @@ import sharing2 from '../../../../public/Framesharing2.png';
 import sharing3 from '../../../../public/Framesharing3.png';
 import sharing4 from '../../../../public/Framesharing4.png';
 import { useEffect, useState } from 'react';
-import { Experience } from '@/types/Experience';
-import { useExperience } from '@/services/experience';
-
+import { useNews } from '@/services/use-news';
+import { News } from '@/types/News';
+import { ListMedia } from '@/types/News';
 const StorySharing = () => {
 
-	const [experiences, setexperiences] = useState<Experience[]>([])
-	const { getExperienceSearch } = useExperience()
+	const [experiences, setexperiences] = useState<News[]>([])
+	const { getPagedExperiences } = useNews()
 
 	const fetchExperiences = async () => {
 		try {
-			const response = await getExperienceSearch(
+			const response = await getPagedExperiences(
 				{
-					pageNumber: 2,
+					pageNumber: 1,
 					pageSize: 5,
 				}
 			)
 
 			console.log("experiences", response);
-			setexperiences(response)
+			setexperiences(response.data)
 		} catch (error) {
 			console.log(error);
 		}
@@ -50,7 +50,7 @@ const StorySharing = () => {
 					{experiences?.slice(0, 4).map((item, index) => (
 						<div key={item?.id} className="w-full md:w-[calc(50%-0.5rem)] aspect-square md:mt-0 mt-3">
 							<Image
-								src={item?.medias?.[1]?.mediaUrl ?? sharing}
+								src={item?.medias?.[0]?.mediaUrl ?? '/image/default_image.png'}
 								alt={`hinh-${index}`}
 								width={400}
 								height={400}
@@ -63,7 +63,7 @@ const StorySharing = () => {
 				{/* Second Half: Single Large Image */}
 				<div className="w-full md:w-1/2 mt-4 md:mt-0">
 					<Image
-						src={experiences[4]?.medias?.[2]?.mediaUrl ?? sharing1}
+						src={experiences[4]?.medias?.[0]?.mediaUrl ?? sharing1}
 						alt="hinh-large"
 						width={400}
 						height={400}

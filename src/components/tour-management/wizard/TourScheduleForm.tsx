@@ -6,8 +6,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, DollarSign, Loader2, Banknote } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComp } from "@/components/ui/calendar"
+import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, Loader2, Banknote, Copy, Sparkles, UserCircle2, User } from "lucide-react"
 import type { ScheduleFormData } from "@/types/Tour"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTourguideAssign } from "@/services/tourguide"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { TourGuideItem } from "@/types/Tourguide"
 
 interface TourScheduleFormProps {
 	initialData?: ScheduleFormData[]
@@ -37,6 +43,11 @@ export function TourScheduleForm({
 		childrenPrice: 0,
 	})
 	const [errors, setErrors] = useState<Record<string, string>>({})
+	const [openDatePicker, setOpenDatePicker] = useState(false)
+	const [quickAddOpen, setQuickAddOpen] = useState(false)
+	const { getTourGuide } = useTourguideAssign()
+	const [guides, setGuides] = useState<Array<TourGuideItem>>([])
+	const [guidesLoading, setGuidesLoading] = useState(false)
 
 	useEffect(() => {
 		if (initialData.length > 0) {
@@ -52,6 +63,40 @@ export function TourScheduleForm({
 	useEffect(() => {
 		setNewSchedule((prev) => ({ ...prev, totalDays: tourDays }))
 	}, [tourDays])
+
+	// Fetch available tour guides once
+	useEffect(() => {
+		let mounted = true
+		const fetchGuides = async () => {
+			try {
+				setGuidesLoading(true)
+				const res: any = await getTourGuide()
+				const list: any[] = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : []
+				const normalized = list.map((g: any) => ({
+					id: g.id || g.userId || g.tourGuideId,
+					userName: g.userName || g.userName || g.email || "Chưa rõ",
+					avatarUrl: g.avatarUrl || "",
+					email: g.email || "",
+					sex: g.sex || 0,
+					sexText: g.sexText || "",
+					address: g.address || "",
+					price: g.price || 0,
+					introduction: g.introduction || "",
+					averageRating: g.averageRating || 0,
+					totalReviews: g.totalReviews || 0,
+				}))
+				if (mounted) setGuides(normalized.filter((g) => !!g.id) as TourGuideItem[])
+			} catch {
+				if (mounted) setGuides([])
+			} finally {
+				if (mounted) setGuidesLoading(false)
+			}
+		}
+		fetchGuides()
+		return () => {
+			mounted = false
+		}
+	}, [getTourGuide])
 
 	const validateNewSchedule = () => {
 		const newErrors: Record<string, string> = {}
@@ -70,6 +115,11 @@ export function TourScheduleForm({
 
 		if (newSchedule.childrenPrice < 0) {
 			newErrors.childrenPrice = "Giá trẻ em không được âm"
+		}
+
+		// Optional: validate tourGuideId existence when selected
+		if (newSchedule.tourGuideId && !guides.find((g) => g.id === newSchedule.tourGuideId)) {
+			newErrors.tourGuideId = "Hướng dẫn viên không hợp lệ"
 		}
 
 		// Check for duplicate dates
@@ -102,6 +152,45 @@ export function TourScheduleForm({
 			})
 			setErrors({})
 		}
+	}
+
+	const formatCurrency = (value: number) =>
+		new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(value || 0)
+
+	const parseYMD = (v: string) => {
+		if (!v) return undefined
+		const parts = v.split("-")
+		if (parts.length !== 3) return undefined
+		const year = Number(parts[0])
+		const month = Number(parts[1])
+		const day = Number(parts[2])
+		if (!year || !month || !day) return undefined
+		return new Date(year, month - 1, day)
+	}
+	const toYMD = (d: Date) => {
+		const yyyy = d.getFullYear()
+		const mm = String(d.getMonth() + 1).padStart(2, "0")
+		const dd = String(d.getDate()).padStart(2, "0")
+		return `${yyyy}-${mm}-${dd}`
+	}
+
+	const handleDuplicate = (index: number) => {
+		const base = schedules[index]
+		if (!base) return
+		setNewSchedule({ ...base })
+	}
+
+	const handleQuickAddWeekly = (weeks: number) => {
+		if (!newSchedule.departureDate) return
+		const baseDate = parseYMD(newSchedule.departureDate) as Date
+		const batch: ScheduleFormData[] = []
+		for (let i = 0; i < weeks; i += 1) {
+			const d = new Date(baseDate)
+			d.setDate(d.getDate() + i * 7)
+			batch.push({ ...newSchedule, departureDate: toYMD(d) })
+		}
+		setSchedules((prev) => [...prev, ...batch])
+		setQuickAddOpen(false)
 	}
 
 	const handleRemoveSchedule = (index: number) => {
@@ -142,26 +231,40 @@ export function TourScheduleForm({
 			{/* Add New Schedule */}
 			<Card>
 				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
+					<CardTitle className="flex items-center gap-2 text-lg">
 						<Plus className="w-5 h-5" />
 						Thêm Lịch Trình Mới
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"	>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="departureDate" className="flex items-center gap-2">
 								<Calendar className="w-4 h-4" />
 								Ngày Khởi Hành <span className="text-red-500">*</span>
 							</Label>
-							<Input
-								id="departureDate"
-								type="date"
-								value={newSchedule.departureDate}
-								onChange={(e) => setNewSchedule({ ...newSchedule, departureDate: e.target.value })}
-								className={errors.departureDate ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
+							<Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
+								<PopoverTrigger asChild>
+									<Button type="button" variant="outline" className={`w-full justify-start ${errors.departureDate ? "border-red-500" : ""}`} disabled={isLoading}>
+										{newSchedule.departureDate ? new Date(newSchedule.departureDate).toLocaleDateString("vi-VN") : "Chọn ngày"}
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="p-0" align="start" sideOffset={8} side="bottom">
+									<CalendarComp
+										className="rounded-md border bg-background p-2 w-auto"
+										mode="single"
+										selected={parseYMD(newSchedule?.departureDate || "")}
+										onSelect={(d) => {
+											if (!d) return
+											setNewSchedule((prev) => ({ ...prev, departureDate: toYMD(d) }))
+											setOpenDatePicker(false)
+										}}
+										disabled={(date) => date < new Date(new Date().toDateString())}
+										initialFocus
+										captionLayout="dropdown"
+									/>
+								</PopoverContent>
+							</Popover>
 							{errors.departureDate && <p className="text-sm text-red-500">{errors.departureDate}</p>}
 						</div>
 
@@ -200,6 +303,7 @@ export function TourScheduleForm({
 								className={errors.adultPrice ? "border-red-500" : ""}
 								disabled={isLoading}
 							/>
+							<p className="text-xs text-gray-500">{formatCurrency(newSchedule.adultPrice)}</p>
 							{errors.adultPrice && <p className="text-sm text-red-500">{errors.adultPrice}</p>}
 						</div>
 
@@ -220,15 +324,78 @@ export function TourScheduleForm({
 								className={errors.childrenPrice ? "border-red-500" : ""}
 								disabled={isLoading}
 							/>
+							<p className="text-xs text-gray-500">{formatCurrency(newSchedule.childrenPrice)}</p>
 							{errors.childrenPrice && <p className="text-sm text-red-500">{errors.childrenPrice}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<div className="space-y-1 md:w-1/2">
+								<Label htmlFor="tourGuideId" className="flex items-center gap-2">
+									<User className="w-4 h-4" />
+									Hướng Dẫn Viên
+								</Label>
+								<Select
+									value={newSchedule.tourGuideId}
+									onValueChange={(val) => setNewSchedule({ ...newSchedule, tourGuideId: val === "none" ? undefined : val })}
+									disabled={isLoading || guidesLoading}
+								>
+									<SelectTrigger id="tourGuideId" className={errors.tourGuideId ? "border-red-500" : ""} disabled={isLoading || guidesLoading}>
+										<SelectValue placeholder={guidesLoading ? "Đang tải..." : "Chọn hướng dẫn viên"} />
+									</SelectTrigger>
+									<SelectContent className="overflow-y-auto w-full max-h-[300px]">
+										<SelectItem value="none" className="cursor-pointer hover:bg-gray-100 p-2 rounded-md">Không chỉ định</SelectItem>
+										{guides.map((g) => (
+											<SelectItem key={g.id} value={g.id} className="cursor-pointer hover:bg-gray-100 p-2 rounded-md">
+												<div className="flex items-center gap-2">
+													<Avatar className="w-6 h-6">
+														<AvatarImage src={g.avatarUrl} />
+														<AvatarFallback>
+															{g.userName.charAt(0).toUpperCase()}
+														</AvatarFallback>
+													</Avatar>
+													<div className="flex flex-col">
+														<span className="text-sm font-medium">{g.userName}</span>
+														<span className="text-xs text-gray-500">{g.email}</span>
+													</div>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.tourGuideId && <p className="text-sm text-red-500">{errors.tourGuideId}</p>}
+							</div>
+							<div className="space-y-1"></div>
 						</div>
 					</div>
 
-					<div className="flex justify-end mt-4">
-						<Button onClick={handleAddSchedule} className="flex items-center gap-2" disabled={isLoading}>
-							<Plus className="w-4 h-4" />
-							Thêm Lịch Trình
-						</Button>
+					<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mt-4 gap-3">
+						<div className="flex items-center gap-2">
+							<Popover open={quickAddOpen} onOpenChange={setQuickAddOpen}>
+								<PopoverTrigger asChild>
+									<Button type="button" variant="secondary" className="gap-2">
+										<Sparkles className="w-4 h-4" />
+										Thêm nhanh chuỗi ngày
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="w-80">
+									<div className="space-y-3">
+										<p className="text-sm text-gray-600">Bắt đầu từ ngày đang chọn, thêm các lịch trình cách nhau 7 ngày.</p>
+										<div className="grid grid-cols-3 gap-2">
+											<Button type="button" variant="outline" onClick={() => handleQuickAddWeekly(2)}>+ 2 tuần</Button>
+											<Button type="button" variant="outline" onClick={() => handleQuickAddWeekly(4)}>+ 4 tuần</Button>
+											<Button type="button" variant="outline" onClick={() => handleQuickAddWeekly(8)}>+ 8 tuần</Button>
+										</div>
+										<p className="text-xs text-gray-500">Các mục thêm sẽ sao chép số người và giá hiện tại.</p>
+									</div>
+								</PopoverContent>
+							</Popover>
+						</div>
+						<div className="flex items-center gap-2 ml-auto">
+							<Button onClick={handleAddSchedule} className="flex items-center gap-2" disabled={isLoading}>
+								<Plus className="w-4 h-4" />
+								Thêm Lịch Trình
+							</Button>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
@@ -238,19 +405,20 @@ export function TourScheduleForm({
 				<CardHeader>
 					<CardTitle className="flex items-center justify-between">
 						<span>Danh Sách Lịch Trình ({schedules.length})</span>
-						<div className="flex gap-2">
-							{schedules.length > 0 && (
-								<>
-									<Badge variant="secondary" className="bg-green-100 text-green-800">
-										{schedules.length} lịch trình
-									</Badge>
-									<Badge variant="secondary" className="bg-blue-100 text-blue-800">
-										Tổng doanh thu: {getTotalRevenue().toLocaleString()} VNĐ
-									</Badge>
-								</>
-							)}
-						</div>
 					</CardTitle>
+					{schedules.length > 0 && (
+						<div className="flex flex-wrap gap-2">
+							<Badge variant="secondary" className="bg-green-100 text-green-800">
+								{schedules.length} lịch trình
+							</Badge>
+							<Badge variant="secondary" className="bg-blue-100 text-blue-800">
+								Tổng doanh thu: {formatCurrency(getTotalRevenue())}
+							</Badge>
+							<Badge variant="secondary" className="bg-amber-100 text-amber-800">
+								Tổng sức chứa: {schedules.reduce((s, it) => s + (it.maxParticipant || 0), 0)} người
+							</Badge>
+						</div>
+					)}
 				</CardHeader>
 				<CardContent>
 					{schedules.length === 0 ? (
@@ -269,6 +437,7 @@ export function TourScheduleForm({
 										<TableHead>Giá Người Lớn</TableHead>
 										<TableHead>Giá Trẻ Em</TableHead>
 										<TableHead>Doanh Thu Dự Kiến</TableHead>
+										<TableHead>Hướng Dẫn Viên</TableHead>
 										<TableHead className="text-center">Hành Động</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -300,16 +469,32 @@ export function TourScheduleForm({
 													{(schedule.adultPrice * schedule.maxParticipant).toLocaleString()} VNĐ
 												</span>
 											</TableCell>
+											<TableCell>
+												<span className="text-sm">
+													{guides.find((g) => g.id === schedule.tourGuideId)?.userName || "—"}
+												</span>
+											</TableCell>
 											<TableCell className="text-center">
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => handleRemoveSchedule(index)}
-													className="text-red-500 hover:text-red-700"
-													disabled={isLoading}
-												>
-													<Trash2 className="w-4 h-4" />
-												</Button>
+												<div className="flex items-center justify-center gap-1">
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => handleDuplicate(index)}
+														title="Đưa dữ liệu này lên form"
+														disabled={isLoading}
+													>
+														<Copy className="w-4 h-4" />
+													</Button>
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => handleRemoveSchedule(index)}
+														className="text-red-500 hover:text-red-700"
+														disabled={isLoading}
+													>
+														<Trash2 className="w-4 h-4" />
+													</Button>
+												</div>
 											</TableCell>
 										</TableRow>
 									))}

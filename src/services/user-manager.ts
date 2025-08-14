@@ -75,9 +75,13 @@ export function useUserManager() {
     async (userId: string, roleId: string) => {
       setLoading(true);
       try {
-        const response = await callApi("post", `user/assign-role-to-user?userId=${userId}&roleId=${roleId}`, {
-          data: {},
-        });
+        const response = await callApi(
+          "post",
+          `user/assign-role-to-user?userId=${userId}&roleId=${roleId}`,
+          {
+            data: {},
+          }
+        );
         return response?.data;
       } catch (error: any) {
         throw error;
@@ -88,12 +92,60 @@ export function useUserManager() {
     [callApi, setLoading]
   );
 
+  const removeRoleFromUser = useCallback(
+    async (userId: string, roleId: string) => {
+      setLoading(true);
+      try {
+        const response = await callApi(
+          "delete",
+          `user/remove-user-from-role?userId=${userId}&roleId=${roleId}`
+        );
+        return response?.data;
+      } catch (error: any) {
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
+  // Upload & cập nhật avatar user
+  const updateUserAvatar = useCallback(
+    async (file: File) => {
+      setIsLoading(true);
+      try {
+        if (!file) throw new Error("Vui lòng chọn ảnh.");
+        const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+        if (!allowed.includes(file.type)) {
+          throw new Error("Chỉ hỗ trợ PNG, JPG, JPEG, WEBP.");
+        }
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+          throw new Error("Ảnh vượt quá 5MB.");
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await callApi("put", "user/update-avatar", formData);
+        return res?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
   return {
     getListUser,
     getUserById,
     updateUser,
     getAllRoles,
     assignRoleToUser,
+    removeRoleFromUser,
+    updateUserAvatar,
     loading: isLoading || loading,
   };
 }

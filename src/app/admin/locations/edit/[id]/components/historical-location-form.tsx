@@ -39,7 +39,7 @@ export function HistoricalLocationForm({ data, onChange }: HistoricalLocationFor
           <div className="space-y-2">
             <Label htmlFor="typeHistoricalLocation">Loại di tích</Label>
             <Select
-              value={formData.typeHistoricalLocation.toString()}
+              value={formData.typeHistoricalLocation?.toString()}
               onValueChange={(value) => handleChange("typeHistoricalLocation", Number.parseInt(value))}
             >
               <SelectTrigger>

@@ -7,7 +7,7 @@ import { atomWithStorage } from "jotai/utils"
 export interface User {
 	id?: string
 	email?: string
-	avatar?: string
+	avatarUrl?: string
 	username?: string
 	fullName?: string
 	photoURL?: string // Added for Google profile photos

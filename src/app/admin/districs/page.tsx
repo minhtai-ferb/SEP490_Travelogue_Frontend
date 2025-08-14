@@ -20,11 +20,18 @@ import CityCard from "./components/card";
 
 function ManageDistrics() {
   const [districts, setDistricts] = useState<District[]>([]);
+  const [mounted, setMounted] = useState(false);
   const { getAllDistrict, loading } = useDistrictManager();
   const router = useRouter(); // Initialize router
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
+    const fetchDistricts = async () => {
       try {
         const response: District[] = await getAllDistrict();
         if (!response) {
@@ -37,15 +44,37 @@ function ManageDistrics() {
         console.error(error);
         console.error("====================================");
         const errorMessage =
-          error?.response?.data.Message ||
+          error?.response?.data?.Message ||
           "Đã xảy ra lỗi khi lấy dữ liệu quận huyện";
 
         toast.error(errorMessage); // Use toast to show error message
       }
     };
 
-    fetchStudents();
-  }, [getAllDistrict]);
+    fetchDistricts();
+  }, [getAllDistrict, mounted]);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <SidebarInset>
+        <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-10">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="#">Quản lý quận huyện</BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div className="h-full flex items-center justify-center">
+          <Loader2 className="animate-spin h-10 w-10 text-blue-500" />
+        </div>
+      </SidebarInset>
+    );
+  }
 
   return (
     <SidebarInset>
@@ -65,7 +94,7 @@ function ManageDistrics() {
           <Loader2 className="animate-spin h-10 w-10 text-blue-500" />
         </div>
       ) : (
-        <div className="flex flex-1 flex-col gap-4 p-4 items-center w-full h-fit">
+        <div className="flex flex-col justify-center items-center w-full space-y-10">
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center w-fit h-fit">
             <Link href="/admin/districs/create" className="w-60 h-50">
               <div
@@ -92,11 +121,10 @@ function ManageDistrics() {
             {/* Map districts data into CityCard components */}
             {districts.map((district) => (
               <div
-                key={district.id}
+                key={`district-${district.id}`}
                 onClick={() => router.push(`/admin/districs/${district.id}`)} // Navigate to district page
                 className="cursor-pointer"
               >
-
                 <CityCard
                   cityImage={
                     district.medias && district.medias.length > 0

@@ -46,6 +46,24 @@ export default function VietmapGL({
   const markersRef = useRef<any[]>([]);
   const [scriptsLoaded, setScriptsLoaded] = useState(false);
 
+  const DEFAULT_CENTER: [number, number] = [106.69531282536502, 10.776983649766555];
+
+  const isValidNumber = (value: unknown): value is number =>
+    typeof value === "number" && Number.isFinite(value);
+
+  const isValidLngLat = (coords?: [number, number]): coords is [number, number] => {
+    if (!coords) return false;
+    const [lng, lat] = coords;
+    return (
+      isValidNumber(lng) &&
+      isValidNumber(lat) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    );
+  };
+
   const loadVietmapScripts = () => {
     return new Promise<void>((resolve, reject) => {
       if (typeof window === "undefined") return reject("Window is not defined");
@@ -89,10 +107,12 @@ export default function VietmapGL({
   useEffect(() => {
     if (!scriptsLoaded || !mapContainerRef.current || !apiKey) return;
 
+    const safeCenter = isValidLngLat(center) ? center : DEFAULT_CENTER;
+
     if (mapInstanceRef.current) {
       // Update center and zoom smoothly instead of recreating the map
       mapInstanceRef.current.easeTo({
-        center,
+        center: safeCenter,
         zoom,
         duration: 1000, // Smooth transition in 1 second
       });
@@ -101,8 +121,9 @@ export default function VietmapGL({
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
 
-      // Add new markers
+      // Add new markers (skip invalid ones)
       markers.forEach((marker) => {
+        if (!isValidLngLat(marker.lngLat)) return;
         const markerInstance = new window.vietmapgl.Marker()
           .setLngLat(marker.lngLat)
           .addTo(mapInstanceRef.current);
@@ -127,7 +148,7 @@ export default function VietmapGL({
       const map = new window.vietmapgl.Map({
         container: mapContainerRef.current,
         style: styleUrl,
-        center,
+        center: safeCenter,
         zoom,
         interactive,
         attributionControl,
@@ -141,6 +162,7 @@ export default function VietmapGL({
 
       map.on("load", () => {
         markers.forEach((marker) => {
+          if (!isValidLngLat(marker.lngLat)) return;
           const markerInstance = new window.vietmapgl.Marker()
             .setLngLat(marker.lngLat)
             .addTo(map);

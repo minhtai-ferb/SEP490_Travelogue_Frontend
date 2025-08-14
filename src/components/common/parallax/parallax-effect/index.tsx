@@ -129,7 +129,7 @@ export function ParallaxLocationIntro({ locationType, className, onLocationSelec
 			setError(null)
 
 			try {
-				const data = await searchLocation({ typeId: locationType.id })
+				const data = await searchLocation({ type: locationType.id })
 
 				// Transform API data to match LocationData interface
 				const transformedData: LocationData[] = data.map((item: any) => ({

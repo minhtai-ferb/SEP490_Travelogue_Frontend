@@ -82,3 +82,17 @@ export interface TourGuideRequestItem {
 	rejectionReason: string | null
 	certifications: TourGuideCertification[]
 }
+
+export interface TourGuideItem {
+	id: string
+	email: string
+	userName: string
+	sex: number
+	sexText: string
+	address: string
+	price: number
+	introduction: string
+	avatarUrl: string
+	averageRating: number
+	totalReviews: number
+}

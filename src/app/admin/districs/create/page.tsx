@@ -168,10 +168,6 @@ export default function Form() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="#">Tổng quát</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
               <BreadcrumbLink href="/admin/districs">Quản lý quận huyện</BreadcrumbLink>
             </BreadcrumbItem>
