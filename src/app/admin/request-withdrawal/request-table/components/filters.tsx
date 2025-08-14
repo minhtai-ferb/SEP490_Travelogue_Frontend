@@ -2,9 +2,16 @@
 
 import React from "react";
 import { Button, DatePicker, Form, Input, Select, Space } from "antd";
-import { FilterOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  FilterOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
-import { getWithdrawalStatusText, WithdrawalStatus } from "@/types/RequestWithdrawal";
+import {
+  getWithdrawalStatusText,
+  WithdrawalStatus,
+} from "@/types/RequestWithdrawal";
 
 const { RangePicker } = DatePicker;
 
@@ -40,56 +47,77 @@ export default function Filters({
       form={form}
       layout="inline"
       onFinish={() => onSubmit(form.getFieldsValue())}
-      className="flex flex-wrap gap-3"
+      className="flex flex-row justify-between items-center gap-2"
     >
-      <Form.Item name="userId">
+      {/* <Form.Item name="userId">
         <Input placeholder="User ID" allowClear style={{ width: 220 }} />
-      </Form.Item>
+      </Form.Item> */}
+      <div className="flex flex-row justify-between items-center gap-1">
+        <span className="text-sm ">Tìm kiếm:</span>
+        <Form.Item>
+          <Input
+            allowClear
+            placeholder="Tìm theo tên người dùng..."
+            prefix={<SearchOutlined />}
+            style={{ width: 260 }}
+            onChange={(e) => onSearchName(e.target.value)}
+            disabled={loading}
+          />
+        </Form.Item>
+      </div>
+      <div className="flex flex-row justify-between items-center gap-1">
+        <Form.Item name="status">
+          <Select
+            placeholder="Trạng thái"
+            allowClear
+            style={{ width: 200 }}
+            options={[
+              {
+                label: getWithdrawalStatusText(WithdrawalStatus.PENDING),
+                value: WithdrawalStatus.PENDING,
+              },
+              {
+                label: getWithdrawalStatusText(WithdrawalStatus.APPROVED),
+                value: WithdrawalStatus.APPROVED,
+              },
+              {
+                label: getWithdrawalStatusText(WithdrawalStatus.REJECTED),
+                value: WithdrawalStatus.REJECTED,
+              },
+            ]}
+          />
+        </Form.Item>
 
-      <Form.Item name="status">
-        <Select
-          placeholder="Trạng thái"
-          allowClear
-          style={{ width: 200 }}
-          options={[
-            { label: getWithdrawalStatusText(WithdrawalStatus.PENDING), value: WithdrawalStatus.PENDING },
-            { label: getWithdrawalStatusText(WithdrawalStatus.APPROVED), value: WithdrawalStatus.APPROVED },
-            { label: getWithdrawalStatusText(WithdrawalStatus.REJECTED), value: WithdrawalStatus.REJECTED },
-          ]}
-        />
-      </Form.Item>
+        <Form.Item name="range">
+          <RangePicker
+            showTime
+            allowClear
+            placeholder={["Từ ngày", "Đến ngày"]}
+            format="DD/MM/YYYY HH:mm"
+            disabledDate={(d) => d.isAfter(dayjs())}
+          />
+        </Form.Item>
 
-      <Form.Item name="range">
-        <RangePicker
-          showTime
-          allowClear
-          placeholder={["Từ ngày", "Đến ngày"]}
-          format="DD/MM/YYYY HH:mm"
-          disabledDate={(d) => d.isAfter(dayjs())}
-        />
-      </Form.Item>
-
-      <Form.Item>
-        <Space>
-          <Button htmlType="submit" type="primary" icon={<FilterOutlined />} loading={loading}>
-            Lọc
-          </Button>
-          <Button onClick={onReset} icon={<ReloadOutlined />} disabled={loading}>
-            Xóa bộ lọc
-          </Button>
-        </Space>
-      </Form.Item>
-
-      <Form.Item style={{ marginLeft: "auto" }}>
-        <Input
-          allowClear
-          placeholder="Tìm theo tên người dùng..."
-          prefix={<SearchOutlined />}
-          style={{ width: 260 }}
-          onChange={(e) => onSearchName(e.target.value)}
-          disabled={loading}
-        />
-      </Form.Item>
+        <Form.Item>
+          <Space>
+            <Button
+              htmlType="submit"
+              type="primary"
+              icon={<FilterOutlined />}
+              loading={loading}
+            >
+              Lọc
+            </Button>
+            <Button
+              onClick={onReset}
+              icon={<ReloadOutlined />}
+              disabled={loading}
+            >
+              Xóa bộ lọc
+            </Button>
+          </Space>
+        </Form.Item>
+      </div>
     </Form>
   );
 }
