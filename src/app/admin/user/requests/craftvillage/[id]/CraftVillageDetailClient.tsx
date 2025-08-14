@@ -17,6 +17,8 @@ function CraftVillageClient({ id }: { id: string }) {
 	const [data, setData] = useState<CraftVillageRequestResponse | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [isReviewRequestOpen, setIsReviewRequestOpen] = useState(false)
+	const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null)
+	const [reviewReason, setReviewReason] = useState("")
 
 
 	const fetchData = async () => {
@@ -123,17 +125,6 @@ function CraftVillageClient({ id }: { id: string }) {
 	return (
 		<div className="min-h-screen bg-gray-50 p-4">
 			<div className="max-w-6xl mx-auto">
-				{/* Breadcrumb */}
-				<nav className="mb-6">
-					<div className="flex items-center space-x-2 text-sm text-gray-600">
-						<span>Quản lý làng nghề</span>
-						<span>/</span>
-						<span>Đơn đăng ký</span>
-						<span>/</span>
-						<span className="text-gray-900 font-medium">{data.Name}</span>
-					</div>
-				</nav>
-
 				{/* Main Content */}
 				<CraftVillageDetailView
 					data={data}
@@ -146,8 +137,12 @@ function CraftVillageClient({ id }: { id: string }) {
 					showActions={true}
 					isReviewRequestOpen={isReviewRequestOpen}
 					setIsReviewRequestOpen={setIsReviewRequestOpen}
-					onSubmitReview={(payload) => handleReview(data.Id, payload)}
+					onSubmitReview={(payload) => handleReview(data.id, payload)}
 					loading={loading}
+					reviewAction={reviewAction}
+					setReviewAction={setReviewAction}
+					reviewReason={reviewReason}
+					setReviewReason={setReviewReason}
 				/>
 			</div>
 		</div>
