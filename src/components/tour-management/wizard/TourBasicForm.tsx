@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { ArrowRight, X, Loader2 } from "lucide-react"
 import { TourTypeLabels, type CreateTourRequest } from "@/types/Tour"
+import { ImageUpload } from "@/app/admin/locations/create/components/image-upload"
 
 interface TourBasicFormProps {
 	initialData?: CreateTourRequest | null
@@ -25,6 +26,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 		content: "",
 		totalDays: 1,
 		tourType: 1,
+		mediaDtos: [],
 	})
 
 	const [errors, setErrors] = useState<Record<string, string>>({})
@@ -58,6 +60,14 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 			newErrors.tourType = "Loại tour là bắt buộc"
 		}
 
+		// If images are provided, enforce exactly one thumbnail
+		if (Array.isArray(formData.mediaDtos) && formData.mediaDtos.length > 0) {
+			const thumbnailCount = formData.mediaDtos.filter((m) => m.isThumbnail).length
+			if (thumbnailCount !== 1) {
+				newErrors.mediaDtos = "Vui lòng chọn đúng 1 ảnh làm ảnh đại diện"
+			}
+		}
+
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
@@ -84,6 +94,18 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 		}
 	}
 
+	const handleImageChange = (mediaDtos: CreateTourRequest["mediaDtos"]) => {
+		setFormData((prev) => ({
+			...prev,
+			mediaDtos,
+		}))
+
+		// Clear related error if now valid
+		const thumbnailCount = mediaDtos.filter((m) => m.isThumbnail).length
+		if (errors.mediaDtos && mediaDtos.length > 0 && thumbnailCount === 1) {
+			setErrors((prev) => ({ ...prev, mediaDtos: "" }))
+		}
+	}
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -198,6 +220,9 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 									{formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
 								</p>
 							</div>
+							<div>Hình ảnh</div>
+							<ImageUpload mediaDtos={formData.mediaDtos} onChange={handleImageChange} isLoading={isLoading} />
+							{errors.mediaDtos && <p className="text-sm text-red-500 mt-2">{errors.mediaDtos}</p>}
 						</div>
 					</CardContent>
 				</Card>
