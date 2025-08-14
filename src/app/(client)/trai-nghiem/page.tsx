@@ -36,7 +36,7 @@ import { SectionExploreTravel } from "@/components/common/explore-travel"
 import MapTayNinh from "@/components/common/map-tay-ninh-hp"
 import Navigate from "@/components/header/navigate"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { checkRole, isAdmin } from "@/lib/check-admin"
+import { checkRole, hasHigherRole, isAdmin } from "@/lib/check-admin"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/services/useAuth"
 import { userAtom } from "@/store/auth"
@@ -73,8 +73,8 @@ export default function HeroSlider() {
 	// Handlers
 	const handleMenuToggle = () => setIsOpen(!isOpen)
 
-	const handleAdminPage = () => {
-		router.push("/admin/dashboard");
+	const handleChooseRole = () => {
+		router.push("/auth/choose-role");
 	};
 
 	const handleLogout = () => logout()
@@ -391,8 +391,8 @@ export default function HeroSlider() {
 													</Link>
 												</DropdownMenuItem>
 											)}
-											{isAdmin() && (
-												<DropdownMenuItem onClick={handleAdminPage} className="cursor-pointer">
+											{hasHigherRole() && (
+												<DropdownMenuItem onClick={handleChooseRole} className="cursor-pointer">
 													<div className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
@@ -555,8 +555,8 @@ export default function HeroSlider() {
 														<span>Hồ sơ</span>
 													</Link>
 												</DropdownMenuItem>
-												{isAdmin() && (
-													<DropdownMenuItem onClick={handleAdminPage} className="cursor-pointer">
+												{hasHigherRole() && (
+													<DropdownMenuItem onClick={hasHigherRole} className="cursor-pointer">
 														<div className="flex items-center">
 															<svg
 																xmlns="http://www.w3.org/2000/svg"

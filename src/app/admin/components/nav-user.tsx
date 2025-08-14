@@ -51,7 +51,7 @@ export function NavUser({
 	}
 
   const handleUserPage = () => {
-    router.push("/")
+    router.push("/auth/choose-role")
   }
 
   return (

@@ -27,9 +27,9 @@ export default function RequestsTable({
       render: (text: string, record) => (
         <Space direction="vertical" size={0}>
           <span className="font-medium">{text}</span>
-          <span className="text-[12px] text-gray-500">
+          {/* <span className="text-[12px] text-gray-500">
             User ID: {record.userId}
-          </span>
+          </span> */}
         </Space>
       ),
     },
