@@ -8,6 +8,7 @@ import {
   Newspaper,
   Send,
   SquareTerminal,
+  Banknote,
   Ticket,
 } from "lucide-react";
 import * as React from "react";
@@ -101,6 +102,17 @@ const data = {
         {
           title: "Xác thực làng nghề",
           url: "/admin/user/requests/craftvillage",
+        },
+      ],
+    },
+    {
+      title: "Quản lý yêu cầu rút tiền",
+      url: "/admin/request-withdrawal/request-table",
+      icon: Banknote,
+      items: [
+        {
+          title: "Danh sách yêu cầu rút tiền",
+          url: "/admin/request-withdrawal/request-table",
         },
       ],
     },
