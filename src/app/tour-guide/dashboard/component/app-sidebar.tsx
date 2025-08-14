@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, User, Wallet } from "lucide-react"
+import { LayoutDashboard, Wallet } from "lucide-react"
 import * as React from "react"
 
 // import { Calendars } from "./calendar"
@@ -17,7 +17,6 @@ import {
 import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import Link from "next/link"
-import { GrCertificate } from "react-icons/gr"
 import { NavUser } from "./nav-user"
 
 
@@ -78,36 +77,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<Link href="/tour-guide/profile">
-								<User />
-								<span>Hồ sơ cá nhân</span>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<Link href="/tour-guide/dashboard/dang-ky-chung-chi">
-								<GrCertificate className="w-4 h-4" />
-								<span>Chứng chỉ của tôi</span>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
 				</SidebarMenu>
 				<SidebarSeparator className="mx-0" />
 			</SidebarContent>
-			{/* <SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton>
-							<Plus />
-							<span>New Calendar</span>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			</SidebarFooter> */}
-
 			<SidebarRail />
 		</Sidebar>
 	)
