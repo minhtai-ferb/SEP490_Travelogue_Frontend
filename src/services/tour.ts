@@ -107,9 +107,7 @@ export function useTour() {
 				"put",
 				`${TOUR_API_URL.ALL_TOURS}/bulk`,
 				data,
-				{
-					params: { tourId }
-				}
+				{ tourId }
 			);
 			return response?.data;
 		} catch (e: any) {

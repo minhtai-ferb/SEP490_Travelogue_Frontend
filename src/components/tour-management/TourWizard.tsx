@@ -100,7 +100,8 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			onComplete()
 		} catch (error: any) {
 			console.error("Error creating schedules:", error)
-			setError(error.message || "Có lỗi khi tạo lịch trình tour")
+			setError(error?.response?.data?.message || "Có lỗi khi tạo lịch trình tour")
+			toast.error(error?.response?.data?.message || "Có lỗi khi tạo lịch trình tour")
 		} finally {
 			setIsLoading(false)
 		}
