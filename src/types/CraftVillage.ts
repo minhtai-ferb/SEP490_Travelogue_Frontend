@@ -5,16 +5,20 @@ export interface CraftVillageRequest {
 	address: string
 	latitude: number
 	longitude: number
-	openTime: { ticks: number }
-	closeTime: { ticks: number }
+	openTime: string
+	closeTime: string
 	districtId: string
 	phoneNumber: string
 	email: string
-	website: string | null
+	website: string
 	workshopsAvailable: boolean
 	signatureProduct: string
 	yearsOfHistory: number
 	isRecognizedByUnesco: boolean
+	mediaDtos: {
+		mediaUrl: string
+		isThumbnail: boolean
+	}[]
 }
 
 export interface ReviewCraftVillageRequest {
