@@ -1,11 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const API_BANK = "https://api.vietqr.io/v2/banks"
 
 export type NewBankAccountPayload = {
 	id?: string;
@@ -49,12 +52,20 @@ export default function NewBankAccountForm({
 	});
 
 	const accountNumber = watch("bankAccountNumber");
-
+	const [banks, setBanks] = useState<any[]>([]);
 	const onNumberChange = (value: string) => {
 		// Only digits
 		const digits = value.replace(/[^0-9]/g, "");
 		setValue("bankAccountNumber", digits, { shouldValidate: true, shouldDirty: true });
 	};
+
+	useEffect(() => {
+		fetch(API_BANK)
+			.then(res => res.json())
+			.then(data => {
+				setBanks(data.data)
+			})
+	}, [])
 
 	return (
 		<form
@@ -88,12 +99,21 @@ export default function NewBankAccountForm({
 			{/* Bank name */}
 			<div className="space-y-1">
 				<Label htmlFor="bankName">Ngân hàng</Label>
-				<Input
-					id="bankName"
-					placeholder="Ví dụ: Vietcombank"
-					aria-invalid={!!errors.bankName}
-					{...register("bankName", { required: "Vui lòng nhập tên ngân hàng" })}
-				/>
+				<Select
+					value={watch("bankName")}
+					onValueChange={(value) => setValue("bankName", value, { shouldValidate: true, shouldDirty: true })}
+				>
+					<SelectTrigger>
+						<SelectValue placeholder="Chọn ngân hàng" />
+					</SelectTrigger>
+					<SelectContent className="max-h-[300px] w-[450px] overflow-y-auto">
+						{banks.map((bank: any) => (
+							<SelectItem key={bank.code} value={bank.code} className="capitalize"	>
+								{bank.code} - {bank.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 				{errors.bankName && <p className="text-xs text-red-600">{errors.bankName.message}</p>}
 			</div>
 

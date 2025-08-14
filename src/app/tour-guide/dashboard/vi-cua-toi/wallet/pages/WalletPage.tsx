@@ -10,7 +10,7 @@ import { useWallet } from "@/services/use-wallet"
 import { getStoredUser } from "@/utils/auth-storage"
 import { formatPriceSimple } from "@/utils/format"
 import { formatDate } from "date-fns"
-import { Plus } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import "swiper/css"
@@ -25,6 +25,8 @@ import TransactionsList from "../organisms/TransactionsList"
 import WalletSummaryCard from "../organisms/WalletSummaryCard"
 import WithdrawalRequestForm from "../organisms/WithdrawalRequestForm"
 import WalletTwoColumn from "../templates/WalletTwoColumn"
+import { ProgressiveBlurDemo } from "../molecules/scroll"
+import ProgressiveBlur from "../molecules/scroll/progressiveblur"
 
 export default function WalletPage() {
 	const user = useMemo(() => getStoredUser(), [])
@@ -37,6 +39,12 @@ export default function WalletPage() {
 	const { deleteBankAccount, updateBankAccount, createBankAccount, loading: isLoadingCreateBankAccount } = useBankAccount()
 	const { createWithdrawalRequest, loading: isLoadingCreateWithdrawalRequest } = useWallet()
 	const [selectedBankAccount, setSelectedBankAccount] = useState<any | null>(null)
+	const [openDeleteBankConfirm, setOpenDeleteBankConfirm] = useState(false)
+	const [loading, setLoading] = useState(false)
+	const sortedAccounts = useMemo(() => {
+		if (!accounts || accounts.length === 0) return []
+		return [...accounts].sort((a: any, b: any) => (b?.isDefault ? 1 : 0) - (a?.isDefault ? 1 : 0))
+	}, [accounts])
 
 	const colorStatus = {
 		1: "bg-yellow-500 text-yellow-100",
@@ -48,25 +56,27 @@ export default function WalletPage() {
 		try {
 			const res = await createBankAccount(payload)
 			if (res) {
-				toast.success("Thêm thẻ thành công")
+				toast.success("Thêm tài khoản thành công")
 				setOpenAddAccount(false)
 				refetchAll()
 			}
 		} catch (error: any) {
-			toast.error(error?.response?.data?.Message || "Thêm thẻ thất bại")
+			toast.error(error?.response?.data?.Message || "Thêm tài khoản thất bại")
 		}
 	}
 
 	const handleWithdraw = async (payload: WithdrawalPayload) => {
 		try {
-			const res = await createWithdrawalRequest(payload)
-			if (res) {
-				toast.success("Yêu cầu rút tiền thành công")
-				setOpenWithdraw(false)
-				refetchAll()
-			}
+			setLoading(true)
+			await createWithdrawalRequest(payload)
+			toast.success("Yêu cầu rút tiền thành công")
+			setOpenWithdraw(false)
+			refetchAll()
 		} catch (error: any) {
 			toast.error(error?.response?.data?.Message || "Yêu cầu rút tiền thất bại")
+		} finally {
+			setLoading(false)
+			setOpenWithdraw(false)
 		}
 	}
 
@@ -84,25 +94,35 @@ export default function WalletPage() {
 				isDefault: payload.isDefault,
 			})
 			if (res) {
-				toast.success("Cập nhật thẻ thành công")
+				toast.success("Cập nhật tài khoản thành công")
 				refetchAll()
 				setOpenEditBankAccount(false)
 			}
 		} catch (error: any) {
-			toast.error(error?.response?.data?.Message || "Cập nhật thẻ thất bại")
+			toast.error(error?.response?.data?.Message || "Cập nhật tài khoản thất bại")
 		}
 	}
 
-	const handleDeleteBankAccount = async (id: string) => {
+	const handleDeleteBankAccount = async (acc: BankAccountData) => {
 		try {
-			const res = await deleteBankAccount(id)
+			setLoading(true)
+			const res = await deleteBankAccount(acc.id || "")
 			if (res) {
-				toast.success("Xóa thẻ thành công")
+				toast.success("Xóa tài khoản thành công")
 				refetchAll()
 			}
 		} catch (error: any) {
-			toast.error(error?.response?.data?.Message || "Xóa thẻ thất bại")
+			toast.error(error?.response?.data?.Message || "Xóa tài khoản thất bại")
+		} finally {
+			setLoading(false)
+			setOpenDeleteBankConfirm(false)
+			setSelectedBankAccount(null)
 		}
+	}
+
+	const handleOpenDeleteBankConfirm = (acc: BankAccountData) => {
+		setSelectedBankAccount(acc)
+		setOpenDeleteBankConfirm(true)
 	}
 
 	return (
@@ -125,21 +145,26 @@ export default function WalletPage() {
 					<Card>
 						<CardHeader>
 							<div className="flex items-center justify-between">
-								<CardTitle>Các thẻ của bạn</CardTitle>
+								<CardTitle className="text-sm">Các tài khoản của bạn</CardTitle>
 								<Button variant="outline" size="sm" onClick={() => setOpenAddAccount(true)}>
-									<Plus className="w-4 h-4 mr-2" />
-									Thêm thẻ
+									<Plus className="w-4 h-4" />
 								</Button>
 							</div>
 						</CardHeader>
 						<CardContent>
 							{accounts?.length ? (
 								<Swiper effect="cards" grabCursor modules={[EffectCards]} className="rounded-xl max-w-md">
-									{accounts.map((acc: any) => (
+									{sortedAccounts.map((acc: any) => (
 										<SwiperSlide key={acc.id}>
 											<div className="relative rounded-xl cursor-pointer" onClick={() => handleViewDetailCard(acc)}>
 												<div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-4 text-white relative overflow-hidden h-[150px] flex flex-col justify-center items-center">
 													<div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
+													<Button variant="destructive" size="icon" className="absolute top-2 right-2 cursor-pointer" onClick={(e) => {
+														e.stopPropagation()
+														handleOpenDeleteBankConfirm(acc)
+													}}>
+														<Trash2 className="w-4 h-4" color="white" />
+													</Button>
 													<div className="relative z-10 flex flex-col justify-center items-center">
 														<div className="text-sm text-blue-100">{acc.bankName}</div>
 														<div className="text-lg font-semibold">{acc.bankOwnerName}</div>
@@ -162,14 +187,14 @@ export default function WalletPage() {
 								<CardTitle>Các yêu cầu rút tiền</CardTitle>
 								<div className="flex flex-col gap-2">
 									<Select
-										value={status?.toString() || ""}
-										onValueChange={(value) => setStatus(Number(value))}
+										value={status?.toString() || "all"}
+										onValueChange={(value) => setStatus(value === "all" ? "all" : Number(value))}
 									>
 										<SelectTrigger>
 											<SelectValue placeholder="Chọn trạng thái" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value={`${undefined}`}>Tất cả</SelectItem>
+											<SelectItem value="all">Tất cả</SelectItem>
 											<SelectItem value="1">Chờ xác nhận</SelectItem>
 											<SelectItem value="2">Đã xác nhận</SelectItem>
 											<SelectItem value="3">Đã từ chối</SelectItem>
@@ -198,10 +223,14 @@ export default function WalletPage() {
 										<Dialog key={wr.id}>
 											<DialogTrigger asChild>
 												<div key={wr.id} className="p-3 border rounded-lg text-sm cursor-pointer">
-													<div className="font-medium">{wr?.bankAccount?.bankOwnerName} • {String(wr?.bankAccount?.bankAccountNumber || "").replace(/\d(?=\d{4})/g, "*")} • {wr?.bankAccount?.bankName}</div>
+													<Badge className={`${colorStatus[wr.status as keyof typeof colorStatus]} text-white items-end`} size="sm">
+														{wr.statusText}
+													</Badge>
+													<div className="font-medium">{wr?.bankAccount?.bankOwnerName} • {String(wr?.bankAccount?.bankAccountNumber || "")} • {wr?.bankAccount?.bankName}</div>
 													<div className="text-blue-500 font-semibold">{formatPriceSimple(wr.amount || 0)}</div>
 												</div>
 											</DialogTrigger>
+											<ProgressiveBlur position="bottom" height="40%" />
 											<DialogContent>
 												<DialogTitle>
 													<div className="text-blue-500 font-medium flex items-center gap-2">
@@ -236,6 +265,7 @@ export default function WalletPage() {
 													</div>
 												</div>
 											</DialogContent>
+
 										</Dialog>
 									))}
 								</div>
@@ -276,11 +306,11 @@ export default function WalletPage() {
 								<DialogTitle>Yêu cầu rút tiền</DialogTitle>
 							</DialogHeader>
 							<WithdrawalRequestForm
-								accounts={accounts}
+								accounts={sortedAccounts}
 								availableBalance={balance}
 								onSubmit={handleWithdraw}
 								onCancel={() => setOpenWithdraw(false)}
-								submitting={isLoadingCreateWithdrawalRequest}
+								submitting={loading || isLoadingCreateWithdrawalRequest}
 							/>
 						</DialogContent>
 					</Dialog>
@@ -291,6 +321,19 @@ export default function WalletPage() {
 								<DialogTitle>Cập nhật thẻ</DialogTitle>
 							</DialogHeader>
 							<NewBankAccountForm isEdit defaultValues={selectedBankAccount} onSubmit={handleUpdateBankAccount} onCancel={() => setOpenEditBankAccount(false)} submitting={isLoadingCreateBankAccount} />
+						</DialogContent>
+					</Dialog>
+
+					<Dialog open={openDeleteBankConfirm} onOpenChange={setOpenDeleteBankConfirm}>
+						<DialogContent className="sm:max-w-lg">
+							<DialogHeader>
+								<DialogTitle>Xóa thẻ</DialogTitle>
+							</DialogHeader>
+							<div className="text-sm text-gray-500">Bạn có chắc chắn muốn xóa thẻ này không?</div>
+							<div className="flex justify-end gap-2">
+								<Button variant="outline" size="sm" onClick={() => setOpenDeleteBankConfirm(false)}>Hủy</Button>
+								<Button variant="destructive" size="sm" onClick={() => handleDeleteBankAccount(selectedBankAccount)} disabled={loading}>Xóa</Button>
+							</div>
 						</DialogContent>
 					</Dialog>
 				</>
