@@ -51,7 +51,6 @@ export const WALLET_API_URL = {
 	REJECT_WITHDRAWAL_REQUEST: "wallet/withdrawal-requests/:requestId/reject"
 }
 
-
 export const BANK_ACCOUNT_API_URL = {
 	GET_BANK_ACCOUNT: "bank-account",
 	CREATE_BANK_ACCOUNT: "bank-account",

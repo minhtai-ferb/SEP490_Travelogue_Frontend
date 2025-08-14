@@ -38,11 +38,11 @@ export function ImageUpload({
           }));
 
           onChange([...mediaDtos, ...newMediaDtos]);
-          message.success(`Đã tải lên ${files.length} hình ảnh thành công!`);
+          toast.success(`Đã tải lên ${files.length} hình ảnh thành công!`);
         }
       } catch (error) {
         console.error("Upload error:", error);
-        message.error("Có lỗi xảy ra khi tải lên hình ảnh");
+        toast.error("Có lỗi xảy ra khi tải lên hình ảnh");
       } finally {
         setUploading(false);
       }
@@ -61,10 +61,10 @@ export function ImageUpload({
           (media) => media.mediaUrl !== mediaUrl
         );
         onChange(updatedMediaDtos);
-        message.success("Đã xóa hình ảnh thành công!");
+        toast.success("Đã xóa hình ảnh thành công!");
       } catch (error) {
         console.error("Delete error:", error);
-        message.error("Có lỗi xảy ra khi xóa hình ảnh");
+        toast.error("Có lỗi xảy ra khi xóa hình ảnh");
       }
     },
     [mediaDtos, onChange, deleteMediaByFileName]
@@ -77,7 +77,7 @@ export function ImageUpload({
         isThumbnail: media.mediaUrl === mediaUrl,
       }));
       onChange(updatedMediaDtos);
-      message.success("Đã đặt làm ảnh đại diện!");
+      toast.success("Đã đặt làm ảnh đại diện!");
     },
     [mediaDtos, onChange]
   );

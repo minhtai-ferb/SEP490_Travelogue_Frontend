@@ -7,6 +7,8 @@ import { Trash2, Upload } from "lucide-react"
 import { Upload as AntUpload, message, Checkbox, Image } from "antd"
 import type { UploadProps } from "antd"
 import { MediaDto } from "../types/EditLocation"
+import { useLocations } from "@/services/use-locations"
+import toast from "react-hot-toast"
 
 interface ImageUploadProps {
   mediaDtos: MediaDto[]
@@ -16,16 +18,8 @@ interface ImageUploadProps {
 
 export function ImageUpload({ mediaDtos, onChange, isLoading = false }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
+  const { uploadMediaMultiple, deleteMediaByFileName } = useLocations();
 
-  // Mock upload function - replace with your actual implementation
-  const mockUploadMultiple = async (files: File[]): Promise<string[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const urls = files.map((file, index) => `/placeholder_image.jpg?height=300&width=400&text=Image${index + 1}`)
-        resolve(urls)
-      }, 2000)
-    })
-  }
 
   const handleUpload = useCallback(
     async (files: File[]) => {
@@ -33,7 +27,7 @@ export function ImageUpload({ mediaDtos, onChange, isLoading = false }: ImageUpl
 
       setUploading(true)
       try {
-        const uploadedUrls = await mockUploadMultiple(files)
+        const uploadedUrls = await uploadMediaMultiple(files)
 
         if (uploadedUrls && Array.isArray(uploadedUrls)) {
           const newMediaDtos = uploadedUrls.map((mediaUrl: string) => ({
@@ -42,27 +36,30 @@ export function ImageUpload({ mediaDtos, onChange, isLoading = false }: ImageUpl
           }))
 
           onChange([...mediaDtos, ...newMediaDtos])
-          message.success(`Đã tải lên ${files.length} hình ảnh thành công!`)
+          toast.success(`Đã tải lên ${files.length} hình ảnh thành công!`)
         }
       } catch (error) {
         console.error("Upload error:", error)
-        message.error("Có lỗi xảy ra khi tải lên hình ảnh")
+        toast.error("Có lỗi xảy ra khi tải lên hình ảnh")
       } finally {
         setUploading(false)
       }
     },
-    [mediaDtos, onChange],
+    [mediaDtos, onChange, uploadMediaMultiple],
   )
 
   const handleDelete = useCallback(
     async (mediaUrl: string) => {
       try {
+        const fileName = mediaUrl.split("/").pop() || mediaUrl;
+        await deleteMediaByFileName(fileName);
+
         const updatedMediaDtos = mediaDtos.filter((media) => media.mediaUrl !== mediaUrl)
         onChange(updatedMediaDtos)
-        message.success("Đã xóa hình ảnh thành công!")
+        toast.success("Đã xóa hình ảnh thành công!")
       } catch (error) {
         console.error("Delete error:", error)
-        message.error("Có lỗi xảy ra khi xóa hình ảnh")
+        toast.error("Có lỗi xảy ra khi xóa hình ảnh")
       }
     },
     [mediaDtos, onChange],
@@ -75,7 +72,7 @@ export function ImageUpload({ mediaDtos, onChange, isLoading = false }: ImageUpl
         isThumbnail: media.mediaUrl === mediaUrl,
       }))
       onChange(updatedMediaDtos)
-      message.success("Đã đặt làm ảnh đại diện!")
+      toast.success("Đã đặt làm ảnh đại diện!")
     },
     [mediaDtos, onChange],
   )
@@ -85,9 +82,15 @@ export function ImageUpload({ mediaDtos, onChange, isLoading = false }: ImageUpl
     accept: "image/*",
     showUploadList: false,
     beforeUpload: (file, fileList) => {
-      const files = fileList || [file]
-      handleUpload(files)
-      return false // Prevent default upload
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        toast.error(`Vượt quá dung lượng cho phép (10MB)!`);
+        return AntUpload.LIST_IGNORE;
+      }
+
+      const files = fileList || [file];
+      handleUpload(files);
+      return false;
     },
   }
 
