@@ -17,7 +17,7 @@ services:
   # Frontend Next.js (Node 22)
   frontend:
     build:
-      context: ./SEP490_Travelogue_Frontend               
+      context: .           
       dockerfile: Dockerfile
     container_name: travelogue-fe
     env_file:
