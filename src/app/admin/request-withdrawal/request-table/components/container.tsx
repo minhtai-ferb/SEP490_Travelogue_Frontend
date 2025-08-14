@@ -8,11 +8,23 @@ import { useWithdrawalRequests } from "@/services/use-request-withdrawal";
 import { WithdrawalRequest } from "@/types/RequestWithdrawal";
 import Filters, { FilterValues } from "./filters";
 import RequestsTable from "./requests-table";
+import RequestDetailModal from "./request-detail-modal";
+import { useMediaUpload } from "@/services/use-media-upload";
 
 export default function WithdrawalContainer() {
-  const { filterWithdrawalRequests, loading } = useWithdrawalRequests();
+  const {
+    filterWithdrawalRequests,
+    approveWithdrawalRequest,
+    rejectWithdrawalRequest,
+    loading,
+  } = useWithdrawalRequests();
+  const { uploadMediaMultiple } = useMediaUpload();
   const [rows, setRows] = React.useState<WithdrawalRequest[]>([]);
   const [kw, setKw] = React.useState<string>("");
+  const [selected, setSelected] = React.useState<WithdrawalRequest | null>(
+    null
+  );
+  const [detailOpen, setDetailOpen] = React.useState(false);
 
   const initialRange = React.useMemo(() => {
     const to = dayjs();
@@ -49,14 +61,55 @@ export default function WithdrawalContainer() {
     return rows.filter((r) => r.userName?.toLowerCase().includes(k));
   }, [rows, kw]);
 
+  // CHẤP NHẬN: bắt buộc có ảnh; note tuỳ chọn
+  const handleApprove = React.useCallback(
+    async ({
+      id,
+      note,
+      files,
+    }: {
+      id: string;
+      note?: string;
+      files: File[];
+    }) => {
+      // 1) upload ảnh
+      const uploadRes = await uploadMediaMultiple(files);
+      if (!Array.isArray(uploadRes) || uploadRes.length === 0) {
+        throw new Error(
+          "Upload ảnh thất bại hoặc không nhận được dữ liệu ảnh."
+        );
+      }
+
+      await approveWithdrawalRequest(id, {
+        adminNote: note,
+        proofImageUrl: uploadRes.join(","),
+      });
+
+      await handleReset();
+    },
+    []
+  );
+
+  // TỪ CHỐI: note tuỳ chọn
+  const handleReject = React.useCallback(
+    async ({ id, note }: { id: string; note?: string }) => {
+      await rejectWithdrawalRequest(id, { reason: note });
+
+      await handleReset();
+    },
+    []
+  );
+
   return (
     <div className="p-4 md:p-6">
       <Card className="p-4 md:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl md:text-2xl font-semibold">Yêu cầu rút tiền</h1>
+            <h1 className="text-xl md:text-2xl font-semibold">
+              Yêu cầu rút tiền
+            </h1>
             <p className="text-sm text-muted-foreground">
-              Lọc theo User ID, trạng thái, khoảng ngày; và tìm theo tên người dùng.
+              Lọc theo trạng thái, khoảng ngày; và tìm theo tên người dùng.
             </p>
           </div>
         </div>
@@ -71,7 +124,25 @@ export default function WithdrawalContainer() {
           onSearchName={setKw}
         />
 
-        <RequestsTable data={dataFilteredByName} loading={loading} />
+        <RequestsTable
+          data={dataFilteredByName}
+          loading={loading}
+          onOpenDetail={(row) => {
+            setSelected(row);
+            setDetailOpen(true);
+          }}
+        />
+
+        <RequestDetailModal
+          open={detailOpen}
+          data={selected}
+          onClose={() => {
+            setDetailOpen(false);
+            setSelected(null);
+          }}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
       </Card>
     </div>
   );
