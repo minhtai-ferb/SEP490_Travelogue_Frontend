@@ -97,6 +97,10 @@ export interface CreateTourRequest {
 	totalDays: number
 	tourType: number
 	finalPrice?: number
+	mediaDtos: {
+		mediaUrl: string
+		isThumbnail: boolean
+	}[]
 }
 
 
