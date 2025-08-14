@@ -40,17 +40,18 @@ jobs:
             echo "📝 Ghi file .env.production từ secret"
             echo "${{ secrets.FRONTEND_ENV_PRODUCTION }}" > .env.production
 
-            echo "🏗️ Building Docker image(s) (non-disruptive)..."
-            if ! docker compose -f docker-compose.yml build --pull; then
-              echo "❌ Build failed. Container(s) still running. Abort."
-              exit 1
-            fi
-
             echo "🧼 Build succeeded. Stopping old container(s)..."
             docker compose -f docker-compose.yml down || true
 
-            echo "🚀 Starting new container(s)..."
-            docker compose -f docker-compose.yml up -d --remove-orphans
+            echo "🏗️ Building and starting Docker containers (with orphan removal)..."
+            docker compose -f docker-compose.yml up --build -d --remove-orphans
+
+            if [ $? -eq 0 ]; then
+              echo "✅ Containers built and started successfully!"
+            else
+              echo "❌ Failed to build/start containers."
+              exit 1
+            fi
 
             echo "⏳ Waiting for container to initialize..."
             sleep 20

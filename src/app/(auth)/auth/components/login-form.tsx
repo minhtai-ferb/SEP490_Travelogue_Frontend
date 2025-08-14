@@ -55,7 +55,6 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
         toast.error("Bạn không có quyền truy cập hệ thống");
       } else if (user.roles.length === 1) {
         const only = user.roles[0];
-        localStorage.setItem("activeRole", only);
         navigate.push(routeByRole[only] ?? "/");
       } else {
         navigate.push("/auth/choose-role");
