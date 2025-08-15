@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTourguideAssign } from "@/services/tourguide";
 import { useCraftVillage } from "@/services/use-craftvillage";
-import RegisterTourGuideClient from "./request-tour-guide/page";
+import RegisterTourGuideClient from "./request-tour-guide/register-form";
 import { FormRequest } from "./request-craft-village/FormRequest";
 import { Loader2 } from "lucide-react";
 import { useAtom } from "jotai";
