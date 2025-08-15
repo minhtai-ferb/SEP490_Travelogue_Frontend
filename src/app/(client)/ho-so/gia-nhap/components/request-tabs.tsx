@@ -172,7 +172,7 @@ export default function RequestsTabs() {
           </Card>
         ) : latest === null ? (
           // Không có yêu cầu gần nhất -> hiển thị form đăng ký
-          <RegisterTourGuideClient />
+          <RegisterTourGuideClient fetchLatest={fetchLatest} />
         ) : (
           // Có yêu cầu -> ẩn form, hiển thị trạng thái + nút tải lại
           <Card>
@@ -335,7 +335,7 @@ export default function RequestsTabs() {
             </CardContent>
           </Card>
         ) : latestCraftVillage === null ? (
-          <CraftVillageForm />
+          <CraftVillageForm fetchLatest={fetchCraftLatest} />
         ) : (
           <Card>
             <CardHeader className="pb-2">
