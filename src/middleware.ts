@@ -8,7 +8,7 @@ const prefixToRole: Record<string, string> = {
   "/admin/dashboard": "Admin",
   "/moderator": "Moderator",
   "/tour-guide/dashboard": "TourGuide",
-  "/craftvillage": "CraftVillageOwner",
+  "/craftvillage/dashboard": "CraftVillageOwner",
 };
 
 // Lấy secret để verify HMAC (HS256). Nếu bạn dùng RSA/EC, thay bằng public key tương ứng.
