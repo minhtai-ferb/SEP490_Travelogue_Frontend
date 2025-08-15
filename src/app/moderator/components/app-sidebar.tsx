@@ -5,6 +5,7 @@ import {
 	UserCog,
 	Send,
 	LifeBuoy,
+	Building2,
 } from "lucide-react";
 import * as React from "react";
 
@@ -34,6 +35,21 @@ const data = {
 				{
 					title: "Yêu cầu đăng ký",
 					url: "/moderator/tourguide/requests",
+				},
+			],
+		},
+		{
+			title: "Quản lý làng nghề",
+			url: "/moderator/craft-village",
+			icon: Building2,
+			items: [
+				{
+					title: "Danh sách làng nghề",
+					url: "/moderator/craft-village/table",
+				},
+				{
+					title: "Danh sách workshop",
+					url: "/moderator/craft-village/workshop/table",
 				},
 			],
 		},
@@ -97,8 +113,8 @@ export function ModeratorSidebar({ ...props }: React.ComponentProps<typeof Sideb
 									/>
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-semibold">Traveloge</span>
-									<span className="truncate text-xs">goyoung.tayninh.vn</span>
+									<span className="truncate font-semibold">{user?.name}</span>
+									<span className="truncate text-xs">{user?.email}</span>
 								</div>
 							</Link>
 						</SidebarMenuButton>

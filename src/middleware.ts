@@ -5,7 +5,8 @@ const prefixToRole: Record<string, string> = {
   "/admin": "Admin",
   "/moderator": "Moderator",
   "/tour-guide": "TourGuide",
-  "/craft-village-owner": "CraftVillageOwner",
+  // "/craft-village-owner": "CraftVillageOwner",
+  "/craftvillage": "CraftVillageOwner",
 };
 
 export function middleware(req: NextRequest) {
@@ -27,5 +28,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/moderator/:path*", "/tour-guide/:path*", "/craft-village-owner/:path*"],
+  matcher: ["/admin/:path*", "/moderator/:path*", "/tour-guide/:path*", "/craftvillage/:path*"],
 };
