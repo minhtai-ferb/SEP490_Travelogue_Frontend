@@ -9,7 +9,7 @@ import { signInWithGoogle, signOut as firebaseSignOut } from "./firebase-auth";
 import Cookies from "js-cookie";
 import { add } from "date-fns";
 import { addToast } from "@heroui/react";
-import { clearActiveRole, clearStoredUser } from "@/utils/auth-storage";
+import { clearStoredUser } from "@/utils/auth-storage";
 
 export function useAuth() {
   const { callApi, loading, setIsLoading } = useApiService();
@@ -163,10 +163,8 @@ export function useAuth() {
 
       Cookies.remove("jwtToken", { path: "/" });
       Cookies.remove("refreshToken", { path: "/" });
-      Cookies.remove("activeRole", { path: "/" });
 
       // Clear local storage and state
-      clearActiveRole();
       clearStoredUser();
       setUser(null);
 

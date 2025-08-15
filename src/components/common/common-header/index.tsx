@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { menuItems } from "@/data/region-data"
-import { checkRole, isAdmin } from "@/lib/check-admin"
+import { checkRole, hasHigherRole, isAdmin } from "@/lib/check-admin"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/services/useAuth"
 import { userAtom } from "@/store/auth"
@@ -352,9 +352,9 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													</Link>
 												</DropdownMenuItem>
 											)}
-											{isAdmin() && (
+											{hasHigherRole() && (
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href="/admin/dashboard" className="flex items-center">
+													<Link href="/auth/choose-role" className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
 															viewBox="0 0 24 24"
@@ -475,9 +475,9 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													</Link>
 												</DropdownMenuItem>
 											)}
-											{isAdmin() && (
+											{hasHigherRole() && (
 												<DropdownMenuItem className="cursor-pointer">
-													<Link href="/admin/dashboard" className="flex items-center">
+													<Link href="/auth/choose-role" className="flex items-center">
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
 															viewBox="0 0 24 24"

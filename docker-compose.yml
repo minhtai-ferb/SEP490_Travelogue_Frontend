@@ -9,15 +9,15 @@ services:
       - "81:81"      # UI quản trị
       - "443:443"    # HTTPS
     volumes:
-      - ./nginx-data:/data
-      - ./nginx-letsencrypt:/etc/letsencrypt
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
     networks:
       - web
 
   # Frontend Next.js (Node 22)
   frontend:
     build:
-      context: .               
+      context: .           
       dockerfile: Dockerfile
     container_name: travelogue-fe
     env_file:
@@ -42,6 +42,10 @@ services:
       timeout: 2s
       retries: 15
       start_period: 25s
+
+volumes:
+  npm_data:
+  npm_letsencrypt:
 
 networks:
   web:
