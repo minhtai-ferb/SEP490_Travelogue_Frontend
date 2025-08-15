@@ -58,3 +58,15 @@ export const BANK_ACCOUNT_API_URL = {
   UPDATE_BANK_ACCOUNT: "bank-account/:id",
   DELETE_BANK_ACCOUNT: "bank-account/:id",
 }
+
+export const WORKSHOP_API_URL = {
+  WORKSHOP: "workshop",
+  WORKSHOP_BULK: "workshop/bulk",
+  WORKSHOP_DETAIL: "workshop/:id",
+  WORKSHOP_SCHEDULES: "workshop/:id/schedules",
+  WORKSHOP_UPDATE: "workshop/:id",
+  WORKSHOP_UPDATE_SCHEDULE: "workshop/update-schedule/:scheduleId",
+  WORKSHOP_DELETE_SCHEDULE: "workshop/:scheduleId",
+  WORKSHOP_SUBMIT: "workshop/submit/:id",
+  WORKSHOP_MODERATOR_FILTER: "workshop/moderator-filter",
+}

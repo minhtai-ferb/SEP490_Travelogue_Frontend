@@ -8,7 +8,7 @@ const prefixToRole: Record<string, string> = {
   "/admin/dashboard": "Admin",
   "/moderator": "Moderator",
   "/tour-guide/dashboard": "TourGuide",
-  "/craftvillage": "CraftVillageOwner",
+  "/craftvillage/dashboard": "CraftVillageOwner",
 };
 
 // Lấy secret để verify HMAC (HS256). Nếu bạn dùng RSA/EC, thay bằng public key tương ứng.
@@ -17,7 +17,7 @@ const secret = new TextEncoder().encode(SeccretKey.JWT_SECRET);
 // Verify JWT và lấy roles từ payload
 async function getRolesFromJwt(req: NextRequest): Promise<string[] | null> {
   const token = req.cookies.get("jwtToken")?.value; // bạn đã set cookie này ở client
- 
+
   if (!token) return null;
 
   try {
@@ -50,7 +50,7 @@ export async function middleware(req: NextRequest) {
   // Không có quyền vào prefix này
   if (!roles.includes(requiredRole)) {
     const url = req.nextUrl.clone();
-    url.pathname = "/auth/choose-role"; 
+    url.pathname = "/auth/choose-role";
     return NextResponse.redirect(url);
   }
 
