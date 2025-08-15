@@ -17,7 +17,7 @@ const secret = new TextEncoder().encode(SeccretKey.JWT_SECRET);
 // Verify JWT và lấy roles từ payload
 async function getRolesFromJwt(req: NextRequest): Promise<string[] | null> {
   const token = req.cookies.get("jwtToken")?.value; // bạn đã set cookie này ở client
- 
+
   if (!token) return null;
 
   try {
@@ -50,7 +50,7 @@ export async function middleware(req: NextRequest) {
   // Không có quyền vào prefix này
   if (!roles.includes(requiredRole)) {
     const url = req.nextUrl.clone();
-    url.pathname = "/auth/choose-role"; 
+    url.pathname = "/auth/choose-role";
     return NextResponse.redirect(url);
   }
 
