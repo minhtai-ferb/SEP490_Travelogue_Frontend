@@ -2,8 +2,8 @@
 
 import RegisterCraftVillageRequestForm from "./RegisterCraftVillageRequestForm"
 
-export default function CraftVillageForm() {
-	return <RegisterCraftVillageRequestForm />
+export default function CraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
+	return <RegisterCraftVillageRequestForm fetchLatest={fetchLatest} />
 }
 
 

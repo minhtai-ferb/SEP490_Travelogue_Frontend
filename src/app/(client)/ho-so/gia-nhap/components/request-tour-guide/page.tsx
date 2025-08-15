@@ -21,7 +21,7 @@ import IntroField from "./components/intro-field";
 import PriceField from "./components/price-field";
 import CertificationUploader from "./components/certifications-uploader";
 
-export default function RegisterTourGuideRequestForm() {
+export default function RegisterTourGuideRequestForm({ fetchLatest }: { fetchLatest: () => void }) {
   const { uploadCertifications, createTourGuideRequest, loading } =
     useTourguideAssign();
 
@@ -93,6 +93,7 @@ export default function RegisterTourGuideRequestForm() {
       setIntroduction("");
       setPrice(0);
       setCerts([]);
+      fetchLatest()
     } catch (e: any) {
       toast.error(e?.message || "Không thể gửi yêu cầu, vui lòng thử lại.");
     }
@@ -103,7 +104,7 @@ export default function RegisterTourGuideRequestForm() {
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle className="flex flex-row items-center gap-2 justify-start">
-            <FileUser  className="h-5 w-5 text-blue-600" />
+            <FileUser className="h-5 w-5 text-blue-600" />
             Thông tin yêu cầu
           </CardTitle>
         </CardHeader>
@@ -133,9 +134,8 @@ export default function RegisterTourGuideRequestForm() {
                 Giới thiệu:{" "}
                 <span className="text-foreground">
                   {introduction
-                    ? `${introduction.slice(0, 60)}${
-                        introduction.length > 60 ? "…" : ""
-                      }`
+                    ? `${introduction.slice(0, 60)}${introduction.length > 60 ? "…" : ""
+                    }`
                     : "(chưa có)"}
                 </span>
               </li>

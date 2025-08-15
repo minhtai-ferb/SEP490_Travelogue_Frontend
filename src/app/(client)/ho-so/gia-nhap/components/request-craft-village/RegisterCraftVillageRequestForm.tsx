@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,7 @@ import { Loader2, FileCog, MapPin, Clock, Award } from "lucide-react"
 
 type FieldErrors = Record<string, string | undefined>
 
-export default function RegisterCraftVillageRequestForm() {
+export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetchLatest: () => void }) {
 	const { createCraftVillageRequest, loading } = useCraftVillage()
 	const { getAllDistrict } = useDistrictManager()
 
@@ -43,10 +43,16 @@ export default function RegisterCraftVillageRequestForm() {
 	const [errors, setErrors] = useState<FieldErrors>({})
 	const [districtOptions, setDistrictOptions] = useState<{ value: string; label: string }[]>([])
 
-	useMemo(() => {
+	useEffect(() => {
+		let isMounted = true
 		getAllDistrict().then((list) => {
+			if (!isMounted) return
 			setDistrictOptions(list.map((d: any) => ({ value: d.id, label: d.name })))
 		})
+		return () => {
+			isMounted = false
+		}
+		// Intentionally run once on mount
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
@@ -147,6 +153,7 @@ export default function RegisterCraftVillageRequestForm() {
 			setIsRecognizedByUnesco(false)
 			setMediaDtos([])
 			setErrors({})
+			fetchLatest()
 		} catch (e: any) {
 			toast.error(e?.response?.data?.Message || "Không thể gửi yêu cầu, vui lòng thử lại")
 		}
