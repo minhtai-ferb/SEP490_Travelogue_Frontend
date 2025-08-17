@@ -278,7 +278,7 @@ export default function CustomVietmapDemo() {
 								{selectedSite?.name}
 							</h1>
 							<p className="text-xs md:text-sm w-fit font-semibold text-white bg-blue-700 px-3 py-1 rounded-full">
-								{selectedSite?.districtName}
+								{selectedSite?.address || selectedSite?.districtName}
 							</p>
 						</div>
 					</div>
@@ -406,7 +406,7 @@ export default function CustomVietmapDemo() {
 												</div>
 												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
 													<Image src="/icon/place.png" alt="Location Icon" width={20} height={20} />
-													<p className="text-xs sm:text-sm text-gray-800 font-medium">{site.districtName}</p>
+													<p className="text-xs sm:text-sm text-gray-800 font-medium">{site?.address || "Chưa cập nhật"}</p>
 												</div>
 											</div>
 										</CardContent>
@@ -463,7 +463,7 @@ export default function CustomVietmapDemo() {
 												className="w-4 h-4 md:w-5 md:h-5"
 											/>
 											<p className="text-xs md:text-sm text-gray-800 font-bold line-clamp-1">
-												{selectedSite?.districtName}
+												{selectedSite?.address || "Chưa cập nhật"}
 											</p>
 										</div>
 									</div>
@@ -540,7 +540,7 @@ export default function CustomVietmapDemo() {
 									</div>
 									<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
 										<Image src="/icon/place.png" alt="Rank Icon" width={24} height={24} />
-										<p className="text-sm sm:text-base text-gray-900 font-bold">{drawerInfo?.districtName}</p>
+										<p className="text-sm sm:text-base text-gray-900 font-bold">{drawerInfo?.address || "Chưa cập nhật"}</p>
 									</div>
 								</div>
 								<Separator className="my-4" />
