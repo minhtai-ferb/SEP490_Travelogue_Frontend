@@ -15,11 +15,32 @@ import { useLocationController } from "@/services/location-controller"
 import { isFavoriteAtom } from "@/store/favorites"
 import type { Location } from "@/types/Location"
 import { useAtom } from "jotai"
-import { List, MapPin, X } from "lucide-react"
+import { ChevronDown, List, MapPin, X } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import backgroundImage from "../../../public/vongxoay.jpg"
+import { format } from "date-fns"
+
+const formatTime = (value?: string | Date | number) => {
+	if (!value) return ""
+	const asDate = value instanceof Date || typeof value === "number" ? new Date(value) : new Date(String(value))
+	if (!isNaN(asDate.getTime())) {
+		try {
+			return format(asDate, "HH:mm")
+		} catch {
+			// fall through
+		}
+	}
+	const str = String(value).trim()
+	const match = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
+	if (match) {
+		const hh = match[1].padStart(2, "0")
+		const mm = match[2]
+		return `${hh}:${mm}`
+	}
+	return str
+}
 
 const provinceBounds: [[number, number], [number, number]] = [
 	[105.811944, 10.952222],
@@ -186,19 +207,19 @@ export default function CustomVietmapDemo() {
 				}
 
 				const popupHTML = `
-  <div style="max-width: 25em; font-family: Arial, sans-serif; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-    <div style="position: relative;">
-      <img 
-        src="${site?.medias?.find((media) => media.isThumbnail)?.mediaUrl || "https://via.placeholder.com/150"}" 
-        alt="${site?.name}" 
-        style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;"
-      />
-      ${isFavorite(site.id) ? '<div style="position: absolute; top: 10px; right: 10px; background-color: rgba(255,255,255,0.8); border-radius: 50%; padding: 5px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>' : ""}
-    </div>
-    <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #1e40af;">${site?.name}</h3>
-    <p class="custom-scrollbar" style="margin: 0; font-size: 16px; color: #4b5563; line-height: 1.4; max-height: 10em; overflow-y: auto; overflow-x: hidden; white-space: normal;">${site.description}</p>
-  </div>
-`
+							<div style="max-width: 25em; font-family: Arial, sans-serif; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+								<div style="position: relative;">
+									<img 
+										src="${site?.medias?.find((media) => media.isThumbnail)?.mediaUrl || "https://via.placeholder.com/150"}" 
+										alt="${site?.name}" 
+										style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;"
+									/>
+									${isFavorite(site.id) ? '<div style="position: absolute; top: 10px; right: 10px; background-color: rgba(255,255,255,0.8); border-radius: 50%; padding: 5px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>' : ""}
+								</div>
+								<h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #1e40af;">${site?.name}</h3>
+								<p class="custom-scrollbar" style="margin: 0; font-size: 16px; color: #4b5563; line-height: 1.4; max-height: 10em; overflow-y: auto; overflow-x: hidden; white-space: normal;">${site.description}</p>
+							</div>
+						`
 
 				return {
 					lngLat: [lng, lat] as [number, number],
@@ -287,7 +308,40 @@ export default function CustomVietmapDemo() {
 						</div>
 					</div>
 				)}
-
+				{/* Filter dropdown */}
+				<div className="relative p-2">
+					<DropdownMenu >
+						<DropdownMenuTrigger asChild>
+							<Button className="bg-blue-500 text-white font-semibold py-3 w-fit">
+								{typeOptions.find(t => t.id === selectedType)?.label || "Bộ lọc"} <ChevronDown className="w-4 h-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent side="bottom" align="start" className="min-w-0 w-auto p-2 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border">
+							<div className="flex flex-row items-center gap-2 overflow-x-auto max-w-[calc(100vw-1rem)] md:max-w py-1 px-1">
+								{typeOptions.map((opt) => (
+									<DropdownMenuItem
+										key={opt.id}
+										onSelect={() => {
+											setSelectedType(opt.id)
+										}}
+										className="inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 focus:bg-blue-100 focus:text-blue-800 transition-colors"
+									>
+										{opt.label}
+									</DropdownMenuItem>
+								))}
+								<DropdownMenuItem
+									onSelect={() => {
+										setSelectedType("" as unknown as LocationType)
+										setSelected(null)
+									}}
+									className="inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 focus:bg-gray-200 transition-colors"
+								>
+									Tất cả
+								</DropdownMenuItem>
+							</div>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
 				{isLoading ? (
 					<div className="flex justify-center items-center h-64">
 						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -333,6 +387,13 @@ export default function CustomVietmapDemo() {
 												<FavoriteButton location={site} size={20} />
 											</div>
 											<p className="text-sm text-gray-600 mt-2 line-clamp-2">{site.description}</p>
+											{site.openTime && site.closeTime && (
+												<div className="flex items-center gap-2">
+													<p className="text-xs sm:text-sm text-gray-800 font-medium">
+														Giờ mở cửa: {formatTime(site.openTime)} - {formatTime(site.closeTime)}
+													</p>
+												</div>
+											)}
 										</CardHeader>
 
 										<CardContent className="p-3 sm:p-4 flex-grow">
@@ -340,7 +401,7 @@ export default function CustomVietmapDemo() {
 												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
 													<Image src="/icon/rank.png" alt="Rank Icon" width={20} height={20} />
 													<p className="text-xs sm:text-sm text-gray-800 font-medium">
-														Xếp hạng: {site.category}
+														Loại địa điểm: {site.category}
 													</p>
 												</div>
 												<div className="flex items-center bg-[#CEF3FE] rounded-md space-x-2 p-2">
@@ -364,36 +425,6 @@ export default function CustomVietmapDemo() {
 					isSidebarOpen ? "w-full md:w-2/3 lg:w-7/12" : "w-full",
 				)}
 			>
-				{/* Filter dropdown */}
-				<div className="absolute top-2 right-2 z-10 w-fit">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button className="bg-blue-500 text-white font-semibold">
-								{typeOptions.find(t => t.id === selectedType)?.label || "Bộ lọc"}
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							{typeOptions.map((opt) => (
-								<DropdownMenuItem
-									key={opt.id}
-									onSelect={() => {
-										setSelectedType(opt.id)
-									}}
-								>
-									{opt.label}
-								</DropdownMenuItem>
-							))}
-							<DropdownMenuItem
-								onSelect={() => {
-									setSelectedType("" as unknown as LocationType)
-								}}
-							>
-								Tất cả
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-
 				{/* Selected site info card */}
 				{selectedSite && (
 					<div className="absolute bottom-2 w-full z-10 px-3">
