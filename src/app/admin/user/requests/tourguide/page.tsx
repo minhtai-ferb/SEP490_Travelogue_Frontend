@@ -50,6 +50,11 @@ export default function TourguideRequestsPage() {
   const [pageSize, setPageSize] = useState(12);
   const [sortBy, setSortBy] = useState<"fullName" | "price" | "status">("fullName");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Debounce search input
   useEffect(() => {
@@ -280,7 +285,15 @@ export default function TourguideRequestsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading && items.length === 0 &&
+                {!isHydrated && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-sm text-gray-600">
+                      Đang tải...
+                    </TableCell>
+                  </TableRow>
+                )}
+
+                {isHydrated && loading && items.length === 0 &&
                   Array.from({ length: 6 }).map((_, i) => (
                     <TableRow key={`sk-${i}`} className="hover:bg-transparent">
                       <TableCell>
@@ -314,7 +327,7 @@ export default function TourguideRequestsPage() {
                     </TableRow>
                   ))}
 
-                {!loading && pagedItems.map((it) => (
+                {isHydrated && !loading && pagedItems.map((it) => (
                   <TableRow key={it.id} className="hover:bg-muted/40">
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -375,7 +388,7 @@ export default function TourguideRequestsPage() {
                   </TableRow>
                 ))}
 
-                {!loading && pagedItems.length === 0 && (
+                {isHydrated && !loading && pagedItems.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center text-sm text-gray-600">
                       Không có yêu cầu nào — thử đổi bộ lọc hoặc từ khóa.
@@ -408,7 +421,7 @@ export default function TourguideRequestsPage() {
 
         {/* Detail Sheet */}
         <Sheet open={!!openId} onOpenChange={(o) => !o && setOpenId(null)}>
-          <SheetContent side="right" className="sm:max-w-md">
+          <SheetContent side="right" className="sm:max-w-lg">
             <SheetHeader>
               <SheetTitle>Chi tiết yêu cầu</SheetTitle>
               <SheetDescription>Thông tin từ hướng dẫn viên</SheetDescription>

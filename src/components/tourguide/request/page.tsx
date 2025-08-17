@@ -395,7 +395,7 @@ export default function TourguideRequestsPage() {
 
 				{/* Detail Sheet */}
 				<Sheet open={!!openId} onOpenChange={(o) => !o && setOpenId(null)}>
-					<SheetContent side="right" className="sm:max-w-md">
+					<SheetContent side="right" className="sm:max-w-lg">
 						<SheetHeader>
 							<SheetTitle>Chi tiết yêu cầu</SheetTitle>
 							<SheetDescription>Thông tin từ hướng dẫn viên</SheetDescription>
