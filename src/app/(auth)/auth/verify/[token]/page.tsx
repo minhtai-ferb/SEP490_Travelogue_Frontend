@@ -52,7 +52,7 @@ const VerifySuccess = ({ params }: { params: Promise<{ token: string }> }) => {
     if (done == true) {
       timerRef.current = setTimeout(() => {
         if (!tokenCookies) {
-          router.push("/login");
+          router.push("/auth");
         } else router.push("/");
       }, 5000);
 
