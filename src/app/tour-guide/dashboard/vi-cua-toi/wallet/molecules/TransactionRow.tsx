@@ -11,8 +11,12 @@ type TransactionRowProps = {
 
 export default function TransactionRow({ txn, onClick }: TransactionRowProps) {
 	const amount = Number(txn?.paidAmount ?? txn?.amount ?? 0)
-	const direction: "credit" | "debit" = (txn?.direction || (amount >= 0 ? "credit" : "debit")).toLowerCase()
-	const isCredit = direction === "credit"
+	const rawDirection = String(txn?.direction || "").toLowerCase()
+	const typeLower = String(txn?.type || "").toLowerCase()
+	const isOutboundByType = ["withdrawal", "fee", "charge", "transfer_out", "payout_to_bank"].includes(typeLower)
+	const isOutboundByDirection = ["debit", "out", "outbound", "withdrawal", "decrease"].includes(rawDirection)
+	const inferredOutbound = Number.isFinite(amount) ? amount < 0 : false
+	const isOutbound = isOutboundByDirection || isOutboundByType || inferredOutbound
 	const absAmount = Math.abs(amount)
 
 	const ref = txn?.referenceCode || txn?.bookingId || txn?.orderId || txn?.ref || ""
@@ -40,9 +44,9 @@ export default function TransactionRow({ txn, onClick }: TransactionRowProps) {
 		return "bg-gray-100 text-gray-700"
 	})()
 
-	const sign = isCredit ? "+" : "-"
-	const amountClass = isCredit ? "text-emerald-700" : "text-rose-700"
-	const iconBgClass = isCredit ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+	const sign = isOutbound ? "-" : "+"
+	const amountClass = isOutbound ? "text-rose-700" : "text-emerald-700"
+	const iconBgClass = isOutbound ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"
 
 	return (
 		<button
@@ -53,10 +57,10 @@ export default function TransactionRow({ txn, onClick }: TransactionRowProps) {
 			<div className="flex items-center justify-between gap-3">
 				<div className="flex items-center gap-3 min-w-0">
 					<span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${iconBgClass}`}>
-						{isCredit ? (
-							<ArrowUpRight className="w-4 h-4" />
-						) : (
+						{isOutbound ? (
 							<ArrowDownRight className="w-4 h-4" />
+						) : (
+							<ArrowUpRight className="w-4 h-4" />
 						)}
 					</span>
 					<div className="min-w-0">
@@ -73,10 +77,10 @@ export default function TransactionRow({ txn, onClick }: TransactionRowProps) {
 				</div>
 				<div className="text-right">
 					<div className={`font-medium ${amountClass}`}>
-						{sign} <MoneyText amount={absAmount} />
+						{sign} <MoneyText isPositive={isOutbound} amount={absAmount} />
 					</div>
 					{showNet && (
-						<div className="text-[11px] text-gray-500">Sau phí: <MoneyText amount={netAmount} /></div>
+						<div className="text-[11px] text-gray-500">Sau phí: <MoneyText isPositive={isOutbound} amount={netAmount} /></div>
 					)}
 					{statusText && (
 						<div className="mt-0.5">
