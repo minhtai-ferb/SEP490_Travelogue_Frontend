@@ -16,9 +16,6 @@ export function getStoredUser(): AppUser | null {
     return null;
   }
 }
-export function setStoredUser(user: AppUser) {
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
-}
 export function clearStoredUser() {
-  localStorage.removeItem(USER_KEY);
+  localStorage.clear();
 }
