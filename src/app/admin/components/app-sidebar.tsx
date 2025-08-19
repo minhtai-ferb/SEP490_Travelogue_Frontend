@@ -10,6 +10,8 @@ import {
   SquareTerminal,
   Banknote,
   Ticket,
+  BanknoteX,
+  BanknoteArrowUp,
 } from "lucide-react";
 import * as React from "react";
 
@@ -108,13 +110,18 @@ const data = {
     {
       title: "Quản lý yêu cầu rút tiền",
       url: "/admin/request-withdrawal/request-table",
-      icon: Banknote,
+      icon: BanknoteArrowUp,
       items: [
         {
           title: "Danh sách yêu cầu rút tiền",
           url: "/admin/request-withdrawal/request-table",
         },
       ],
+    },
+    {
+      title: "Yêu cầu hoàn tiền",
+      url: "/admin/request-refund",
+      icon: BanknoteX,
     },
     {
       title: "Quản lý các đặt chỗ",

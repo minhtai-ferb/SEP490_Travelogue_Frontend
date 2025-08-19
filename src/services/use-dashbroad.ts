@@ -4,24 +4,33 @@ import useApiService from "@/hooks/useApi";
 import { useAtom } from "jotai";
 import { isLoadingAtom } from "@/store/auth";
 import { useCallback } from "react";
-
-
+import exp from "constants";
 export interface BookingStatsItem {
-  day: string; // ISO date string
+  day: string; 
   bookingSchedule: number;
   bookingTourGuide: number;
   bookingWorkshop: number;
 }
 
 export interface BookingStatsResponse {
-  fromDate: string; // ISO date string
-  toDate: string;   // ISO date string
+  fromDate: string; 
+  toDate: string;  
   data: BookingStatsItem[];
 }
 
-// Giả sử API URL backend là "/statistics/booking"
+export interface RevenueStatsResponse {
+  fromDate: string;
+  toDate: string;
+  totalRevenue: string;
+  data: {
+    day: string;
+    revenue: number;
+  }[];
+}
+
 const STATISTICS_API_URL = {
   BOOKING_STATS: "/dashboard/booking-statistics",
+  REVENUE_STATISTICS: "/dashboard/revenue-statistics"
 };
 
 export function useBookingStats() {
@@ -38,7 +47,7 @@ export function useBookingStats() {
           STATISTICS_API_URL.BOOKING_STATS,
           { params }
         );
-        return response as BookingStatsResponse;
+        return response.data as BookingStatsResponse;
       } catch (e: any) {
         console.error("Error fetching booking stats:", e.message);
         throw e;
