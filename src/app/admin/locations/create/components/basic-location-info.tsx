@@ -22,9 +22,14 @@ interface BasicLocationInfoProps {
     districtId: string;
   };
   onChange: (data: any) => void;
+  errors: {
+    name?: string;
+    districtId?: string;
+    address?: string;
+  };
 }
 
-export function BasicLocationInfo({ data, onChange }: BasicLocationInfoProps) {
+export function BasicLocationInfo({ data, onChange, errors }: BasicLocationInfoProps) {
   const { getAllDistrict } = useDistrictManager();
   const [districts, setDistricts] = useState<District[]>([]);
   useEffect(() => {
@@ -40,18 +45,28 @@ export function BasicLocationInfo({ data, onChange }: BasicLocationInfoProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-2">
-        <Label htmlFor="name">Tên địa điểm *</Label>
+        <Label htmlFor="name">
+          Tên địa điểm <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="name"
           value={data.name}
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="Nhập tên địa điểm"
+          required
+          className={errors.name ? "border-red-500" : ""}
         />
+        {errors.name ? (
+          <div className="text-xs text-red-500">{errors.name}</div>
+        ) : null}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="district">Quận/Huyện *</Label>
+        <Label htmlFor="district">
+          Quận/Huyện <span className="text-red-500">*</span>
+        </Label>
         <Select
+          required
           value={data.districtId}
           onValueChange={(value) => onChange({ districtId: value })}
         >
@@ -66,16 +81,26 @@ export function BasicLocationInfo({ data, onChange }: BasicLocationInfoProps) {
             ))}
           </SelectContent>
         </Select>
+        {errors.districtId ? (
+          <div className="text-xs text-red-500">{errors.districtId}</div>
+        ) : null}
       </div>
 
       <div className="md:col-span-2 space-y-2">
-        <Label htmlFor="address">Địa chỉ *</Label>
+        <Label htmlFor="address">
+          Địa chỉ <span className="text-red-500">*</span>
+        </Label>
         <Input
+          required
           id="address"
           value={data.address}
           onChange={(e) => onChange({ address: e.target.value })}
           placeholder="Nhập địa chỉ chi tiết"
+          className={errors.address ? "border-red-500" : ""}
         />
+        {errors.address ? (
+          <div className="text-xs text-red-500">{errors.address}</div>
+        ) : null}
       </div>
 
       <div className="md:col-span-2 space-y-2">

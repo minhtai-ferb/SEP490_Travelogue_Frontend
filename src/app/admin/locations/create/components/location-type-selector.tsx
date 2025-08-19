@@ -17,13 +17,13 @@ const locationTypes = [
     icon: MapPin,
     color: "border-purple-200 bg-purple-50 hover:bg-purple-100",
   },
-  {
-    type: LocationType.CraftVillage,
-    name: "Làng nghề",
-    description: "Làng nghề truyền thống",
-    icon: Hammer,
-    color: "border-orange-200 bg-orange-50 hover:bg-orange-100",
-  },
+  // {
+  //   type: LocationType.CraftVillage,
+  //   name: "Làng nghề",
+  //   description: "Làng nghề truyền thống",
+  //   icon: Hammer,
+  //   color: "border-orange-200 bg-orange-50 hover:bg-orange-100",
+  // },
   {
     type: LocationType.HistoricalSite,
     name: "Địa điểm lịch sử",
@@ -45,7 +45,7 @@ export function LocationTypeSelector({
   onChange,
 }: LocationTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-3 gap-4">
       {locationTypes.map((type) => {
         const Icon = type.icon;
         const isSelected = selectedType === type.type;
@@ -53,11 +53,10 @@ export function LocationTypeSelector({
         return (
           <Card
             key={type.type}
-            className={`cursor-pointer transition-all ${
-              isSelected
-                ? `ring-2 ring-primary ${type.color}`
-                : `border-2 hover:shadow-md ${type.color}`
-            }`}
+            className={`cursor-pointer transition-all ${isSelected
+              ? `ring-2 ring-primary ${type.color}`
+              : `border-2 hover:shadow-md ${type.color}`
+              }`}
             onClick={() => onChange(type.type)}
           >
             <CardContent className="p-4 text-center">

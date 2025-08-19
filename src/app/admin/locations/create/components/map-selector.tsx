@@ -27,7 +27,7 @@ export function MapSelector({
 }: MapSelectorProps) {
   const [searchAddress, setSearchAddress] = useState(address);
   const [manualMode, setManualMode] = useState(false);
-
+  const [error, setError] = useState<string | null>(null)
   const provinceBounds: [[number, number], [number, number]] = [
     [105.811944, 10.952222],
     [106.38, 11.776667],
@@ -37,9 +37,9 @@ export function MapSelector({
   const markers =
     latitude && longitude
       ? [
-          {
-            lngLat: [longitude, latitude] as [number, number],
-            popupHTML: `
+        {
+          lngLat: [longitude, latitude] as [number, number],
+          popupHTML: `
         <div class="p-3 max-w-xs">
           <div class="flex items-start gap-2 mb-2">
             <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -62,15 +62,15 @@ export function MapSelector({
           </div>
         </div>
       `,
-            popupOptions: {
-              anchor: "bottom" as const,
-              closeButton: true,
-              closeOnClick: false,
-              maxWidth: "300px",
-              className: "custom-popup",
-            },
+          popupOptions: {
+            anchor: "bottom" as const,
+            closeButton: true,
+            closeOnClick: false,
+            maxWidth: "300px",
+            className: "custom-popup",
           },
-        ]
+        },
+      ]
       : [];
 
   const handleAddressChange = (address: string, lat: number, lng: number) => {
@@ -88,11 +88,11 @@ export function MapSelector({
     <div className="space-y-6">
       {/* Manual Mode Toggle */}
       <div className="flex items-center space-x-2">
-        <Checkbox
+        {/* <Checkbox
           id="manualMode"
           checked={manualMode}
           onCheckedChange={(checked) => setManualMode(!!checked)}
-        />
+        /> */}
         <Label
           htmlFor="manualMode"
           className="text-sm font-medium cursor-pointer"
@@ -104,42 +104,45 @@ export function MapSelector({
       {/* Address Search */}
       {!manualMode && (
         <div className="space-y-2">
-          <Label className="text-sm font-medium flex items-center gap-2">
+          {/* <Label className="text-sm font-medium flex items-center gap-2">
             <Navigation className="h-4 w-4 text-blue-500" />
             Tìm kiếm địa chỉ
-          </Label>
+          </Label> */}
           <AddressSearchInput
             value={searchAddress}
             latitude={latitude}
             longitude={longitude}
             onChange={handleAddressChange}
+            onError={(msg) => setError(msg)}
             placeholder="Nhập địa chỉ để tìm kiếm trên bản đồ (ví dụ: Tây Ninh, Núi Bà Đen...)"
           />
-          <p className="text-xs text-gray-500 flex items-center gap-1">
+          {error && <div className="text-xs text-red-500">{error}</div>}
+          {/* <p className="text-xs text-gray-500 flex items-center gap-1">
             <span>💡</span>
             Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm và chọn từ danh sách gợi ý
-          </p>
+          </p> */}
         </div>
       )}
 
       {/* Manual Address Input */}
       {manualMode && (
-        <div className="space-y-2">
-          <Label htmlFor="manual-address" className="text-sm font-medium">
-            Địa chỉ thủ công
-          </Label>
-          <Input
-            id="manual-address"
-            value={searchAddress}
-            onChange={(e) => setSearchAddress(e.target.value)}
-            placeholder="Nhập địa chỉ thủ công"
-            className="border-2 border-gray-200 focus:border-blue-500"
-          />
-        </div>
+        // <div className="space-y-2">
+        //   <Label htmlFor="manual-address" className="text-sm font-medium">
+        //     Địa chỉ thủ công
+        //   </Label>
+        //   <Input
+        //     id="manual-address"
+        //     value={searchAddress}
+        //     onChange={(e) => setSearchAddress(e.target.value)}
+        //     placeholder="Nhập địa chỉ thủ công"
+        //     className="border-2 border-gray-200 focus:border-blue-500"
+        //   />
+        // </div>
+        <></>
       )}
 
       {/* Manual Coordinates Input */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="latitude" className="text-sm font-medium">
             Vĩ độ (Latitude)
@@ -154,11 +157,10 @@ export function MapSelector({
             }
             placeholder="VD: 11.314528"
             disabled={!manualMode}
-            className={`border-2 transition-colors ${
-              !manualMode
-                ? "bg-gray-50 border-gray-200 text-gray-500"
-                : "border-gray-200 focus:border-blue-500"
-            }`}
+            className={`border-2 transition-colors ${!manualMode
+              ? "bg-gray-50 border-gray-200 text-gray-500"
+              : "border-gray-200 focus:border-blue-500"
+              }`}
           />
         </div>
         <div className="space-y-2">
@@ -175,14 +177,37 @@ export function MapSelector({
             }
             placeholder="VD: 106.086614"
             disabled={!manualMode}
-            className={`border-2 transition-colors ${
-              !manualMode
-                ? "bg-gray-50 border-gray-200 text-gray-500"
-                : "border-gray-200 focus:border-blue-500"
-            }`}
+            className={`border-2 transition-colors ${!manualMode
+              ? "bg-gray-50 border-gray-200 text-gray-500"
+              : "border-gray-200 focus:border-blue-500"
+              }`}
           />
         </div>
-      </div>
+      </div> */}
+
+      {/* Empty state when no coordinates */}
+      {/* {(
+        latitude === null ||
+        latitude === undefined ||
+        longitude === null ||
+        longitude === undefined ||
+        latitude === 0 ||
+        longitude === 0
+      ) && (
+          <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
+            <div className="text-sm text-amber-800">
+              Không tìm thấy tọa độ phù hợp từ VietMap cho địa chỉ đã nhập.
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setManualMode(true)}>
+                Bật chế độ thủ công
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleUseCurrentLocation}>
+                Dùng vị trí hiện tại
+              </Button>   
+            </div>
+          </div>
+        )} */}
 
       {/* Current Location Display */}
       {latitude !== null &&
@@ -249,6 +274,14 @@ export function MapSelector({
               </div>
             </div>
           )}
+
+          {(!latitude || !longitude || latitude === 0 || longitude === 0) && !manualMode && (
+            <div className="absolute bottom-3 left-3 bg-amber-500/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md">
+              <div className="text-xs font-medium text-white">
+                Không có tọa độ. Bật chế độ thủ công hoặc dùng vị trí hiện tại.
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -266,10 +299,6 @@ export function MapSelector({
           <li>
             <strong>Chọn từ gợi ý:</strong> Click vào địa chỉ để tự động cập
             nhật tọa độ
-          </li>
-          <li>
-            <strong>Nhập thủ công:</strong> Bật chế độ thủ công để nhập tọa độ
-            hoặc click trên bản đồ
           </li>
           <li>
             <strong>Xem trên bản đồ:</strong> Marker sẽ hiển thị vị trí với

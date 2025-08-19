@@ -124,6 +124,20 @@ export default function EditLocationPage() {
 
     setIsSubmitting(true);
     try {
+      // Validate type-specific required fields before submitting
+      if (locationData.category === Category.HistoricalSite) {
+        const hist = locationData.historicalLocation;
+        const hasDate = Boolean(hist?.establishedDate);
+        const hasType = hist?.typeHistoricalLocation !== undefined && hist?.typeHistoricalLocation !== null;
+        const rank = typeof hist?.heritageRank === "number" ? hist?.heritageRank : -1;
+        const rankValid = rank >= 0 && rank <= 5;
+        if (!hist || !hasDate || !hasType || !rankValid) {
+          toast.error("Vui lòng điền đầy đủ thông tin di tích lịch sử (ngày, loại, xếp hạng 0-5)");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Update main location data
       await updateScenicSpotInfo(locationId, {
         name: locationData.name,
