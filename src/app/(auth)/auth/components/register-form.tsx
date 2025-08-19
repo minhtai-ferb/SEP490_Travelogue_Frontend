@@ -39,11 +39,11 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 		try {
 			await loginWithGoogle()
 			router.push("/")
-			addToast({
-				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Traveloge",
-				color: "success",
-			})
+			// addToast({
+			// 	title: "Đăng nhập thành công!",
+			// 	description: "Chào mừng bạn đến với Traveloge",
+			// 	color: "success",
+			// })
 		} catch (error: any) {
 			console.error("Google login error:", error)
 			setError(error?.message || "Đã xảy ra lỗi khi đăng nhập với Google")

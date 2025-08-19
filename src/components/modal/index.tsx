@@ -116,11 +116,11 @@ function Modal({ isLogin, open, onClose }: ModalProps) {
 
 			// The login function already updates the Jotai atom
 
-			addToast({
-				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Traveloge",
-				color: "success",
-			})
+			// addToast({
+			// 	title: "Đăng nhập thành công!",
+			// 	description: "Chào mừng bạn đến với Traveloge",
+			// 	color: "success",
+			// })
 			onClose()
 			resetLoginForm()
 		} catch (error: any) {
@@ -143,11 +143,11 @@ function Modal({ isLogin, open, onClose }: ModalProps) {
 		setIsGooglePending(true)
 		try {
 			await loginWithGoogle()
-			addToast({
-				title: "Đăng nhập thành công!",
-				description: "Chào mừng bạn đến với Traveloge",
-				color: "success",
-			})
+			// addToast({
+			// 	title: "Đăng nhập thành công!",
+			// 	description: "Chào mừng bạn đến với Traveloge",
+			// 	color: "success",
+			// })
 			onClose()
 		} catch (error: any) {
 			console.error("Google login error:", error)
