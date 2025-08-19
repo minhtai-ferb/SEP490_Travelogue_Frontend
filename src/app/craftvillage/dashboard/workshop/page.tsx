@@ -9,6 +9,8 @@ import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import { WorkshopFilterParams } from "@/types/Workshop"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
+import WorkshopDataTable from "@/app/moderator/craft-village/workshop/components/WorkshopDataTable"
+import WorkshopTable from "./components/WorkshopTable"
 
 export default function WorkshopPage() {
 	const { getWorkshops, loading } = useWorkshop()
@@ -62,7 +64,9 @@ export default function WorkshopPage() {
 							onSearch={() => getWorkshops(filters as WorkshopFilterParams).then((res) => setItems(Array.isArray(res) ? res : (res?.items || [])))}
 							loading={loading}
 						/>
-
+						<WorkshopTable
+							items={items}
+						/>
 						<WorkshopList items={items} />
 					</CardContent>
 				</Card>

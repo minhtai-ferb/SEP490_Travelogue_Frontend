@@ -9,6 +9,8 @@ import { signInWithGoogle, signOut as firebaseSignOut } from "./firebase-auth";
 import Cookies from "js-cookie";
 import { add } from "date-fns";
 import { addToast } from "@heroui/react";
+import toast from "react-hot-toast";
+import { clear } from "console";
 import { clearStoredUser } from "@/utils/auth-storage";
 
 export function useAuth() {
@@ -22,34 +24,30 @@ export function useAuth() {
       try {
         setLoading(true);
         const response = await callApi("post", "auth/login", values);
-        console.log("login: ", response);
 
-        // Store token
-        Cookies.set("jwtToken", response.data.verificationToken, {
-          expires: 2,
-        });
-        Cookies.set("refreshToken", response.data.refreshTokens, {
-          expires: 7,
-        });
-
-        // Create user object
         const userData: User = {
           id: response.data.userId,
           accessToken: response.data.verificationToken,
           ...response.data,
           provider: "email",
         };
-
-        // Update user in Jotai atom and localStorage
+        if (response.status === 200) {
+          toast.success("Đăng nhập thành công!");
+        }
+        Cookies.set("jwtToken", response.data.verificationToken, {
+          expires: 2,
+        });
+        Cookies.set("refreshToken", response.data.refreshTokens, {
+          expires: 7,
+        });
         setUser(userData);
-
         return userData;
       } catch (e: any) {
-        addToast({
-          title: "Đăng nhập thất bại!",
-          description: e?.response?.data?.message || "Vui lòng thử lại",
-          color: "danger",
-        });
+        if (e?.response?.status === 401) {
+          toast.error("Tài khoản hoặc mật khẩu không đúng!");
+        } else {
+          toast.error("Đăng nhập thất bại!");
+        }
       } finally {
         setLoading(false);
       }
@@ -62,45 +60,44 @@ export function useAuth() {
       setLoading(true);
       console.log("Initiating Google login...");
 
-      const googleUserData = await signInWithGoogle();
-      console.log("Google login successful, user data:", googleUserData);
-      // Store token
-      if (!googleUserData?.accessToken) {
-        throw new Error("Access token is undefined");
-      }
-      Cookies.set("jwtToken", googleUserData.accessToken, { expires: 2 });
-      // Cookies.set("refreshToken", googleUserData?.refreshTokens, { expires: 7 });
+      const responseFirebase = await signInWithGoogle();
 
-      // Create user object
-      const userData: User = {
-        id: googleUserData.id,
-        email: googleUserData.email || undefined,
-        fullName: googleUserData.fullName || undefined,
-        photoURL: googleUserData.photoURL || undefined,
+      const userDataFirebase: User = {
+        id: responseFirebase.id,
+        email: responseFirebase.email || undefined,
+        fullName: responseFirebase.fullName || undefined,
+        photoURL: responseFirebase.photoURL || undefined,
         provider: "google",
-        accessToken: googleUserData.accessToken, // Store access token for further API calls
+        accessToken: responseFirebase.accessToken,
       };
 
-      // Update user in Jotai atom and localStorage
-      setUser(userData);
-      localStorage.setItem("USER", JSON.stringify(userData));
-      localStorage.setItem("token", userData.id || ""); // Use user ID as token for simplicity
-
-      // Dispatch storage event to notify other components
-      window.dispatchEvent(new Event("storage"));
-
-      // You might want to sync this with your backend
-      try {
-        console.log("Syncing with backend...");
-        await callApi("post", "auth/google-login", {
-          token: userData?.accessToken,
-        });
-        console.log("Backend sync successful");
-      } catch (error) {
-        console.warn("Failed to sync Google login with backend:", error);
-        // Continue anyway since Firebase auth succeeded
+      if (!responseFirebase?.accessToken) {
+        toast.error("Tài khoản không xác định");
+        throw new Error("Access token is undefined");
       }
 
+      const response = await callApi("post", "auth/google-login", {
+        token: userDataFirebase?.accessToken,
+      });
+
+      const userData: User = {
+        id: response.data.userId,
+        accessToken: response.data.verificationToken,
+        avatarUrl:
+          response.data.avatarUrl || responseFirebase.photoURL || undefined,
+        ...response.data,
+        provider: "google",
+      };
+      if (response.status === 200) {
+        toast.success("Đăng nhập bằng Google thành công!");
+      }
+      Cookies.set("jwtToken", response.data.verificationToken, {
+        expires: 2,
+      });
+      Cookies.set("refreshToken", response.data.refreshTokens, {
+        expires: 7,
+      });
+      setUser(userData);
       return userData;
     } catch (error) {
       console.error("Google login error:", error);
@@ -123,7 +120,7 @@ export function useAuth() {
           provider: "email",
         };
 
-        // Update user in Jotai atom and localStorage
+        // Update user in Jotai atom
         setUser(userData);
 
         return userData;
@@ -155,20 +152,13 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       setLoading(true);
-
-      // If user was logged in with Google, sign out from Firebase
       if (user?.provider === "google") {
         await firebaseSignOut();
       }
-
       Cookies.remove("jwtToken", { path: "/" });
       Cookies.remove("refreshToken", { path: "/" });
-
-      // Clear local storage and state
       clearStoredUser();
       setUser(null);
-
-      // Redirect to auth page
       router.push("/auth");
     } catch (error) {
       console.error("Logout error:", error);
@@ -358,23 +348,14 @@ export function useAuth() {
       return response.data;
     } catch (e: any) {
       if (e?.response?.status === 401) {
-        addToast({
-          title: "Lỗi token hết hạn!",
-          // description: e?.response?.data.Message,
-          description: "Vui lòng đăng nhặp lại",
-          color: "warning",
-        });
+        toast.error("Bạn đã hết hạn đăng nhập, vui lòng đăng nhập lại");
         //   Redirect to homepage
         if (user?.provider === "google") {
           await firebaseSignOut();
         }
-
-        // Clear local storage and state
-        localStorage.removeItem("token");
-        setUser(null);
-
+        logout();
         // Redirect to login page
-        router.push("/");
+        router.push("/auth");
         return;
       } else {
         console.error(e);

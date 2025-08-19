@@ -65,7 +65,7 @@ export function useTour() {
 	const updateTourSchedule = useCallback(async (tourId: string, scheduleId: string, data: ScheduleFormData) => {
 		setLoading(true);
 		try {
-			const response = await callApi("put", `${TOUR_API_URL.TOUR_UPDATE_SCHEDULE}${scheduleId}`, data, { params: { tourId } });
+			const response = await callApi("put", `${TOUR_API_URL.TOUR_UPDATE_SCHEDULE}${scheduleId}`, data, { tourId });
 			return response?.data;
 		} catch (e: any) {
 			throw e;

@@ -237,6 +237,8 @@ export interface TourDetail {
 	childrenPrice: number
 	finalPrice: number
 	isDiscount: boolean
+	startAddress: string
+	endAddress: string
 	status: number
 	statusText: TourStatus
 	schedules: TourSchedule[]

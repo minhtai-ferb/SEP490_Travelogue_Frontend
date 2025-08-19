@@ -27,7 +27,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { format, subDays } from "date-fns";
 import { vi } from "date-fns/locale";
-import { BookingStatsItem, useBookingStats } from "@/services/use-dashbroad";
+import { BookingStatsItem, BookingStatsResponse, useBookingStats } from "@/services/use-dashbroad";
 import { BookingStatsCards } from "./booking-stats-cards";
 
 const chartConfig = {
@@ -79,7 +79,8 @@ export function BookingStatsChart({ setTimeRange, timeRange }: Props) {
       const startDateStr = format(startDate, "yyyy-MM-dd");
       const endDateStr = format(endDate, "yyyy-MM-dd");
 
-      const response = await getBookingStats(startDateStr, endDateStr);
+      const response : BookingStatsResponse = await getBookingStats(startDateStr, endDateStr);
+
       const formattedData = response.data.map((item) => ({
         ...item,
         date: item.day, // Đổi tên field để match với AreaChart
