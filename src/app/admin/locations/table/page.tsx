@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TableProps } from "antd";
 import type { District } from "@/types/District";
@@ -34,6 +34,7 @@ export default function ManageLocation() {
   const [data, setData] = useState<LocationTable[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
+  const [searchText, setSearchText] = useState("");
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] =
@@ -45,8 +46,34 @@ export default function ManageLocation() {
     undefined
   );
 
+  // Memoized query params used for fetching
+  const query = useMemo(
+    () => ({
+      title: searchText,
+      type: selectedType ? parseInt(selectedType, 10) : undefined,
+      districtId: selectedOption || undefined,
+      heritageRank: undefined as number | undefined,
+      pageNumber: currentPage,
+      pageSize: pageSize,
+    }),
+    [searchText, selectedType, selectedOption, currentPage, pageSize]
+  );
+
+  const fetchLocations = async () => {
+    try {
+      const response = await searchAllLocations(query);
+      if (!response)
+        throw new Error("No data returned from API getAllLocation");
+      setData(response?.data as LocationTable[]);
+      setTotalCount(response.totalCount);
+    } catch (error) {
+      console.error("Error fetching location data:", error);
+    }
+  };
+
+  // Load districts once
   useEffect(() => {
-    const fetchLocations = async () => {
+    const loadDistricts = async () => {
       try {
         const districtResponse = await getAllDistrict();
         setOptions([
@@ -56,25 +83,16 @@ export default function ManageLocation() {
             label: district.name,
           })),
         ]);
-
-        const response = await searchAllLocations({
-          title: "",
-          type: selectedType ? parseInt(selectedType, 10) : undefined,
-          districtId: selectedOption,
-          heritageRank: undefined,
-          pageNumber: currentPage,
-          pageSize: pageSize,
-        });
-        if (!response)
-          throw new Error("No data returned from API getAllLocation");
-        setData(response?.data as LocationTable[]);
-        setTotalCount(response.totalCount);
       } catch (error) {
-        console.error("Error fetching location data:", error);
+        console.error("Error loading districts:", error);
       }
     };
+    loadDistricts();
+  }, [getAllDistrict]);
+
+  useEffect(() => {
     fetchLocations();
-  }, [selectedOption, selectedType, currentPage, pageSize]);
+  }, [query]);
 
   const handleViewDetails = (record: LocationTable) => {
     setLoadingButton(true);
@@ -125,64 +143,31 @@ export default function ManageLocation() {
 
   const onChangeDistrict = async (value: string) => {
     setSelectedOption(value);
-    try {
-      const response = await searchAllLocations({
-        title: "",
-        type: selectedType ? parseInt(selectedType, 10) : undefined,
-        districtId: value,
-        heritageRank: undefined,
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      });
-      setData(response?.data as LocationTable[]);
-      setTotalCount(response.totalCount);
-    } catch (error) {
-      console.error("Error fetching data on select change:", error);
-    }
+    setCurrentPage(1);
   };
 
   const onChangeTypeLocation = async (value: string) => {
     setSelectedType(value);
-    try {
-      const response = await searchAllLocations({
-        title: "",
-        type: value ? parseInt(value, 10) : undefined,
-        districtId: selectedOption,
-        heritageRank: undefined,
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      });
-      setData(response?.data as LocationTable[]);
-      setTotalCount(response.totalCount);
-    } catch (error) {
-      console.error("Error fetching data on type change:", error);
-    }
+    setCurrentPage(1);
   };
 
-  const onSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    try {
-      const response = await searchAllLocations({
-        title: value,
-        type: selectedType ? parseInt(selectedType, 10) : undefined,
-        districtId: selectedOption,
-        heritageRank: undefined,
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      });
-      setData(response?.data as LocationTable[]);
-      setTotalCount(response.totalCount);
-    } catch (error) {
-      console.error("Error fetching data on search:", error);
-    }
+  const onSearch = (value: string) => {
+    setSearchText(value);
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedOption("");
+    setSelectedType(undefined);
+    setSearchText("");
+    setCurrentPage(1);
   };
 
   return (
     <SidebarInset>
       <HeaderLocationTable />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {(typeof loading === "boolean" ? loading : false) ||
-        data.length === 0 || loadingButton ? (
+        {useMemo(() => (typeof loading === "boolean" ? loading : false) || loadingButton, [loading, loadingButton]) ? (
           <LoadingContent />
         ) : (
           <>
@@ -192,6 +177,10 @@ export default function ManageLocation() {
               onChangeDistrict={onChangeDistrict}
               onSearch={onSearch}
               setLoading={setLoadingButton}
+              selectedDistrict={selectedOption}
+              selectedType={selectedType}
+              searchText={searchText}
+              onReset={handleResetFilters}
             />
 
             <LocationTableComponent
