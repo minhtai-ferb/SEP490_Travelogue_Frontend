@@ -13,7 +13,7 @@ function ManageLocation() {
 
   useEffect(() => {
     setLoading(true);
-    router.push("/admin/tour");
+    router.push("/admin/tour/table");
   }, []);
 
   if (loading) {

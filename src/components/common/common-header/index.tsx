@@ -467,14 +467,14 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 													<span>Địa điểm yêu thích</span>
 												</Link>
 											</DropdownMenuItem>
-											{checkRole(ROLES.TOUR_GUIDE) && (
+											{/* {checkRole(ROLES.TOUR_GUIDE) && (
 												<DropdownMenuItem className="cursor-pointer">
 													<Link href="/cac-tour-cua-ban" className="flex items-center">
 														<Backpack className="mr-2 h-4 w-4 text-primary" />
 														<span>Xem tour của bạn</span>
 													</Link>
 												</DropdownMenuItem>
-											)}
+											)} */}
 											{hasHigherRole() && (
 												<DropdownMenuItem className="cursor-pointer">
 													<Link href="/auth/choose-role" className="flex items-center">

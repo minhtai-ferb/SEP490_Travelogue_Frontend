@@ -19,3 +19,23 @@ export interface Wallet {
 	transactions: WalletTransaction[]
 	updatedAt: string
 }
+
+
+export interface WalletTransaction {
+	id: string
+	userId: string
+	type: WalletTxnType
+	balanceAfter: number
+	createdAt: string
+	direction: "credit" | "debit"
+	amount: number
+	netAmount: number
+	feeAmount: number
+	reasonText: string
+	referenceCode: string
+	processedAt: string
+	method: string
+	status: WalletTxnStatus
+	statusText: string
+	typeText: string
+}

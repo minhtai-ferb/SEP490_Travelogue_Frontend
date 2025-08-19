@@ -125,7 +125,7 @@ function TourManagement() {
 		<div className="p-6">
 			<Card>
 				<CardHeader>
-					<CardTitle className="text-2xl font-bold">Quản Lý Tour</CardTitle>
+					<CardTitle className="text-2xl font-bold">Quản Lý Chuyến Tham Quan</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<TopBar

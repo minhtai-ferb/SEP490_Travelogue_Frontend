@@ -11,6 +11,7 @@ import { WorkshopFilterParams } from "@/types/Workshop"
 import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
+import { getUserFromLocalStorage } from "@/app/moderator/components/app-sidebar"
 
 export default function DashboardPage() {
 	const { getWorkshops, loading } = useWorkshop()
@@ -18,19 +19,14 @@ export default function DashboardPage() {
 	const [keyword, setKeyword] = useState("")
 	const [items, setItems] = useState<any[]>([])
 	const user = useAtomValue(userAtom)
-	const filters = useMemo(() => ({
-		craftVillageId: user?.id,
-		name: keyword || undefined,
-	}), [user?.id, keyword])
 
 	const fetchWorkshops = useCallback(async () => {
-		const res = await getWorkshops(filters as WorkshopFilterParams)
+		const res = await getWorkshops({
+			craftVillageId: user?.id || getUserFromLocalStorage()?.id,
+			name: keyword || "",
+		})
 		setItems(Array.isArray(res) ? res : (res?.items || []))
-	}, [getWorkshops, filters])
-
-	useEffect(() => {
-		fetchWorkshops()
-	}, [fetchWorkshops])
+	}, [getWorkshops, keyword, user?.id])
 
 	const breadcrumbItems = {
 		items: [

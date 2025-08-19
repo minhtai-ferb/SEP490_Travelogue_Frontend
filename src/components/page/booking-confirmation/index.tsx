@@ -244,7 +244,7 @@ export default function BookingConfirmationClient() {
 								</div>
 								<h3 className="text-2xl font-bold mb-4">Tải ứng dụng để thanh toán</h3>
 								<p className="text-gray-600 mb-6">
-									Để hoàn tất thanh toán và quản lý tour của bạn, vui lòng tải ứng dụng trên Google Play Store.
+									Để hoàn tất thanh toán và quản lý chuyến đi của bạn, vui lòng tải ứng dụng trên Google Play Store.
 								</p>
 								<div className="space-y-3">
 									<Button
