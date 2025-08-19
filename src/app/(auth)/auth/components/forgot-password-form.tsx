@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { addToast, Alert } from "@heroui/react"
 import { useAuth } from "@/services/useAuth"
 import { isValidEmailOrPhone } from "@/utils/validation"
+import toast from "react-hot-toast"
 
 interface ForgotPasswordFormProps {
 	onSwitchToLogin: () => void
@@ -22,7 +23,7 @@ interface FormData {
 export function ForgotPasswordForm({ onSwitchToLogin, onCodeSent }: ForgotPasswordFormProps) {
 	const [isPending, setIsPending] = useState(false)
 	const [error, setError] = useState("")
-	const { resendEmailVerification } = useAuth()
+	const { forgotPassword } = useAuth()
 
 	const {
 		register,
@@ -41,14 +42,9 @@ export function ForgotPasswordForm({ onSwitchToLogin, onCodeSent }: ForgotPasswo
 
 		try {
 			// Call the API to request password reset
-			await resendEmailVerification(data.email)
+			await forgotPassword(data.email)
 
-			addToast({
-				title: "Yêu cầu đã được gửi",
-				description: "Vui lòng kiểm tra email của bạn để lấy mã xác nhận",
-				color: "success",
-			})
-
+			toast.success("Vui lòng kiểm tra email của bạn để lấy mã xác nhận")
 			// Move to the next step (verify code)
 			onCodeSent(data.email)
 		} catch (error: any) {

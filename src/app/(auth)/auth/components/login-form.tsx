@@ -51,7 +51,9 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
     try {
       const response = await login(data);
       const user = response as User;
-      if (!user || !user.roles || user.roles.length === 0) {
+      if (!user) {
+        toast.error("Đăng nhập thất bại!");
+      } else if (!user.roles || user.roles.length === 0) {
         toast.error("Bạn không có quyền truy cập hệ thống");
         return;
       } else if (user.roles.length === 1) {
@@ -60,7 +62,6 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
       } else {
         navigate.push("/auth/choose-role");
       }
-      toast.success("Đăng nhập thành công!");
     } catch (error: any) {
       console.error("Login error:", error);
       setError(error?.response?.data?.Message || "Đã xảy ra lỗi khi đăng nhập");
@@ -72,11 +73,19 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
   const handleGoogleLogin = async () => {
     setIsGooglePending(true);
     setError("");
-
     try {
-      await loginWithGoogle();
-      navigate.push("/");
-      toast.success("Đăng nhập bằng Google thành công!");
+      const response = await loginWithGoogle();
+      const user = response as User;
+      if (!user) {
+        toast.error("Đăng nhập thất bại!");
+      } else if (!user.roles || user.roles.length === 0) {
+        toast.error("Bạn không có quyền truy cập hệ thống");
+      } else if (user.roles.length === 1) {
+        const only = user.roles[0];
+        navigate.push(routeByRole[only] ?? "/");
+      } else {
+        navigate.push("/auth/choose-role");
+      }
     } catch (error: any) {
       console.error("Google login error:", error);
       setError(error?.message || "Đã xảy ra lỗi khi đăng nhập với Google");
