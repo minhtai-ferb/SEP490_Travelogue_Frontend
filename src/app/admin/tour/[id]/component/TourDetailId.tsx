@@ -8,6 +8,10 @@ import { Calendar, Clock, DollarSign, MapPin } from 'lucide-react'
 import React from 'react'
 
 function TourDetailId({ tour }: { tour: TourDetail }) {
+
+	// safe access for extended fields not in TourDetail type
+	const startLoc = (tour as any)?.startLocation
+	const endLoc = (tour as any)?.endLocation
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 			{/* Main Content */}
@@ -21,18 +25,63 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<div className="flex flex-col gap-4">
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<h4 className="font-medium text-gray-900">Điểm khởi hành</h4>
-									<p className="text-gray-600">{tour.startAddress || "Chưa cập nhật"}</p>
-								</div>
-								<div>
-									<h4 className="font-medium text-gray-900">Điểm kết thúc</h4>
-									<p className="text-gray-600">{tour.endAddress || "Chưa cập nhật"}</p>
+						{/* Start/End Locations */}
+						{(startLoc || endLoc) && (
+							<div className="mb-6">
+								{/* Transport type */}
+								{(tour as any)?.transportType && (
+									<div className="flex items-center gap-2 mb-3">
+										<span className="text-sm text-gray-600">Phương tiện di chuyển:</span>
+										<Badge variant="outline" className="bg-blue-50 text-blue-700 text-lg border-blue-200">
+											{(tour as any).transportType}
+										</Badge>
+									</div>
+								)}
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+									{/* Start Location */}
+									{startLoc && (
+										<div className="border rounded-lg p-4">
+											<h2 className="text-lg font-semibold mb-3">Điểm bắt đầu</h2>
+											{startLoc.imageUrl && (
+												<img src={startLoc.imageUrl} alt={startLoc.name} className="w-full h-40 object-cover rounded-md mb-3" />
+											)}
+											<div className="space-y-2">
+												<p className="font-medium">{startLoc.name}</p>
+												{startLoc.address && (
+													<p className="text-sm text-gray-600 flex items-center gap-1"><MapPin className="w-4 h-4" />{startLoc.address}</p>
+												)}
+												<div className="text-sm text-gray-600 flex items-center gap-2">
+													<Clock className="w-4 h-4" />
+													<span>{startLoc.startTimeFormatted || startLoc.startTime} - {startLoc.endTimeFormatted || startLoc.endTime}</span>
+													{startLoc.duration && <span className="ml-2">({startLoc.duration})</span>}
+												</div>
+											</div>
+										</div>
+									)}
+
+									{/* End Location */}
+									{endLoc && (
+										<div className="border rounded-lg p-4">
+											<h2 className="text-lg font-semibold mb-3">Điểm kết thúc</h2>
+											{endLoc.imageUrl && (
+												<img src={endLoc.imageUrl} alt={endLoc.name} className="w-full h-40 object-cover rounded-md mb-3" />
+											)}
+											<div className="space-y-2">
+												<p className="font-medium">{endLoc.name}</p>
+												{endLoc.address && (
+													<p className="text-sm text-gray-600 flex items-center gap-1"><MapPin className="w-4 h-4" />{endLoc.address}</p>
+												)}
+												<div className="text-sm text-gray-600 flex items-center gap-2">
+													<Clock className="w-4 h-4" />
+													<span>{endLoc.startTimeFormatted || endLoc.startTime} - {endLoc.endTimeFormatted || endLoc.endTime}</span>
+													{endLoc.duration && <span className="ml-2">({endLoc.duration})</span>}
+												</div>
+											</div>
+										</div>
+									)}
 								</div>
 							</div>
-						</div>
+						)}
 
 						<Separator />
 						<div>

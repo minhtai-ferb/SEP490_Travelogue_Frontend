@@ -25,7 +25,6 @@ function page() {
 		<div>
 			<BreadcrumbHeader items={breadcrumbItems} />
 			<Card>
-				<CardHeader>Quản lý báo cáo</CardHeader>
 				<CardContent>
 					<Datatable />
 				</CardContent>

@@ -584,7 +584,10 @@ export function TourLocationForm({
 																			</Badge>
 																		</div>
 																		{locationDetails && (
-																			<p className="text-sm text-gray-600 mb-2">{locationDetails.description}</p>
+																			<div>
+																				<p className="text-sm text-gray-600 mb-2">{locationDetails.description}</p>
+																				<p>Giờ mở cửa: {formatTime(locationDetails.openTime || "")} - {formatTime(locationDetails.closeTime || "")}</p>
+																			</div>
 																		)}
 																		{location.notes && (
 																			<p className="text-sm text-blue-600 italic">Ghi chú: {location.notes}</p>
