@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, Wallet } from "lucide-react"
+import { Calendar, LayoutDashboard, Wallet } from "lucide-react"
 import * as React from "react"
 
 // import { Calendars } from "./calendar"
@@ -66,6 +66,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							<Link href="/tour-guide/dashboard">
 								<LayoutDashboard />
 								<span>Tổng quan</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+							<Link href="/tour-guide/dashboard/lich-trinh">
+								<Calendar />
+								<span>Lịch trình</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

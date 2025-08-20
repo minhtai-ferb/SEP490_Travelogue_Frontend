@@ -102,6 +102,10 @@ const data = {
           url: "/admin/user/requests/tourguide",
         },
         {
+          title: "Yêu cầu từ chối tour",
+          url: "/admin/user/requests/tourguide/rejection-request",
+        },
+        {
           title: "Xác thực làng nghề",
           url: "/admin/user/requests/craftvillage",
         },
