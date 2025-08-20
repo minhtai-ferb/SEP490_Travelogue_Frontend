@@ -24,6 +24,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 		name: "",
 		description: "",
 		content: "",
+		transportType: "Xe hơi",
 		totalDays: 1,
 		tourType: 1,
 		mediaDtos: [],
@@ -108,144 +109,171 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 	}
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6">
 				{/* Basic Information */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<div className="w-2 h-2 bg-blue-500 rounded-full" />
-							Thông Tin Cơ Bản
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="name">Tên Tour *</Label>
-							<Input
-								id="name"
-								placeholder="Nhập tên tour du lịch"
-								value={formData.name}
-								onChange={(e) => handleInputChange("name", e.target.value)}
-								className={errors.name ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
-							{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-						</div>
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<div className="w-2 h-2 bg-blue-500 rounded-full" />
+								Thông Tin Cơ Bản
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="name">Tên Tour *</Label>
+								<Input
+									id="name"
+									placeholder="Nhập tên tour du lịch"
+									value={formData.name}
+									onChange={(e) => handleInputChange("name", e.target.value)}
+									className={errors.name ? "border-red-500" : ""}
+									disabled={isLoading}
+								/>
+								{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+							</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="description">Mô Tả Tour *</Label>
-							<Textarea
-								id="description"
-								placeholder="Nhập mô tả chi tiết về tour"
-								value={formData.description}
-								onChange={(e) => handleInputChange("description", e.target.value)}
-								className={errors.description ? "border-red-500" : ""}
-								rows={3}
-								disabled={isLoading}
-							/>
-							{errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
-						</div>
+							<div className="space-y-2">
+								<Label htmlFor="description">Mô Tả Tour *</Label>
+								<Textarea
+									id="description"
+									placeholder="Nhập mô tả chi tiết về tour"
+									value={formData.description}
+									onChange={(e) => handleInputChange("description", e.target.value)}
+									className={errors.description ? "border-red-500" : ""}
+									rows={3}
+									disabled={isLoading}
+								/>
+								{errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+							</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="content">Nội Dung Chi Tiết *</Label>
-							<Textarea
-								id="content"
-								placeholder="Nhập nội dung chi tiết về tour"
-								value={formData.content}
-								onChange={(e) => handleInputChange("content", e.target.value)}
-								className={errors.content ? "border-red-500" : ""}
-								rows={4}
-								disabled={isLoading}
-							/>
-							{errors.content && <p className="text-sm text-red-500">{errors.content}</p>}
-						</div>
-					</CardContent>
-				</Card>
+							<div className="space-y-2">
+								<Label htmlFor="content">Nội Dung Chi Tiết *</Label>
+								<Textarea
+									id="content"
+									placeholder="Nhập nội dung chi tiết về tour"
+									value={formData.content}
+									onChange={(e) => handleInputChange("content", e.target.value)}
+									className={errors.content ? "border-red-500" : ""}
+									rows={4}
+									disabled={isLoading}
+								/>
+								{errors.content && <p className="text-sm text-red-500">{errors.content}</p>}
+							</div>
+						</CardContent>
+					</Card>
 
-				{/* Tour Details */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<div className="w-2 h-2 bg-green-500 rounded-full" />
-							Chi Tiết Tour
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label>Loại Tour *</Label>
-							<Select
-								value={formData.tourType.toString()}
-								onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
-								disabled={isLoading}
-							>
-								<SelectTrigger className={errors.tourType ? "border-red-500" : ""}>
-									<SelectValue placeholder="Chọn loại tour" />
-								</SelectTrigger>
-								<SelectContent>
-									{Object.entries(TourTypeLabels).map(([key, label]) => (
-										<SelectItem key={key} value={key}>
-											{label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							{errors.tourType && <p className="text-sm text-red-500">{errors.tourType}</p>}
-						</div>
+					{/* Tour Details */}
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<div className="w-2 h-2 bg-green-500 rounded-full" />
+								Chi Tiết Tour
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className="space-y-2">
+								<Label>Loại Tour *</Label>
+								<Select
+									value={formData.tourType.toString()}
+									onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
+									disabled={isLoading}
+								>
+									<SelectTrigger className={errors.tourType ? "border-red-500" : ""}>
+										<SelectValue placeholder="Chọn loại tour" />
+									</SelectTrigger>
+									<SelectContent>
+										{Object.entries(TourTypeLabels).map(([key, label]) => (
+											<SelectItem key={key} value={key}>
+												{label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.tourType && <p className="text-sm text-red-500">{errors.tourType}</p>}
+							</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="totalDays">Số Ngày Tour *</Label>
-							<Input
-								id="totalDays"
-								type="number"
-								min="1"
-								max="365"
-								value={formData.totalDays}
-								onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
-								className={errors.totalDays ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
-							{errors.totalDays && <p className="text-sm text-red-500">{errors.totalDays}</p>}
-							<p className="text-xs text-gray-500">
-								Tour sẽ có {formData.totalDays} ngày {formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
-							</p>
-						</div>
+							<div>
+								<Label>Phương tiện di chuyển *</Label>
+								<Select
+									value={formData.transportType}
+									onValueChange={(value) => handleInputChange("transportType", value)}
+									disabled={isLoading}
+								>
+									<SelectTrigger className={errors.transportType ? "border-red-500" : ""}>
+										<SelectValue placeholder="Chọn phương tiện di chuyển" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="Xe hơi">Xe hơi</SelectItem>
+										<SelectItem value="Xe bus">Xe bus</SelectItem>
+										<SelectItem value="Xe đạp">Xe đạp</SelectItem>
+										<SelectItem value="Xe máy">Xe máy</SelectItem>
+										<SelectItem value="Xe du lịch">Xe du lịch</SelectItem>
+										<SelectItem value="Đi bộ">Đi bộ</SelectItem>
+									</SelectContent>
+								</Select>
+								{errors.transportType && <p className="text-sm text-red-500">{errors.transportType}</p>}
+							</div>
 
-						<div className="p-4 bg-blue-50 rounded-lg">
-							<h4 className="font-medium text-blue-900 mb-2">Thông Tin Tour</h4>
-							<div className="space-y-1 text-sm text-blue-800">
-								<p>
-									<strong>Loại:</strong> {TourTypeLabels[formData.tourType]}
-								</p>
-								<p>
-									<strong>Thời gian:</strong> {formData.totalDays} ngày{" "}
-									{formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
+							<div className="space-y-2">
+								<Label htmlFor="totalDays">Số Ngày Tour *</Label>
+								<Input
+									id="totalDays"
+									type="number"
+									min="1"
+									max="365"
+									value={formData.totalDays}
+									onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
+									className={errors.totalDays ? "border-red-500" : ""}
+									disabled={isLoading}
+								/>
+								{errors.totalDays && <p className="text-sm text-red-500">{errors.totalDays}</p>}
+								<p className="text-xs text-gray-500">
+									Tour sẽ có {formData.totalDays} ngày {formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
 								</p>
 							</div>
-							<div>Hình ảnh</div>
-							<ImageUpload mediaDtos={formData.mediaDtos} onChange={handleImageChange} isLoading={isLoading} />
-							{errors.mediaDtos && <p className="text-sm text-red-500 mt-2">{errors.mediaDtos}</p>}
-						</div>
-					</CardContent>
-				</Card>
-			</div>
 
-			{/* Action Buttons */}
-			<div className="flex justify-between items-center pt-6 border-t">
-				<Button
-					type="button"
-					variant="outline"
-					onClick={onCancel}
-					className="flex items-center gap-2 bg-transparent"
-					disabled={isLoading}
-				>
-					<X className="w-4 h-4" />
-					Hủy
-				</Button>
-				<Button type="submit" className="flex items-center gap-2" disabled={isLoading}>
-					{isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-					Tiếp theo
-					<ArrowRight className="w-4 h-4" />
-				</Button>
+							<div className="p-4 bg-blue-50 rounded-lg">
+								<h4 className="font-medium text-blue-900 mb-2">Thông Tin Tour</h4>
+								<div className="space-y-1 text-sm text-blue-800">
+									<p>
+										<strong>Loại:</strong> {TourTypeLabels[formData.tourType]}
+									</p>
+									<p>
+										<strong>Thời gian:</strong> {formData.totalDays} ngày{" "}
+										{formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
+									</p>
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+				</div>
+
+
+				<Card>
+					<ImageUpload mediaDtos={formData.mediaDtos} onChange={handleImageChange} isLoading={isLoading} />
+					{errors.mediaDtos && <p className="text-sm text-red-500 mt-2">{errors.mediaDtos}</p>}
+				</Card>
+
+				{/* Action Buttons */}
+				<div className="flex justify-between items-center pt-6 border-t">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={onCancel}
+						className="flex items-center gap-2 bg-transparent"
+						disabled={isLoading}
+					>
+						<X className="w-4 h-4" />
+						Hủy
+					</Button>
+					<Button type="submit" className="flex items-center gap-2" disabled={isLoading}>
+						{isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+						Tiếp theo
+						<ArrowRight className="w-4 h-4" />
+					</Button>
+				</div>
 			</div>
-		</form>
+		</form >
 	)
 }

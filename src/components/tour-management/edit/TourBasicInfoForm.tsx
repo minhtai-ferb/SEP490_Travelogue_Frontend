@@ -27,6 +27,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 		name: tour.name,
 		description: tour.description,
 		content: tour.content || "",
+		transportType: tour.transportType,
 		totalDays: tour.totalDays,
 		tourType: tour.tourType,
 		medias: tour.medias || [],
@@ -50,6 +51,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 			const updatedTour = { ...tour, ...formData }
 			onUpdate(updatedTour)
 			setSuccess("Cập nhật thông tin tour thành công!")
+			toast.success("Cập nhật thông tin tour thành công!")
 		} catch (error: any) {
 			setError(error?.response?.data?.message || "Có lỗi khi cập nhật tour")
 			toast.error(error?.response?.data?.message || "Có lỗi khi cập nhật tour")
@@ -101,6 +103,26 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 								placeholder="Nhập tên tour"
 								required
 							/>
+						</div>
+
+						<div className="md:col-span-2 space-y-2">
+							<Label htmlFor="transportType">Phương tiện di chuyển</Label>
+							<Select
+								value={formData.transportType}
+								onValueChange={(value) => handleInputChange("transportType", value)}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Chọn phương tiện di chuyển" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="Xe hơi">Xe hơi</SelectItem>
+									<SelectItem value="Xe bus">Xe bus</SelectItem>
+									<SelectItem value="Xe đạp">Xe đạp</SelectItem>
+									<SelectItem value="Xe máy">Xe máy</SelectItem>
+									<SelectItem value="Xe du lịch">Xe du lịch</SelectItem>
+									<SelectItem value="Đi bộ">Đi bộ</SelectItem>
+								</SelectContent>
+							</Select>
 						</div>
 
 						<div className="md:col-span-2 space-y-2">

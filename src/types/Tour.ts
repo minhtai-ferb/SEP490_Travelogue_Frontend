@@ -95,6 +95,7 @@ export interface CreateTourRequest {
 	name: string
 	description: string
 	content: string
+	transportType: string
 	totalDays: number
 	tourType: number
 	finalPrice?: number
