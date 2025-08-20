@@ -5,13 +5,11 @@ import { useRouter } from "next/navigation";
 import type { TableProps } from "antd";
 import type { District } from "@/types/District";
 import { useDistrictManager } from "@/services/district-manager";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Spin, Modal } from "antd";
+import { Modal } from "antd";
 import { LocationFilterBar } from "./components/location-filter-bar";
 import { DeleteLocationDialog } from "./components/delete-location-dialog";
 import { LocationTable } from "@/types/Location";
 import { LocationTableComponent } from "./components/location-table";
-import HeaderLocationTable from "./components/header";
 import { useLocations } from "@/services/use-locations";
 import LoadingContent from "@/components/common/loading-content";
 
@@ -25,7 +23,7 @@ type Filters = Parameters<OnChange>[1];
 type GetSingle<T> = T extends (infer U)[] ? U : never;
 type Sorts = GetSingle<Parameters<OnChange>[2]>;
 
-export default function ManageLocation() {
+export default function LocationsTable({ href }: { href: string }) {
   const [filteredInfo, setFilteredInfo] = useState<Filters>({});
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
   const { getAllDistrict } = useDistrictManager();
@@ -96,11 +94,11 @@ export default function ManageLocation() {
 
   const handleViewDetails = (record: LocationTable) => {
     setLoadingButton(true);
-    router.push(`/admin/locations/view/${record.id}`);
+    router.push(`${href}/view/${record.id}`);
   };
   const handleEdit = (record: LocationTable) => {
     setLoadingButton(true);
-    router.push(`/admin/locations/edit/${record.id}`);
+    router.push(`${href}/edit/${record.id}`);
   };
   const handleDeleteConfirm = (record: LocationTable) => {
     setLocationToDelete(record);
@@ -164,14 +162,18 @@ export default function ManageLocation() {
   };
 
   return (
-    <SidebarInset>
-      <HeaderLocationTable />
+    <>
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {useMemo(() => (typeof loading === "boolean" ? loading : false) || loadingButton, [loading, loadingButton]) ? (
+        {useMemo(
+          () =>
+            (typeof loading === "boolean" ? loading : false) || loadingButton,
+          [loading, loadingButton]
+        ) ? (
           <LoadingContent />
         ) : (
           <>
             <LocationFilterBar
+              href={href}
               options={options}
               onChangeTypeLocation={onChangeTypeLocation}
               onChangeDistrict={onChangeDistrict}
@@ -208,6 +210,6 @@ export default function ManageLocation() {
         onDelete={handleDelete}
         location={locationToDelete}
       />
-    </SidebarInset>
+    </>
   );
 }

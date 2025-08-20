@@ -1,25 +1,19 @@
 "use client";
 
 import { SidebarInset } from "@/components/ui/sidebar";
-import { CreateLocationForm } from "./components/create-location-form";
-import HeaderCreateLocation from "./components/header";
+import { CreateLocationForm } from "@/app/(manage)/components/locations/create/components/create-location-form";
+import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
+
+const crumb: Crumb[] = [
+  { label: "Quản lý địa điểm", href: "/admin/locations" },
+  { label: "Tạo mới địa điểm" },
+];
 
 export default function CreateLocationPage() {
   return (
     <SidebarInset>
-      <HeaderCreateLocation />
-      <div className="container mx-auto py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Tạo địa điểm mới</h1>
-            <p className="text-muted-foreground mt-2">
-              Thêm thông tin chi tiết về địa điểm du lịch, làng nghề, ẩm thực
-              hoặc di tích lịch sử
-            </p>
-          </div>
-          <CreateLocationForm />
-        </div>
-      </div>
+      <BreadcrumbHeader items={crumb} />
+      <CreateLocationForm href="/admin/locations" />
     </SidebarInset>
   );
 }

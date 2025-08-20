@@ -9,6 +9,7 @@ interface Option {
 }
 
 interface Props {
+  href: string;
   options: Option[];
   onChangeDistrict: (value: string) => void;
   onChangeTypeLocation?: (value: string) => void;
@@ -30,6 +31,7 @@ export function LocationFilterBar({
   selectedType,
   searchText,
   onReset,
+  href
 }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState(searchText ?? "");
@@ -91,7 +93,7 @@ export function LocationFilterBar({
       <Button
         className="bg-blue-500 text-white"
         onClick={() => {
-          router.push("/admin/locations/create");
+          router.push(`${href}/create`);
           setLoading(true);
         }}
       >

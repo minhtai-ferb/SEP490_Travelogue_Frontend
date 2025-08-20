@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import useApiService from "@/hooks/useApi";
-import { MediaDto } from "@/app/admin/locations/create/types/CreateLocation";
+import { MediaDto } from "./use-news";
 
 export function useLocations() {
   const { callApi, loading, setIsLoading } = useApiService();

@@ -1,24 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import LoadingContent from "@/components/common/loading-content";
-import HeaderManageLocation from "./components/header";
+import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
+import { SidebarInset } from "@/components/ui/sidebar";
+import LocationsTable from "../../components/locations/table";
 
-function ManageLocation() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+const crumb: Crumb[] = [{ label: "Quản lý địa điểm" }];
 
-  useEffect(() => {
-    setLoading(true);
-    router.push("/admin/locations/table");
-  }, []);
+export default function ManageLocationPage() {
 
-  if (loading) {
-    return <LoadingContent />;
-  }
-
-  return <HeaderManageLocation />;
+  return (
+    <SidebarInset>
+        <BreadcrumbHeader items={crumb} />
+        <LocationsTable href="/admin/locations"/>
+    </SidebarInset>
+  );
 }
-
-export default ManageLocation;

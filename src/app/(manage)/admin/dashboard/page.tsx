@@ -8,7 +8,7 @@ import { AdminRevenueChart } from "../../components/dashboard/admin/chart-line-i
 
 const crumb: Crumb[] = [{ label: "Thống kê quản trị viên", href: "/admin/dashboard" }];
 
-function ManageUser() {
+function AdminDashboard() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumb} />
@@ -19,4 +19,4 @@ function ManageUser() {
   );
 }
 
-export default ManageUser;
+export default AdminDashboard;
