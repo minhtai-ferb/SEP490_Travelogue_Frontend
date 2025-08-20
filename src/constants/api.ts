@@ -17,10 +17,16 @@ export const LOCATION_API_URL = {
 export const TOUR_GUIDE_API_URL = {
   TOUR_GUIDE: "/tour-guide",
   TOUR_GUIDE_PROFILE: "/tour-guide/:id",
+  GET_TOUR_GUIDE_SCHEDULE_DETAIL: "/tour-guide/schedules/:id",
   TOUR_GUIDE_SCHEDULE: "/tour-guide/schedules",
   TOUR_GUIDE_CERTIFICATION: "/tour-guide/certification",
   CREATE_TOUR_GUIDE_REQUEST: "/user/tour-guide-request",
   GET_TOUR_GUIDE_REQUEST_LATEST: "/user/latest-tour-guide-request",
+  CREATE_REJECTION_REQUEST: "rejection-request",
+  TOUR_GUIDE_REJECTION_REQUEST_FILTER: "rejection-request/page",
+  TOUR_GUIDE_REJECTION_REQUEST_DETAIL: "rejection-request/:id",
+  TOUR_GUIDE_REJECTION_REQUEST_APPROVE: "rejection-request/:requestId/approve",
+  TOUR_GUIDE_REJECTION_REQUEST_REJECT: "rejection-request/:requestId/reject",
 };
 
 export const MEDIA_API_URL = {

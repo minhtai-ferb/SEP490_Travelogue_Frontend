@@ -3,7 +3,7 @@
 import { TOUR_API_URL, TOUR_GUIDE_API_URL, USER_API_URL, MEDIA_API_URL } from "@/constants/api";
 import useApiService from "@/hooks/useApi";
 import { isLoadingAtom } from "@/store/auth";
-import { TourguideRequestStatus } from "@/types/Tourguide";
+import { RejectionRequest, TourguideRequestStatus } from "@/types/Tourguide";
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -31,17 +31,20 @@ export function useTourguideAssign() {
 		async (id: string) => {
 			setLoading(true);
 			try {
-				const response = await callApi("get", TOUR_API_URL.TOURGUIDE_PROFILE + id);
+				const response = await callApi("get", TOUR_GUIDE_API_URL.TOUR_GUIDE_PROFILE.replace(":id", id));
 				return response?.data;
 			} catch (e: any) {
 				console.log('====================================');
 				console.log(`Error fetching tour guide profile: ${e.message}`);
 				console.log('====================================');
+				throw e;
 			} finally {
 				setLoading(false);
 			}
-		}, [callApi, router, setLoading]
+		}, [callApi, setLoading]
 	)
+
+	// removed duplicate getTourguideDetail definition (exposed once below)
 
 	const getTourGuideSchedule = useCallback(
 		async (filterType: 1 | 2 | 3, startDate: string, endDate: string, pageNumber: number, pageSize: number) => {
@@ -159,6 +162,20 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	)
 
+	const getTourGuideScheduleDetail = useCallback(
+		async (id: string) => {
+			setLoading(true);
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.GET_TOUR_GUIDE_SCHEDULE_DETAIL.replace(":id", id));
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
 	const createTourGuideRequest = useCallback(
 		async (data: any) => {
 			setLoading(true);
@@ -174,7 +191,7 @@ export function useTourguideAssign() {
 	)
 
 	const getTourGuideRequestLatest = useCallback(
-		async (userId : string) => {
+		async (userId: string) => {
 			setLoading(true);
 			const params = {
 				userId: userId,
@@ -190,9 +207,39 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	);
 
+	// rejection request
+	const createRejectionRequest = useCallback(
+		async (data: RejectionRequest) => {
+			setLoading(true);
+			try {
+				const response = await callApi("post", TOUR_GUIDE_API_URL.CREATE_REJECTION_REQUEST, data);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
+	const getTourguideDetail = useCallback(
+		async (id: string) => {
+			setLoading(true);
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.TOUR_GUIDE_PROFILE.replace(":id", id));
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
+		getTourguideDetail,
 		getTourAssign,
 		getTourGuideSchedule,
 		getTourguideRequest,
@@ -202,6 +249,8 @@ export function useTourguideAssign() {
 		createTourGuideRequest,
 		deleteCertification,
 		getTourGuideRequestLatest,
+		getTourGuideScheduleDetail,
+		createRejectionRequest,
 		loading: isLoading || loading,
 	};
 }

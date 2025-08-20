@@ -1,3 +1,21 @@
+type Isoish = string | Date | undefined;
+
+export interface TourGuideDetail {
+	id: string
+	email: string
+	userName: string
+	sex: number
+	"sexText": "Unknown",
+	address: string | null
+	rating: number
+	price: number
+	introduction: string
+	avatarUrl: string
+	averageRating: number
+	totalReviews: number
+	reviews: any[]
+}
+
 export interface TourGuide {
 	id: string
 	name: string
@@ -95,4 +113,46 @@ export interface TourGuideItem {
 	avatarUrl: string
 	averageRating: number
 	totalReviews: number
+}
+
+
+export interface RejectionRequest {
+	requestType: number
+	tourScheduleId: string
+	bookingId: string
+	reason: string
+}
+
+export interface RejectionRequestStatus {
+	1: "Pending"
+	2: "Approved"
+	3: "Rejected"
+}
+
+export interface RejectionRequestType {
+	"TourSchedule": 1,
+	"Booking": 2,
+}
+
+export interface RejectionRequestFilters {
+	TourguideId?: string;
+	Status?: number;
+	FromDate?: string;
+	ToDate?: string;
+	pageNumber?: number;
+	pageSize?: number;
+}
+
+export interface RejectionRequestDetail {
+	id: string
+	tourGuideId: string
+	requestType: number
+	tourScheduleId: string | null
+	bookingId: string
+	reason: string
+	status: number
+	statusText: string
+	moderatorComment: string | null
+	reviewedAt: string | null
+	reviewedBy: string | null
 }
