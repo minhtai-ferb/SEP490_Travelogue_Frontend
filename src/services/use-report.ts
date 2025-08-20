@@ -9,10 +9,16 @@ export const useReport = () => {
 
 	const { callApi, loading, setIsLoading } = useApiService();
 
-	const getReport = useCallback(async () => {
+	const getReport = useCallback(async ({ pageNumber, pageSize, status }: { pageNumber?: number, pageSize?: number, status?: ReportStatus | number }) => {
 		try {
 			setIsLoading(true)
-			const res = await callApi("get", REPORT_API_URL.GET_REPORT)
+			const res = await callApi("get", REPORT_API_URL.GET_REPORT, {
+				params: {
+					page: pageNumber || 1,
+					pageSize: pageSize || 10,
+					status: typeof status === "number" ? status : undefined,
+				},
+			})
 			return res?.data
 		} catch (error) {
 			console.error(error)
@@ -54,9 +60,10 @@ export const useReport = () => {
 		}
 	}, [callApi, loading, setIsLoading])
 
-	const adminProcessReport = useCallback(async (reportId: string, status: number, adminNote: string) => {
+	const adminProcessReport = useCallback(async (reportId: string, status: number, note: string) => {
 		const payload = {
 			status: status,
+			note: note,
 		}
 		try {
 			setIsLoading(true)
