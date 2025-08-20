@@ -192,15 +192,14 @@ export default function ReviewReportsTable() {
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">Tất cả trạng thái</SelectItem>
-									<SelectItem value="pending">Chưa xử lý</SelectItem>
-									<SelectItem value="processing">Đang xử lý</SelectItem>
+									<SelectItem value="pending">Đang xử lý</SelectItem>
 									<SelectItem value="handled">Đã xử lý</SelectItem>
-									<SelectItem value="rejected">Bị từ chối</SelectItem>
+									<SelectItem value="rejected">Từ chối</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 						<Button
-							variant="outline"
+							variant="destructive"
 							onClick={() => {
 								setSearch("")
 								setStatusFilter("all")
