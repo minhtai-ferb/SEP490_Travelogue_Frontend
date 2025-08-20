@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useTour } from "@/services/tour";
 import type { TourDetail } from "@/types/Tour";
 import { TourTypeLabels } from "@/types/Tour";
-import { AlertCircle, ArrowLeft, Edit, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Edit, Loader2, Clock, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import TourDetailId from "./component/TourDetailId";
@@ -38,7 +38,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 				if (response) {
 					setTour(response)
 				} else {
-					throw new Error(response.message || "Failed to fetch tour")
+					throw new Error((response as any).message || "Failed to fetch tour")
 				}
 			} catch (error: any) {
 				console.error("Error fetching tour:", error)
@@ -61,14 +61,6 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 		router.push("/admin/tour")
 	}
 
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString("vi-VN", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-			weekday: "long",
-		})
-	}
 
 	if (loading) {
 		return (

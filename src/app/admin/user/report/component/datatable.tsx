@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Eye, Check, X, Star, MessageSquare, AlertTriangle, User, Calendar } from "lucide-react"
 import { toast } from "react-hot-toast"
 import { useReport } from "@/services/use-report"
+import { PaginationBar } from "@/components/tour-management/PaginationBar"
 
 interface Report {
 	id: string
