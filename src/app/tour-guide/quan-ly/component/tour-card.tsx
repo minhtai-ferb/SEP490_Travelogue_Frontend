@@ -60,18 +60,6 @@ export default function TourCard({
 						<span>Khách: {item?.customerName ?? "-"}</span>
 					</div>
 				</div>
-
-				{/* <div className="mt-4 flex items-center justify-between">
-					<Button variant="outline" onClick={onManageSchedules}>
-						Quản lý lịch
-					</Button>
-					<Link href={`/dashboard/tours/${item?.id}/edit`}>
-						<Button>
-							<Edit3 className="w-4 h-4 mr-2" />
-							Chỉnh sửa tour
-						</Button>
-					</Link>
-				</div> */}
 			</CardContent>
 		</Card>
 	)

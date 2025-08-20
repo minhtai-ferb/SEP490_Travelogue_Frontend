@@ -95,6 +95,7 @@ export interface CreateTourRequest {
 	name: string
 	description: string
 	content: string
+	transportType: string
 	totalDays: number
 	tourType: number
 	finalPrice?: number
@@ -231,6 +232,7 @@ export interface TourDetail {
 	content: string
 	totalDays: number
 	tourType: number
+	transportType: string
 	tourTypeText: string
 	totalDaysText: string
 	adultPrice: number
@@ -246,6 +248,8 @@ export interface TourDetail {
 	promotions: any[]
 	days: TourDay[]
 	medias: MediaDto[]
+	averageRating: number
+	totalReviews: number
 }
 
 export interface TourDay {
