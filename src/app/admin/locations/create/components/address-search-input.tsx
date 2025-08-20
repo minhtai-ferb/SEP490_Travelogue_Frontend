@@ -16,6 +16,7 @@ interface AddressSearchInputProps {
 	longitude: number
 	onChange: (address: string, lat: number, lng: number) => void
 	placeholder?: string
+	onError?: (message: string | null) => void
 }
 
 export function AddressSearchInput({
@@ -24,6 +25,7 @@ export function AddressSearchInput({
 	longitude,
 	onChange,
 	placeholder = "Nhập địa chỉ để tìm kiếm...",
+	onError,
 }: AddressSearchInputProps) {
 	const [inputValue, setInputValue] = useState(value)
 	const [suggestions, setSuggestions] = useState<VietMapAutocompleteResult[]>([])
@@ -31,6 +33,7 @@ export function AddressSearchInput({
 	const [showSuggestions, setShowSuggestions] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const [placeDetails, setPlaceDetails] = useState<VietMapPlaceResult | null>(null)
+	const [error, setError] = useState<string | null>(null)
 
 	const inputRef = useRef<HTMLInputElement>(null)
 	const suggestionsRef = useRef<HTMLDivElement>(null)
@@ -42,10 +45,14 @@ export function AddressSearchInput({
 			if (searchText.length < 2) {
 				setSuggestions([])
 				setShowSuggestions(false)
+				setError(null)
+				onError?.(null)
 				return
 			}
 
 			setIsLoading(true)
+			setError(null)
+			onError?.(null)
 
 			try {
 				const apiUrl = `https://maps.vietmap.vn/api/autocomplete/demo?apikey=${SeccretKey.VIET_MAP_KEY}&text=${encodeURIComponent(searchText)}&focus=${latitude},${longitude}&display_type=1`
@@ -53,7 +60,10 @@ export function AddressSearchInput({
 				const response = await fetch(apiUrl)
 
 				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`)
+					const msg = `HTTP error! status: ${response.status}`
+					setError(msg)
+					onError?.(msg)
+					throw new Error(msg)
 				}
 
 				const data = await response.json()
@@ -66,6 +76,8 @@ export function AddressSearchInput({
 					setShowSuggestions(false)
 				}
 			} catch (error) {
+				setError("Không thể tải gợi ý địa chỉ")
+				onError?.("Không thể tải gợi ý địa chỉ")
 				console.error("Error fetching autocomplete suggestions:", error)
 				setSuggestions([])
 				setShowSuggestions(false)
@@ -85,7 +97,10 @@ export function AddressSearchInput({
 			const response = await fetch(url)
 
 			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`)
+				const msg = `HTTP error! status: ${response.status}`
+				setError(msg)
+				onError?.(msg)
+				throw new Error(msg)
 			}
 
 			const data: VietMapPlaceResult = await response.json()
@@ -98,6 +113,8 @@ export function AddressSearchInput({
 				onChange(data.display, data.lat, data.lng)
 			}
 		} catch (error) {
+			setError("Không thể tải chi tiết địa chỉ")
+			onError?.("Không thể tải chi tiết địa chỉ")
 			console.error("Error fetching address details:", error)
 		} finally {
 			setIsLoading(false)
@@ -229,7 +246,7 @@ export function AddressSearchInput({
 						}
 					}}
 					placeholder={placeholder}
-					className="pl-10 pr-10 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+					className={`pl-10 pr-10 border-2 transition-colors ${error ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
 				/>
 
 				{/* Loading or Clear Button */}
@@ -249,6 +266,11 @@ export function AddressSearchInput({
 					) : null}
 				</div>
 			</div>
+
+			{/* Inline error display */}
+			{error && (
+				<div className="mt-1 text-xs text-red-500">{error}</div>
+			)}
 
 			{/* Place Details Display */}
 			{/* {placeDetails && (

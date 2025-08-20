@@ -1,26 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { BasicLocationInfo } from "./basic-location-info";
-import { LocationTypeSelector } from "./location-type-selector";
-import { CuisineForm } from "./cuisine-form";
-import { CraftVillageForm } from "./craft-village-form";
-import { HistoricalLocationForm } from "./historical-location-form";
-import { MapSelector } from "./map-selector";
-import { TimeSelector } from "./time-selector";
+import { useLocations } from "@/services/use-locations";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   LocationType,
   MediaDto,
   type TypeHistoricalLocation,
 } from "../types/CreateLocation";
-import { useLocations } from "@/services/use-locations";
+import { BasicLocationInfo } from "./basic-location-info";
 import ContentEditor from "./content-editor";
+import { CuisineForm } from "./cuisine-form";
+import { HistoricalLocationForm } from "./historical-location-form";
 import { ImageUpload } from "./image-upload";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { LocationTypeSelector } from "./location-type-selector";
+import { MapSelector } from "./map-selector";
+import { TimeSelector } from "./time-selector";
 
 interface LocationFormData {
   name: string;
@@ -80,12 +79,33 @@ export function CreateLocationForm() {
     {}
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{
+    name?: string;
+    districtId?: string;
+    address?: string;
+    heritageRank?: string;
+    establishedDate?: string;
+    typeHistoricalLocation?: string;
+  }>({});
   const router = useRouter();
-  const { addHistoricalLocation, addCraftVillage, addCuisine, createLocation } =
+  const { addHistoricalLocation, addCuisine, createLocation } =
     useLocations();
 
   const handleBasicInfoChange = (data: Partial<LocationFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
+    // Inline validate as user types/selects
+    if (Object.prototype.hasOwnProperty.call(data, "name")) {
+      const value = String(data.name ?? "");
+      setErrors((prev) => ({ ...prev, name: value.trim() ? undefined : "Vui lòng nhập tên địa điểm" }));
+    }
+    if (Object.prototype.hasOwnProperty.call(data, "districtId")) {
+      const value = String(data.districtId ?? "");
+      setErrors((prev) => ({ ...prev, districtId: value ? undefined : "Vui lòng chọn quận/huyện" }));
+    }
+    if (Object.prototype.hasOwnProperty.call(data, "address")) {
+      const value = String(data.address ?? "");
+      setErrors((prev) => ({ ...prev, address: value.trim() ? undefined : "Vui lòng nhập địa chỉ" }));
+    }
   };
 
   const handleLocationTypeChange = (type: LocationType) => {
@@ -117,6 +137,39 @@ export function CreateLocationForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Validate basic required fields
+      const basicErrors: typeof errors = {};
+      if (!formData.name.trim()) basicErrors.name = "Vui lòng nhập tên địa điểm";
+      if (!formData.districtId) basicErrors.districtId = "Vui lòng chọn quận/huyện";
+      if (!formData.address.trim()) basicErrors.address = "Vui lòng nhập địa chỉ";
+
+      if (basicErrors.name || basicErrors.districtId || basicErrors.address) {
+        setErrors((prev) => ({ ...prev, ...basicErrors }));
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate type-specific required fields before submitting
+      if (
+        formData.locationType === LocationType.HistoricalSite
+      ) {
+        const hist = locationTypeData.historicalLocation;
+        const hasDate = Boolean(hist?.establishedDate);
+        const hasType = hist?.typeHistoricalLocation !== undefined && hist?.typeHistoricalLocation !== null;
+        const rank = typeof hist?.heritageRank === "number" ? hist?.heritageRank : -1;
+        const rankValid = rank >= 0 && rank <= 5
+        if (!hist || !hasDate || !hasType || !rankValid) {
+          setErrors((prev) => ({
+            ...prev,
+            heritageRank: rankValid ? undefined : "Xếp hạng phải từ 0 đến 5",
+            establishedDate: hasDate ? undefined : "Vui lòng chọn ngày",
+            typeHistoricalLocation: hasType ? undefined : "Vui lòng chọn loại di tích",
+          }));
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Create main location
       const locationResponse = await createLocation(formData);
       const locationId = await locationResponse.id;
@@ -126,11 +179,6 @@ export function CreateLocationForm() {
         locationTypeData.cuisine
       ) {
         await addCuisine(locationId, locationTypeData.cuisine);
-      } else if (
-        formData.locationType === LocationType.CraftVillage &&
-        locationTypeData.craftVillage
-      ) {
-        await addCraftVillage(locationId, locationTypeData.craftVillage);
       } else if (
         formData.locationType === LocationType.HistoricalSite &&
         locationTypeData.historicalLocation
@@ -145,7 +193,12 @@ export function CreateLocationForm() {
       router.push("/admin/locations/table");
     } catch (error) {
       console.error("Error creating location:", error);
-      toast.error("Có lỗi xảy ra khi tạo địa điểm");
+      setErrors({
+        name: "Vui lòng kiểm tra lại các trường bắt buộc và thử lại",
+        districtId: "Vui lòng kiểm tra lại các trường bắt buộc và thử lại",
+        address: "Vui lòng kiểm tra lại các trường bắt buộc và thử lại",
+      });
+      toast.error("Vui lòng kiểm tra lại các trường bắt buộc và thử lại");
     } finally {
       setIsSubmitting(false);
     }
@@ -158,15 +211,6 @@ export function CreateLocationForm() {
           <CuisineForm
             data={locationTypeData.cuisine}
             onChange={(data) => handleLocationTypeDataChange({ cuisine: data })}
-          />
-        );
-      case LocationType.CraftVillage:
-        return (
-          <CraftVillageForm
-            data={locationTypeData.craftVillage}
-            onChange={(data) =>
-              handleLocationTypeDataChange({ craftVillage: data })
-            }
           />
         );
       case LocationType.HistoricalSite:
@@ -191,7 +235,7 @@ export function CreateLocationForm() {
           <CardTitle>Thông tin cơ bản</CardTitle>
         </CardHeader>
         <CardContent>
-          <BasicLocationInfo data={formData} onChange={handleBasicInfoChange} />
+          <BasicLocationInfo data={formData} onChange={handleBasicInfoChange} errors={errors} />
         </CardContent>
       </Card>
       {/* Time Selection */}
