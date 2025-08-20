@@ -16,8 +16,8 @@ import {
 import * as React from "react";
 
 import { NavMain } from "@/app/(manage)/admin/components/nav-main";
-import { NavSecondary } from "@/app/admin/components/nav-secondary";
-import { NavUser } from "@/app/admin/components/nav-user";
+import { NavSecondary } from "@/app/(manage)/admin/components/nav-secondary";
+import { NavUser } from "@/app/(manage)/admin/components/nav-user";
 
 import {
   Sidebar,
@@ -77,7 +77,7 @@ const data = {
         },
       ],
     },
-     {
+    {
       title: "Quản lý các đặt chỗ",
       url: "/moderator/booking",
       icon: Ticket,
@@ -175,16 +175,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain
-          items={data.projects.map((item) => ({
-            ...item,
-            isActive: pathname.includes(item.url), // Check if pathname includes the item's URL
-          }))}
-          titleMain="Quản trị viên"
-        />
-        <NavMain
           items={data.navMain.map((item) => ({
             ...item,
-            isActive: pathname.includes(item.url), // Check if pathname includes the item's URL
+            isActive: pathname.includes(item.url),
           }))}
           titleMain="Kiểm duyệt viên"
         />

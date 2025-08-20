@@ -12,6 +12,7 @@ import {
   Ticket,
   BanknoteX,
   BanknoteArrowUp,
+  MapPinned,
 } from "lucide-react";
 import * as React from "react";
 
@@ -71,6 +72,16 @@ const data = {
       icon: SquareTerminal,
     },
     {
+      title: "Quản lý quận huyện",
+      url: "/admin/districts",
+      icon: MapPinned,
+    },
+    {
+      title: "Quản lý địa điểm du lịch",
+      url: "/admin/locations",
+      icon: MapPin,
+    },
+    {
       title: "Quản lý tài khoản",
       url: "/admin/user",
       icon: Bot,
@@ -93,7 +104,7 @@ const data = {
         },
       ],
     },
-     {
+    {
       title: "Quản lý các đặt chỗ",
       url: "/admin/booking",
       icon: Ticket,
@@ -120,21 +131,6 @@ const data = {
         {
           title: "Danh sách chuyến tham quan",
           url: "/admin/tour/table",
-        },
-      ],
-    },
-    {
-      title: "Địa điểm",
-      url: "/admin/locations",
-      icon: MapPin,
-      items: [
-        {
-          title: "Danh sách quận huyện",
-          url: "/admin/districs",
-        },
-        {
-          title: "Danh sách địa điểm",
-          url: "/admin/locations/table",
         },
       ],
     },
