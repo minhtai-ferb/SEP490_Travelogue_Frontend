@@ -6,7 +6,7 @@ import { SeccretKey } from "./secret/secret";
 // Map prefix -> role yêu cầu
 const prefixToRole: Record<string, string> = {
   "/admin/dashboard": "Admin",
-  "/moderator": "Moderator",
+  "/moderator/dashboard": "Moderator",
   "/tour-guide/dashboard": "TourGuide",
   "/craftvillage/dashboard": "CraftVillageOwner",
 };

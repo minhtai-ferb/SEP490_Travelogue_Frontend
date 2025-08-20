@@ -34,7 +34,95 @@ import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
 
 const data = {
+  navSecondary: [
+    {
+      title: "Hỗ trợ",
+      url: "#",
+      icon: LifeBuoy,
+    },
+    {
+      title: "Góp ý",
+      url: "#",
+      icon: Send,
+    },
+  ],
+  projects: [
+    {
+      title: "Thống kê quản trị viên",
+      url: "/admin/dashboard",
+      icon: SquareTerminal,
+    },
+    {
+      title: "Yêu cầu rút tiền",
+      url: "/admin/request-withdrawal",
+      icon: BanknoteArrowUp,
+    },
+    {
+      title: "Yêu cầu hoàn tiền",
+      url: "/admin/request-refund",
+      icon: BanknoteX,
+    },
+  ],
+
   navMain: [
+    {
+      title: "Thống kê hệ thống",
+      url: "/moderator/dashboard",
+      icon: SquareTerminal,
+    },
+    {
+      title: "Quản lý tài khoản",
+      url: "/admin/user",
+      icon: Bot,
+      items: [
+        {
+          title: "Người dùng",
+          url: "/admin/user/table",
+        },
+        {
+          title: "Xác thực hướng dẫn viên",
+          url: "/admin/user/requests/tourguide",
+        },
+        {
+          title: "Yêu cầu từ chối tour",
+          url: "/admin/user/requests/tourguide/rejection-request",
+        },
+        {
+          title: "Xác thực làng nghề",
+          url: "/admin/user/requests/craftvillage",
+        },
+      ],
+    },
+     {
+      title: "Quản lý các đặt chỗ",
+      url: "/admin/booking",
+      icon: Ticket,
+      items: [
+        {
+          title: "Đặt chỗ chuyến tham quan",
+          url: "/admin/booking/tour-schedule/table",
+        },
+        {
+          title: "Đặt hướng dẫn viên",
+          url: "/admin/booking/tour-guide/table",
+        },
+        {
+          title: "Đặt trải nghiệm làng nghề",
+          url: "/admin/booking/workshop/table",
+        },
+      ],
+    },
+    {
+      title: "Chuyến tham quan",
+      url: "/admin/tour",
+      icon: Map,
+      items: [
+        {
+          title: "Danh sách chuyến tham quan",
+          url: "/admin/tour/table",
+        },
+      ],
+    },
     {
       title: "Địa điểm",
       url: "/admin/locations",
@@ -66,94 +154,6 @@ const data = {
         {
           title: "Danh sách tin tức",
           url: "/admin/news/new/table",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Hỗ trợ",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Góp ý",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      title: "Dashboard",
-      url: "/admin/dashboard",
-      icon: SquareTerminal,
-    },
-    {
-      title: "Quản lý tài khoản",
-      url: "/admin/user",
-      icon: Bot,
-      items: [
-        {
-          title: "Người dùng",
-          url: "/admin/user/table",
-        },
-        {
-          title: "Xác thực hướng dẫn viên",
-          url: "/admin/user/requests/tourguide",
-        },
-        {
-          title: "Yêu cầu từ chối tour",
-          url: "/admin/user/requests/tourguide/rejection-request",
-        },
-        {
-          title: "Xác thực làng nghề",
-          url: "/admin/user/requests/craftvillage",
-        },
-      ],
-    },
-    {
-      title: "Quản lý yêu cầu rút tiền",
-      url: "/admin/request-withdrawal/request-table",
-      icon: BanknoteArrowUp,
-      items: [
-        {
-          title: "Danh sách yêu cầu rút tiền",
-          url: "/admin/request-withdrawal/request-table",
-        },
-      ],
-    },
-    {
-      title: "Yêu cầu hoàn tiền",
-      url: "/admin/request-refund",
-      icon: BanknoteX,
-    },
-    {
-      title: "Quản lý các đặt chỗ",
-      url: "/admin/booking",
-      icon: Ticket,
-      items: [
-        {
-          title: "Đặt chỗ chuyến tham quan",
-          url: "/admin/booking/tour-schedule/table",
-        },
-        {
-          title: "Đặt hướng dẫn viên",
-          url: "/admin/booking/tour-guide/table",
-        },
-        {
-          title: "Đặt trải nghiệm làng nghề",
-          url: "/admin/booking/workshop/table",
-        },
-      ],
-    },
-    {
-      title: "Chuyến tham quan",
-      url: "/admin/tour",
-      icon: Map,
-      items: [
-        {
-          title: "Danh sách chuyến tham quan",
-          url: "/admin/tour/table",
         },
       ],
     },
@@ -195,14 +195,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ...item,
             isActive: pathname.includes(item.url), // Check if pathname includes the item's URL
           }))}
-          titleMain="Nền tảng"
+          titleMain="Quản trị viên"
         />
         <NavMain
           items={data.navMain.map((item) => ({
             ...item,
             isActive: pathname.includes(item.url), // Check if pathname includes the item's URL
           }))}
-          titleMain="Quản Lý Thông tin"
+          titleMain="Kiểm duyệt viên"
         />
         {/* <NavProjects projects={data.projects} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />

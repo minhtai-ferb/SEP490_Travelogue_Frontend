@@ -7,7 +7,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { useLoginCheck } from "@/lib/login-check";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function Page({
   children,
