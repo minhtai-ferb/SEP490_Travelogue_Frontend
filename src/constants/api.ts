@@ -77,3 +77,12 @@ export const REFUND_API_URL = {
   APPROVE_REFUND_REQUEST: "refund-request/:refundRequestId/approve",
   REJECT_REFUND_REQUEST: "refund-request/:refundRequestId/reject",
 };
+
+
+export const REPORT_API_URL = {
+  GET_REPORT: "report",
+  GET_MY_REPORTS: "report/my-reports",
+  GET_REPORT_BY_ID: "report/by-review/:reportId",
+  GET_REPORT_BY_STATUS: "report/by-status",
+  ADMIN_PROCESS_REPORT: "report/:reportId/process",
+}
