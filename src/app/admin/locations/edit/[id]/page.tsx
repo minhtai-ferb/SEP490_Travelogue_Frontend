@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { SidebarInset } from "@/components/ui/sidebar";
-import { Spin, message } from "antd";
+import { Spin } from "antd";
 import {
   CraftVillageData,
   CuisineData,
@@ -95,7 +95,7 @@ export default function EditLocationPage() {
 
   const handleTimeChange = (openTime: string, closeTime: string) => {
     if (!locationData) return;
-    setLocationData((prev) => ({ ...prev!, openTime, closeTime }));
+    setLocationData((prev) => ({ ...prev!, openTime: normalizeTime(openTime), closeTime: normalizeTime(closeTime) }));
   };
 
   const handleCoordinatesChange = (lat: number, lng: number) => {
@@ -116,6 +116,20 @@ export default function EditLocationPage() {
   const handleLocationTypeDataChange = (field: string, data: any) => {
     if (!locationData) return;
     setLocationData((prev) => ({ ...prev!, [field]: data }));
+  };
+
+  // Normalize utilities
+  const normalizeTime = (t: string) => {
+    if (!t) return t;
+    if (/^\d{2}:\d{2}:\d{2}$/.test(t)) return t;
+    if (/^\d{2}:\d{2}$/.test(t)) return `${t}:00`;
+    return t;
+  };
+
+  const toHHmm = (t: string) => {
+    if (!t) return "";
+    const match = t.match(/^(\d{2}:\d{2})/);
+    return match ? match[1] : t;
   };
 
   // Handle form submission
@@ -146,8 +160,8 @@ export default function EditLocationPage() {
         address: locationData.address,
         latitude: locationData.latitude,
         longitude: locationData.longitude,
-        openTime: locationData.openTime,
-        closeTime: locationData.closeTime,
+        openTime: normalizeTime(locationData.openTime),
+        closeTime: normalizeTime(locationData.closeTime),
         districtId: locationData.districtId,
         medias: locationData.medias,
       });
@@ -283,8 +297,8 @@ export default function EditLocationPage() {
             onChange={handleBasicInfoChange}
           />
           <TimeSelector
-            openTime={locationData.openTime}
-            closeTime={locationData.closeTime}
+            openTime={toHHmm(locationData.openTime)}
+            closeTime={toHHmm(locationData.closeTime)}
             onChange={handleTimeChange}
           />
 
