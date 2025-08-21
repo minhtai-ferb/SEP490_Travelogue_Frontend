@@ -1,6 +1,5 @@
-"use client"
+﻿"use client"
 
-import { LocationType } from "@/app/admin/locations/create/types/CreateLocation"
 import { FavoriteButton } from "@/components/common/favorites/favorite-button"
 import { ImageGalleryExplore } from "@/components/common/image-glary/image-explore"
 import { Button } from "@/components/ui/button"
@@ -21,6 +20,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import backgroundImage from "../../../public/vongxoay.jpg"
 import { format } from "date-fns"
+import { LocationType } from "@/types/LocationType"
 
 const formatTime = (value?: string | Date | number) => {
 	if (!value) return ""

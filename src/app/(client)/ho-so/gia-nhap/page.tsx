@@ -5,10 +5,6 @@ import RequestsTabs from "./components/request-tabs";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-// Nếu bạn có hook này, dùng để gửi lại email xác thực
-import { useAuth } from "@/services/useAuth";
 import { TriangleAlert } from "lucide-react";
 
 function CraftVillageClient() {

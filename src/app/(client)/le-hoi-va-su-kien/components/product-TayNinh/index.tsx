@@ -72,7 +72,7 @@ export const HandmadeProductTayNinh = () => {
       responses.forEach((response, index) => {
         const { month, year } = months[index]
         const key = makeKey(month, year)
-        const result: EventItem[] = response?.data?.data || []
+        const result: EventItem[] = response?.data || []
         eventsMap[key] = Array.isArray(result)
           ? result.map((event: EventItem) => ({
             image: { src: event.medias?.[0]?.mediaUrl || "" },
@@ -182,9 +182,9 @@ export const HandmadeProductTayNinh = () => {
                         )}
                       </div>
                       <div className="w-full md:w-1/2 grid grid-cols-2 gap-2">
-                        {events.length > 1
+                        {events.length > 0
                           ? events
-                            .slice(1, 5)
+                            .slice(0, 4)
                             .map((smallItem, index) => (
                               <FeaturedCard isFeatured={false} item={smallItem} key={index} />
                             ))
