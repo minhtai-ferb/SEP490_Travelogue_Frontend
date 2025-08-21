@@ -1,6 +1,6 @@
 "use client";
 
-import EditNews from "@/app/(manage)/components/news/new/[id]/edit/page";
+import EditNews from "@/app/(manage)/components/news/new/[id]/edit";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 

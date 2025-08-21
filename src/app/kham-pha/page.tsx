@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { FavoriteButton } from "@/components/common/favorites/favorite-button"
 import { ImageGalleryExplore } from "@/components/common/image-glary/image-explore"

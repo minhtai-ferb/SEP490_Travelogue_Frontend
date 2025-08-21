@@ -1,4 +1,4 @@
-import { MediaDto } from "@/app/admin/locations/create/types/CreateLocation"
+import { MediaDto } from "@/services/use-news"
 import { TourGuideItem } from "./Tourguide"
 
 export interface TourImage {
