@@ -75,7 +75,11 @@ export function EditLocationForm({
   };
 
   const handleTimeChange = (openTime: string, closeTime: string) => {
-    setLocationData((prev) => ({ ...prev, openTime, closeTime }));
+    setLocationData((prev) => ({
+      ...prev!,
+      openTime: normalizeTime(openTime),
+      closeTime: normalizeTime(closeTime),
+    }));
   };
 
   const handleCoordinatesChange = (lat: number, lng: number) => {
@@ -84,11 +88,11 @@ export function EditLocationForm({
 
   const handleMediaChange = (medias: MediaDto[]) => {
     // Track newly added images
-    const originalUrls = initialData.medias.map(m => m.mediaUrl);
-    const currentUrls = medias.map(m => m.mediaUrl);
-    const newUrls = currentUrls.filter(url => !originalUrls.includes(url));
+    const originalUrls = initialData.medias.map((m) => m.mediaUrl);
+    const currentUrls = medias.map((m) => m.mediaUrl);
+    const newUrls = currentUrls.filter((url) => !originalUrls.includes(url));
     setNewMediaUrls(newUrls);
-    
+
     setLocationData((prev) => ({ ...prev, medias }));
   };
 
@@ -142,12 +146,17 @@ export function EditLocationForm({
     // Intercept link clicks to cleanup before navigation
     const handleLinkClick = async (event: Event) => {
       const target = event.target as HTMLElement;
-      const link = target.closest('a[href]') as HTMLAnchorElement;
-      
+      const link = target.closest("a[href]") as HTMLAnchorElement;
+
       if (link && newMediaUrls.length > 0 && !isSuccess) {
-        const href = link.getAttribute('href');
+        const href = link.getAttribute("href");
         // Check if navigating to locations management page
-        if (href && (href.includes('/admin/locations') || href.includes('/moderator/locations')) && !href.includes('/edit/')) {
+        if (
+          href &&
+          (href.includes("/admin/locations") ||
+            href.includes("/moderator/locations")) &&
+          !href.includes("/edit/")
+        ) {
           event.preventDefault();
           await cleanupNewImages();
           toast.success("Đã xóa các hình ảnh mới đã tải lên!");
@@ -156,16 +165,29 @@ export function EditLocationForm({
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopState);
-    document.addEventListener('click', handleLinkClick);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+    document.addEventListener("click", handleLinkClick);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopState);
-      document.removeEventListener('click', handleLinkClick);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+      document.removeEventListener("click", handleLinkClick);
     };
   }, [newMediaUrls, isSuccess]);
+
+  const normalizeTime = (t: string) => {
+    if (!t) return t;
+    if (/^\d{2}:\d{2}:\d{2}$/.test(t)) return t;
+    if (/^\d{2}:\d{2}$/.test(t)) return `${t}:00`;
+    return t;
+  };
+
+  const toHHmm = (t: string) => {
+    if (!t) return "";
+    const match = t.match(/^(\d{2}:\d{2})/);
+    return match ? match[1] : t;
+  };
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -174,30 +196,33 @@ export function EditLocationForm({
       // Validate type-specific required fields before submitting
       if (locationData.category === Category.HistoricalSite) {
         const hist = locationData.historicalLocation;
-        
+
         // Check if all required fields are present and valid
         const missingFields: string[] = [];
-        
+
         if (!hist) {
           toast.error("Vui lòng điền đầy đủ thông tin di tích lịch sử");
           setIsSubmitting(false);
           return;
         }
-        
+
         if (!hist.establishedDate || hist.establishedDate.trim() === "") {
           missingFields.push("Ngày thành lập/công nhận");
         }
-        
-        if (hist.typeHistoricalLocation === undefined || hist.typeHistoricalLocation === null) {
+
+        if (
+          hist.typeHistoricalLocation === undefined ||
+          hist.typeHistoricalLocation === null
+        ) {
           missingFields.push("Loại di tích");
         }
-        
+
         if (hist.heritageRank === undefined || hist.heritageRank === null) {
           missingFields.push("Xếp hạng di sản");
         } else if (hist.heritageRank < 0 || hist.heritageRank > 5) {
           missingFields.push("Xếp hạng di sản (phải từ 0-5)");
         }
-        
+
         if (missingFields.length > 0) {
           toast.error(
             `Vui lòng điền đầy đủ thông tin: ${missingFields.join(", ")}`
@@ -217,74 +242,74 @@ export function EditLocationForm({
         case Category.Cuisine:
           if (locationData) {
             await updateCuisineInfo(locationData.id, {
-                name: locationData.name,
-                description: locationData.description,
-                districtId: locationData.districtId,
-                locationId: locationData.id,
-                content: locationData.content,
-                address: locationData.address,
-                latitude: locationData.latitude,
-                longitude: locationData.longitude,
-                openTime: locationData.openTime,
-                closeTime: locationData.closeTime,
-                medias: locationData.medias,
-                cuisineType: locationData.cuisine?.cuisineType || "",
-                phoneNumber: locationData.cuisine?.phoneNumber || "",
-                email: locationData.cuisine?.email || "",
-                website: locationData.cuisine?.website || "",
-                signatureProduct: locationData.cuisine?.signatureProduct || "",
-                cookingMethod: locationData.cuisine?.cookingMethod || ""
+              name: locationData.name,
+              description: locationData.description,
+              districtId: locationData.districtId,
+              locationId: locationData.id,
+              content: locationData.content,
+              address: locationData.address,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              openTime: normalizeTime(locationData.openTime),
+              closeTime: normalizeTime(locationData.closeTime),
+              mediaDtos: locationData.medias,
+              cuisineType: locationData.cuisine?.cuisineType || "",
+              phoneNumber: locationData.cuisine?.phoneNumber || "",
+              email: locationData.cuisine?.email || "",
+              website: locationData.cuisine?.website || "",
+              signatureProduct: locationData.cuisine?.signatureProduct || "",
+              cookingMethod: locationData.cuisine?.cookingMethod || "",
             });
           }
           break;
         case Category.CraftVillage:
           if (locationData) {
-            await updateCraftVillageInfo(
-              locationData.id,
-              {
-                name: locationData.name,
-                description: locationData.description,
-                districtId: locationData.districtId,
-                locationId: locationData.id,
-                content: locationData.content,
-                address: locationData.address,
-                latitude: locationData.latitude,
-                longitude: locationData.longitude,
-                openTime: locationData.openTime,
-                closeTime: locationData.closeTime,
-                medias: locationData.medias,
-                phoneNumber: locationData.craftVillage?.phoneNumber || "",
-                email: locationData.craftVillage?.email || "",
-                website: locationData.craftVillage?.website || "",
-                workshopsAvailable: locationData.craftVillage?.workshopsAvailable || 0,
-                signatureProduct: locationData.craftVillage?.signatureProduct || "",
-                yearsOfHistory: locationData.craftVillage?.yearsOfHistory || 0,
-                isRecognizedByUnesco: locationData.craftVillage?.isRecognizedByUnesco || false
-              }
-            );
+            await updateCraftVillageInfo(locationData.id, {
+              name: locationData.name,
+              description: locationData.description,
+              districtId: locationData.districtId,
+              locationId: locationData.id,
+              content: locationData.content,
+              address: locationData.address,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              openTime: normalizeTime(locationData.openTime),
+              closeTime: normalizeTime(locationData.closeTime),
+              mediaDtos: locationData.medias,
+              phoneNumber: locationData.craftVillage?.phoneNumber || "",
+              email: locationData.craftVillage?.email || "",
+              website: locationData.craftVillage?.website || "",
+              workshopsAvailable:
+                locationData.craftVillage?.workshopsAvailable || 0,
+              signatureProduct:
+                locationData.craftVillage?.signatureProduct || "",
+              yearsOfHistory: locationData.craftVillage?.yearsOfHistory || 0,
+              isRecognizedByUnesco:
+                locationData.craftVillage?.isRecognizedByUnesco || false,
+            });
           }
           break;
         case Category.HistoricalSite:
           if (locationData) {
-            await updateHistoricalLocationInfo(
-              locationData.id,
-              {
-                name: locationData.name,
-                description: locationData.description,
-                districtId: locationData.districtId,
-                locationId: locationData.id,
-                content: locationData.content,
-                address: locationData.address,
-                latitude: locationData.latitude,
-                longitude: locationData.longitude,
-                openTime: locationData.openTime,
-                closeTime: locationData.closeTime,
-                medias: locationData.medias,
-                heritageRank: locationData.historicalLocation?.heritageRank || 0,
-                establishedDate: locationData.historicalLocation?.establishedDate || "",
-                typeHistoricalLocation: locationData.historicalLocation?.typeHistoricalLocation || TypeHistoricalLocation.ProvincialMonument,
-              }
-            );
+            await updateHistoricalLocationInfo(locationData.id, {
+              name: locationData.name,
+              description: locationData.description,
+              districtId: locationData.districtId,
+              locationId: locationData.id,
+              content: locationData.content,
+              address: locationData.address,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              openTime: normalizeTime(locationData.openTime),
+              closeTime: normalizeTime(locationData.closeTime),
+              mediaDtos: locationData.medias,
+              heritageRank: locationData.historicalLocation?.heritageRank || 0,
+              establishedDate:
+                locationData.historicalLocation?.establishedDate || "",
+              typeHistoricalLocation:
+                locationData.historicalLocation?.typeHistoricalLocation ||
+                TypeHistoricalLocation.ProvincialMonument,
+            });
           }
           break;
       }
@@ -299,8 +324,6 @@ export function EditLocationForm({
       setIsSubmitting(false);
     }
   };
-
-
 
   // Render location type specific form
   const renderLocationTypeForm = () => {
@@ -362,8 +385,8 @@ export function EditLocationForm({
         />
 
         <TimeSelector
-          openTime={locationData.openTime}
-          closeTime={locationData.closeTime}
+          openTime={toHHmm(locationData.openTime)}
+          closeTime={toHHmm(locationData.closeTime)}
           onChange={handleTimeChange}
         />
 
