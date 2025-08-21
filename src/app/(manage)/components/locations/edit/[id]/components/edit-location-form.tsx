@@ -236,7 +236,19 @@ export function EditLocationForm({
         case Category.ScenicSpot:
           if (locationData) {
             console.log(locationData);
-            await updateScenicSpotInfo(locationData.id, locationData);
+            await updateScenicSpotInfo(locationData.id, {
+              name: locationData.name,
+              description: locationData.description,
+              districtId: locationData.districtId,
+              locationId: locationData.id,
+              content: locationData.content,
+              address: locationData.address,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              openTime: normalizeTime(locationData.openTime),
+              closeTime: normalizeTime(locationData.closeTime),
+              mediaDtos: locationData.medias,
+            });
           }
           break;
         case Category.Cuisine:

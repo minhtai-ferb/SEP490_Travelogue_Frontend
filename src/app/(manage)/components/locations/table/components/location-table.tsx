@@ -102,10 +102,11 @@ export function LocationTableComponent({
       onChange={onChange}
       pagination={{
         current: currentPage,
-        pageSize,
+        pageSize: pageSize,
         total: totalCount,
         onChange: onPaginationChange,
         showSizeChanger: true,
+        pageSizeOptions: ['5', '10', '20', '50', '100'],
         showTotal: (total, range) =>
           `${range[0]}-${range[1]} trong ${total} địa điểm`,
       }}
