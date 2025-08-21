@@ -124,15 +124,9 @@ const data = {
       ],
     },
     {
-      title: "Chuyến tham quan",
+      title: "Quản lý chuyến tham quan",
       url: "/admin/tour",
       icon: Map,
-      items: [
-        {
-          title: "Danh sách chuyến tham quan",
-          url: "/admin/tour/table",
-        },
-      ],
     },
     {
       title: "Tin tức",

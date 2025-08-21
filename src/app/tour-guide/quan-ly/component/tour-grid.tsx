@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTourguideAssign } from "@/services/tourguide"
 import { Search } from 'lucide-react'
-import { PaginationBar } from "@/components/tour-management/PaginationBar"
 import toast from "react-hot-toast"
 import TourCard from "./tour-card"
 import { isValidDateIso } from "@/utils/validation"
 import { GuideScheduleItem, ScheduleType } from "@/types/Tourguide"
 import DatePicker from "antd/es/date-picker"
 import dayjs from "dayjs"
+import { PaginationBar } from "@/app/(manage)/components/tour-management/PaginationBar"
 
 
 export default function ToursGrid({ view = "current" as "current" | "history" }) {

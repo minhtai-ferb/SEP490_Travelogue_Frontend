@@ -7,16 +7,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
 import { useTour } from "@/services/tour"
-import { TourBasicInfoForm } from "@/components/tour-management/edit/TourBasicInfoForm"
-import { TourScheduleManager } from "@/components/tour-management/edit/TourScheduleManager"
-import { TourItineraryManager } from "@/components/tour-management/edit/TourItineraryManager"
 import type { TourDetail } from "@/types/Tour"
+import { TourBasicInfoForm } from "@/app/(manage)/components/tour-management/edit/TourBasicInfoForm";
+import { TourItineraryManager } from "@/app/(manage)/components/tour-management/edit/TourItineraryManager";
+import { TourScheduleManager } from "@/app/(manage)/components/tour-management/edit/TourScheduleManager";
 
 interface TourEditClientProps {
-	tourId: string
+	tourId: string,
+	href : string
 }
 
-export default function TourEditClient({ tourId }: TourEditClientProps) {
+export default function TourEditClient({ tourId , href }: TourEditClientProps) {
 	const router = useRouter()
 	const [tour, setTour] = useState<TourDetail | null>(null)
 	const [loading, setLoading] = useState(true)
@@ -46,7 +47,7 @@ export default function TourEditClient({ tourId }: TourEditClientProps) {
 	}, [tourId, getTourDetail])
 
 	const handleBack = () => {
-		router.push("/admin/tour")
+		router.push(href)
 	}
 
 	const handleTourUpdate = (updatedTour: TourDetail) => {

@@ -9,7 +9,6 @@ import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import { WorkshopFilterParams } from "@/types/Workshop"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
-import WorkshopDataTable from "@/app/moderator/craft-village/workshop/components/WorkshopDataTable"
 import WorkshopTable from "./components/WorkshopTable"
 
 export default function WorkshopPage() {

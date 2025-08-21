@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { ArrowRight, X, Loader2 } from "lucide-react"
 import { TourTypeLabels, type CreateTourRequest } from "@/types/Tour"
-import { ImageUpload } from "@/app/admin/locations/create/components/image-upload"
+import { ImageUpload } from "../../locations/create/components/image-upload"
 
 interface TourBasicFormProps {
 	initialData?: CreateTourRequest | null

@@ -9,9 +9,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MapPin, Clock, Calendar, Edit, Trash2, Plus, AlertCircle, CheckCircle, Car, Route } from "lucide-react"
 import type { TourDetail, TourDay, TourLocationBulkRequest } from "@/types/Tour"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { TourLocationForm } from "@/components/tour-management/wizard/TourLocationForm"
 import { useTour } from "@/services/tour"
-import TourLocationUpdateForm from "@/components/tour-management/edit/TourLocationUpdateForm"
+import TourLocationUpdateForm from "./TourLocationUpdateForm";
+import { TourLocationForm } from "../wizard/TourLocationForm";
 
 
 interface TourItineraryManagerProps {

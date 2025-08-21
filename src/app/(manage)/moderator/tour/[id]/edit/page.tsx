@@ -14,15 +14,15 @@ export default async function TourEditPage({ params }: TourEditPageProps) {
 	const { id } = await params
 
 	const crumbs: Crumb[] = [
-		{ label: "Quản lý chuyến tham quan", href: "/admin/tour" },
-		{ label: "Chi tiết chuyến tham quan", href: `/admin/tour/${id}` },
+		{ label: "Quản lý chuyến tham quan", href: "/moderator/tour" },
+		{ label: "Chi tiết chuyến tham quan", href: `/moderator/tour/${id}` },
 		{ label: "Chỉnh sửa chuyến tham quan" },
 	]
 
 	return (
 		<SidebarInset>
 			<BreadcrumbHeader items={crumbs} />
-			<TourEditClient tourId={id} href={`/admin/tour`} />
+			<TourEditClient tourId={id} href={`/moderator/tour`} />
 		</SidebarInset>
 	)
 }

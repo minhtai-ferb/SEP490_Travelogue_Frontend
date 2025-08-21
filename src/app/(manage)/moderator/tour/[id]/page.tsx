@@ -11,7 +11,7 @@ interface TourDetailPageProps {
 }
 
 const crumbs: Crumb[] = [
-  { label: "Quản lý chuyến tham quan", href: "/admin/tour" },
+  { label: "Quản lý chuyến tham quan", href: "/moderator/tour" },
   { label: "Chi tiết chuyến tham quan" },
 ];
 
@@ -20,7 +20,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <TourDetailClient tourId={id} href="/admin/tour" />
+      <TourDetailClient tourId={id} href="/moderator/tour" />
     </SidebarInset>
   );
 }

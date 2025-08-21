@@ -1,8 +1,8 @@
 "use client"
 
+import { AddressSearchInput } from "@/app/(manage)/components/locations/create/components/address-search-input"
 import { FieldError } from "../atoms/FieldError"
 import { FieldLabel } from "../atoms/FieldLabel"
-import { AddressSearchInput } from "@/app/admin/locations/create/components/address-search-input"
 import VietmapGL from "@/components/vietmap-gl"
 import { SeccretKey } from "@/secret/secret"
 

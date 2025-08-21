@@ -15,7 +15,7 @@ import { useTour } from "@/services/tour"
 import { TourTypeLabels } from "@/types/Tour"
 import type { TourDetail } from "@/types/Tour"
 import toast from "react-hot-toast";
-import { ImageUpload } from "@/app/admin/locations/create/components/image-upload"
+import { ImageUpload } from "../../locations/create/components/image-upload";
 
 interface TourBasicInfoFormProps {
 	tour: TourDetail

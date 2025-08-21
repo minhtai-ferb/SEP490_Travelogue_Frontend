@@ -1,5 +1,6 @@
 'use client';
 
+import TourDetailId from "@/app/(manage)/components/tour-management/TourDetailId";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,10 +10,10 @@ import { TourTypeLabels } from "@/types/Tour";
 import { AlertCircle, ArrowLeft, Edit, Loader2, Clock, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import TourDetailId from "./component/TourDetailId";
 
 interface TourDetailClientProps {
-	tourId: string
+	tourId: string,
+	href:string
 }
 
 const statusColorMap: Record<string, string> = {
@@ -21,7 +22,7 @@ const statusColorMap: Record<string, string> = {
 	"Đã hủy": "bg-red-100 text-red-800",
 }
 
-export default function TourDetailClient({ tourId }: TourDetailClientProps) {
+export default function TourDetailClient({ tourId , href }: TourDetailClientProps) {
 	const router = useRouter()
 	const [tour, setTour] = useState<TourDetail | null>(null)
 	const [loading, setLoading] = useState(true)
@@ -54,11 +55,11 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 	}, [tourId, getTourDetail])
 
 	const handleEdit = () => {
-		router.push(`/admin/tour/${tourId}/edit`)
+		router.push(`${href}/${tourId}/edit`)
 	}
 
 	const handleBack = () => {
-		router.push("/admin/tour")
+		router.push(href)
 	}
 
 

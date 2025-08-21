@@ -5,14 +5,14 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 
 const crumbs: Crumb[] = [
-  { label: "Quản lý chuyến tham quan", href: "/admin/tour" },
+  { label: "Quản lý chuyến tham quan", href: "/moderator/tour" },
 ];
 
 export default function ManageLocation() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <TourManagement href="/admin/tour" />
+      <TourManagement href="/moderator/tour" />
     </SidebarInset>
   );
 }
