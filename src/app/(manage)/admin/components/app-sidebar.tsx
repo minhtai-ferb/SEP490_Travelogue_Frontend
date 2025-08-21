@@ -13,6 +13,7 @@ import {
   BanknoteX,
   BanknoteArrowUp,
   MapPinned,
+  LocateFixed,
 } from "lucide-react";
 import * as React from "react";
 
@@ -33,6 +34,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
+import { title } from "process";
 
 const data = {
   navSecondary: [
@@ -127,6 +129,11 @@ const data = {
       title: "Quản lý chuyến tham quan",
       url: "/admin/tour",
       icon: Map,
+    },
+    {
+      title: "Quản lý trải nghiệm làng nghề",
+      url: "/admin/workshop",
+      icon: LocateFixed ,
     },
     {
       title: "Quản lý tin tức",

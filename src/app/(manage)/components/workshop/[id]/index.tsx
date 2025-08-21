@@ -17,7 +17,7 @@ function formatTimespan(ts?: any): string {
 	return `${h}:${m}`
 }
 
-function Page() {
+function WorkShopView({ href }: { href: string }) {
 	const { id } = useParams()
 	const { getWorkshopDetail, loading } = useWorkshop()
 	const [workshop, setWorkshop] = useState<any>(null)
@@ -48,7 +48,6 @@ function Page() {
 
 	return (
 		<div className="space-y-6">
-			{/* Header */}
 			<Card>
 				<CardContent className="p-0">
 					<div className="relative">
@@ -255,4 +254,4 @@ function Page() {
 	)
 }
 
-export default Page
+export default WorkShopView;
