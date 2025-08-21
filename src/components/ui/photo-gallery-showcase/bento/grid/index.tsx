@@ -3,10 +3,11 @@
 import { ShinyButton } from "@/components/magicui/shiny-button"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Media } from "@/interfaces/district"
 import { cn } from "@/lib/utils"
 import { Location } from "@/types/Location"
 import { AnimatePresence, motion } from "framer-motion"
-import { MapPin, Play, Star } from "lucide-react"
+import { MapPin, Star } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -18,11 +19,11 @@ interface BentoItem {
 	type: "photo" | "video" | "stats" | "text" | "feature"
 	size: "sm" | "md" | "lg" | "xl" | "wide" | "tall"
 	location: Location
-	// src?: string
-	// title: string
+	// src?: string  
+	// title: string 
 	// subtitle?: string
 	// location?: string
-	// category?: string
+	// category?: string 
 	name?: string
 	// likes?: number
 	// views?: number
@@ -33,6 +34,7 @@ interface BentoItem {
 	isVideo?: boolean
 	content?: string
 	districtName?: string // Added for location display
+	medias?: Media[]
 }
 
 interface BentoPhotoGridProps {
@@ -132,20 +134,29 @@ interface BentoCardProps {
 }
 
 function BentoCard({ item, onClick }: BentoCardProps) {
+
+	console.log("item bento card", item)
 	const [isHovered, setIsHovered] = useState(false)
 	const [imageLoaded, setImageLoaded] = useState(false)
 	const renderPhotoCard = () => (
 		<div className="relative w-full h-full overflow-hidden group">
 			{/* Background Image */}
-			{item?.location?.medias && (
+			{item?.medias && item?.medias?.length > 0 && (
 				<motion.img
-					src={item?.location.medias[0]?.mediaUrl || "/placeholder.svg"}
-					alt={item?.location.name || "Bento Image"}
+					// src={item?.medias[0]?.mediaUrl || "/placeholder.svg"}
+					alt={item?.name || "Bento Image"}
 					className={cn(
 						"absolute inset-0 w-full h-full object-cover transition-all duration-700",
 						imageLoaded ? "scale-100 blur-0" : "scale-110 blur-sm",
 						isHovered && "scale-110",
 					)}
+					style={{
+						objectFit: "cover",
+						backgroundImage: `url(${item?.medias[0]?.mediaUrl})`,
+						backgroundSize: "cover",
+						backgroundPosition: "center",
+						backgroundRepeat: "no-repeat",
+					}}
 					onLoad={() => setImageLoaded(true)}
 				/>
 			)}
@@ -159,7 +170,14 @@ function BentoCard({ item, onClick }: BentoCardProps) {
 			<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
 			{/* Content */}
-			<div className="absolute inset-0 p-3 sm:p-4 md:p-6 flex flex-col mx-auto align-middle items-center justify-center text-white">
+			<div className="absolute inset-0 p-3 sm:p-4 md:p-6 flex flex-col mx-auto align-middle items-center justify-center text-white"
+				style={{
+					backgroundImage: `url(${item?.medias?.[0]?.mediaUrl})`,
+					backgroundSize: "cover",
+					backgroundPosition: "center",
+					backgroundRepeat: "no-repeat",
+				}}
+			>
 				<motion.div
 					initial={{ y: 10, opacity: 0.8 }}
 					animate={{
@@ -168,7 +186,7 @@ function BentoCard({ item, onClick }: BentoCardProps) {
 					}}
 				>
 					{/* {item?.location?.name && ( */}
-					<div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-1 sm:mb-2 line-clamp-2">
+					<div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-1 sm:mb-2 line-clamp-2 bg-slate-600/50 rounded-3xl p-2">
 						{item?.name}
 					</div>
 					{/* )} */}
@@ -196,8 +214,8 @@ function BentoCard({ item, onClick }: BentoCardProps) {
 			{/* Content */}
 			<div className="relative p-6 h-full flex flex-col justify-center text-white text-center">
 				<Star className="h-8 w-8 mx-auto mb-4" />
-				<h3 className="text-xl font-bold mb-2">{item?.location?.name}</h3>
-				{item?.location?.description && <p className="text-sm opacity-90 leading-relaxed">{item?.location?.description}</p>}
+				<h3 className="text-xl font-bold mb-2">{item?.name}</h3>
+				{item?.description && <p className="text-sm opacity-90 leading-relaxed">{item?.description}</p>}
 			</div>
 		</div>
 	)
@@ -252,25 +270,25 @@ function BentoLightbox({ item, onClose }: BentoLightboxProps) {
 				initial={{ scale: 0.8, opacity: 0 }}
 				animate={{ scale: 1, opacity: 1 }}
 				exit={{ scale: 0.8, opacity: 0 }}
-				className="relative max-w-4xl max-h-[90vh] w-full"
+				className="relative max-w-4xl max-h-[50vh] w-full rounded-3xl object-contain"
 				onClick={(e) => e.stopPropagation()}
 			>
-				{item?.location?.medias ? (
+				{item?.medias ? (
 					<img
-						src={item?.location?.medias[0]?.mediaUrl || "/placeholder.svg"}
-						alt={item?.location?.name || "Bento Image"}
-						className="w-full h-full object-contain rounded-2xl"
+						src={item?.medias[0]?.mediaUrl || "/placeholder.svg"}
+						alt={item?.name || "Bento Image"}
+						className="w-full max-h-[50vh] object-cover rounded-3xl"
 					/>
 				) : (
 					<div
 						className={cn(
-							"w-full h-96 rounded-2xl flex items-center justify-center",
+							"w-full h-full rounded-2xl flex items-center justify-center",
 							item.gradient || "bg-gradient-to-br from-blue-500 to-purple-600",
 						)}
 					>
 						<div className="text-center text-white">
-							<h2 className="text-3xl font-bold mb-4">{item.name}</h2>
-							{item?.location?.description && <p className="text-lg opacity-90">{item?.location?.description}</p>}
+							<h2 className="text-3xl font-bold mb-4 bg-black/50 rounded-3xl p-2">{item.name}</h2>
+							{item?.description && <p className="text-lg opacity-90 bg-black/50 rounded-3xl p-2">{item?.description}</p>}
 						</div>
 					</div>
 				)}
@@ -279,7 +297,7 @@ function BentoLightbox({ item, onClose }: BentoLightboxProps) {
 				<Button
 					size="icon"
 					variant="secondary"
-					className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full"
+					className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm rounded-full hover:bg-black/50 transition-all duration-300 text-red-500"
 					onClick={onClose}
 				>
 					×
@@ -289,14 +307,14 @@ function BentoLightbox({ item, onClose }: BentoLightboxProps) {
 				<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-2xl">
 					<div className="flex items-start text-white">
 						<div>
-							{item?.districtName && (
+							{item?.name && (
 								<div className="flex items-center gap-2 text-sm opacity-90 mb-2">
 									<MapPin className="h-4 w-4" />
-									{item?.districtName || "Vị trí không xác định"}
+									{item?.name || "Vị trí không xác định"}
 								</div>
 							)}
-							<h2 className="text-2xl font-bold mb-2">{item?.description}</h2>
-							{item?.content && <p className="text-sm opacity-80">{item?.content}</p>}
+							<p className="text-base font-medium mb-2">{item?.description?.slice(0, 300)}...</p>
+							{/* {item?.content && <p className="text-sm opacity-80">{item?.content}</p>} */}
 							<ShinyButton className="mt-3 flex items-center mx-auto gap-2 px-4 py-2 rounded-full 
 							bg-gradient-to-r from-blue-500 to-purple-600 
 							hover:from-blue-600 hover:to-purple-700 transition-all duration-300"

@@ -21,6 +21,7 @@ export function BentoShowcase() {
 				pageNumber: 1,
 				pageSize: 9,
 			})
+			console.log("response bento", response)
 			setBentoItems(response?.data || [])
 		}
 		catch (error) {
