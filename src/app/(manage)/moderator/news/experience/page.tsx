@@ -1,22 +1,19 @@
 "use client";
 
+import ExperiencesTable from "@/app/(manage)/components/news/experience/table";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
-import DashboardNews from "../../components/news";
-
 
 const crumbs: Crumb[] = [
-  { label: "Quản lý tin tức" },
+  { label: "Quản lý tin tức", href: "/moderator/news" },
+  { label: "Danh sách trải nghiệm" },
 ];
 
-function ManageNewsPage() {
-
+export default function ExperiencesPage() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <DashboardNews href="/admin/news" />
+      <ExperiencesTable href="/moderator/news" />
     </SidebarInset>
   );
 }
-
-export default ManageNewsPage;

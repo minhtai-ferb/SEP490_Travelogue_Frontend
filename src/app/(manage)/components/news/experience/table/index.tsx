@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Eye, Edit, Trash2, ArrowLeft, Loader2 } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { DeleteConfirmDialog } from "../../components/delete-confirm-dialog";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
@@ -23,36 +23,32 @@ import {
 } from "./components/search-filters";
 import toast from "react-hot-toast";
 import { Pagination } from "../../components/pagination";
+import { getTypeExperienceLabel, TypeExperience } from "@/types/News";
 
-interface EventData {
+interface ExperienceData {
   id: string;
   title: string;
   description: string;
-  locationId: string;
-  locationName: string;
-  startDate: string;
-  endDate: string;
+  locationId?: string;
+  locationName?: string;
+  isHighlighted?: boolean;
+  typeExperience?: number;
   createdTime: string;
-  isHighlighted: boolean;
 }
 
-interface PagedResponse {
-  data: EventData[];
+interface PagedResponse<T> {
+  data: T[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;
   totalPages: number;
 }
 
-const crumbs: Crumb[] = [
-  { label: "Quản lý tin tức", href: "/admin/news" },
-  { label: "Danh sách sự kiện" },
-];
-
-export default function EventsPage() {
-  const { getPagedEvents, deleteNews, loading } = useNews();
-  const [events, setEvents] = useState<EventData[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
+export default function ExperiencesTable({href}: { href: string }) {
+  const { getPagedExperiences, deleteNews, loading } = useNews();
+  const [experiences, setExperiences] = useState<ExperienceData[]>([]);
+  const [selectedExperience, setSelectedExperience] =
+    useState<ExperienceData | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -60,101 +56,100 @@ export default function EventsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [filters, setFilters] = useState<SearchFiltersType>({});
 
-  const fetchEvents = async (
+  const fetchExperiences = async (
     page: number = currentPage,
     size: number = pageSize,
     searchFilters: SearchFiltersType = filters
   ) => {
     try {
-      const response: PagedResponse = await getPagedEvents({
-        title: searchFilters.title,
-        locationId: searchFilters.locationId,
-        isHighlighted: searchFilters.isHighlighted,
-        month: searchFilters.month,
-        year: searchFilters.year,
-        pageNumber: page,
-        pageSize: size,
-      });
+      const response: PagedResponse<ExperienceData> = await getPagedExperiences(
+        {
+          title: searchFilters.title,
+          locationId: searchFilters.locationId,
+          typeExperience: searchFilters.typeExperience,
+          isHighlighted: searchFilters.isHighlighted,
+          pageNumber: page,
+          pageSize: size,
+        }
+      );
 
       if (response) {
-        setEvents(response.data || []);
+        setExperiences(response.data || []);
         setTotalPages(response.totalPages || 0);
         setTotalItems(response.totalCount || 0);
         setCurrentPage(response.pageNumber || 1);
         setPageSize(response.pageSize || 10);
       }
     } catch (error) {
-      console.error("Lỗi khi tải danh sách sự kiện:", error);
-      toast.error("Không thể tải danh sách sự kiện");
+      console.error("Lỗi khi tải danh sách trải nghiệm:", error);
+      toast.error("Không thể tải danh sách trải nghiệm");
     }
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchExperiences();
   }, []);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchEvents(page, pageSize, filters);
+    fetchExperiences(page, pageSize, filters);
   };
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1);
-    fetchEvents(1, size, filters);
+    fetchExperiences(1, size, filters);
   };
 
   const handleSearch = (searchFilters: SearchFiltersType) => {
     setFilters(searchFilters);
     setCurrentPage(1);
-    fetchEvents(1, pageSize, searchFilters);
+    fetchExperiences(1, pageSize, searchFilters);
   };
 
   const handleDelete = async () => {
-    if (selectedEvent) {
+    if (selectedExperience) {
       try {
-        await deleteNews(selectedEvent.id);
-        toast.success("Xóa sự kiện thành công");
+        await deleteNews(selectedExperience.id);
+        toast.success("Xóa trải nghiệm thành công");
         setIsDeleteOpen(false);
-        setSelectedEvent(null);
+        setSelectedExperience(null);
         // Refresh danh sách
-        fetchEvents();
+        fetchExperiences();
       } catch (error) {
-        console.error("Lỗi khi xóa sự kiện:", error);
-        toast.error("Không thể xóa sự kiện");
+        console.error("Lỗi khi xóa trải nghiệm:", error);
+        toast.error("Không thể xóa trải nghiệm");
       }
     }
   };
 
   const locationOptions = useMemo(() => {
     const map = new Map<string, string>();
-    // rút từ dữ liệu đã trả về (trang hiện tại)
-    for (const e of events) {
+    for (const e of experiences) {
       if (e.locationId && !map.has(e.locationId)) {
         map.set(e.locationId, e.locationName ?? "");
       }
     }
     return Array.from(map, ([id, name]) => ({ id, name }));
-  }, [events]);
+  }, [experiences]);
+
 
   return (
-    <div>
-      <BreadcrumbHeader items={crumbs} />
       <div className="container mx-auto p-6">
         <div className="mb-6">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
-                Quản Lý Sự Kiện
+                Quản Lý Trải Nghiệm
               </h1>
               <p className="text-muted-foreground">
-                Quản lý các sự kiện và chi tiết của chúng
+                Quản lý các trải nghiệm và chi tiết của chúng
               </p>
             </div>
             <Button asChild>
-              <Link href="/admin/news/event/create">
+              <Link href={`${href}/experience/create`}>
                 <Plus className="h-4 w-4 mr-2" />
-                Thêm Sự Kiện
+                Thêm Trải Nghiệm
               </Link>
             </Button>
           </div>
@@ -163,7 +158,6 @@ export default function EventsPage() {
         <div className="space-y-6">
           <SearchFilters
             onSearch={handleSearch}
-            showDateFilters={true}
             loading={loading}
             locationOptions={locationOptions}
           />
@@ -171,7 +165,7 @@ export default function EventsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                Sự Kiện ({totalItems})
+                Trải Nghiệm ({totalItems})
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               </CardTitle>
             </CardHeader>
@@ -182,8 +176,7 @@ export default function EventsPage() {
                     <TableRow>
                       <TableHead>Tiêu Đề</TableHead>
                       <TableHead>Địa Điểm</TableHead>
-                      <TableHead>Ngày Bắt Đầu</TableHead>
-                      <TableHead>Ngày Kết Thúc</TableHead>
+                      <TableHead>Loại Trải Nghiệm</TableHead>
                       <TableHead>Trạng Thái</TableHead>
                       <TableHead>Ngày Tạo</TableHead>
                       <TableHead className="text-right">Thao Tác</TableHead>
@@ -192,44 +185,37 @@ export default function EventsPage() {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
                           Đang tải dữ liệu...
                         </TableCell>
                       </TableRow>
-                    ) : events.length === 0 ? (
+                    ) : experiences.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={6}
+                          colSpan={5}
                           className="text-center py-8 text-muted-foreground"
                         >
-                          Không có sự kiện nào được tìm thấy
+                          Không có trải nghiệm nào được tìm thấy
                         </TableCell>
                       </TableRow>
                     ) : (
-                      events.map((event) => (
-                        <TableRow key={event.id}>
+                      experiences.map((item) => (
+                        <TableRow key={item.id}>
                           <TableCell className="font-medium">
-                            {event.title}
+                            {item.title}
                           </TableCell>
-                          <TableCell>{event.locationName}</TableCell>
+                          <TableCell>{item.locationName ?? "N/A"}</TableCell>
                           <TableCell>
-                            {new Date(event.startDate).toLocaleDateString(
-                              "vi-VN"
-                            )}
+                            {getTypeExperienceLabel(item.typeExperience)}
                           </TableCell>
                           <TableCell>
-                            {new Date(event.endDate).toLocaleDateString(
-                              "vi-VN"
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {event.isHighlighted && (
+                            {item.isHighlighted && (
                               <Badge variant="secondary">Nổi Bật</Badge>
                             )}
                           </TableCell>
                           <TableCell>
-                            {new Date(event.createdTime).toLocaleDateString(
+                            {new Date(item.createdTime).toLocaleDateString(
                               "vi-VN",
                               {
                                 year: "numeric",
@@ -241,12 +227,16 @@ export default function EventsPage() {
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button variant="ghost" size="sm" asChild>
-                                <Link href={`/admin/news/event/${event.id}`}>
+                                <Link
+                                  href={`${href}/experience/${item.id}`}
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Link>
                               </Button>
                               <Button variant="ghost" size="sm" asChild>
-                                <Link href={`/admin/news/event/${event.id}/edit`}>
+                                <Link
+                                  href={`${href}/experience/${item.id}/edit`}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Link>
                               </Button>
@@ -254,7 +244,7 @@ export default function EventsPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
-                                  setSelectedEvent(event);
+                                  setSelectedExperience(item);
                                   setIsDeleteOpen(true);
                                 }}
                               >
@@ -289,10 +279,10 @@ export default function EventsPage() {
           open={isDeleteOpen}
           onOpenChange={setIsDeleteOpen}
           onConfirm={handleDelete}
-          title="Xóa Sự Kiện"
-          description={`Bạn có chắc chắn muốn xóa "${selectedEvent?.title}"? Hành động này không thể hoàn tác.`}
+          title="Xóa Trải Nghiệm"
+          description={`Bạn có chắc chắn muốn xóa "${selectedExperience?.title}"? Hành động này không thể hoàn tác.`}
         />
       </div>
-    </div>
+
   );
 }

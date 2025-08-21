@@ -14,7 +14,7 @@ function ManageNewsPage() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <DashboardNews href="/admin/news" />
+      <DashboardNews href="/moderator/news" />
     </SidebarInset>
   );
 }

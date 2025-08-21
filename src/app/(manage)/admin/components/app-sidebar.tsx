@@ -72,16 +72,6 @@ const data = {
       icon: SquareTerminal,
     },
     {
-      title: "Quản lý quận huyện",
-      url: "/admin/districts",
-      icon: MapPinned,
-    },
-    {
-      title: "Quản lý địa điểm du lịch",
-      url: "/admin/locations",
-      icon: MapPin,
-    },
-    {
       title: "Quản lý tài khoản",
       url: "/admin/user",
       icon: Bot,
@@ -103,6 +93,16 @@ const data = {
           url: "/admin/user/requests/craftvillage",
         },
       ],
+    },
+    {
+      title: "Quản lý quận huyện",
+      url: "/admin/districts",
+      icon: MapPinned,
+    },
+    {
+      title: "Quản lý địa điểm du lịch",
+      url: "/admin/locations",
+      icon: MapPin,
     },
     {
       title: "Quản lý các đặt chỗ",
@@ -129,21 +129,21 @@ const data = {
       icon: Map,
     },
     {
-      title: "Tin tức",
+      title: "Quản lý tin tức",
       url: "/admin/news",
       icon: Newspaper,
       items: [
         {
           title: "Danh sách sự kiện",
-          url: "/admin/news/event/table",
+          url: "/admin/news/event",
         },
         {
           title: "Danh sách trải nghiệm",
-          url: "/admin/news/experience/table",
+          url: "/admin/news/experience",
         },
         {
           title: "Danh sách tin tức",
-          url: "/admin/news/new/table",
+          url: "/admin/news/new",
         },
       ],
     },

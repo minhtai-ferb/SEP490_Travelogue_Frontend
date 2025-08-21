@@ -1,21 +1,20 @@
 "use client";
 
-import ViewNews from "@/app/(manage)/components/news/new/[id]";
+import NewsTable from "@/app/(manage)/components/news/new/table";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 
 const crumbs : Crumb[] = [
   { label: "Quản lý tin tức", href: "/admin/news" },
-  { label: "Danh sách sự kiện", href: "/admin/news/event" },
-  { label: "Chi tiết sự kiện" },
+  { label: "Danh sách tin tức" },
 ];
 
-export default function ViewEventPage() {
+export default function NewsPage() {
 
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <ViewNews href="/admin/news" />
+      <NewsTable href="/admin/news" />
     </SidebarInset>
   );
 }

@@ -12,6 +12,7 @@ import {
   Ticket,
   BanknoteX,
   BanknoteArrowUp,
+  MapPinned,
 } from "lucide-react";
 import * as React from "react";
 
@@ -78,66 +79,55 @@ const data = {
       ],
     },
     {
+      title: "Quản lý quận huyện",
+      url: "/moderator/districts",
+      icon: MapPinned,
+    },
+    {
+      title: "Quản lý địa điểm du lịch",
+      url: "/moderator/locations",
+      icon: MapPin,
+    },
+    {
       title: "Quản lý các đặt chỗ",
       url: "/moderator/booking",
       icon: Ticket,
       items: [
         {
           title: "Đặt chỗ chuyến tham quan",
-          url: "/moderator/booking/tour-schedule/table",
+          url: "/moderator/booking/tour-schedule",
         },
         {
           title: "Đặt hướng dẫn viên",
-          url: "/moderator/booking/tour-guide/table",
+          url: "/moderator/booking/tour-guide",
         },
         {
           title: "Đặt trải nghiệm làng nghề",
-          url: "/moderator/booking/workshop/table",
+          url: "/moderator/booking/workshop",
         },
       ],
     },
     {
-      title: "Chuyến tham quan",
+      title: "Quản lý chuyến tham quan",
       url: "/moderator/tour",
       icon: Map,
-      items: [
-        {
-          title: "Danh sách chuyến tham quan",
-          url: "/moderator/tour/table",
-        },
-      ],
     },
     {
-      title: "Địa điểm",
-      url: "/moderator/locations",
-      icon: MapPin,
-      items: [
-        {
-          title: "Danh sách quận huyện",
-          url: "/moderator/districs",
-        },
-        {
-          title: "Danh sách địa điểm",
-          url: "/moderator/locations/table",
-        },
-      ],
-    },
-    {
-      title: "Tin tức",
+      title: "Quản lý tin tức",
       url: "/moderator/news",
       icon: Newspaper,
       items: [
         {
           title: "Danh sách sự kiện",
-          url: "/moderator/news/event/table",
+          url: "/moderator/news/event",
         },
         {
           title: "Danh sách trải nghiệm",
-          url: "/moderator/news/experience/table",
+          url: "/moderator/news/experience",
         },
         {
           title: "Danh sách tin tức",
-          url: "/moderator/news/new/table",
+          url: "/moderator/news/new",
         },
       ],
     },

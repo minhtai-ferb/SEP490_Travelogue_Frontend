@@ -1,22 +1,20 @@
 "use client";
 
+import EventsTable from "@/app/(manage)/components/news/event/table";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
-import DashboardNews from "../../components/news";
-
 
 const crumbs: Crumb[] = [
-  { label: "Quản lý tin tức" },
+  { label: "Quản lý tin tức", href: "/moderator/news" },
+  { label: "Danh sách sự kiện" },
 ];
 
-function ManageNewsPage() {
+export default function EventsPage() {
 
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <DashboardNews href="/admin/news" />
+      <EventsTable href="/moderator/news" />
     </SidebarInset>
   );
 }
-
-export default ManageNewsPage;
