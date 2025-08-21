@@ -7,11 +7,9 @@ import WorkshopList from "./workshop/organisms/WorkshopList"
 import WorkshopStats from "./workshop/molecules/WorkshopStats"
 import { useWorkshop } from "@/services/use-workshop"
 import Link from "next/link"
-import { WorkshopFilterParams } from "@/types/Workshop"
 import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
-import { getUserFromLocalStorage } from "@/app/moderator/components/app-sidebar"
 
 export default function DashboardPage() {
 	const { getWorkshops, loading } = useWorkshop()
@@ -22,7 +20,7 @@ export default function DashboardPage() {
 
 	const fetchWorkshops = useCallback(async () => {
 		const res = await getWorkshops({
-			craftVillageId: user?.id || getUserFromLocalStorage()?.id,
+			craftVillageId: user?.id || "",
 			name: keyword || "",
 		})
 		setItems(Array.isArray(res) ? res : (res?.items || []))

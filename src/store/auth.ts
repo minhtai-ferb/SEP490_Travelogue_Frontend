@@ -10,11 +10,11 @@ export interface User {
 	avatarUrl?: string
 	username?: string
 	fullName?: string
-	photoURL?: string // Added for Google profile photos
-	provider?: "email" | "google" // Track authentication provider
-	// Add other user properties as needed
+	photoURL?: string 
+	provider?: "email" | "google"
 	accessToken?: string
 	isEmailVerified?: boolean
+	roles?: ("CraftVillageOwner" | "Admin" | "User" | "Moderator" | "TourGuide")[]
 }
 
 // Create an atom that persists in localStorage

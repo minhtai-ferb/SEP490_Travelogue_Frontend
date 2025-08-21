@@ -1,4 +1,6 @@
-import { DataTable } from '@/app/admin/user/table/components/data-table-user'
+"use client";
+
+import { DataTable } from '@/app/(manage)/admin/user/table/components/data-table-user';
 import { WorkshopDetail } from '@/types/Workshop'
 import { ColumnDef } from '@tanstack/react-table'
 

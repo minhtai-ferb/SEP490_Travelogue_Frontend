@@ -11,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCraftVillage } from "@/services/use-craftvillage"
 import { useDistrictManager } from "@/services/district-manager"
 import { AddressSearchWithMap } from "./components/organisms/AddressSearchWithMap"
-import { ImageUpload } from "@/app/admin/locations/create/components/image-upload"
-import type { MediaDto } from "@/app/admin/locations/create/types/CreateLocation"
 import toast from "react-hot-toast"
 import { Loader2, FileCog, MapPin, Clock, Award } from "lucide-react"
+import { MediaDto } from "@/services/use-news"
+import { ImageUpload } from "@/app/(manage)/components/locations/create/components/image-upload"
 
 type FieldErrors = Record<string, string | undefined>
 

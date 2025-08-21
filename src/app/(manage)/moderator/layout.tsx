@@ -1,0 +1,37 @@
+"use client";
+
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useLoginCheck } from "@/lib/login-check";
+import { useEffect } from "react";
+import { AppSidebar } from "./components/app-sidebar";
+
+export default function ModeratorLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const { isLoggedIn } = useLoginCheck();
+
+  useEffect(() => {
+    isLoggedIn().then((loggedIn) => {
+      if (!loggedIn) {
+        console.log("User is not logged in. Redirecting to login...");
+      } else {
+        console.log("User is logged in.");
+      }
+    });
+  }, []);
+
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "250px",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar />
+      <SidebarInset>{children}</SidebarInset>
+    </SidebarProvider>
+  );
+}
