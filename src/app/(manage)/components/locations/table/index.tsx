@@ -48,7 +48,7 @@ export default function LocationsTable({ href }: { href: string }) {
   const query = useMemo(
     () => ({
       title: searchText,
-      type: selectedType ? parseInt(selectedType, 10) : undefined,
+      type: selectedType ? parseInt(selectedType, 5) : undefined,
       districtId: selectedOption || undefined,
       heritageRank: undefined as number | undefined,
       pageNumber: currentPage,
@@ -141,17 +141,14 @@ export default function LocationsTable({ href }: { href: string }) {
 
   const onChangeDistrict = async (value: string) => {
     setSelectedOption(value);
-    setCurrentPage(1);
   };
 
   const onChangeTypeLocation = async (value: string) => {
     setSelectedType(value);
-    setCurrentPage(1);
   };
 
   const onSearch = (value: string) => {
     setSearchText(value);
-    setCurrentPage(1);
   };
 
   const handleResetFilters = () => {
