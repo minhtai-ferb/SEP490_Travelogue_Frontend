@@ -79,20 +79,12 @@ const data = {
       icon: Bot,
       items: [
         {
-          title: "Người dùng",
-          url: "/admin/user/table",
+          title: "Hướng dẫn viên",
+          url: "/admin/user/tourguide",
         },
         {
-          title: "Xác thực hướng dẫn viên",
-          url: "/admin/user/requests/tourguide",
-        },
-        {
-          title: "Yêu cầu từ chối tour",
-          url: "/admin/user/requests/tourguide/rejection-request",
-        },
-        {
-          title: "Xác thực làng nghề",
-          url: "/admin/user/requests/craftvillage",
+          title: "Làng nghề",
+          url: "/admin/user/craftvillage",
         },
       ],
     },
@@ -123,6 +115,10 @@ const data = {
           title: "Đặt trải nghiệm làng nghề",
           url: "/admin/booking/workshop",
         },
+        {
+          title: "Yêu cầu hủy đặt chỗ",
+          url: "/admin/booking/rejection-request",
+        }
       ],
     },
     {

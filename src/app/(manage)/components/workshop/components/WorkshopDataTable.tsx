@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/app/(manage)/admin/user/table/components/data-table-user";
+import { DataTable } from "@/components/table/data-table-user";
 import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, Loader2 } from "lucide-react";

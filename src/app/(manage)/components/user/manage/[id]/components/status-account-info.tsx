@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { formatDate } from "../../lib/utils";
+import { formatDate } from "../../../lib/utils";
 
 // Thêm phần này bên trong UserInfoDisplay, sau Collapsible đầu tiên
 

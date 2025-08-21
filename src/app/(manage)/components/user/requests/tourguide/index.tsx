@@ -27,12 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowDown, ArrowUp, ArrowUpDown, Banknote, Check, Eye, X } from "lucide-react";
 
-const crumbs: Crumb[] = [
-  { label: "Quản lý tài khoản", href: "/admin/user" },
-  { label: "Yêu cầu hướng dẫn viên", href: "/admin/user/requests/tourguide" },
-];
 
-export default function TourguideRequestsPage() {
+export default function TourguideRequestsTable() {
   const { getTourguideRequest, requestReview, loading } = useTourguideAssign();
 
   const [status, setStatus] = useState<TourguideRequestStatus | "all">("all");
@@ -204,20 +200,8 @@ export default function TourguideRequestsPage() {
   };
 
   return (
-    <>
-      <BreadcrumbHeader items={crumbs} />
-      <div className="w-full mx-auto px-4 space-y-6 mt-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Quản lý yêu cầu hướng dẫn viên
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Duyệt, chấp nhận hoặc từ chối các yêu cầu đăng ký
-            </p>
-          </div>
-        </div>
-
+    <div>
+      <div >
         {/* Toolbar */}
         <Toolbar
           query={query}
@@ -460,6 +444,6 @@ export default function TourguideRequestsPage() {
           disabled={!rejectingId || !rejectReason.trim()}
         />
       </div>
-    </>
+    </div>
   );
 }

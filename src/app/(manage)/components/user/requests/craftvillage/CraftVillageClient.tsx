@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMemo } from "react";
 import { Check, Eye, X } from "lucide-react";
 
-function CraftVillageClient() {
+function CraftVillageRequestTable({href} : {href: string}) {
 	const router = useRouter()
 
 	const [dataTable, setDataTable] = useState<CraftVillageRequestResponse[]>([])
@@ -49,7 +49,7 @@ function CraftVillageClient() {
 	}
 
 	const handleView = (id: string) => {
-		router.push(`/admin/user/requests/craftvillage/${id}`)
+		router.push(`${href}/craftvillage/request/${id}`)
 	}
 
 	const columns: ColumnDef<CraftVillageRequestResponse>[] = [
@@ -235,4 +235,4 @@ function CraftVillageClient() {
 	)
 }
 
-export default CraftVillageClient
+export default CraftVillageRequestTable

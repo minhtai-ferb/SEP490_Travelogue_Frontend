@@ -23,7 +23,7 @@ const STATUS_OPTIONS: Array<{ label: string; value: RejectionStatus | 'all' }> =
 	{ label: 'Từ chối', value: RejectionStatus.Rejected },
 ]
 
-export default function RejectionRequest() {
+export default function RejectionRequestTable() {
 	// services
 	const { filterRejectionRequests, getRejectionRequestDetail } = useRejectionRequest()
 	const { getTourguideProfile, getTourGuide } = useTourguideAssign()

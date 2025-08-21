@@ -8,7 +8,7 @@ import { Card, Tabs } from "antd";
 import { UserOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { TabsProps } from "antd";
 
-const crumbs: Crumb[] = [{ label: "Quản lý tài khoản", href: "/admin/user" }];
+const crumbs: Crumb[] = [{ label: "Quản lý tài khoản", href: "/moderator/user" }];
 
 function ManageUser() {
   const tabItems: TabsProps['items'] = [
@@ -20,7 +20,7 @@ function ManageUser() {
           Quản lý người dùng
         </span>
       ),
-      children: <ManageUserTable href="/admin/user" />,
+      children: <ManageUserTable href="/moderator/user" />,
     },
     {
       key: '2',

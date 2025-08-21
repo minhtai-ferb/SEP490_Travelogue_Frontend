@@ -11,7 +11,7 @@ import { toast } from "react-hot-toast"
 
 
 
-function CraftVillageClient({ id }: { id: string }) {
+function CraftVillageDetail({ id }: { id: string }) {
 	const { getCraftVillageRequestById, reviewCraftVillageRequest } = useCraftVillage()
 	const [loading, setLoading] = useState(false)
 	const [data, setData] = useState<CraftVillageRequestResponse | null>(null)
@@ -61,7 +61,7 @@ function CraftVillageClient({ id }: { id: string }) {
 	// Loading state
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 p-4">
+			<div className="min-h-screen p-4">
 				<div className="max-w-6xl mx-auto">
 					<Card>
 						<CardContent className="flex items-center justify-center py-12">
@@ -80,7 +80,7 @@ function CraftVillageClient({ id }: { id: string }) {
 	// Error state
 	if (error) {
 		return (
-			<div className="min-h-screen bg-gray-50 p-4">
+			<div className="min-h-screen p-4">
 				<div className="max-w-6xl mx-auto">
 					<Card className="border-red-200 bg-red-50">
 						<CardContent className="flex items-center justify-center py-12">
@@ -106,7 +106,7 @@ function CraftVillageClient({ id }: { id: string }) {
 	// No data state
 	if (!data) {
 		return (
-			<div className="min-h-screen bg-gray-50 p-4">
+			<div className="min-h-screen  p-4">
 				<div className="max-w-6xl mx-auto">
 					<Card>
 						<CardContent className="flex items-center justify-center py-12">
@@ -123,7 +123,7 @@ function CraftVillageClient({ id }: { id: string }) {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 p-4">
+		<div className="min-h-screen p-4">
 			<div className="max-w-6xl mx-auto">
 				{/* Main Content */}
 				<CraftVillageDetailView
@@ -149,4 +149,4 @@ function CraftVillageClient({ id }: { id: string }) {
 	)
 }
 
-export default CraftVillageClient
+export default CraftVillageDetail

@@ -5,7 +5,7 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 
 const crumbs: Crumb[] = [
-  { label: "Quản lý tài khoản", href: "/admin/user" },
+  { label: "Quản lý tài khoản", href: "/moderator/user" },
   { label: "Chi tiết người dùng" },
 ];
 
