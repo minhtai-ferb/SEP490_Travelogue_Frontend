@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,18 +28,60 @@ export function HistoricalLocationForm({ data, onChange }: HistoricalLocationFor
 
   const [errors, setErrors] = useState<{ heritageRank?: string; establishedDate?: string; typeHistoricalLocation?: string }>({})
 
+  // Function to validate all required fields
+  const validateForm = (): boolean => {
+    const newErrors: { heritageRank?: string; establishedDate?: string; typeHistoricalLocation?: string } = {}
+    let isValid = true
+    
+    // Validate heritage rank
+    if (formData.heritageRank === undefined || formData.heritageRank === null) {
+      newErrors.heritageRank = "Vui lòng nhập xếp hạng di sản"
+      isValid = false
+    } else if (formData.heritageRank < 0 || formData.heritageRank > 5) {
+      newErrors.heritageRank = "Xếp hạng phải từ 0 đến 5"
+      isValid = false
+    }
+    
+    // Validate established date
+    if (!formData.establishedDate || formData.establishedDate.trim() === "") {
+      newErrors.establishedDate = "Vui lòng chọn ngày thành lập/công nhận"
+      isValid = false
+    }
+    
+    // Validate historical type
+    if (formData.typeHistoricalLocation === undefined || formData.typeHistoricalLocation === null) {
+      newErrors.typeHistoricalLocation = "Vui lòng chọn loại di tích"
+      isValid = false
+    }
+    
+    setErrors(newErrors)
+    return isValid
+  }
+
+  // Validate required fields on component mount and data change
+  useEffect(() => {
+    validateForm()
+  }, [formData])
+
   const handleChange = (field: keyof HistoricalLocationData, value: any) => {
     if (field === "heritageRank") {
       const parsed = Number.isNaN(Number.parseInt(String(value))) ? 0 : Number.parseInt(String(value))
       const clamped = Math.min(5, Math.max(0, parsed))
-      setErrors((prev) => ({ ...prev, heritageRank: clamped < 0 || clamped > 5 ? "Xếp hạng phải từ 0 đến 5" : undefined }))
+      // Validate heritage rank is required and within range
+      if (value === "" || value === null || value === undefined) {
+        setErrors((prev) => ({ ...prev, heritageRank: "Vui lòng nhập xếp hạng di sản" }))
+      } else if (clamped < 0 || clamped > 5) {
+        setErrors((prev) => ({ ...prev, heritageRank: "Xếp hạng phải từ 0 đến 5" }))
+      } else {
+        setErrors((prev) => ({ ...prev, heritageRank: undefined }))
+      }
       onChange({ ...formData, heritageRank: clamped })
       return
     }
 
     if (field === "establishedDate") {
-      const hasValue = Boolean(value)
-      setErrors((prev) => ({ ...prev, establishedDate: hasValue ? undefined : "Vui lòng chọn ngày" }))
+      const hasValue = Boolean(value) && value.trim() !== ""
+      setErrors((prev) => ({ ...prev, establishedDate: hasValue ? undefined : "Vui lòng chọn ngày thành lập/công nhận" }))
     }
 
     if (field === "typeHistoricalLocation") {
@@ -58,13 +100,14 @@ export function HistoricalLocationForm({ data, onChange }: HistoricalLocationFor
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="typeHistoricalLocation">Loại di tích</Label>
+            <Label htmlFor="typeHistoricalLocation">Loại di tích *</Label>
             <Select
               value={formData.typeHistoricalLocation?.toString()}
               onValueChange={(value) => handleChange("typeHistoricalLocation", Number.parseInt(value))}
+              required
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn loại di tích" />
+              <SelectTrigger className={errors.typeHistoricalLocation ? "border-red-500" : ""}>
+                <SelectValue placeholder="Chọn loại di tích (bắt buộc)" />
               </SelectTrigger>
               <SelectContent>
                 {historicalTypes.map((type) => (
@@ -80,15 +123,17 @@ export function HistoricalLocationForm({ data, onChange }: HistoricalLocationFor
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="heritageRank">Xếp hạng di sản</Label>
+            <Label htmlFor="heritageRank">Xếp hạng di sản *</Label>
             <Input
               id="heritageRank"
               type="number"
               value={formData.heritageRank}
               onChange={(e) => handleChange("heritageRank", e.target.value)}
-              placeholder="Nhập xếp hạng (0-5)"
+              placeholder="Nhập xếp hạng (0-5) - bắt buộc"
               min="0"
               max="5"
+              required
+              className={errors.heritageRank ? "border-red-500" : ""}
             />
             {errors.heritageRank ? (
               <p className="text-[0.8rem] font-medium text-destructive">{errors.heritageRank}</p>
@@ -96,13 +141,14 @@ export function HistoricalLocationForm({ data, onChange }: HistoricalLocationFor
           </div>
 
           <div className="md:col-span-2 space-y-2">
-            <Label htmlFor="establishedDate">Ngày thành lập/công nhận</Label>
+            <Label htmlFor="establishedDate">Ngày thành lập/công nhận *</Label>
             <Input
               id="establishedDate"
               type="date"
               required
               value={formData.establishedDate.split("T")[0]}
               onChange={(e) => handleChange("establishedDate", e.target.value + "T00:00:00.000Z")}
+              className={errors.establishedDate ? "border-red-500" : ""}
             />
             {errors.establishedDate ? (
               <p className="text-[0.8rem] font-medium text-destructive">{errors.establishedDate}</p>

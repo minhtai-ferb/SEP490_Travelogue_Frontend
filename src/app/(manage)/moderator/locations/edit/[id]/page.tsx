@@ -31,7 +31,7 @@ interface LocationData {
 }
 
 const crumb: Crumb[] = [
-  { label: "Quản lý địa điểm", href: "/admin/locations" },
+  { label: "Quản lý địa điểm", href: "/moderator/locations" },
   { label: "Chỉnh sửa địa điểm" },
 ];
 
@@ -74,7 +74,7 @@ export default function EditLocationPage() {
       <BreadcrumbHeader items={crumb} />
       <EditLocationForm 
         locationData={locationData}
-        backUrl="/admin/locations"
+        backUrl="/moderator/locations"
       />
     </SidebarInset>
   );
