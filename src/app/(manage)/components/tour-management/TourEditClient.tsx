@@ -14,10 +14,10 @@ import { TourScheduleManager } from "@/app/(manage)/components/tour-management/e
 
 interface TourEditClientProps {
 	tourId: string,
-	href : string
+	href: string
 }
 
-export default function TourEditClient({ tourId , href }: TourEditClientProps) {
+export default function TourEditClient({ tourId, href }: TourEditClientProps) {
 	const router = useRouter()
 	const [tour, setTour] = useState<TourDetail | null>(null)
 	const [loading, setLoading] = useState(true)
@@ -85,7 +85,7 @@ export default function TourEditClient({ tourId , href }: TourEditClientProps) {
 			{/* Header */}
 			<div className="flex items-center gap-4 mb-6">
 				<div className="flex-1">
-					<h1 className="text-3xl font-bold">Chỉnh Sửa Tour</h1>
+					<h1 className="text-3xl font-bold">Chỉnh Sửa chuyến tham quan</h1>
 					<p className="text-gray-600 mt-1 text-2xl">{tour.name}</p>
 				</div>
 				<div className="flex items-center gap-2">

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { TourDetail } from '@/types/Tour'
 import { formatDate } from 'date-fns'
-import { Calendar, Clock, DollarSign, MapPin } from 'lucide-react'
+import { Calendar, Clock, DollarSign, MapPin, User, Mail, Star } from 'lucide-react'
 import React from 'react'
 
 function TourDetailId({ tour }: { tour: TourDetail }) {
@@ -108,6 +108,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 					</CardContent>
 				</Card>
 
+
 				{/* Schedules */}
 				<Card>
 					<CardHeader>
@@ -143,6 +144,44 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 												<span>Trẻ em: {schedule.childrenPrice.toLocaleString()} VNĐ</span>
 											</div>
 										</div>
+										{/* Tour Guide Info */}
+										{(schedule as any)?.tourGuide ? (
+											<div className="mt-3 p-3 rounded-lg bg-blue-50/50 border border-blue-100">
+												<div className="text-xs font-semibold text-blue-700 mb-2">Hướng dẫn viên</div>
+												<div className="flex items-center gap-3">
+													{(schedule as any).tourGuide?.avatarUrl ? (
+														<img src={(schedule as any).tourGuide.avatarUrl} alt={(schedule as any).tourGuide?.userName || 'Tour guide avatar'} className="w-10 h-10 rounded-full object-cover" />
+													) : (
+														<div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-semibold">
+															{(schedule as any).tourGuide?.userName?.charAt(0) || (schedule as any).tourGuide?.email?.charAt(0) || 'G'}
+														</div>
+													)}
+													<div className="flex-1">
+														<div className="flex items-center gap-2">
+															<User className="w-4 h-4 text-blue-600" />
+															<span className="font-medium">{(schedule as any).tourGuide?.userName || '—'}</span>
+															{(schedule as any).tourGuide?.sexText && (
+																<div className="flex items-center gap-2">
+																	<Badge variant="outline" className="text-xs">{(schedule as any).tourGuide.sexText === "Unknown" ? "Không xác định" : (schedule as any).tourGuide.sexText}</Badge>
+																</div>
+															)}
+														</div>
+														<div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+															<Mail className="w-3 h-3" />
+															<span>{(schedule as any).tourGuide?.email || 'Không có email'}</span>
+														</div>
+														<div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+															<Star className="w-3 h-3 text-yellow-500" />
+															<span>
+																{Number.isFinite((schedule as any).tourGuide?.averageRating) ? (schedule as any).tourGuide.averageRating.toFixed(1) : 0} ({(schedule as any).tourGuide?.totalReviews || 0} đánh giá)
+															</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										) : (
+											<div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-600">Chưa phân công hướng dẫn viên</div>
+										)}
 									</div>
 								))}
 							</div>

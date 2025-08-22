@@ -161,6 +161,19 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 		}
 	}
 
+	const handleDeleteActivity = (dayNumber: number, index: number) => {
+		const day = tour.days.find(d => d.dayNumber === dayNumber)
+		if (!day) return
+		const activity = day.activities[index]
+		if (!activity) return
+		const newActivities = day.activities.filter((_, i) => i !== index)
+		const newDays = tour.days.map(d => d.dayNumber === dayNumber ? { ...d, activities: newActivities } : d)
+		const newTour = { ...tour, days: newDays }
+		onUpdate(newTour)
+		setSuccess("Xóa địa điểm thành công!")
+		setIsDialogOpen(false)
+	}
+
 	return (
 		<div className="space-y-6">
 			<Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
@@ -391,7 +404,7 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 																			<Button variant="ghost" size="sm" onClick={() => openEditDialog(day.dayNumber, index)}>
 																				<Edit className="w-4 h-4" />
 																			</Button>
-																			<Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
+																			<Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleDeleteActivity(day.dayNumber, index)}>
 																				<Trash2 className="w-4 h-4" />
 																			</Button>
 																		</div>

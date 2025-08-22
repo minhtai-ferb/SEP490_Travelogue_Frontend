@@ -1,13 +1,11 @@
-"use client";
-
 import TourDetailClient from "@/app/(manage)/components/tour-management/TourDetailClient";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 
 interface TourDetailPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
 const crumbs: Crumb[] = [
@@ -15,8 +13,8 @@ const crumbs: Crumb[] = [
   { label: "Chi tiết chuyến tham quan" },
 ];
 
-export default async function TourDetailPage({ params }: TourDetailPageProps) {
-  const { id } = await params;
+export default function TourDetailPage({ params }: TourDetailPageProps) {
+  const { id } = params;
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
