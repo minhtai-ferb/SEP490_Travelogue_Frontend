@@ -210,21 +210,21 @@ function EventPage() {
         {/* Hình ảnh đặc trưng */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Image
-            src="/thong_tin_can_biet_1.jpg"
+            src="/thong_tin_can_biet_1.JPG"
             alt="Ảnh 1"
             width={400}
             height={250}
             className="rounded-lg object-cover"
           />
           <Image
-            src="/thong_tin_can_biet_2.jpg"
+            src="/thong_tin_can_biet_2.JPG"
             alt="Ảnh 2"
             width={400}
             height={250}
             className="rounded-lg object-cover"
           />
           <Image
-            src="/thong_tin_can_biet_3.jpg"
+            src="/thong_tin_can_biet_3.JPG"
             alt="Ảnh 3"
             width={400}
             height={250}
