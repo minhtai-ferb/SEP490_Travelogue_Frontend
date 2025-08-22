@@ -14,6 +14,7 @@ import {
   BanknoteArrowUp,
   MapPinned,
   LocateFixed,
+  CirclePercent,
 } from "lucide-react";
 import * as React from "react";
 
@@ -64,6 +65,11 @@ const data = {
       title: "Yêu cầu hoàn tiền",
       url: "/admin/request-refund",
       icon: BanknoteX,
+    },
+    {
+      title: "Cấu hình hoa hồng",
+      url: "/admin/commission-setting",
+      icon: CirclePercent,
     },
   ],
 

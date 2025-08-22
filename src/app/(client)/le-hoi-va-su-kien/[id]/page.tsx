@@ -106,21 +106,15 @@ function EventDetail() {
 						<div className="space-y-4">
 							<div className="flex items-center space-x-2">
 								<FaCalendar className="text-blue-600" />
-								<span>
-									{event?.startTime} - {event?.endTime}
-								</span>
-							</div>
-							<div className="flex items-center space-x-2">
-								<FaClock className="text-blue-600" />
-								<span>{event?.startDate} - {event?.endDate}</span>
+								<span>{format(new Date(event?.startDate), 'dd/MM/yyyy')} - {format(new Date(event?.endDate), 'dd/MM/yyyy')}</span>
 							</div>
 							<div className="flex items-center space-x-2">
 								<FaMapMarkerAlt className="text-blue-600" />
-								<span>{event?.districtName}</span>
+								<span>{event?.locationName}</span>
 							</div>
 						</div>
 
-						<p className="text-lg">{event?.content}</p>
+						<p className="text-lg" dangerouslySetInnerHTML={{ __html: event?.content || '' }}></p>
 
 						<div className="space-y-4">
 							<h3 className="text-2xl font-semibold">Lịch sử</h3>

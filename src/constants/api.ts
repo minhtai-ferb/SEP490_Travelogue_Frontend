@@ -92,3 +92,9 @@ export const REPORT_API_URL = {
   GET_REPORT_BY_STATUS: "report/by-status",
   ADMIN_PROCESS_REPORT: "report/:reportId/process",
 }
+
+export const COMMISSION_SETTING_API_URL = {
+  GET_COMMISSION_SETTINGS: "commission-setting/group",
+  GET_COMMISSION_SETTING_BY_ID: "commission-setting/:id",
+  CREATE_COMMISSION_SETTING: "commission-setting",
+};
