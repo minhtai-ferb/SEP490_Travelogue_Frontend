@@ -108,6 +108,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 					</CardContent>
 				</Card>
 
+
 				{/* Schedules */}
 				<Card>
 					<CardHeader>
