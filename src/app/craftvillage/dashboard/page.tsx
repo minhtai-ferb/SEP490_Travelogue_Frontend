@@ -26,6 +26,10 @@ export default function DashboardPage() {
 		setItems(Array.isArray(res) ? res : (res?.items || []))
 	}, [getWorkshops, keyword, user?.id])
 
+	useEffect(() => {
+		fetchWorkshops()
+	}, [])
+
 	const breadcrumbItems = {
 		items: [
 			{
