@@ -72,7 +72,7 @@ function Footer() {
 			<section className='md:py-10 px-4 md:px-0 flex flex-col md:flex-row justify-around items-center gap-8 md:gap-0 bg-cover bg-center md:h-[300px] h-full'
 				style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${bannerBg.src})` }}>
 
-				<Image src='/mascot.png' alt='logo_traveloge' width={200} height={200} className="md:max-w-[150px] md:w-auto max-w-[150px] md:mt-0 mt-6" />
+				<Image src='/mascot.png' alt='logo_travelogue' width={200} height={200} className="md:max-w-[150px] md:w-auto max-w-[150px] md:mt-0 mt-6" />
 
 				<div className='text-white flex justify-center items-center flex-col gap-4 px-4 md:px-0'>
 					<h1 className='uppercase text-white text-xl md:text-2xl font-bold text-center font-sans tracking-wide'>đăng ký nhận tin</h1>

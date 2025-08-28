@@ -229,7 +229,7 @@ function UnifiedHeader({ config }: UnifiedHeaderProps) {
 							<Link href="/">
 								<Image
 									src={logo.src || ""}
-									alt="logo_traveloge"
+									alt="logo_travelogue"
 									width={200}
 									height={200}
 									className="w-10 md:w-16 lg:w-20 md:top-6 mt-3 md:left-1/2 md:-translate-x-1/2 md:fixed cursor-pointer"

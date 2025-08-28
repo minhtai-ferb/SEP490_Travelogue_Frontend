@@ -45,7 +45,7 @@ export function TourScheduleForm({
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [openDatePicker, setOpenDatePicker] = useState(false)
 	const [quickAddOpen, setQuickAddOpen] = useState(false)
-	const { getTourGuide } = useTourguideAssign()
+	const { getTourGuide, getTourguideFilter } = useTourguideAssign()
 	const [guides, setGuides] = useState<Array<TourGuideItem>>([])
 	const [guidesLoading, setGuidesLoading] = useState(false)
 
@@ -70,7 +70,17 @@ export function TourScheduleForm({
 		const fetchGuides = async () => {
 			try {
 				setGuidesLoading(true)
-				const res: any = await getTourGuide()
+				const res: any = await getTourguideFilter({
+					FullName: "",
+					StartDate: newSchedule.departureDate,
+					EndDate: newSchedule.departureDate,
+					MinRating: 0,
+					MaxRating: 5,
+					Gender: "",
+					MinPrice: 0,
+					MaxPrice: 0,
+				})
+				console.log(res)
 				const list: any[] = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : []
 				const normalized = list.map((g: any) => ({
 					id: g.id || g.userId || g.tourGuideId,
@@ -96,7 +106,7 @@ export function TourScheduleForm({
 		return () => {
 			mounted = false
 		}
-	}, [getTourGuide])
+	}, [getTourguideFilter, newSchedule.departureDate])
 
 	const validateNewSchedule = () => {
 		const newErrors: Record<string, string> = {}

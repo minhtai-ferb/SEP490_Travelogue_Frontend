@@ -131,6 +131,32 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	)
 
+	const getTourguideFilter = useCallback(
+		async (data: any) => {
+			setLoading(true);
+			const params: any = {
+				FullName: data.FullName || "",
+				StartDate: data.StartDate || "",
+				EndDate: data.EndDate || "",
+				MinRating: data.MinRating || 0,
+				MaxRating: data.MaxRating || Number.MAX_SAFE_INTEGER,
+				Gender: data.Gender || "",
+				MinPrice: data.MinPrice || 0,
+				MaxPrice: data.MaxPrice || Number.MAX_SAFE_INTEGER,
+			}
+
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.TOUR_GUIDE_FILTER, { params });
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
+
 	const getTourguideRequest = useCallback(
 		async (status: TourguideRequestStatus) => {
 			const params = {
@@ -251,6 +277,7 @@ export function useTourguideAssign() {
 		getTourGuideRequestLatest,
 		getTourGuideScheduleDetail,
 		createRejectionRequest,
+		getTourguideFilter,
 		loading: isLoading || loading,
 	};
 }

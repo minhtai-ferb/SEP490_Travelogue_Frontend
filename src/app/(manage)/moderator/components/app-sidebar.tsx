@@ -151,7 +151,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Traveloge</span>
+                  <span className="truncate font-semibold">Travelogue</span>
                   <span className="truncate text-xs">travelogue.onl</span>
                 </div>
               </Link>

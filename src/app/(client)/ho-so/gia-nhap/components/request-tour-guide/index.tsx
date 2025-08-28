@@ -1,10 +1,9 @@
 "use client"
 
-import RegisterTourGuideRequestForm from "./register-form"
+import ProfessionalApplicationForm from "../request-craft-village/components/ProfessionalApplicationForm"
 
-
-export default function CraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
-	return <RegisterTourGuideRequestForm fetchLatest={fetchLatest} />
+export default function TourGuideForm({ fetchLatest }: { fetchLatest: () => void }) {
+	return <ProfessionalApplicationForm onSubmit={() => { }} isLoading={false} />
 }
 
 

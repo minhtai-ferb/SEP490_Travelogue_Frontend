@@ -42,7 +42,7 @@ export default function DashboardPage() {
 	return (
 		<div className="space-y-6">
 			<BreadcrumbHeader items={breadcrumbItems.items} />
-			<Card>
+			{/* <Card>
 				<CardHeader className="flex flex-row items-center justify-between">
 					<CardTitle>Danh sách workshop</CardTitle>
 					<div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default function DashboardPage() {
 					/>
 					<WorkshopList items={items} />
 				</CardContent>
-			</Card>
+			</Card> */}
 		</div>
 	)
 }

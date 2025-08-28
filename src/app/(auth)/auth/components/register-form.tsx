@@ -41,7 +41,7 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 			router.push("/")
 			// addToast({
 			// 	title: "Đăng nhập thành công!",
-			// 	description: "Chào mừng bạn đến với Traveloge",
+			// 	description: "Chào mừng bạn đến với Travelogue",
 			// 	color: "success",
 			// })
 		} catch (error: any) {

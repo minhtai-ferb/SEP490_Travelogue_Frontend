@@ -50,7 +50,7 @@ const StorySharing = () => {
 					{experiences?.slice(0, 4).map((item, index) => (
 						<div key={item?.id} className="w-full md:w-[calc(50%-0.5rem)] aspect-square md:mt-0 mt-3">
 							<Image
-								src={item?.medias?.[0]?.mediaUrl ?? '/image/default_image.png'}
+								src={item?.medias?.[0]?.mediaUrl ?? sharing}
 								alt={`hinh-${index}`}
 								width={400}
 								height={400}
