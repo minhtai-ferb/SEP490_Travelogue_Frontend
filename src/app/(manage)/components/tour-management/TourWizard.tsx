@@ -19,16 +19,16 @@ const steps = [
 	{
 		id: 1,
 		title: "Thông Tin Cơ Bản",
-		description: "Tạo tour với thông tin cơ bản",
+		description: "Tạo chuyến đi với thông tin cơ bản",
 	},
 	{
 		id: 2,
-		title: "Địa Điểm Tour",
-		description: "Cập nhật địa điểm tham quan",
+		title: "Địa Điểm chuyến đi",
+		description: "Cập nhật địa điểm",
 	},
 	{
 		id: 3,
-		title: "Lịch Trình Tour",
+		title: "Lịch Trình chuyến đi",
 		description: "Thêm các lịch trình khởi hành",
 	},
 ]
@@ -72,11 +72,11 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 				setBasicInfo(data)
 				handleNext()
 			} else {
-				throw new Error("Failed to create tour")
+				throw new Error("Failed to create chuyến đi")
 			}
 		} catch (error: any) {
 			console.error("Error creating tour:", error)
-			setError(error.message || "Có lỗi khi tạo tour cơ bản")
+			setError(error.message || "Có lỗi khi tạo chuyến đi cơ bản")
 		} finally {
 			setIsLoading(false)
 		}
@@ -84,7 +84,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 
 	const handleScheduleSubmit = async (data: ScheduleFormData[]) => {
 		if (!createdTourId) {
-			setError("Không tìm thấy ID tour")
+			setError("Không tìm thấy ID chuyến đi")
 			return
 		}
 
@@ -96,12 +96,12 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			await createTourSchedule(createdTourId, data)
 			setSchedules(data)
 			// Tour creation completed
-			toast.success("Tạo lịch trình tour thành công")
+			toast.success("Tạo lịch trình chuyến đi thành công")
 			onComplete()
 		} catch (error: any) {
 			console.error("Error creating schedules:", error)
-			setError(error?.response?.data?.message || "Có lỗi khi tạo lịch trình tour")
-			toast.error(error?.response?.data?.message || "Có lỗi khi tạo lịch trình tour")
+			setError(error?.response?.data?.message || "Có lỗi khi tạo lịch trình chuyến đi")
+			toast.error(error?.response?.data?.message || "Có lỗi khi tạo lịch trình chuyến đi")
 		} finally {
 			setIsLoading(false)
 		}
@@ -109,7 +109,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 
 	const handleLocationSubmit = async (data: TourLocationBulkRequest[]) => {
 		if (!createdTourId) {
-			setError("Không tìm thấy ID tour")
+			setError("Không tìm thấy ID chuyến đi")
 			return
 		}
 
@@ -122,11 +122,11 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			setLocationsState(data)
 			await createTourBulk(createdTourId, data)
 			// Proceed to next step (schedules)
-			toast.success("Cập nhật địa điểm tour thành công")
+			toast.success("Cập nhật địa điểm chuyến đi thành công")
 			handleNext()
 		} catch (error: any) {
 			console.error("Error updating locations:", error)
-			setError(error.message || "Có lỗi khi cập nhật địa điểm tour")
+			setError(error.message || "Có lỗi khi cập nhật địa điểm chuyến đi")
 		} finally {
 			setIsLoading(false)
 		}
@@ -181,7 +181,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 					<h2 className="text-xl font-semibold">
 						Bước {currentStep} của {steps.length}
 					</h2>
-					<span className="text-sm text-gray-500">{Math.round(progress)}% hoàn thành</span>
+					{/* <span className="text-sm text-gray-500">{Math.round(progress)}% hoàn thành</span> */}
 				</div>
 
 				<Progress value={progress} className="h-2" />

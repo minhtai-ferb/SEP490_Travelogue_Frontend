@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, Wallet, Wallet2, Wrench } from "lucide-react"
+import { LayoutDashboard, PencilRuler, Wallet, Wallet2, Wrench } from "lucide-react"
 import * as React from "react"
 
 // import { Calendars } from "./calendar"
@@ -70,8 +70,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
 							<Link href="/craftvillage/dashboard/workshop">
-								<Wrench />
-								<span>Workshop</span>
+								<PencilRuler />
+								<span>Trải nghiệm</span>
 							</Link>
 						</SidebarMenuButton>
 						<SidebarMenuButton asChild>

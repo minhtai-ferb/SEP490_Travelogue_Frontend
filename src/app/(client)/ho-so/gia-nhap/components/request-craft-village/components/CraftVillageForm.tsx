@@ -10,11 +10,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCraftVillage } from "@/services/use-craftvillage"
 import { useDistrictManager } from "@/services/district-manager"
-import { AddressSearchWithMap } from "./components/organisms/AddressSearchWithMap"
+import { AddressSearchWithMap } from "./organisms/AddressSearchWithMap"
 import toast from "react-hot-toast"
 import { Loader2, FileCog, MapPin, Clock, Award } from "lucide-react"
 import type { MediaDto } from "@/services/use-news"
 import { ImageUpload } from "@/app/(manage)/components/locations/create/components/image-upload"
+import WorkshopCreationModal from "./WorkshopCreationModal"
+import ProfessionalApplicationForm from "./ProfessionalApplicationForm"
 
 type FieldErrors = Record<string, string | undefined>
 
@@ -36,6 +38,7 @@ interface CraftVillageData {
 	yearsOfHistory: number
 	isRecognizedByUnesco: boolean
 	mediaDtos: MediaDto[]
+	visitPrice?: number
 }
 
 interface CraftVillageFormProps {
@@ -43,7 +46,7 @@ interface CraftVillageFormProps {
 	fetchLatest: () => void
 }
 
-export default function RegisterCraftVillageRequestForm({ onComplete, fetchLatest }: CraftVillageFormProps) {
+export default function CraftVillageForm({ onComplete, fetchLatest }: CraftVillageFormProps) {
 	const { createCraftVillageRequest, loading } = useCraftVillage()
 	const { getAllDistrict } = useDistrictManager()
 
@@ -64,6 +67,7 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 	const [yearsOfHistory, setYearsOfHistory] = useState<number | "">("")
 	const [isRecognizedByUnesco, setIsRecognizedByUnesco] = useState(false)
 	const [mediaDtos, setMediaDtos] = useState<MediaDto[]>([])
+	const [visitPrice, setVisitPrice] = useState<number | "">("")
 
 	const [errors, setErrors] = useState<FieldErrors>({})
 	const [districtOptions, setDistrictOptions] = useState<{ value: string; label: string }[]>([])
@@ -107,6 +111,9 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 		if ((Number(yearsOfHistory) || 0) < 1 || (Number(yearsOfHistory) || 0) > 2000) next.yearsOfHistory = "1 - 2000"
 		if (openTime >= closeTime) next.closeTime = "Đóng cửa phải sau mở cửa"
 		if (!mediaDtos.length) next.mediaDtos = "Vui lòng tải lên ít nhất 1 ảnh"
+		if (!workshopsAvailable) {
+			if (visitPrice === "" || Number(visitPrice) <= 0) next.visitPrice = "Bắt buộc khi không có workshop"
+		}
 
 		setErrors(next)
 		return Object.keys(next).length === 0
@@ -143,6 +150,7 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 			yearsOfHistory: Number(yearsOfHistory) || 0,
 			isRecognizedByUnesco,
 			mediaDtos,
+			visitPrice: workshopsAvailable ? undefined : (Number(visitPrice) || 0),
 		}
 
 		onComplete(craftVillageData)
@@ -159,7 +167,7 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 						Thông tin làng nghề
 					</CardTitle>
 					<p className="text-sm text-muted-foreground">
-						Điền đầy đủ thông tin về làng nghề của bạn. Sau bước này, bạn có thể thêm trải nghiệm để thu hút khách hàng.
+						Điền đầy đủ thông tin về làng nghề của bạn. Sau bước này, bạn có thể thêm workshop để thu hút khách hàng.
 					</p>
 				</CardHeader>
 				<CardContent className="space-y-8">
@@ -305,7 +313,7 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 									checked={workshopsAvailable}
 									onCheckedChange={(v) => setWorkshopsAvailable(!!v)}
 								/>
-								<Label htmlFor="workshopsAvailable">Có trải nghiệm</Label>
+								<Label htmlFor="workshopsAvailable">Có workshop/trải nghiệm</Label>
 							</div>
 							<div className="flex items-center gap-2">
 								<Checkbox
@@ -316,6 +324,21 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 								<Label htmlFor="isRecognizedByUnesco">Được UNESCO công nhận</Label>
 							</div>
 						</div>
+
+						{!workshopsAvailable && (
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="space-y-2">
+									<Label>Giá tham quan (VNĐ) *</Label>
+									<Input
+										type="number"
+										value={visitPrice}
+										onChange={(e) => setVisitPrice(e.target.value === "" ? "" : Number(e.target.value))}
+										placeholder="Ví dụ: 50000"
+									/>
+									{errors.visitPrice && <p className="text-xs text-red-500">{errors.visitPrice}</p>}
+								</div>
+							</div>
+						)}
 					</div>
 
 					{/* Media Uploads */}
@@ -336,12 +359,16 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 							<span className="font-medium text-foreground">Địa chỉ:</span> {address || "(chưa có)"}
 						</div>
 						<div>
-							<span className="font-medium text-foreground">Tọa độ:</span> {latitude?.toFixed(6)},{" "}
-							{longitude?.toFixed(6)}
+							<span className="font-medium text-foreground">Tọa độ:</span> {latitude?.toFixed(6)}, {longitude?.toFixed(6)}
 						</div>
 						<div>
 							<span className="font-medium text-foreground">Giờ:</span> {openTime} - {closeTime}
 						</div>
+						{!workshopsAvailable && (
+							<div>
+								<span className="font-medium text-foreground">Giá tham quan:</span> {visitPrice ? Number(visitPrice).toLocaleString("vi-VN") + "đ" : "(chưa có)"}
+							</div>
+						)}
 						<div>
 							<span className="font-medium text-foreground">Hình ảnh:</span> {mediaDtos.length} ảnh
 							{hasThumbnail ? " (đã chọn ảnh đại diện)" : ""}
@@ -351,7 +378,7 @@ export default function RegisterCraftVillageRequestForm({ onComplete, fetchLates
 				<CardFooter className="justify-end">
 					<Button type="button" onClick={handleContinue} disabled={loading}>
 						{loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-						Tiếp theo: Thêm trải nghiệm
+						{workshopsAvailable ? "Tiếp theo: Thêm trải nghiệm" : "Tiếp theo"}
 					</Button>
 				</CardFooter>
 			</Card>

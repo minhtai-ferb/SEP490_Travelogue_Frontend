@@ -60,8 +60,8 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				<div className="text-center">
-					<h2 className="text-2xl font-bold text-gray-900 mb-2">Tour không tìm thấy</h2>
-					<p className="text-gray-600">Xin lỗi, chúng tôi không thể tìm thấy tour này.</p>
+					<h2 className="text-2xl font-bold text-gray-900 mb-2">Chuyến tham quan không tìm thấy</h2>
+					<p className="text-gray-600">Xin lỗi, chúng tôi không thể tìm thấy chuyến tham quan này.</p>
 				</div>
 			</div>
 		)
@@ -122,7 +122,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 								</div>
 								<div className="flex items-center gap-2">
 									<Star className="h-5 w-5 fill-current" />
-									<span>4.8 (124 đánh giá)</span>
+									<span>{tour?.averageRating || 0} ({tour?.totalReviews || 0} đánh giá)</span>
 								</div>
 							</div>
 						</div>
@@ -169,7 +169,7 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 									</div>
 									<div className="text-center p-4 bg-blue-50 rounded-lg">
 										<Star className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-										<div className="font-semibold text-gray-900">4.8</div>
+										<div className="font-semibold text-gray-900">{tour?.averageRating || 0}</div>
 										<div className="text-sm text-gray-600">Đánh giá</div>
 									</div>
 								</div>
@@ -185,6 +185,56 @@ export default function TourDetailClient({ tourId }: TourDetailClientProps) {
 								<TourItinerary days={tour.days} />
 							</CardContent>
 						</Card>
+
+						{/* Start / End Locations */}
+						{(tour.startLocation || tour.endLocation) && (
+							<Card>
+								<CardHeader>
+									<CardTitle className="text-2xl text-gray-900">Điểm bắt đầu & kết thúc</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+										{tour.startLocation && (
+											<div className="flex gap-4">
+												<img
+													src={tour.startLocation.imageUrl}
+													alt={tour.startLocation.name}
+													className="w-24 h-24 rounded object-cover"
+												/>
+												<div>
+													<div className="text-sm text-gray-600 mb-1">Điểm bắt đầu</div>
+													<div className="font-semibold text-gray-900">{tour.startLocation.name}</div>
+													<div className="text-sm text-gray-700">{tour.startLocation.address}</div>
+													<div className="text-sm text-gray-600 mt-1">
+														<Clock className="inline h-4 w-4 mr-1" />
+														{tour.startLocation.startTimeFormatted} - {tour.startLocation.endTimeFormatted}
+													</div>
+												</div>
+											</div>
+										)}
+
+										{tour.endLocation && (
+											<div className="flex gap-4">
+												<img
+													src={tour.endLocation.imageUrl}
+													alt={tour.endLocation.name}
+													className="w-24 h-24 rounded object-cover"
+												/>
+												<div>
+													<div className="text-sm text-gray-600 mb-1">Điểm kết thúc</div>
+													<div className="font-semibold text-gray-900">{tour.endLocation.name}</div>
+													<div className="text-sm text-gray-700">{tour.endLocation.address}</div>
+													<div className="text-sm text-gray-600 mt-1">
+														<Clock className="inline h-4 w-4 mr-1" />
+														{tour.endLocation.startTimeFormatted} - {tour.endLocation.endTimeFormatted}
+													</div>
+												</div>
+											</div>
+										)}
+									</div>
+								</CardContent>
+							</Card>
+						)}
 
 						{/* Calendar Selection */}
 						<Card>

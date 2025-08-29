@@ -70,7 +70,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
       if (response) {
         if (resetResults) {
-          setNewsItems(response);
+          setNewsItems(response.filter((item: NewsItem) => item.title.toLowerCase().includes(searchTerm.toLowerCase())));
         } else {
           setNewsItems((prev) => [...prev, ...response]);
         }
@@ -97,6 +97,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchTerm(searchTerm);
     setCurrentPage(1);
     fetchNews(1, true);
   };
@@ -149,9 +150,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       <div className="container mx-auto px-4 py-6 border-b">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center">
-            <Filter className="h-5 w-5 mr-2 text-gray-500" />
-            <span className="mr-3 text-gray-700">Sắp xếp theo:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
+            {/* <Filter className="h-5 w-5 mr-2 text-gray-500" /> */}
+            {/* <span className="mr-3 text-gray-700">Sắp xếp theo:</span> */}
+            {/* <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sắp xếp theo" />
               </SelectTrigger>
@@ -160,7 +161,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 <SelectItem value="oldest">Cũ nhất</SelectItem>
                 <SelectItem value="title">Tiêu đề (A-Z)</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
 
           <form onSubmit={handleSearch} className="w-full md:w-auto">
@@ -215,6 +216,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 onClick={() => {
                   setSearchTerm("");
                   setCurrentPage(1);
+                  fetchNews(1, true);
                 }}
               >
                 Xóa tìm kiếm
@@ -284,8 +286,8 @@ function NewsCard({ item }: NewsCardProps) {
       <div className="relative overflow-hidden">
         <Image
           src={
-            item.medias[1]?.mediaUrl ||
-            `/placeholder_image.jpg?height=400&width=600&text=${encodeURIComponent(
+            item.medias?.[0]?.mediaUrl ||
+            `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
               item.title || "News"
             )}`
           }

@@ -239,8 +239,8 @@ export interface TourDetail {
 	childrenPrice: number
 	finalPrice: number
 	isDiscount: boolean
-	startAddress: string
-	endAddress: string
+	startAddress?: string
+	endAddress?: string
 	status: number
 	statusText: TourStatus
 	schedules: TourSchedule[]
@@ -250,6 +250,9 @@ export interface TourDetail {
 	medias: MediaDto[]
 	averageRating: number
 	totalReviews: number
+	rating: number
+	startLocation?: StartEndLocation
+	endLocation?: StartEndLocation
 }
 
 export interface TourDay {
@@ -257,9 +260,31 @@ export interface TourDay {
 	activities: TourActivity[]
 }
 
+export interface StartEndLocation {
+	tourPlanLocationId: string
+	locationId: string
+	type: string
+	name: string
+	description: string
+	address: string
+	activityType: number
+	activityTypeText: string | null
+	dayOrder: number
+	startTime: string
+	endTime: string
+	startTimeFormatted: string
+	endTimeFormatted: string
+	duration: string
+	notes: string
+	imageUrl: string
+	travelTimeFromPrev: number
+	distanceFromPrev: number
+	estimatedStartTime: number
+	estimatedEndTime: number
+}
+
 export interface TourSchedule {
 	scheduleId: string
-	departureDate: string
 	startTime: string
 	endTime: string
 	maxParticipant: number
@@ -267,6 +292,9 @@ export interface TourSchedule {
 	totalDays: number
 	adultPrice: number
 	childrenPrice: number
+	departureDate?: string
+	notes?: string
+	tourGuide?: any[]
 }
 
 

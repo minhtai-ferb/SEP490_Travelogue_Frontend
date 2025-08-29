@@ -42,23 +42,23 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 		const newErrors: Record<string, string> = {}
 
 		if (!formData.name.trim()) {
-			newErrors.name = "Tên tour là bắt buộc"
+			newErrors.name = "Tên chuyến đi là bắt buộc"
 		}
 
 		if (!formData.description.trim()) {
-			newErrors.description = "Mô tả tour là bắt buộc"
+			newErrors.description = "Mô tả chuyến đi là bắt buộc"
 		}
 
 		if (!formData.content.trim()) {
-			newErrors.content = "Nội dung tour là bắt buộc"
+			newErrors.content = "Nội dung chuyến đi là bắt buộc"
 		}
 
 		if (formData.totalDays <= 0) {
-			newErrors.totalDays = "Số ngày tour phải lớn hơn 0"
+			newErrors.totalDays = "Số ngày chuyến đi phải lớn hơn 0"
 		}
 
 		if (!formData.tourType) {
-			newErrors.tourType = "Loại tour là bắt buộc"
+			newErrors.tourType = "Loại chuyến đi là bắt buộc"
 		}
 
 		// If images are provided, enforce exactly one thumbnail
@@ -121,10 +121,10 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
-								<Label htmlFor="name">Tên Tour *</Label>
+								<Label htmlFor="name">Tên chuyến đi *</Label>
 								<Input
 									id="name"
-									placeholder="Nhập tên tour du lịch"
+									placeholder="Nhập tên chuyến đi"
 									value={formData.name}
 									onChange={(e) => handleInputChange("name", e.target.value)}
 									className={errors.name ? "border-red-500" : ""}
@@ -134,10 +134,10 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="description">Mô Tả Tour *</Label>
+								<Label htmlFor="description">Mô Tả chuyến đi *</Label>
 								<Textarea
 									id="description"
-									placeholder="Nhập mô tả chi tiết về tour"
+									placeholder="Nhập mô tả chi tiết về chuyến đi"
 									value={formData.description}
 									onChange={(e) => handleInputChange("description", e.target.value)}
 									className={errors.description ? "border-red-500" : ""}
@@ -151,7 +151,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 								<Label htmlFor="content">Nội Dung Chi Tiết *</Label>
 								<Textarea
 									id="content"
-									placeholder="Nhập nội dung chi tiết về tour"
+									placeholder="Nhập nội dung chi tiết về chuyến đi"
 									value={formData.content}
 									onChange={(e) => handleInputChange("content", e.target.value)}
 									className={errors.content ? "border-red-500" : ""}
@@ -168,19 +168,19 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
 								<div className="w-2 h-2 bg-green-500 rounded-full" />
-								Chi Tiết Tour
+								Chi Tiết chuyến đi
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
-								<Label>Loại Tour *</Label>
+								<Label>Loại chuyến đi *</Label>
 								<Select
 									value={formData.tourType.toString()}
 									onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
 									disabled={isLoading}
 								>
 									<SelectTrigger className={errors.tourType ? "border-red-500" : ""}>
-										<SelectValue placeholder="Chọn loại tour" />
+										<SelectValue placeholder="Chọn loại chuyến đi" />
 									</SelectTrigger>
 									<SelectContent>
 										{Object.entries(TourTypeLabels).map(([key, label]) => (
@@ -216,7 +216,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="totalDays">Số Ngày Tour *</Label>
+								<Label htmlFor="totalDays">Số Ngày của chuyến đi *</Label>
 								<Input
 									id="totalDays"
 									type="number"
@@ -229,12 +229,12 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 								/>
 								{errors.totalDays && <p className="text-sm text-red-500">{errors.totalDays}</p>}
 								<p className="text-xs text-gray-500">
-									Tour sẽ có {formData.totalDays} ngày {formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
+									Chuyến đi sẽ có {formData.totalDays} ngày {formData.totalDays > 1 ? formData.totalDays - 1 : 0} đêm
 								</p>
 							</div>
 
 							<div className="p-4 bg-blue-50 rounded-lg">
-								<h4 className="font-medium text-blue-900 mb-2">Thông Tin Tour</h4>
+								<h4 className="font-medium text-blue-900 mb-2">Thông Tin chuyến đi</h4>
 								<div className="space-y-1 text-sm text-blue-800">
 									<p>
 										<strong>Loại:</strong> {TourTypeLabels[formData.tourType]}

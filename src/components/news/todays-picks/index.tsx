@@ -23,7 +23,7 @@ export default function TodaysPicks() {
 
 			const allNews = response?.data || []
 			setTotalItems(response?.totalCount || allNews.length)
-
+			console.log(response)
 			const today = new Date().toDateString()
 
 			const newsToday = allNews.filter((item: NewsItem) =>
@@ -69,7 +69,7 @@ export default function TodaysPicks() {
 				<div key={index} className="flex gap-4">
 					<div className="flex-shrink-0">
 						<Image
-							src={item?.medias[1]?.mediaUrl || "/placeholder.svg"}
+							src={item?.medias?.[0]?.mediaUrl || "/placeholder.svg"}
 							alt={item.title}
 							width={120}
 							height={120}

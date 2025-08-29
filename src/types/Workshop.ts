@@ -68,4 +68,5 @@ export interface WorkshopDetail {
 export interface WorkshopFilterParams {
 	craftVillageId: string
 	name?: string
+	status?: number | string
 }

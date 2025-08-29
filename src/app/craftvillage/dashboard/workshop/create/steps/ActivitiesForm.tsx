@@ -44,7 +44,7 @@ export default function ActivitiesForm({ workshopId, onNext, onBack }: Props) {
 		if (Object.keys(newErrors).length > 0) return
 		try {
 			const payload = { workshopId, activities }
-			await createActivitiesBulk(payload)
+			// await createActivitiesBulk(payload)
 			toast.success("Đã tạo hoạt động cho workshop")
 			onNext()
 		} catch (err: any) {

@@ -75,9 +75,9 @@ export default function TourBookingCard({ tour, selectedSchedule, onScheduleSele
 								return (
 									<SelectItem key={schedule.scheduleId} value={schedule.scheduleId}>
 										<div className="flex items-center justify-between w-full">
-											<span>{formatDate(schedule.departureDate)}</span>
+											<span>{formatDate(schedule.startTime)}</span>
 											<Badge variant="secondary" className="ml-2">
-												Còn {available} chỗ
+												Còn {Math.max(available, 0)} chỗ
 											</Badge>
 										</div>
 									</SelectItem>
@@ -96,11 +96,12 @@ export default function TourBookingCard({ tour, selectedSchedule, onScheduleSele
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-									<SelectItem key={num} value={num.toString()}>
-										{num} người
+								{[...Array(selectedSchedule?.maxParticipant || 0)].map((_, index) => (
+									<SelectItem key={index} value={index.toString()}>
+										{index} người
 									</SelectItem>
 								))}
+								<SelectItem value={selectedSchedule?.maxParticipant?.toString() || "0"}>{selectedSchedule?.maxParticipant} người</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -112,9 +113,9 @@ export default function TourBookingCard({ tour, selectedSchedule, onScheduleSele
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{[0, 1, 2, 3, 4, 5, 6].map((num) => (
-									<SelectItem key={num} value={num.toString()}>
-										{num} trẻ
+								{[...Array(selectedSchedule?.maxParticipant || 0)].map((_, index) => (
+									<SelectItem key={index} value={index.toString()}>
+										{index} trẻ
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -149,11 +150,11 @@ export default function TourBookingCard({ tour, selectedSchedule, onScheduleSele
 				{/* Booking Button */}
 				<Button
 					onClick={handleBooking}
-					disabled={!selectedSchedule || availableSchedules.length === 0}
+					disabled={!selectedSchedule || availableSchedules.length === 0 || selectedSchedule.currentBooked >= selectedSchedule.maxParticipant}
 					className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 text-lg font-semibold"
 					size="lg"
 				>
-					{availableSchedules.length === 0 ? (
+					{availableSchedules.length === 0 || (selectedSchedule && selectedSchedule.currentBooked >= selectedSchedule.maxParticipant) ? (
 						"Hết chỗ trống"
 					) : !selectedSchedule ? (
 						"Chọn ngày khởi hành"

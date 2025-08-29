@@ -27,6 +27,7 @@ export const TOUR_GUIDE_API_URL = {
   TOUR_GUIDE_REJECTION_REQUEST_DETAIL: "rejection-request/:id",
   TOUR_GUIDE_REJECTION_REQUEST_APPROVE: "rejection-request/:requestId/approve",
   TOUR_GUIDE_REJECTION_REQUEST_REJECT: "rejection-request/:requestId/reject",
+  TOUR_GUIDE_FILTER: "tour-guide/filter",
 };
 
 export const MEDIA_API_URL = {

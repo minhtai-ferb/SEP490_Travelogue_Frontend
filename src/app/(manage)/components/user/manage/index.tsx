@@ -8,54 +8,72 @@ import { useUserManager } from "@/services/user-manager";
 import LoadingContent from "@/components/common/loading-content";
 import toast from "react-hot-toast";
 import { DataTable } from "@/components/table/data-table-user";
+import { Select } from "antd";
 
-function ManageUserTable({href} : {href: string}) {
+type Role = {
+  id: string;
+  name: string;
+};
+
+function ManageUserTable({ href }: { href: string }) {
   const [searchValue, setSearchValue] = useState("");
 
   const [users, setUsers] = useState<User[]>([]);
-  const { getListUser, loading } = useUserManager();
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  const { getListUser, getAllRoles, loading } = useUserManager();
+
+
+
+  const fetchUsers = async () => {
+    try {
+      const response: User[] = await getListUser();
+      console.log("User data: ", response);
+      if (!response) {
+        throw new Error("No data returned from API getListUser");
+      }
+      const userTableData: User[] = response.map((user) => ({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        avatarUrl: user.avatarUrl ?? "/placeholder-user.jpg",
+        phoneNumber: user.phoneNumber ?? "Chưa có",
+        address: user.address ?? "Chưa có",
+        isEmailVerified: user.isEmailVerified,
+        createdTime: user.createdTime,
+        lockoutEnd: user.lockoutEnd,
+        lastUpdatedTime: user.lastUpdatedTime,
+        createdBy: user.createdBy,
+        createdByName: user.createdByName,
+        lastUpdatedBy: user.lastUpdatedBy,
+        roles: user.roles,
+      }));
+
+      setUsers(userTableData);
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data.Message ||
+        "Đã xảy ra lỗi khi lấy dữ liệu người dùng";
+
+      // Display error using toast
+      toast.error(errorMessage);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response: Role[] = await getAllRoles();
+      setRoles(Array.isArray(response) ? response : []);
+    } catch (error) {
+      // Không chặn UI nếu lỗi
+      console.warn("Không thể tải danh sách vai trò", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response: User[] = await getListUser();
-        console.log("User data: ", response);
-        if (!response) {
-          throw new Error("No data returned from API getListUser");
-        }
-        const userTableData: User[] = response.map((user) => ({
-          id: user.id,
-          fullName: user.fullName,
-          email: user.email,
-          avatarUrl: user.avatarUrl ?? "/placeholder-user.jpg",
-          phoneNumber: user.phoneNumber ?? "Chưa có",
-          address: user.address ?? "Chưa có",
-          isEmailVerified: user.isEmailVerified,
-          createdTime: user.createdTime,
-          lockoutEnd: user.lockoutEnd,
-          lastUpdatedTime: user.lastUpdatedTime,
-          createdBy: user.createdBy,
-          createdByName: user.createdByName,
-          lastUpdatedBy: user.lastUpdatedBy,
-          roles: user.roles,
-        }));
-
-        setUsers(userTableData);
-      } catch (error: any) {
-        console.log("====================================");
-        console.log(error);
-        console.log("====================================");
-        const errorMessage =
-          error?.response?.data.Message ||
-          "Đã xảy ra lỗi khi lấy dữ liệu người dùng";
-
-        // Display error using toast
-        toast.error(errorMessage);
-      }
-    };
-
     fetchUsers();
-  }, [getListUser]);
+    fetchRoles();
+  }, [getListUser, getAllRoles]);
 
   return (
     <div>
@@ -76,17 +94,40 @@ function ManageUserTable({href} : {href: string}) {
                 {users.filter((user) => !user.isEmailVerified).length}
               </span>
             </div>
-            <SearchInput
-              value={searchValue}
-              onChange={(value) => setSearchValue(value)}
-            />
+            <div className="flex items-center gap-2 py-4">
+              <Select
+                mode="multiple"
+                allowClear
+                style={{ minWidth: 220 }}
+                placeholder="Lọc theo vai trò"
+                value={selectedRoleIds}
+                onChange={(vals) => setSelectedRoleIds(vals)}
+                options={roles.map((r) => ({ label: r.name, value: r.id }))}
+                getPopupContainer={(triggerNode) =>
+                  (triggerNode.parentNode as HTMLElement) ?? document.body
+                }
+              />
+              <SearchInput
+                value={searchValue}
+                onChange={(value) => setSearchValue(value)}
+              />
+            </div>
           </div>
           <div className="w-full px-2">
             <DataTable
-              columns={createColumns(href)} 
-              data={users.filter((user) =>
-                user.fullName.toLowerCase().includes(searchValue.toLowerCase())
-              )}
+              columns={createColumns(href)}
+              data={users.filter((user) => {
+                const matchesName = user.fullName
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase());
+                if (!matchesName) return false;
+                if (selectedRoleIds.length === 0) return true;
+                const selectedRoleNames = roles
+                  .filter((r) => selectedRoleIds.includes(r.id))
+                  .map((r) => r.name);
+                const userRoles = user.roles || [];
+                return selectedRoleNames.some((r) => userRoles.includes(r));
+              })}
             />
           </div>
         </div>

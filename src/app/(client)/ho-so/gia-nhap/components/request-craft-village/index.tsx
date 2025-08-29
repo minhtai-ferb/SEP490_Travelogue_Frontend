@@ -1,9 +1,12 @@
 "use client"
 
-import RegisterCraftVillageRequestForm from "./RegisterCraftVillageRequestForm"
+import ProfessionalApplicationForm, { ApplicationFormData } from "./components/ProfessionalApplicationForm"
+export default function CraftVillageClient({ fetchLatest }: { fetchLatest: () => void }) {
 
-export default function CraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
-	return <RegisterCraftVillageRequestForm fetchLatest={fetchLatest} />
+	const onSubmit = (data: ApplicationFormData) => {
+		console.log(data)
+	}
+
+	return <ProfessionalApplicationForm onSubmit={onSubmit} isLoading={false} />
 }
-
 

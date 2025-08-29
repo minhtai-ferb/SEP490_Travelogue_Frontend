@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTourguideAssign } from "@/services/tourguide";
 import { useCraftVillage } from "@/services/use-craftvillage";
-import RegisterTourGuideClient from "./request-tour-guide/register-form";
-import { FormRequest } from "./request-craft-village/FormRequest";
-import { Loader2 } from "lucide-react";
-import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
-import CraftVillageForm from "./request-craft-village";
+import { useAtom } from "jotai";
+import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import CraftVillageFlow from "./request-craft-village";
+import RegisterTourGuideClient from "./request-tour-guide/register-form";
 
-// (tuỳ chọn) type tối thiểu cho dữ liệu trả về
 type TourGuideRequestLatest = {
   id: string;
   userId: string;
@@ -319,8 +317,7 @@ export default function RequestsTabs() {
       <TabsContent value="craft-village">
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Đang kiểm tra trạng
-            thái đăng ký...
+            <Loader2 className="h-4 w-4 animate-spin" /> Đang kiểm tra trạng thái đăng ký...
           </div>
         ) : errorMsg ? (
           <Card>
@@ -335,7 +332,7 @@ export default function RequestsTabs() {
             </CardContent>
           </Card>
         ) : latestCraftVillage === null ? (
-          <CraftVillageForm fetchLatest={fetchCraftLatest} />
+          <CraftVillageFlow fetchLatest={fetchCraftLatest} />
         ) : (
           <Card>
             <CardHeader className="pb-2">
