@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import { TourWizard } from "@/app/(manage)/components/tour-management/TourWizard"
 
-export default function TourCreateClient({href} : {href : string}) {
+export default function TourCreateClient({ href }: { href: string }) {
 	const router = useRouter()
 	const [error, setError] = useState("")
 
@@ -23,8 +23,8 @@ export default function TourCreateClient({href} : {href : string}) {
 			{/* Header */}
 			<div className="flex items-center gap-4 mb-6">
 				<div>
-					<h1 className="text-3xl font-bold">Tạo Tour Mới</h1>
-					<p className="text-gray-600 mt-1">Tạo tour du lịch mới với wizard 3 bước</p>
+					<h1 className="text-3xl font-bold">Tạo chuyến tham quan mới</h1>
+					<p className="text-gray-600 mt-1">Tạo chuyến tham quan mới với 3 bước</p>
 				</div>
 			</div>
 
@@ -37,7 +37,7 @@ export default function TourCreateClient({href} : {href : string}) {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Tạo Tour</CardTitle>
+					<CardTitle>Tạo chuyến tham quan</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<TourWizard onComplete={handleComplete} onCancel={handleBack} />

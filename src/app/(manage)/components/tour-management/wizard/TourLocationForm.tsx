@@ -348,8 +348,8 @@ export function TourLocationForm({
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="text-center">
-				<h2 className="text-2xl font-bold">Địa Điểm Tour</h2>
-				<p className="text-gray-600 mt-2">Thêm các địa điểm tham quan cho tour {tourDays} ngày</p>
+				<h2 className="text-2xl font-bold">Địa Điểm Của chuyến đi</h2>
+				<p className="text-gray-600 mt-2">Thêm các địa điểm tham quan cho chuyến đi {tourDays} ngày</p>
 			</div>
 
 			{/* Add New Location */}

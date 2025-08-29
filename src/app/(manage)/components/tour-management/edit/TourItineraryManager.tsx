@@ -152,10 +152,10 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 			await createTourBulk(tour.tourId, data)
 			const updated = await getTourDetail(tour.tourId)
 			onUpdate(updated)
-			setSuccess("Cập nhật địa điểm tour thành công!")
+			setSuccess("Cập nhật địa điểm của chuyến đi thành công!")
 			setIsDialogOpen(false)
 		} catch (e: any) {
-			setError(e?.response?.data?.message || e.message || "Có lỗi khi cập nhật địa điểm tour")
+			setError(e?.response?.data?.message || e.message || "Có lỗi khi cập nhật địa điểm của chuyến đi")
 		} finally {
 			setIsSaving(false)
 		}
@@ -170,7 +170,7 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 		const newDays = tour.days.map(d => d.dayNumber === dayNumber ? { ...d, activities: newActivities } : d)
 		const newTour = { ...tour, days: newDays }
 		onUpdate(newTour)
-		setSuccess("Xóa địa điểm thành công!")
+		setSuccess("Xóa địa điểm của chuyến đi thành công!")
 		setIsDialogOpen(false)
 	}
 
@@ -283,17 +283,17 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between">
-						<CardTitle>Hành Trình Chi Tiết</CardTitle>
+						<CardTitle>Hành Trình Chi Tiết của chuyến đi</CardTitle>
 						<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 							<DialogTrigger asChild>
 								<Button>
 									<Plus className="w-4 h-4 mr-2" />
-									Cập Nhật Địa Điểm
+									Cập Nhật Địa Điểm của chuyến đi
 								</Button>
 							</DialogTrigger>
 							<DialogContent className="overflow-y-scroll max-h-[90vh] max-w-4xl">
 								<DialogHeader>
-									<DialogTitle>Cập Nhật Địa Điểm Tour</DialogTitle>
+									<DialogTitle>Cập Nhật Địa Điểm chuyến đi</DialogTitle>
 								</DialogHeader>
 								<TourLocationForm
 									tourId={tour.tourId}
@@ -313,7 +313,7 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 						<div className="text-center py-8 text-gray-500">
 							<MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
 							<p>Chưa có hành trình nào</p>
-							<p className="text-sm">Thêm địa điểm đầu tiên cho tour này</p>
+							<p className="text-sm">Thêm địa điểm đầu tiên cho chuyến đi này</p>
 						</div>
 					) : (
 						<Accordion type="multiple" className="w-full">
