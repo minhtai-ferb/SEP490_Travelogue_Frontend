@@ -43,25 +43,20 @@ import { useCraftVillageRequestForm } from "../hooks/useCraftVillageRequestForm"
 import ContentEditor from "@/components/common/content-editor/ContentEditor"
 import { ImageUpload } from "@/app/(manage)/components/locations/create/components/image-upload"
 import type { MediaDto } from "@/app/(manage)/components/locations/create/types/CreateLocation"
+import ModernWorkshopModal from "./ModernWorkshopModal"
 import {
 	Workshop,
-	WorkshopActivity,
-	TicketType,
-	WorkshopSchedule,
-	RecurringSession,
-	RecurringRule,
-	WorkshopException,
-	timeStringToHours,
-	hoursToTimeString,
 	timeStringToTimeString,
-	getCurrentISOString,
-	DAYS_OF_WEEK,
-	TICKET_TYPES,
 	WORKSHOP_STATUS
 } from "@/types/CraftVillageRequest"
 
 // Using types from @/types/CraftVillageRequest
 type WorkshopData = Workshop
+
+const TICKET_TYPES = {
+	VISIT: 1,
+	EXPERIENCE: 2,
+} as const
 
 export default function ProfessionalApplicationForm() {
 	const {
@@ -111,6 +106,7 @@ export default function ProfessionalApplicationForm() {
 	}, [formData, modelFiles.length, uploadedModelUrls.length])
 
 	const addWorkshop = useCallback(() => {
+
 		const newWorkshop: WorkshopData = {
 			name: "",
 			description: "",
@@ -120,18 +116,18 @@ export default function ProfessionalApplicationForm() {
 				{
 					type: TICKET_TYPES.VISIT,
 					name: "Vé tham quan",
-					price: 20000,
+					price: 0,
 					isCombo: false,
-					durationMinutes: 60,
+					durationMinutes: 0,
 					content: "Du khách tham quan và nghe giới thiệu về làng nghề",
 					workshopActivities: [],
 				},
 				{
 					type: TICKET_TYPES.EXPERIENCE,
 					name: "Vé trải nghiệm (bao gồm tham quan)",
-					price: 50000,
+					price: 0,
 					isCombo: true,
-					durationMinutes: 120,
+					durationMinutes: 0,
 					content: "Tham quan và trải nghiệm thực hành",
 					workshopActivities: [],
 				},
@@ -142,7 +138,7 @@ export default function ProfessionalApplicationForm() {
 		}
 		setEditingWorkshop(newWorkshop)
 		setShowWorkshopModal(true)
-	}, [])
+	}, [formData.workshopsAvailable])
 
 	const editWorkshop = useCallback((workshop: WorkshopData) => {
 		setEditingWorkshop(workshop)
@@ -536,7 +532,10 @@ export default function ProfessionalApplicationForm() {
 								<h3 className="text-xl font-bold text-gray-800">Trải nghiệm du lịch</h3>
 							</div>
 
-							<div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6">
+							<div className={`bg-gradient-to-br rounded-xl p-6 transition-all duration-200 ${formData.workshopsAvailable
+								? "from-purple-50 to-pink-50 border-2 border-purple-200"
+								: "from-gray-50 to-gray-100 border border-gray-200"
+								}`}>
 								<div className="flex items-start space-x-4">
 									<Checkbox
 										id="workshopsAvailable"
@@ -544,28 +543,41 @@ export default function ProfessionalApplicationForm() {
 										onCheckedChange={(checked) => handleInputChange("workshopsAvailable", !!checked)}
 										className="mt-1 h-5 w-5"
 									/>
-									<div className="space-y-2">
+									<div className="space-y-2 flex-1">
 										<Label htmlFor="workshopsAvailable" className="text-base font-semibold text-gray-700 cursor-pointer">
 											Có cung cấp trải nghiệm cho du khách
 										</Label>
 										<p className="text-sm text-gray-600 leading-relaxed">
-											Sau khi yêu cầu làng nghề được duyệt, bạn có thể gửi trải nghiệm để thẩm định và mở bán.
+											✨ Bạn có thể tạo các trải nghiệm workshop để thu hút du khách <br />
+											Bật tính năng này để tạo các workshop trải nghiệm làng nghề cho du khách.
 										</p>
 									</div>
 								</div>
+
+								{/* Conditional tip box */}
+								{formData.workshopsAvailable && (
+									<div className="mt-4 p-3 bg-purple-100 border border-purple-200 rounded-lg">
+										<div className="flex items-center gap-2">
+											<Activity className="h-4 w-4 text-purple-600" />
+											<span className="text-sm font-medium text-purple-800">
+												Tuyệt vời! Bạn có thể tạo workshop ở phần dưới
+											</span>
+										</div>
+									</div>
+								)}
 							</div>
 						</div>
 					</CardContent>
 				</Card>
 
-				{/* Workshop Section */}
+				{/* Workshop Section - Chỉ hiển thị khi đã bật workshopsAvailable */}
 				<Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
 					<CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
 						<CardTitle className="flex items-center gap-3 text-xl">
 							<Ticket className="h-6 w-6" />
 							<div>
 								<h2 className="text-2xl font-bold">Trải nghiệm làng nghề</h2>
-								<p className="text-purple-100 font-normal text-base">Thiết kế những trải nghiệm hấp dẫn (tùy chọn)</p>
+								<p className="text-purple-100 font-normal text-base">Thiết kế những trải nghiệm hấp dẫn</p>
 							</div>
 						</CardTitle>
 					</CardHeader>
@@ -784,447 +796,10 @@ export default function ProfessionalApplicationForm() {
 						}}
 						onSave={saveWorkshop}
 						editingWorkshop={editingWorkshop}
+						formData={formData}
 					/>
 				)}
 			</div>
 		</form>
-	)
-}
-
-// Workshop modal (unchanged logic; kept inline for cohesion and future scalability)
-// Helper functions for time string conversion (using utilities from types)
-const timeToHours = (timeString: string): number => timeStringToHours(timeString)
-const hoursToTime = (hours: number): string => hoursToTimeString(hours)
-
-function ModernWorkshopModal({
-	isOpen, onClose, onSave, editingWorkshop,
-}: {
-	isOpen: boolean
-	onClose: () => void
-	onSave: (workshop: WorkshopData) => void
-	editingWorkshop: WorkshopData | null
-}) {
-	const [workshop, setWorkshop] = useState<WorkshopData>(
-		editingWorkshop || {
-			name: "",
-			description: "",
-			content: "",
-			status: WORKSHOP_STATUS.PENDING,
-			ticketTypes: [
-				{
-					type: TICKET_TYPES.VISIT,
-					name: "Vé tham quan",
-					price: 20000,
-					isCombo: false,
-					durationMinutes: 60,
-					content: "Du khách tham quan và nghe giới thiệu về làng nghề",
-					workshopActivities: [],
-				},
-				{
-					type: TICKET_TYPES.EXPERIENCE,
-					name: "Vé trải nghiệm (bao gồm tham quan)",
-					price: 50000,
-					isCombo: true,
-					durationMinutes: 120,
-					content: "Tham quan và trải nghiệm thực hành",
-					workshopActivities: [],
-				},
-			],
-			schedules: [],
-			recurringRules: [],
-			exceptions: [],
-		},
-	)
-	const [currentStep, setCurrentStep] = useState(1)
-	const [errors, setErrors] = useState<Record<string, string>>({})
-
-	const updateWorkshop = useCallback((updates: Partial<WorkshopData>) => {
-		setWorkshop((prev) => ({ ...prev, ...updates }))
-	}, [])
-
-	const validateStep = (step: number): boolean => {
-		const newErrors: Record<string, string> = {}
-		if (step === 1) {
-			if (!workshop.name.trim()) newErrors.name = "Tên trải nghiệm là bắt buộc"
-			if (!workshop.description.trim()) newErrors.description = "Mô tả là bắt buộc"
-		}
-		setErrors(newErrors)
-		return Object.keys(newErrors).length === 0
-	}
-
-	const handleNext = () => {
-		if (validateStep(currentStep)) {
-			setCurrentStep((prev) => Math.min(prev + 1, 3))
-		}
-	}
-
-	const handleSave = () => {
-		if (validateStep(1)) onSave(workshop)
-	}
-
-	const experienceTicket = workshop.ticketTypes.find((t) => t.type === TICKET_TYPES.EXPERIENCE)
-	const visitTicket = workshop.ticketTypes.find((t) => t.type === TICKET_TYPES.VISIT)
-
-	const addActivity = () => {
-		if (!experienceTicket) return
-		const newActivity: WorkshopActivity = {
-			activity: "",
-			description: "",
-			startHour: "09:00:00",
-			endHour: "10:00:00",
-			activityOrder: (experienceTicket.workshopActivities?.length || 0) + 1,
-		}
-		updateWorkshop({
-			ticketTypes: workshop.ticketTypes.map((t) =>
-				t.type === TICKET_TYPES.EXPERIENCE
-					? { ...t, workshopActivities: [...(t.workshopActivities || []), newActivity] }
-					: t,
-			),
-		})
-	}
-	const updateActivity = (index: number, updates: Partial<WorkshopActivity>) => {
-		updateWorkshop({
-			ticketTypes: workshop.ticketTypes.map((t) =>
-				t.type === TICKET_TYPES.EXPERIENCE
-					? {
-						...t,
-						workshopActivities: t.workshopActivities?.map((a, i) => (i === index ? { ...a, ...updates } : a)) || [],
-					}
-					: t,
-			),
-		})
-	}
-	const removeActivity = (index: number) => {
-		updateWorkshop({
-			ticketTypes: workshop.ticketTypes.map((t) =>
-				t.type === TICKET_TYPES.EXPERIENCE
-					? { ...t, workshopActivities: t.workshopActivities?.filter((_, i) => i !== index) || [] }
-					: t,
-			),
-		})
-	}
-
-	const addRecurringRule = () => {
-		const newRule: RecurringRule = {
-			daysOfWeek: [DAYS_OF_WEEK.MONDAY],
-			startDate: getCurrentISOString(),
-			endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-			sessions: [{
-				startTime: "08:00:00",
-				endTime: "10:00:00",
-				capacity: 20
-			}],
-		}
-		updateWorkshop({ recurringRules: [...workshop.recurringRules, newRule] })
-	}
-	const updateRecurringRule = (index: number, updates: Partial<RecurringRule>) => {
-		updateWorkshop({ recurringRules: workshop.recurringRules.map((r, i) => (i === index ? { ...r, ...updates } : r)) })
-	}
-	const removeRecurringRule = (index: number) => {
-		updateWorkshop({ recurringRules: workshop.recurringRules.filter((_, i) => i !== index) })
-	}
-
-	if (!isOpen) return null
-
-	return (
-		<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-			<div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-				<div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
-					<div className="flex items-center justify-between">
-						<div>
-							<h2 className="text-2xl font-bold">{editingWorkshop ? "Chỉnh sửa trải nghiệm" : "Tạo trải nghiệm mới"}</h2>
-							<p className="text-purple-100 mt-1">Thiết kế trải nghiệm hấp dẫn cho du khách</p>
-						</div>
-						<Button type="button" variant="outline" size="sm" onClick={onClose} className="bg-white/20 border-white/30 text-white hover:bg-white/30">
-							✕
-						</Button>
-					</div>
-				</div>
-
-				<div className="p-8 space-y-8">
-					<div className="flex items-center justify-center gap-4">
-						{[1, 2, 3].map((step) => (
-							<div key={step} className="flex items-center">
-								<div
-									className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 ${currentStep >= step
-										? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-										: "bg-gray-200 text-gray-500"
-										}`}
-								>
-									{step}
-								</div>
-								{step < 3 && <div className="w-12 h-1 bg-gray-200 mx-2" />}
-							</div>
-						))}
-					</div>
-
-					{currentStep === 1 && (
-						<div className="space-y-6">
-							<div className="grid grid-cols-1 gap-6">
-								<div className="space-y-3">
-									<Label className="text-base font-semibold text-gray-700">Tên trải nghiệm *</Label>
-									<Input
-										value={workshop.name}
-										onChange={(e) => updateWorkshop({ name: e.target.value })}
-										placeholder="VD: Trải nghiệm làm gốm truyền thống"
-										className={`h-12 text-base border-2 ${errors.name ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
-									/>
-									{errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
-								</div>
-
-								<div className="space-y-3">
-									<Label className="text-base font-semibold text-gray-700">Mô tả hấp dẫn *</Label>
-									<Textarea
-										value={workshop.description}
-										onChange={(e) => updateWorkshop({ description: e.target.value })}
-										placeholder="Mô tả những điều thú vị mà du khách sẽ trải nghiệm..."
-										rows={4}
-										className={`text-base border-2 resize-none ${errors.description ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
-									/>
-									{errors.description && <p className="text-sm text-red-600">{errors.description}</p>}
-								</div>
-
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-									<div className="space-y-3">
-										<Label className="text-base font-semibold text-gray-700">Giá vé tham quan (VNĐ)</Label>
-										<Input
-											type="number"
-											value={visitTicket?.price || 0}
-											onChange={(e) =>
-												updateWorkshop({
-													ticketTypes: workshop.ticketTypes.map((t) =>
-														t.type === TICKET_TYPES.VISIT ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
-													),
-												})
-											}
-											className="h-12 text-base border-2 border-gray-200 focus:border-purple-400"
-										/>
-									</div>
-									<div className="space-y-3">
-										<Label className="text-base font-semibold text-gray-700">Giá vé trải nghiệm (VNĐ)</Label>
-										<Input
-											type="number"
-											value={experienceTicket?.price || 0}
-											onChange={(e) =>
-												updateWorkshop({
-													ticketTypes: workshop.ticketTypes.map((t) =>
-														t.type === 2 ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
-													),
-												})
-											}
-											className="h-12 text-base border-2 border-gray-200 focus:border-purple-400"
-										/>
-									</div>
-								</div>
-							</div>
-						</div>
-					)}
-
-					{currentStep === 2 && (
-						<div className="space-y-6">
-							<div className="flex items-center justify-between">
-								<h4 className="text-lg font-semibold text-gray-800">Danh sách hoạt động</h4>
-								<Button type="button" onClick={addActivity} className="bg-gradient-to-r from-purple-500 to-pink-500">
-									<Plus className="h-4 w-4 mr-2" />
-									Thêm hoạt động
-								</Button>
-							</div>
-
-							{(experienceTicket?.workshopActivities?.length || 0) === 0 ? (
-								<div className="text-center py-12 space-y-4">
-									<div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-										<Activity className="h-8 w-8 text-purple-500" />
-									</div>
-									<p className="text-gray-500">Chưa có hoạt động nào. Hãy thêm hoạt động đầu tiên!</p>
-								</div>
-							) : (
-								<div className="space-y-4">
-									{experienceTicket?.workshopActivities?.map((activity, index) => (
-										<Card key={index} className="border-2 border-purple-100">
-											<CardContent className="p-6">
-												<div className="flex items-start justify-between mb-4">
-													<Badge variant="outline" className="bg-purple-50 text-purple-700">
-														Hoạt động {index + 1}
-													</Badge>
-													<Button
-														type="button"
-														size="sm"
-														variant="outline"
-														onClick={() => removeActivity(index)}
-														className="text-red-600 hover:bg-red-50"
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-
-												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-													<div className="space-y-2">
-														<Label>Tên hoạt động</Label>
-														<Input
-															value={activity.activity}
-															onChange={(e) => updateActivity(index, { activity: e.target.value })}
-															placeholder="VD: Nặn đất sét"
-															className="border-2 border-gray-200 focus:border-purple-400"
-														/>
-													</div>
-
-													<div className="space-y-2">
-														<Label>Thời gian (giờ)</Label>
-														<div className="flex items-center gap-2">
-															<Input
-																type="number"
-																value={timeToHours(activity.startHour)}
-																onChange={(e) => updateActivity(index, { startHour: hoursToTime(Number.parseInt(e.target.value) || 0) })}
-																className="border-2 border-gray-200 focus:border-purple-400"
-															/>
-															<span>-</span>
-															<Input
-																type="number"
-																value={timeToHours(activity.endHour)}
-																onChange={(e) => updateActivity(index, { endHour: hoursToTime(Number.parseInt(e.target.value) || 0) })}
-																className="border-2 border-gray-200 focus:border-purple-400"
-															/>
-														</div>
-													</div>
-
-													<div className="md:col-span-2 space-y-2">
-														<Label>Mô tả hoạt động</Label>
-														<Textarea
-															value={activity.description}
-															onChange={(e) => updateActivity(index, { description: e.target.value })}
-															placeholder="Mô tả chi tiết hoạt động này..."
-															rows={3}
-															className="border-2 border-gray-200 focus:border-purple-400 resize-none"
-														/>
-													</div>
-												</div>
-											</CardContent>
-										</Card>
-									))}
-								</div>
-							)}
-						</div>
-					)}
-
-					{currentStep === 3 && (
-						<div className="space-y-6">
-							<div className="flex items-center justify-between">
-								<h4 className="text-lg font-semibold text-gray-800">Quy tắc lặp lại</h4>
-								<Button type="button" onClick={addRecurringRule} className="bg-gradient-to-r from-purple-500 to-pink-500">
-									<Plus className="h-4 w-4 mr-2" />
-									Thêm lịch trình
-								</Button>
-							</div>
-
-							{workshop.recurringRules.length === 0 ? (
-								<div className="text-center py-12 space-y-4">
-									<div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-										<Calendar className="h-8 w-8 text-purple-500" />
-									</div>
-									<p className="text-gray-500">Chưa có lịch trình nào. Hãy thêm lịch trình đầu tiên!</p>
-								</div>
-							) : (
-								<div className="space-y-4">
-									{workshop.recurringRules.map((rule, index) => (
-										<Card key={index} className="border-2 border-purple-100">
-											<CardContent className="p-6">
-												<div className="flex items-start justify-between mb-4">
-													<Badge variant="outline" className="bg-purple-50 text-purple-700">
-														Lịch trình {index + 1}
-													</Badge>
-													<Button
-														type="button"
-														size="sm"
-														variant="outline"
-														onClick={() => removeRecurringRule(index)}
-														className="text-red-600 hover:bg-red-50"
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-
-												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-													<div className="space-y-2">
-														<Label>Ngày bắt đầu</Label>
-														<Input
-															type="date"
-															value={rule.startDate}
-															onChange={(e) => updateRecurringRule(index, { startDate: e.target.value })}
-															className="border-2 border-gray-200 focus:border-purple-400"
-														/>
-													</div>
-
-													<div className="space-y-2">
-														<Label>Ngày kết thúc</Label>
-														<Input
-															type="date"
-															value={rule.endDate}
-															onChange={(e) => updateRecurringRule(index, { endDate: e.target.value })}
-															className="border-2 border-gray-200 focus:border-purple-400"
-														/>
-													</div>
-
-													<div className="md:col-span-2 space-y-2">
-														<Label>Các ngày trong tuần</Label>
-														<div className="flex flex-wrap gap-2">
-															{[
-																{ value: DAYS_OF_WEEK.MONDAY, label: "T2" },
-																{ value: DAYS_OF_WEEK.TUESDAY, label: "T3" },
-																{ value: DAYS_OF_WEEK.WEDNESDAY, label: "T4" },
-																{ value: DAYS_OF_WEEK.THURSDAY, label: "T5" },
-																{ value: DAYS_OF_WEEK.FRIDAY, label: "T6" },
-																{ value: DAYS_OF_WEEK.SATURDAY, label: "T7" },
-																{ value: DAYS_OF_WEEK.SUNDAY, label: "CN" },
-															].map((day) => (
-																<div key={day.value} className="flex items-center space-x-2">
-																	<Checkbox
-																		id={`${index}-${day.value}`}
-																		checked={rule.daysOfWeek.includes(day.value)}
-																		onCheckedChange={(checked) => {
-																			const updatedDays = checked
-																				? [...rule.daysOfWeek, day.value]
-																				: rule.daysOfWeek.filter((d) => d !== day.value)
-																			updateRecurringRule(index, { daysOfWeek: updatedDays })
-																		}}
-																	/>
-																	<Label htmlFor={`${index}-${day.value}`} className="text-sm">
-																		{day.label}
-																	</Label>
-																</div>
-															))}
-														</div>
-													</div>
-												</div>
-											</CardContent>
-										</Card>
-									))}
-								</div>
-							)}
-						</div>
-					)}
-
-					<div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-between">
-						<div className="flex gap-2">
-							{currentStep > 1 && (
-								<Button type="button" variant="outline" onClick={() => setCurrentStep((prev) => prev - 1)}>
-									Quay lại
-								</Button>
-							)}
-						</div>
-						<div className="flex gap-2">
-							{currentStep < 3 ? (
-								<Button type="button" onClick={handleNext} className="bg-gradient-to-r from-purple-500 to-pink-500">
-									Tiếp theo
-								</Button>
-							) : (
-								<Button type="button" onClick={handleSave} className="bg-gradient-to-r from-emerald-500 to-blue-500">
-									{editingWorkshop ? "Cập nhật" : "Lưu trải nghiệm"}
-								</Button>
-							)}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
 	)
 }
