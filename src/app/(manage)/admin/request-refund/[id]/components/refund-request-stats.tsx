@@ -89,6 +89,12 @@ export default function RefundRequestStats({ data }: RefundRequestStatsProps) {
             />
           </div>
         </Col>
+        <Col xs={24} sm={12} md={6}>
+          <div className="flex flex-col justify-start">
+            <span className="text-gray-500 text-sm mb-1">Ghi Chú</span>
+            <span className="text-base font-medium">{data.note || "Không có"}</span>
+          </div>
+        </Col>
       </Row>
     </Card>
   );

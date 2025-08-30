@@ -10,6 +10,7 @@ import RequestsTable from "./requests-table";
 import { useMediaUpload } from "@/services/use-media-upload";
 import { useRefundRequests } from "@/services/use-refundrequest";
 import { RefundRequest } from "@/types/RequestRefund";
+import { useRouter } from "next/navigation";
 
 export default function RefundContainer() {
   const {
@@ -18,6 +19,7 @@ export default function RefundContainer() {
   } = useRefundRequests();
   const [rows, setRows] = React.useState<RefundRequest[]>([]);
   const [kw, setKw] = React.useState<string>("");
+  const router = useRouter();
 
   const initialRange = React.useMemo(() => {
     const to = dayjs();
@@ -58,7 +60,7 @@ export default function RefundContainer() {
   const handleViewTourDetail = React.useCallback((tourId: string) => {
     // TODO: Implement navigation to tour details
     console.log("View tour details:", tourId);
-    // window.open(`/admin/tours/${tourId}`, '_blank');
+    router.push(`/admin/tour/${tourId}`);
   }, []);
 
   const handleViewTripPlanDetail = React.useCallback((tripPlanId: string) => {

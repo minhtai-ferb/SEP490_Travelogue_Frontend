@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { matchKeyword } from "./utils/text";
 import BookingFilterBar, {
   BookingFilter as UIXFilter,
@@ -9,8 +10,9 @@ import BookingFilterBar, {
 import { useBookings } from "@/services/use-bookings";
 import { BookingItem, BookingTableComponent } from "./components/booking-table";
 
-export default function BookingScheduleTable() {
+export default function BookingScheduleTable({href} : {href: string}) {
   const { loading, getBookingsPaged } = useBookings();
+  const router = useRouter();
 
   const [filter, setFilter] = useState<UIXFilter>({
     status: undefined,
@@ -40,7 +42,11 @@ export default function BookingScheduleTable() {
       pageSize,
     });
     if (res) {
-      setRawItems(res.items);
+      // Sort by bookingDate descending (most recent first)
+      const sortedItems = res.items.sort((a: BookingItem, b: BookingItem) => 
+        new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
+      );
+      setRawItems(sortedItems);
       setServerTotal(res.totalCount);
       if (opts?.resetPage) setPageNumber(1);
     }
@@ -66,7 +72,11 @@ export default function BookingScheduleTable() {
     setPageNumber(1);
     const res = await getBookingsPaged({ ...empty, pageNumber: 1, pageSize });
     if (res) {
-      setRawItems(res.items);
+      // Sort by bookingDate descending (most recent first)
+      const sortedItems = res.items.sort((a: BookingItem, b: BookingItem) => 
+        new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
+      );
+      setRawItems(sortedItems);
       setServerTotal(res.totalCount);
     }
   };
@@ -93,6 +103,11 @@ export default function BookingScheduleTable() {
     return filteredLocal.slice(start, start + clientSize);
   }, [filteredLocal, isClientPaging, clientPage, clientSize]);
 
+  // Handle view booking detail
+  const handleViewBooking = (booking: BookingItem) => {
+    router.push(`${href}/${booking.id}`);
+  };
+
   return (
     <div className="gap-4 p-4">
       <BookingFilterBar
@@ -117,7 +132,7 @@ export default function BookingScheduleTable() {
             setPageSize(s);
           }
         }}
-        onView={(r) => console.log("view", r.id)}
+        onView={handleViewBooking}
         onCancel={(r) => console.log("cancel", r.id)}
         onPay={(r) => console.log("pay", r.paymentLinkId)}
       />

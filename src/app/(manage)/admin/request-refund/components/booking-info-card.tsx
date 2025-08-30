@@ -2,14 +2,14 @@
 
 import React from "react";
 import { Card, Tag, Tooltip, Button, Space, Divider } from "antd";
-import { 
-  EyeOutlined, 
-  CalendarOutlined, 
-  UserOutlined, 
-  PhoneOutlined, 
+import {
+  EyeOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  PhoneOutlined,
   MailOutlined,
   HomeOutlined,
-  DollarOutlined
+  DollarOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { BookingInfo } from "@/types/RequestRefund";
@@ -21,21 +21,21 @@ interface BookingInfoCardProps {
   onViewWorkshopDetail?: (workshopId: string) => void;
 }
 
-export default function BookingInfoCard({ 
+export default function BookingInfoCard({
   booking,
   onViewTourDetail,
   onViewTripPlanDetail,
-  onViewWorkshopDetail 
+  onViewWorkshopDetail,
 }: BookingInfoCardProps) {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(price);
   };
 
   return (
-    <Card 
+    <Card
       title={
         <div className="flex items-center justify-between">
           <span>Thông tin đặt chỗ</span>
@@ -50,13 +50,14 @@ export default function BookingInfoCard({
       <div className="space-y-4">
         {/* Loại và trạng thái booking */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Tag color="green">
-              {booking.bookingTypeText || "Không xác định"}
-            </Tag>
-            <Tag color="blue">
-              {booking.statusText || "Không xác định"}
-            </Tag>
+          <div>
+            <div className="flex items-center gap-2">
+              <Tag color="green">
+                {booking.bookingTypeText || "Không xác định"}
+              </Tag>
+              <Tag color="blue">{booking.statusText || "Không xác định"}</Tag>
+            </div>
+            {}
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-red-600">
@@ -84,7 +85,7 @@ export default function BookingInfoCard({
               </div>
               {booking.tourId && onViewTourDetail && (
                 <Tooltip title="Xem chi tiết tour">
-                  <Button 
+                  <Button
                     type="primary"
                     size="small"
                     icon={<EyeOutlined />}
@@ -94,7 +95,7 @@ export default function BookingInfoCard({
               )}
             </div>
           )}
-          
+
           {booking.tripPlanName && (
             <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
               <div>
@@ -107,7 +108,7 @@ export default function BookingInfoCard({
               </div>
               {booking.tripPlanId && onViewTripPlanDetail && (
                 <Tooltip title="Xem chi tiết kế hoạch">
-                  <Button 
+                  <Button
                     type="primary"
                     size="small"
                     icon={<EyeOutlined />}
@@ -117,7 +118,7 @@ export default function BookingInfoCard({
               )}
             </div>
           )}
-          
+
           {booking.workshopName && (
             <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
               <div>
@@ -130,7 +131,7 @@ export default function BookingInfoCard({
               </div>
               {booking.workshopId && onViewWorkshopDetail && (
                 <Tooltip title="Xem chi tiết workshop">
-                  <Button 
+                  <Button
                     type="primary"
                     size="small"
                     icon={<EyeOutlined />}
@@ -149,7 +150,9 @@ export default function BookingInfoCard({
           <div className="flex items-center gap-2 p-2 bg-blue-50 rounded">
             <UserOutlined className="text-blue-500" />
             <div>
-              <span className="text-sm font-medium">Hướng dẫn viên: {booking.tourGuideName}</span>
+              <span className="text-sm font-medium">
+                Hướng dẫn viên: {booking.tourGuideName}
+              </span>
               {/* {booking.tourGuideId && (
                 <span className="text-xs text-gray-500 ml-2">
                   (ID: {booking.tourGuideId})
@@ -170,7 +173,7 @@ export default function BookingInfoCard({
               </span>
             </div>
           )}
-          
+
           {booking.departureDate && (
             <div className="flex items-center gap-2 text-sm">
               <CalendarOutlined className="text-gray-500" />
@@ -180,13 +183,14 @@ export default function BookingInfoCard({
               </span>
             </div>
           )}
-          
+
           {booking.startDate && booking.endDate && (
             <div className="flex items-center gap-2 text-sm col-span-full">
               <CalendarOutlined className="text-gray-500" />
               <span className="text-gray-600">Thời gian tour:</span>
               <span className="font-medium">
-                {dayjs(booking.startDate).format("DD/MM/YYYY")} - {dayjs(booking.endDate).format("DD/MM/YYYY")}
+                {dayjs(booking.startDate).format("DD/MM/YYYY")} -{" "}
+                {dayjs(booking.endDate).format("DD/MM/YYYY")}
               </span>
             </div>
           )}
@@ -196,7 +200,9 @@ export default function BookingInfoCard({
 
         {/* Thông tin liên hệ */}
         <div className="bg-gray-50 p-3 rounded-lg">
-          <div className="font-medium text-gray-700 mb-2">Thông tin liên hệ:</div>
+          <div className="font-medium text-gray-700 mb-2">
+            Thông tin liên hệ:
+          </div>
           <div className="grid grid-cols-1 gap-2">
             <div className="flex items-center gap-2 text-sm">
               <UserOutlined className="text-gray-500" />

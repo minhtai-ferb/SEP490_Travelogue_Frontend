@@ -15,7 +15,7 @@ export default function TourDetailPage() {
   const id = params.id as string;
   return (
     <SidebarInset>
-      <BreadcrumbHeader items={crumbs} />
+      <BreadcrumbHeader items={crumbs}  showBackButton={true} />
       <TourDetailClient tourId={id} href="/admin/tour" />
     </SidebarInset>
   );
