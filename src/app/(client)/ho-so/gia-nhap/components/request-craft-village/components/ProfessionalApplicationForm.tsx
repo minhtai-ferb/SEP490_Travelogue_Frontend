@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import {
 	MapPin,
 	Plus,
@@ -34,15 +35,16 @@ import {
 	Mail,
 	Globe,
 	Contact,
+	FileText,
 } from "lucide-react"
 import toast from "react-hot-toast"
 import { AddressSearchWithMap } from "./organisms/AddressSearchWithMap"
-import { useDistrictManager } from "@/services/district-manager"
-import { useAtomValue } from "jotai"
-import { userAtom } from "@/store/auth"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { useCraftVillageRequestForm } from "../hooks/useCraftVillageRequestForm"
+import ContentEditor from "@/components/common/content-editor/ContentEditor"
+import { ImageUpload } from "@/app/(manage)/components/locations/create/components/image-upload"
+import type { MediaDto } from "@/app/(manage)/components/locations/create/types/CreateLocation"
 
-// Schema-compliant interfaces
+// Domain types for Workshop builder (kept local and optional)
 interface WorkshopActivity {
 	activity: string
 	description: string
@@ -50,7 +52,6 @@ interface WorkshopActivity {
 	endHour: number
 	activityOrder: number
 }
-
 interface TicketType {
 	type: "Visit" | "Experience"
 	name: string
@@ -60,20 +61,17 @@ interface TicketType {
 	content: string
 	workshopActivities?: WorkshopActivity[]
 }
-
 interface RecurringSession {
 	startTime: string
 	endTime: string
 	capacity: number
 }
-
 interface RecurringRule {
 	daysOfWeek: string[]
 	startDate: string
 	endDate: string
 	sessions: RecurringSession[]
 }
-
 interface WorkshopData {
 	name: string
 	description: string
@@ -82,98 +80,59 @@ interface WorkshopData {
 	recurringRules: RecurringRule[]
 }
 
-export interface ApplicationFormData {
-	name: string
-	description: string
-	address: string
-	latitude: number
-	longitude: number
-	ownerId: string
-	workshopsAvailable: boolean
-	workshops: WorkshopData[]
-	// Optional contact information
-	phoneNumber?: string
-	email?: string
-	website?: string
-}
+export default function ProfessionalApplicationForm() {
+	const {
+		districts,
+		formData,
+		errors,
+		isSubmitting,
+		isSuccess,
+		modelFiles,
+		modelPreviews,
+		modelMimeTypes,
+		modelFileNames,
+		uploadedModelUrls,
+		setUploadedModelUrls,
+		handleInputChange,
+		handlePhoneChange,
+		handleAddressChange,
+		handleModelFileChange,
+		removeModelFile,
+		handleSubmit,
+	} = useCraftVillageRequestForm()
 
-interface ModernTravelApplicationFormProps {
-	onSubmit: (data: ApplicationFormData) => void
-	isLoading?: boolean
-}
-
-export default function ProfessionalApplicationForm({ onSubmit, isLoading = false }: ModernTravelApplicationFormProps) {
-	const currentUser = useAtomValue(userAtom)
-	const { getAllDistrict } = useDistrictManager()
-	const [districtOptions, setDistrictOptions] = useState<{ value: string; label: string }[]>([])
-
-	// Form State
-	const [formData, setFormData] = useState({
-		name: "",
-		description: "",
-		address: "",
-		latitude: 11.314528,
-		longitude: 106.086614,
-		workshopsAvailable: false,
-		// Optional contact fields
-		phoneNumber: "",
-		email: "",
-		website: "",
-	})
-
+	// Optional workshop builder state (can be extended to save after approval)
 	const [workshops, setWorkshops] = useState<WorkshopData[]>([])
 	const [showWorkshopModal, setShowWorkshopModal] = useState(false)
 	const [editingWorkshop, setEditingWorkshop] = useState<WorkshopData | null>(null)
-	const [errors, setErrors] = useState<Record<string, string>>({})
+
+	// Progress based on key required fields
 	const [completionProgress, setCompletionProgress] = useState(0)
-
-	// Load districts
 	useEffect(() => {
-		let isMounted = true
-		getAllDistrict().then((list) => {
-			if (!isMounted) return
-			setDistrictOptions(list.map((d: any) => ({ value: d.id, label: d.name })))
-		})
-		return () => {
-			isMounted = false
-		}
-	}, [getAllDistrict])
+		const required = [
+			formData.name,
+			formData.description,
+			formData.content,
+			formData.address,
+			formData.districtId,
+			formData.phoneNumber,
+			formData.email,
+			formData.signatureProduct,
+			formData.yearsOfHistory,
+		]
+		const completed = required.filter((v) => `${v}`.trim().length > 0).length
+		const base = (completed / required.length) * 100
+		const bonus = Math.min(
+			[
+				formData.website?.trim() ? 1 : 0,
+				(uploadedModelUrls.length > 0 || modelFiles.length > 0) ? 1 : 0,
+				formData.workshopsAvailable ? 1 : 0,
+			].reduce((a, b) => a + b, 0) * 5,
+			15,
+		)
+		setCompletionProgress(Math.min(100, Math.round(base + bonus)))
+	}, [formData, modelFiles.length, uploadedModelUrls.length])
 
-	// Calculate completion progress
-	useEffect(() => {
-		const requiredFields = [formData.name, formData.description, formData.address]
-		const optionalFields = [formData.phoneNumber, formData.email, formData.website].filter(Boolean)
-
-		const completedFields = requiredFields.filter(Boolean).length
-		const progress = (completedFields / requiredFields.length) * 100
-
-		// Bonus points for optional fields
-		const bonusProgress = Math.min((optionalFields.length / 3) * 10, 10)
-
-		setCompletionProgress(Math.min(progress + bonusProgress, 100))
-	}, [formData])
-
-	// Update form data
-	const updateFormData = useCallback((updates: Partial<typeof formData>) => {
-		setFormData((prev) => ({ ...prev, ...updates }))
-		// Clear related errors
-		const updatedFields = Object.keys(updates)
-		setErrors((prev) => {
-			const newErrors = { ...prev }
-			updatedFields.forEach((field) => delete newErrors[field])
-			return newErrors
-		})
-	}, [])
-
-	// Handle address change
-	const onAddressChange = useCallback(
-		(address: string, latitude: number, longitude: number) => {
-			updateFormData({ address, latitude, longitude })
-		},
-		[updateFormData],
-	)
-
-	// Workshop management
 	const addWorkshop = useCallback(() => {
 		const newWorkshop: WorkshopData = {
 			name: "",
@@ -229,59 +188,18 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 		[editingWorkshop, workshops],
 	)
 
-	// Validation
-	const validateForm = useCallback((): boolean => {
-		const newErrors: Record<string, string> = {}
-
-		// Required fields
-		if (!formData.name.trim()) newErrors.name = "Tên làng nghề là bắt buộc"
-		if (!formData.description.trim()) newErrors.description = "Mô tả là bắt buộc"
-		if (!formData.address.trim()) newErrors.address = "Địa chỉ là bắt buộc"
-
-		// Optional field validation (only if provided)
-		if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-			newErrors.email = "Email không hợp lệ"
-		}
-
-		if (formData.phoneNumber && !/^[0-9+\-\s()]{10,15}$/.test(formData.phoneNumber.replace(/\s/g, ""))) {
-			newErrors.phoneNumber = "Số điện thoại không hợp lệ"
-		}
-
-		if (formData.website && !/^https?:\/\/.+\..+/.test(formData.website)) {
-			newErrors.website = "Website phải bắt đầu bằng http:// hoặc https://"
-		}
-
-		setErrors(newErrors)
-		return Object.keys(newErrors).length === 0
-	}, [formData])
-
-	// Handle form submission
-	const handleSubmit = useCallback(() => {
-		if (!validateForm()) {
-			toast.error("Vui lòng kiểm tra lại thông tin")
-			return
-		}
-
-		const applicationData: ApplicationFormData = {
-			name: formData.name,
-			description: formData.description,
-			address: formData.address,
-			latitude: formData.latitude,
-			longitude: formData.longitude,
-			ownerId: currentUser?.id || "",
-			workshopsAvailable: formData.workshopsAvailable,
-			workshops: workshops,
-			// Include optional fields only if they have values
-			...(formData.phoneNumber && { phoneNumber: formData.phoneNumber }),
-			...(formData.email && { email: formData.email }),
-			...(formData.website && { website: formData.website }),
-		}
-
-		onSubmit(applicationData)
-	}, [formData, workshops, onSubmit, validateForm, currentUser])
+	// Handle form submission with workshop data
+	const handleFormSubmit = useCallback((e: React.FormEvent) => {
+		e.preventDefault()
+		// Pass workshop data to the hook's handleSubmit
+		handleSubmit(e, workshops)
+	}, [handleSubmit, workshops])
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50">
+		<form
+			className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50"
+			onSubmit={handleFormSubmit}
+		>
 			<div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
 				{/* Hero Header */}
 				<div className="text-center space-y-6">
@@ -320,14 +238,14 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 						<div className="space-y-3">
 							<div className="flex justify-between items-center">
 								<span className="font-semibold text-gray-700">Tiến độ hoàn thành</span>
-								<span className="text-2xl font-bold text-emerald-600">{Math.round(completionProgress)}%</span>
+								<span className="text-2xl font-bold text-emerald-600">{completionProgress}%</span>
 							</div>
 							<Progress value={completionProgress} className="h-3 bg-gray-200" />
 							<p className="text-sm text-gray-500 text-center">
 								{completionProgress === 100
 									? "🎉 Hoàn thiện! Sẵn sàng gửi đăng ký"
-									: completionProgress >= 90
-										? "✨ Gần hoàn thành! Thêm thông tin liên hệ để tăng cơ hội được duyệt"
+									: completionProgress >= 85
+										? "✨ Gần hoàn thành! Thêm nội dung/đính kèm để tăng cơ hội được duyệt"
 										: "Vui lòng hoàn thành các thông tin bắt buộc"}
 							</p>
 						</div>
@@ -341,9 +259,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 							<TreePine className="h-6 w-6" />
 							<div>
 								<h2 className="text-2xl font-bold">Thông tin làng nghề</h2>
-								<p className="text-emerald-100 font-normal text-base">
-									Hãy chia sẻ câu chuyện độc đáo của làng nghề bạn
-								</p>
+								<p className="text-emerald-100 font-normal text-base">Hãy chia sẻ câu chuyện độc đáo của làng nghề bạn</p>
 							</div>
 						</CardTitle>
 					</CardHeader>
@@ -360,14 +276,13 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 
 							<div className="grid grid-cols-1 gap-6">
 								<div className="space-y-3">
-									<Label htmlFor="name" className="text-base font-semibold text-gray-700 flex items-center gap-2">
+									<Label className="text-base font-semibold text-gray-700 flex items-center gap-2">
 										<Award className="h-4 w-4 text-emerald-500" />
 										Tên làng nghề <span className="text-red-500">*</span>
 									</Label>
 									<Input
-										id="name"
 										value={formData.name}
-										onChange={(e) => updateFormData({ name: e.target.value })}
+										onChange={(e) => handleInputChange("name", e.target.value)}
 										placeholder="VD: Làng nghề gốm sứ Bát Tràng"
 										className={`h-12 text-base border-2 transition-all duration-200 ${errors.name
 											? "border-red-300 focus:border-red-500"
@@ -385,13 +300,13 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 								<div className="space-y-3">
 									<Label className="text-base font-semibold text-gray-700 flex items-center gap-2">
 										<Users className="h-4 w-4 text-blue-500" />
-										Mô tả hấp dẫn <span className="text-red-500">*</span>
+										Mô tả ngắn <span className="text-red-500">*</span>
 									</Label>
 									<Textarea
 										value={formData.description}
-										onChange={(e) => updateFormData({ description: e.target.value })}
-										placeholder="Hãy mô tả những điều đặc biệt khiến du khách muốn đến thăm làng nghề của bạn..."
-										rows={4}
+										onChange={(e) => handleInputChange("description", e.target.value)}
+										placeholder="Điểm nổi bật khiến du khách muốn đến thăm..."
+										rows={3}
 										className={`text-base border-2 transition-all duration-200 resize-none ${errors.description
 											? "border-red-300 focus:border-red-500"
 											: "border-gray-200 focus:border-emerald-400 hover:border-gray-300"
@@ -404,6 +319,84 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 										</div>
 									)}
 								</div>
+
+								<div className="space-y-3">
+									<Label className="text-base font-semibold text-gray-700">Nội dung chi tiết <span className="text-red-500">*</span></Label>
+									<ContentEditor
+										content={formData.content}
+										onChange={(v) => handleInputChange("content", v)}
+									/>
+									{errors.content && <p className="text-sm text-red-600">{errors.content}</p>}
+								</div>
+							</div>
+						</div>
+
+						<Separator className="my-8" />
+
+						{/* Operating Time, District, Signature */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="space-y-3">
+								<Label className="text-base font-semibold text-gray-700">Giờ mở cửa <span className="text-red-500">*</span></Label>
+								<Input
+									type="time"
+									value={formData.openTime}
+									onChange={(e) => handleInputChange("openTime", e.target.value)}
+									className={`h-12 text-base border-2 ${errors.openTime ? "border-red-300" : "border-gray-200 focus:border-emerald-400"}`}
+								/>
+							</div>
+							<div className="space-y-3">
+								<Label className="text-base font-semibold text-gray-700">Giờ đóng cửa <span className="text-red-500">*</span></Label>
+								<Input
+									type="time"
+									value={formData.closeTime}
+									onChange={(e) => handleInputChange("closeTime", e.target.value)}
+									className={`h-12 text-base border-2 ${errors.closeTime ? "border-red-300" : "border-gray-200 focus:border-emerald-400"}`}
+								/>
+								{errors.closeTime && <p className="text-sm text-red-600">{errors.closeTime}</p>}
+							</div>
+							<div className="space-y-3">
+								<Label className="text-base font-semibold text-gray-700">Quận/Huyện <span className="text-red-500">*</span></Label>
+								<Select value={formData.districtId} onValueChange={(v) => handleInputChange("districtId", v)}>
+									<SelectTrigger className={`h-12 text-base border-2 ${errors.districtId ? "border-red-300" : "border-gray-200"}`}>
+										<SelectValue placeholder="Chọn quận/huyện" />
+									</SelectTrigger>
+									<SelectContent>
+										{districts.map((d) => (
+											<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.districtId && <p className="text-sm text-red-600">{errors.districtId}</p>}
+							</div>
+							<div className="space-y-3">
+								<Label className="text-base font-semibold text-gray-700">Sản phẩm đặc trưng <span className="text-red-500">*</span></Label>
+								<Input
+									value={formData.signatureProduct}
+									onChange={(e) => handleInputChange("signatureProduct", e.target.value)}
+									placeholder="VD: Gốm sứ, lụa, mộc, ..."
+									className={`h-12 text-base border-2 ${errors.signatureProduct ? "border-red-300" : "border-gray-200 focus:border-emerald-400"}`}
+								/>
+								{errors.signatureProduct && <p className="text-sm text-red-600">{errors.signatureProduct}</p>}
+							</div>
+							<div className="space-y-3">
+								<Label className="text-base font-semibold text-gray-700">Số năm lịch sử <span className="text-red-500">*</span></Label>
+								<Input
+									type="number"
+									min={1}
+									max={2000}
+									value={formData.yearsOfHistory}
+									onChange={(e) => handleInputChange("yearsOfHistory", e.target.value)}
+									className={`h-12 text-base border-2 ${errors.yearsOfHistory ? "border-red-300" : "border-gray-200 focus:border-emerald-400"}`}
+								/>
+								{errors.yearsOfHistory && <p className="text-sm text-red-600">{errors.yearsOfHistory}</p>}
+							</div>
+							<div className="flex items-center gap-3 pt-8">
+								<Checkbox
+									id="unesco"
+									checked={formData.isRecognizedByUnesco}
+									onCheckedChange={(v) => handleInputChange("isRecognizedByUnesco", !!v)}
+								/>
+								<Label htmlFor="unesco" className="text-sm text-gray-700">Được UNESCO công nhận</Label>
 							</div>
 						</div>
 
@@ -423,7 +416,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 									address={formData.address}
 									latitude={formData.latitude}
 									longitude={formData.longitude}
-									onAddressChange={onAddressChange}
+									onAddressChange={handleAddressChange}
 									addressError={errors.address}
 								/>
 								{errors.address && (
@@ -445,7 +438,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 								</div>
 								<div>
 									<h3 className="text-xl font-bold text-gray-800">Thông tin liên hệ</h3>
-									<p className="text-sm text-gray-600 mt-1">Tùy chọn - giúp du khách dễ dàng liên hệ với bạn</p>
+									<p className="text-sm text-gray-600 mt-1">Bắt buộc: SĐT và Email. Website là tùy chọn.</p>
 								</div>
 							</div>
 
@@ -454,14 +447,11 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 									<div className="space-y-3">
 										<Label className="text-base font-semibold text-gray-700 flex items-center gap-2">
 											<Phone className="h-4 w-4 text-green-500" />
-											Số điện thoại
-											<Badge variant="secondary" className="ml-2 text-xs bg-green-100 text-green-700">
-												Tùy chọn
-											</Badge>
+											Số điện thoại <span className="text-red-500">*</span>
 										</Label>
 										<Input
 											value={formData.phoneNumber}
-											onChange={(e) => updateFormData({ phoneNumber: e.target.value })}
+											onChange={(e) => handlePhoneChange(e.target.value)}
 											placeholder="VD: 0912 345 678"
 											className={`h-12 text-base border-2 transition-all duration-200 ${errors.phoneNumber
 												? "border-red-300 focus:border-red-500"
@@ -479,15 +469,12 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 									<div className="space-y-3">
 										<Label className="text-base font-semibold text-gray-700 flex items-center gap-2">
 											<Mail className="h-4 w-4 text-blue-500" />
-											Email
-											<Badge variant="secondary" className="ml-2 text-xs bg-blue-100 text-blue-700">
-												Tùy chọn
-											</Badge>
+											Email <span className="text-red-500">*</span>
 										</Label>
 										<Input
 											type="email"
 											value={formData.email}
-											onChange={(e) => updateFormData({ email: e.target.value })}
+											onChange={(e) => handleInputChange("email", e.target.value)}
 											placeholder="VD: contact@langnghegom.com"
 											className={`h-12 text-base border-2 transition-all duration-200 ${errors.email
 												? "border-red-300 focus:border-red-500"
@@ -512,7 +499,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 										</Label>
 										<Input
 											value={formData.website}
-											onChange={(e) => updateFormData({ website: e.target.value })}
+											onChange={(e) => handleInputChange("website", e.target.value)}
 											placeholder="VD: https://langnghegom.com"
 											className={`h-12 text-base border-2 transition-all duration-200 ${errors.website
 												? "border-red-300 focus:border-red-500"
@@ -527,21 +514,34 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 										)}
 									</div>
 								</div>
-
-								<div className="mt-6 bg-white/60 rounded-lg p-4">
-									<div className="flex items-start gap-3">
-										<Sparkles className="h-5 w-5 text-orange-500 mt-0.5" />
-										<div className="text-sm text-gray-700">
-											<p className="font-medium mb-1">💡 Mẹo tăng cơ hội được duyệt:</p>
-											<ul className="space-y-1 text-xs text-gray-600">
-												<li>• Cung cấp số điện thoại giúp du khách dễ dàng liên hệ đặt chuyến tham quan</li>
-												<li>• Email chuyên nghiệp tạo ấn tượng tốt với khách hàng</li>
-												<li>• Website/Facebook page thể hiện sự chuyên nghiệp</li>
-											</ul>
-										</div>
-									</div>
-								</div>
 							</div>
+						</div>
+
+						<Separator className="my-8" />
+
+						{/* Model attachments (images via custom ImageUpload) */}
+						<div className="space-y-6">
+							<div className="flex items-center gap-3 mb-6">
+								<div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-fuchsia-500 rounded-full flex items-center justify-center">
+									<FileText className="h-5 w-5 text-white" />
+								</div>
+								<h3 className="text-xl font-bold text-gray-800">Hình ảnh minh chứng</h3>
+							</div>
+							<ImageUpload
+								mediaDtos={(uploadedModelUrls || []).map((u, index) => ({
+									mediaUrl: u,
+									isThumbnail: index === 0 // First image as default thumbnail
+								}))}
+								onChange={(items: MediaDto[]) => {
+									const urls = items.map((m) => m.mediaUrl).filter(Boolean)
+									setUploadedModelUrls(urls)
+									console.log("=== IMAGE UPLOAD DEBUG ===")
+									console.log("New media items:", items)
+									console.log("Extracted URLs:", urls)
+									console.log("========================")
+								}}
+							/>
+							{errors.model && <p className="text-sm text-red-600">{errors.model}</p>}
 						</div>
 
 						<Separator className="my-8" />
@@ -560,19 +560,15 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 									<Checkbox
 										id="workshopsAvailable"
 										checked={formData.workshopsAvailable}
-										onCheckedChange={(checked) => updateFormData({ workshopsAvailable: !!checked })}
+										onCheckedChange={(checked) => handleInputChange("workshopsAvailable", !!checked)}
 										className="mt-1 h-5 w-5"
 									/>
 									<div className="space-y-2">
-										<Label
-											htmlFor="workshopsAvailable"
-											className="text-base font-semibold text-gray-700 cursor-pointer"
-										>
+										<Label htmlFor="workshopsAvailable" className="text-base font-semibold text-gray-700 cursor-pointer">
 											Có cung cấp trải nghiệm cho du khách
 										</Label>
 										<p className="text-sm text-gray-600 leading-relaxed">
-											Trải nghiệm thực hành giúp du khách hiểu sâu hơn về nghề truyền thống và tăng thu nhập cho làng
-											nghề
+											Sau khi yêu cầu làng nghề được duyệt, bạn có thể gửi trải nghiệm để thẩm định và mở bán.
 										</p>
 									</div>
 								</div>
@@ -588,7 +584,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 							<Ticket className="h-6 w-6" />
 							<div>
 								<h2 className="text-2xl font-bold">Trải nghiệm làng nghề</h2>
-								<p className="text-purple-100 font-normal text-base">Tạo những trải nghiệm làng nghề đáng nhớ cho du khách</p>
+								<p className="text-purple-100 font-normal text-base">Thiết kế những trải nghiệm hấp dẫn (tùy chọn)</p>
 							</div>
 						</CardTitle>
 					</CardHeader>
@@ -602,17 +598,17 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 								<div className="space-y-3">
 									<h3 className="text-2xl font-bold text-gray-800">Tạo trải nghiệm đầu tiên</h3>
 									<p className="text-gray-600 max-w-md mx-auto leading-relaxed">
-										Hãy thiết kế những trải nghiệm thú vị để du khách có thể tham gia và học hỏi từ nghề truyền thống
-										của bạn
+										Thiết kế các hoạt động để du khách có thể tham gia và học hỏi từ nghề truyền thống của bạn.
 									</p>
 								</div>
 								<Button
+									type="button"
 									onClick={addWorkshop}
 									size="lg"
 									className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
 								>
 									<Plus className="h-5 w-5 mr-2" />
-									Tạo trải nghiệm đầu tiên
+									Tạo trải nghiệm của làng nghề
 								</Button>
 							</div>
 						) : (
@@ -625,6 +621,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 										<span className="text-sm text-gray-500">Tuyệt vời! Bạn đang tạo ra giá trị cho du khách</span>
 									</div>
 									<Button
+										type="button"
 										onClick={addWorkshop}
 										variant="outline"
 										className="border-purple-300 text-purple-600 hover:bg-purple-50 bg-transparent"
@@ -648,10 +645,11 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 															<p className="text-gray-600 text-sm leading-relaxed">{workshop.description}</p>
 														</div>
 														<div className="flex items-center gap-2 ml-4">
-															<Button size="sm" variant="outline" onClick={() => editWorkshop(workshop)}>
+															<Button type="button" size="sm" variant="outline" onClick={() => editWorkshop(workshop)}>
 																<Edit3 className="h-4 w-4" />
 															</Button>
 															<Button
+																type="button"
 																size="sm"
 																variant="outline"
 																onClick={() => deleteWorkshop(index)}
@@ -671,9 +669,7 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 														</div>
 														<div className="text-center">
 															<div className="text-2xl font-bold text-purple-600">
-																{workshop.ticketTypes.find((t) => t.type === "Experience")?.price.toLocaleString() ||
-																	"0"}
-																đ
+																{workshop.ticketTypes.find((t) => t.type === "Experience")?.price.toLocaleString() || "0"}đ
 															</div>
 															<div className="text-xs text-gray-500">Vé trải nghiệm</div>
 														</div>
@@ -729,7 +725,6 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 							</div>
 						</div>
 
-						{/* Contact Information Summary */}
 						{(formData.phoneNumber || formData.email || formData.website) && (
 							<div className="bg-white rounded-xl p-6 shadow-sm">
 								<h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -768,49 +763,14 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 							</div>
 						)}
 
-						{workshops.length > 0 && (
-							<div className="bg-white rounded-xl p-6 shadow-sm">
-								<h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-									<Ticket className="h-5 w-5 text-purple-500" />
-									Danh sách trải nghiệm
-								</h4>
-								<div className="space-y-3">
-									{workshops.map((workshop, index) => (
-										<div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-											<div>
-												<p className="font-semibold text-gray-800">
-													{index + 1}. {workshop.name}
-												</p>
-												<p className="text-sm text-gray-600">{workshop.description}</p>
-											</div>
-											<div className="text-right">
-												<p className="font-bold text-emerald-600">
-													{workshop.ticketTypes.find((t) => t.type === "Visit")?.price.toLocaleString()}đ+
-												</p>
-												<p className="text-xs text-gray-500">Từ</p>
-											</div>
-										</div>
-									))}
-								</div>
-							</div>
-						)}
-
 						<div className="text-center space-y-6 pt-6">
-							<div className="space-y-3">
-								<h3 className="text-2xl font-bold text-gray-800">Sẵn sàng gia nhập cộng đồng?</h3>
-								<p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-									Chúng tôi sẽ xem xét đăng ký của bạn và phản hồi trong vòng 2-3 ngày làm việc. Hãy chuẩn bị đón chào
-									những du khách đầu tiên!
-								</p>
-							</div>
-
 							<Button
-								onClick={handleSubmit}
-								disabled={isLoading || completionProgress < 70}
+								type="submit"
+								disabled={isSubmitting || completionProgress < 70}
 								size="lg"
 								className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white px-12 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
 							>
-								{isLoading ? (
+								{isSubmitting ? (
 									<>
 										<Loader2 className="h-6 w-6 mr-3 animate-spin" />
 										Đang gửi đăng ký...
@@ -846,19 +806,19 @@ export default function ProfessionalApplicationForm({ onSubmit, isLoading = fals
 					/>
 				)}
 			</div>
-		</div>
+		</form>
 	)
 }
 
-// Modern Workshop Modal Component
-interface ModernWorkshopModalProps {
+// Workshop modal (unchanged logic; kept inline for cohesion and future scalability)
+function ModernWorkshopModal({
+	isOpen, onClose, onSave, editingWorkshop,
+}: {
 	isOpen: boolean
 	onClose: () => void
 	onSave: (workshop: WorkshopData) => void
 	editingWorkshop: WorkshopData | null
-}
-
-function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: ModernWorkshopModalProps) {
+}) {
 	const [workshop, setWorkshop] = useState<WorkshopData>(
 		editingWorkshop || {
 			name: "",
@@ -886,7 +846,6 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 			recurringRules: [],
 		},
 	)
-
 	const [currentStep, setCurrentStep] = useState(1)
 	const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -896,12 +855,10 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 
 	const validateStep = (step: number): boolean => {
 		const newErrors: Record<string, string> = {}
-
 		if (step === 1) {
 			if (!workshop.name.trim()) newErrors.name = "Tên trải nghiệm là bắt buộc"
 			if (!workshop.description.trim()) newErrors.description = "Mô tả là bắt buộc"
 		}
-
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
@@ -913,58 +870,49 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 	}
 
 	const handleSave = () => {
-		if (validateStep(1)) {
-			onSave(workshop)
-		}
+		if (validateStep(1)) onSave(workshop)
 	}
+
+	const experienceTicket = workshop.ticketTypes.find((t) => t.type === "Experience")
+	const visitTicket = workshop.ticketTypes.find((t) => t.type === "Visit")
 
 	const addActivity = () => {
-		const experienceTicket = workshop.ticketTypes.find((t) => t.type === "Experience")
-		if (experienceTicket) {
-			const newActivity: WorkshopActivity = {
-				activity: "",
-				description: "",
-				startHour: 0,
-				endHour: 1,
-				activityOrder: (experienceTicket.workshopActivities?.length || 0) + 1,
-			}
-
-			const updatedTicketTypes = workshop.ticketTypes.map((ticket) =>
-				ticket.type === "Experience"
-					? { ...ticket, workshopActivities: [...(ticket.workshopActivities || []), newActivity] }
-					: ticket,
-			)
-
-			updateWorkshop({ ticketTypes: updatedTicketTypes })
+		if (!experienceTicket) return
+		const newActivity: WorkshopActivity = {
+			activity: "",
+			description: "",
+			startHour: 0,
+			endHour: 1,
+			activityOrder: (experienceTicket.workshopActivities?.length || 0) + 1,
 		}
+		updateWorkshop({
+			ticketTypes: workshop.ticketTypes.map((t) =>
+				t.type === "Experience"
+					? { ...t, workshopActivities: [...(t.workshopActivities || []), newActivity] }
+					: t,
+			),
+		})
 	}
-
 	const updateActivity = (index: number, updates: Partial<WorkshopActivity>) => {
-		const updatedTicketTypes = workshop.ticketTypes.map((ticket) =>
-			ticket.type === "Experience"
-				? {
-					...ticket,
-					workshopActivities:
-						ticket.workshopActivities?.map((activity, i) => (i === index ? { ...activity, ...updates } : activity)) ||
-						[],
-				}
-				: ticket,
-		)
-
-		updateWorkshop({ ticketTypes: updatedTicketTypes })
+		updateWorkshop({
+			ticketTypes: workshop.ticketTypes.map((t) =>
+				t.type === "Experience"
+					? {
+						...t,
+						workshopActivities: t.workshopActivities?.map((a, i) => (i === index ? { ...a, ...updates } : a)) || [],
+					}
+					: t,
+			),
+		})
 	}
-
 	const removeActivity = (index: number) => {
-		const updatedTicketTypes = workshop.ticketTypes.map((ticket) =>
-			ticket.type === "Experience"
-				? {
-					...ticket,
-					workshopActivities: ticket.workshopActivities?.filter((_, i) => i !== index) || [],
-				}
-				: ticket,
-		)
-
-		updateWorkshop({ ticketTypes: updatedTicketTypes })
+		updateWorkshop({
+			ticketTypes: workshop.ticketTypes.map((t) =>
+				t.type === "Experience"
+					? { ...t, workshopActivities: t.workshopActivities?.filter((_, i) => i !== index) || [] }
+					: t,
+			),
+		})
 	}
 
 	const addRecurringRule = () => {
@@ -976,21 +924,14 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 		}
 		updateWorkshop({ recurringRules: [...workshop.recurringRules, newRule] })
 	}
-
 	const updateRecurringRule = (index: number, updates: Partial<RecurringRule>) => {
-		const updatedRules = workshop.recurringRules.map((rule, i) => (i === index ? { ...rule, ...updates } : rule))
-		updateWorkshop({ recurringRules: updatedRules })
+		updateWorkshop({ recurringRules: workshop.recurringRules.map((r, i) => (i === index ? { ...r, ...updates } : r)) })
 	}
-
 	const removeRecurringRule = (index: number) => {
-		const filteredRules = workshop.recurringRules.filter((_, i) => i !== index)
-		updateWorkshop({ recurringRules: filteredRules })
+		updateWorkshop({ recurringRules: workshop.recurringRules.filter((_, i) => i !== index) })
 	}
 
 	if (!isOpen) return null
-
-	const experienceTicket = workshop.ticketTypes.find((t) => t.type === "Experience")
-	const visitTicket = workshop.ticketTypes.find((t) => t.type === "Visit")
 
 	return (
 		<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -998,24 +939,16 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 				<div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
 					<div className="flex items-center justify-between">
 						<div>
-							<h2 className="text-2xl font-bold">
-								{editingWorkshop ? "Chỉnh sửa trải nghiệm" : "Tạo trải nghiệm mới"}
-							</h2>
+							<h2 className="text-2xl font-bold">{editingWorkshop ? "Chỉnh sửa trải nghiệm" : "Tạo trải nghiệm mới"}</h2>
 							<p className="text-purple-100 mt-1">Thiết kế trải nghiệm hấp dẫn cho du khách</p>
 						</div>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={onClose}
-							className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-						>
+						<Button type="button" variant="outline" size="sm" onClick={onClose} className="bg-white/20 border-white/30 text-white hover:bg-white/30">
 							✕
 						</Button>
 					</div>
 				</div>
 
 				<div className="p-8 space-y-8">
-					{/* Step Indicator */}
 					<div className="flex items-center justify-center gap-4">
 						{[1, 2, 3].map((step) => (
 							<div key={step} className="flex items-center">
@@ -1032,14 +965,8 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 						))}
 					</div>
 
-					{/* Step 1: Basic Info */}
 					{currentStep === 1 && (
 						<div className="space-y-6">
-							<div className="text-center mb-8">
-								<h3 className="text-2xl font-bold text-gray-800 mb-2">Thông tin cơ bản</h3>
-								<p className="text-gray-600">Tạo ấn tượng đầu tiên tốt với du khách</p>
-							</div>
-
 							<div className="grid grid-cols-1 gap-6">
 								<div className="space-y-3">
 									<Label className="text-base font-semibold text-gray-700">Tên trải nghiệm *</Label>
@@ -1070,29 +997,28 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 										<Input
 											type="number"
 											value={visitTicket?.price || 0}
-											onChange={(e) => {
-												const updatedTicketTypes = workshop.ticketTypes.map((ticket) =>
-													ticket.type === "Visit" ? { ...ticket, price: Number.parseInt(e.target.value) || 0 } : ticket,
-												)
-												updateWorkshop({ ticketTypes: updatedTicketTypes })
-											}}
+											onChange={(e) =>
+												updateWorkshop({
+													ticketTypes: workshop.ticketTypes.map((t) =>
+														t.type === "Visit" ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
+													),
+												})
+											}
 											className="h-12 text-base border-2 border-gray-200 focus:border-purple-400"
 										/>
 									</div>
-
 									<div className="space-y-3">
 										<Label className="text-base font-semibold text-gray-700">Giá vé trải nghiệm (VNĐ)</Label>
 										<Input
 											type="number"
 											value={experienceTicket?.price || 0}
-											onChange={(e) => {
-												const updatedTicketTypes = workshop.ticketTypes.map((ticket) =>
-													ticket.type === "Experience"
-														? { ...ticket, price: Number.parseInt(e.target.value) || 0 }
-														: ticket,
-												)
-												updateWorkshop({ ticketTypes: updatedTicketTypes })
-											}}
+											onChange={(e) =>
+												updateWorkshop({
+													ticketTypes: workshop.ticketTypes.map((t) =>
+														t.type === "Experience" ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
+													),
+												})
+											}
 											className="h-12 text-base border-2 border-gray-200 focus:border-purple-400"
 										/>
 									</div>
@@ -1101,17 +1027,11 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 						</div>
 					)}
 
-					{/* Step 2: Activities */}
 					{currentStep === 2 && (
 						<div className="space-y-6">
-							<div className="text-center mb-8">
-								<h3 className="text-2xl font-bold text-gray-800 mb-2">Hoạt động trải nghiệm</h3>
-								<p className="text-gray-600">Thiết kế các hoạt động thú vị cho du khách</p>
-							</div>
-
 							<div className="flex items-center justify-between">
 								<h4 className="text-lg font-semibold text-gray-800">Danh sách hoạt động</h4>
-								<Button onClick={addActivity} className="bg-gradient-to-r from-purple-500 to-pink-500">
+								<Button type="button" onClick={addActivity} className="bg-gradient-to-r from-purple-500 to-pink-500">
 									<Plus className="h-4 w-4 mr-2" />
 									Thêm hoạt động
 								</Button>
@@ -1134,6 +1054,7 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 														Hoạt động {index + 1}
 													</Badge>
 													<Button
+														type="button"
 														size="sm"
 														variant="outline"
 														onClick={() => removeActivity(index)}
@@ -1160,18 +1081,14 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 															<Input
 																type="number"
 																value={activity.startHour}
-																onChange={(e) =>
-																	updateActivity(index, { startHour: Number.parseInt(e.target.value) || 0 })
-																}
+																onChange={(e) => updateActivity(index, { startHour: Number.parseInt(e.target.value) || 0 })}
 																className="border-2 border-gray-200 focus:border-purple-400"
 															/>
 															<span>-</span>
 															<Input
 																type="number"
 																value={activity.endHour}
-																onChange={(e) =>
-																	updateActivity(index, { endHour: Number.parseInt(e.target.value) || 0 })
-																}
+																onChange={(e) => updateActivity(index, { endHour: Number.parseInt(e.target.value) || 0 })}
 																className="border-2 border-gray-200 focus:border-purple-400"
 															/>
 														</div>
@@ -1196,17 +1113,11 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 						</div>
 					)}
 
-					{/* Step 3: Schedule */}
 					{currentStep === 3 && (
 						<div className="space-y-6">
-							<div className="text-center mb-8">
-								<h3 className="text-2xl font-bold text-gray-800 mb-2">Lịch trình hoạt động</h3>
-								<p className="text-gray-600">Thiết lập thời gian hoạt động định kỳ</p>
-							</div>
-
 							<div className="flex items-center justify-between">
 								<h4 className="text-lg font-semibold text-gray-800">Quy tắc lặp lại</h4>
-								<Button onClick={addRecurringRule} className="bg-gradient-to-r from-purple-500 to-pink-500">
+								<Button type="button" onClick={addRecurringRule} className="bg-gradient-to-r from-purple-500 to-pink-500">
 									<Plus className="h-4 w-4 mr-2" />
 									Thêm lịch trình
 								</Button>
@@ -1229,6 +1140,7 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 														Lịch trình {index + 1}
 													</Badge>
 													<Button
+														type="button"
 														size="sm"
 														variant="outline"
 														onClick={() => removeRecurringRule(index)}
@@ -1262,37 +1174,35 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 													<div className="md:col-span-2 space-y-2">
 														<Label>Các ngày trong tuần</Label>
 														<div className="flex flex-wrap gap-2">
-															{["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(
-																(day) => (
-																	<div key={day} className="flex items-center space-x-2">
-																		<Checkbox
-																			id={`${index}-${day}`}
-																			checked={rule.daysOfWeek.includes(day)}
-																			onCheckedChange={(checked) => {
-																				const updatedDays = checked
-																					? [...rule.daysOfWeek, day]
-																					: rule.daysOfWeek.filter((d) => d !== day)
-																				updateRecurringRule(index, { daysOfWeek: updatedDays })
-																			}}
-																		/>
-																		<Label htmlFor={`${index}-${day}`} className="text-sm">
-																			{day === "Monday"
-																				? "T2"
-																				: day === "Tuesday"
-																					? "T3"
-																					: day === "Wednesday"
-																						? "T4"
-																						: day === "Thursday"
-																							? "T5"
-																							: day === "Friday"
-																								? "T6"
-																								: day === "Saturday"
-																									? "T7"
-																									: "CN"}
-																		</Label>
-																	</div>
-																),
-															)}
+															{["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
+																<div key={day} className="flex items-center space-x-2">
+																	<Checkbox
+																		id={`${index}-${day}`}
+																		checked={rule.daysOfWeek.includes(day)}
+																		onCheckedChange={(checked) => {
+																			const updatedDays = checked
+																				? [...rule.daysOfWeek, day]
+																				: rule.daysOfWeek.filter((d) => d !== day)
+																			updateRecurringRule(index, { daysOfWeek: updatedDays })
+																		}}
+																	/>
+																	<Label htmlFor={`${index}-${day}`} className="text-sm">
+																		{day === "Monday"
+																			? "T2"
+																			: day === "Tuesday"
+																				? "T3"
+																				: day === "Wednesday"
+																					? "T4"
+																					: day === "Thursday"
+																						? "T5"
+																						: day === "Friday"
+																							? "T6"
+																							: day === "Saturday"
+																								? "T7"
+																								: "CN"}
+																	</Label>
+																</div>
+															))}
 														</div>
 													</div>
 												</div>
@@ -1303,27 +1213,26 @@ function ModernWorkshopModal({ isOpen, onClose, onSave, editingWorkshop }: Moder
 							)}
 						</div>
 					)}
-				</div>
 
-				<div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-between">
-					<div className="flex gap-2">
-						{currentStep > 1 && (
-							<Button variant="outline" onClick={() => setCurrentStep((prev) => prev - 1)}>
-								Quay lại
-							</Button>
-						)}
-					</div>
-
-					<div className="flex gap-2">
-						{currentStep < 3 ? (
-							<Button onClick={handleNext} className="bg-gradient-to-r from-purple-500 to-pink-500">
-								Tiếp theo
-							</Button>
-						) : (
-							<Button onClick={handleSave} className="bg-gradient-to-r from-emerald-500 to-blue-500">
-								{editingWorkshop ? "Cập nhật" : "Lưu trải nghiệm"}
-							</Button>
-						)}
+					<div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-between">
+						<div className="flex gap-2">
+							{currentStep > 1 && (
+								<Button type="button" variant="outline" onClick={() => setCurrentStep((prev) => prev - 1)}>
+									Quay lại
+								</Button>
+							)}
+						</div>
+						<div className="flex gap-2">
+							{currentStep < 3 ? (
+								<Button type="button" onClick={handleNext} className="bg-gradient-to-r from-purple-500 to-pink-500">
+									Tiếp theo
+								</Button>
+							) : (
+								<Button type="button" onClick={handleSave} className="bg-gradient-to-r from-emerald-500 to-blue-500">
+									{editingWorkshop ? "Cập nhật" : "Lưu trải nghiệm"}
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>

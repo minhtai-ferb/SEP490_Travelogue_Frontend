@@ -1,19 +1,19 @@
 "use client"
-import { useState, useEffect } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar as CalendarComp } from "@/components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComp } from "@/components/ui/calendar"
-import { ArrowRight, ArrowLeft, Plus, Trash2, Calendar, Users, Loader2, Banknote, Copy, Sparkles, UserCircle2, User } from "lucide-react"
-import type { ScheduleFormData } from "@/types/Tour"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useTourguideAssign } from "@/services/tourguide"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import type { ScheduleFormData } from "@/types/Tour"
 import { TourGuideItem } from "@/types/Tourguide"
+import { ArrowLeft, ArrowRight, Banknote, Calendar, Copy, Loader2, Plus, Sparkles, Trash2, User, Users } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface TourScheduleFormProps {
 	initialData?: ScheduleFormData[]
@@ -45,7 +45,7 @@ export function TourScheduleForm({
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [openDatePicker, setOpenDatePicker] = useState(false)
 	const [quickAddOpen, setQuickAddOpen] = useState(false)
-	const { getTourGuide, getTourguideFilter } = useTourguideAssign()
+	const { getTourguideFilter } = useTourguideAssign()
 	const [guides, setGuides] = useState<Array<TourGuideItem>>([])
 	const [guidesLoading, setGuidesLoading] = useState(false)
 
@@ -67,7 +67,7 @@ export function TourScheduleForm({
 	// Fetch available tour guides once
 	useEffect(() => {
 		let mounted = true
-		const fetchGuides = async () => {
+		const fetchTourGuides = async () => {
 			try {
 				setGuidesLoading(true)
 				const res: any = await getTourguideFilter({
@@ -80,7 +80,6 @@ export function TourScheduleForm({
 					MinPrice: 0,
 					MaxPrice: 0,
 				})
-				console.log(res)
 				const list: any[] = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : []
 				const normalized = list.map((g: any) => ({
 					id: g.id || g.userId || g.tourGuideId,
@@ -102,7 +101,7 @@ export function TourScheduleForm({
 				if (mounted) setGuidesLoading(false)
 			}
 		}
-		fetchGuides()
+		fetchTourGuides()
 		return () => {
 			mounted = false
 		}
@@ -234,8 +233,8 @@ export function TourScheduleForm({
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="text-center">
-				<h2 className="text-2xl font-bold">Lịch Trình Tour</h2>
-				<p className="text-gray-600 mt-2">Thêm các ngày khởi hành và giá cho tour {tourDays} ngày</p>
+				<h2 className="text-2xl font-bold">Lịch Trình</h2>
+				<p className="text-gray-600 mt-2">Thêm các ngày khởi hành và giá cho chuyến tham quan {tourDays} ngày</p>
 			</div>
 
 			{/* Add New Schedule */}
@@ -255,7 +254,9 @@ export function TourScheduleForm({
 							</Label>
 							<Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
 								<PopoverTrigger asChild>
-									<Button type="button" variant="outline" className={`w-full justify-start ${errors.departureDate ? "border-red-500" : ""}`} disabled={isLoading}>
+									<Button type="button" variant="outline"
+										className={`w-full justify-start ${errors.departureDate ? "border-red-500" : ""}`}
+										disabled={isLoading}>
 										{newSchedule.departureDate ? new Date(newSchedule.departureDate).toLocaleDateString("vi-VN") : "Chọn ngày"}
 									</Button>
 								</PopoverTrigger>
@@ -270,7 +271,6 @@ export function TourScheduleForm({
 											setOpenDatePicker(false)
 										}}
 										disabled={(date) => date < new Date(new Date().toDateString())}
-										initialFocus
 										captionLayout="dropdown"
 									/>
 								</PopoverContent>
