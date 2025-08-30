@@ -48,16 +48,63 @@ export interface CraftVillageRequestResponse {
 	districtId: string
 	phoneNumber: string
 	email: string
-	website: string
-	locationId: string
+	website: string | null
+	locationId?: string
 	workshopsAvailable: boolean
 	signatureProduct: string
 	yearsOfHistory: number
 	isRecognizedByUnesco: boolean
 	status: CraftVillageRequestStatus
-	rejectionReason: string
-	reviewedAt: string
-	reviewedBy: string
+	statusText?: string
+	rejectionReason: string | null
+	reviewedAt: string | null
+	reviewedBy: string | null
+	medias?: {
+		mediaUrl: string
+		isThumbnail: boolean
+	}[]
+	workshop?: {
+		id: string
+		craftVillageRequestId: string
+		name: string
+		description: string
+		content: string
+		status: number
+		ticketTypes: {
+			id: string
+			type: number
+			name: string
+			price: number
+			isCombo: boolean
+			durationMinutes: number
+			content: string
+			workshopActivities: {
+				id: string
+				activity: string
+				description: string
+				startHour: string
+				endHour: string
+				activityOrder: number
+			}[]
+		}[]
+		recurringRules: {
+			id: string
+			daysOfWeek: number[]
+			startDate: string
+			endDate: string
+			sessions: {
+				id: string
+				startTime: string
+				endTime: string
+				capacity: number
+			}[]
+		}[]
+		exceptions: any[]
+		createdTime: string
+		lastUpdatedTime: string
+		createdBy: string
+		lastUpdatedBy: string
+	}
 }
 
 

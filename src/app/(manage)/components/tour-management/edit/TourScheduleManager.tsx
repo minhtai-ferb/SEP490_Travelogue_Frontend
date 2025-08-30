@@ -50,6 +50,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 	const [success, setSuccess] = useState("")
 	const [editingSchedule, setEditingSchedule] = useState<TourSchedule | null>(null)
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const today = new Date().toISOString().split("T")[0]
 	const [formData, setFormData] = useState<ScheduleFormData>({
 		departureDate: "",
 		maxParticipant: 20,
@@ -395,7 +396,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 										<TableHead>Số Người</TableHead>
 										<TableHead>Giá người lớn</TableHead>
 										<TableHead>Giá trẻ em</TableHead>
-										<TableHead>Thời gian</TableHead>
+										<TableHead>Thời gian diễn ra</TableHead>
 										<TableHead>Trạng Thái</TableHead>
 										<TableHead className="text-center">Hành Động</TableHead>
 									</TableRow>
@@ -422,13 +423,11 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 												</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-1">
-														<DollarSign className="w-4 h-4 text-green-600" />
 														<span className="font-semibold text-green-600">{formatPriceSimple(schedule.adultPrice)}</span>
 													</div>
 												</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-1">
-														<DollarSign className="w-4 h-4 text-blue-600" />
 														<span className="font-semibold text-blue-600">{formatPriceSimple(schedule.childrenPrice)}</span>
 													</div>
 												</TableCell>
@@ -445,14 +444,19 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 												</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-2">
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => handleOpenDialog(schedule)}
-															disabled={isLoading}
-														>
-															<Edit className="w-4 h-4" />
-														</Button>
+														{
+															// Chỉ cho phép chỉnh sửa nếu lịch trình vẫn diễn ra
+															schedule.endTime > today && (
+																<Button
+																	variant="ghost"
+																	size="sm"
+																	onClick={() => handleOpenDialog(schedule)}
+																	disabled={isLoading}
+																>
+																	<Edit className="w-4 h-4" />
+																</Button>
+															)
+														}
 														<Button
 															variant="ghost"
 															size="sm"
