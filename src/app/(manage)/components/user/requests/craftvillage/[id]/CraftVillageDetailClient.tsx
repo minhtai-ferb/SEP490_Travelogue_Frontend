@@ -42,6 +42,7 @@ function CraftVillageDetail({ id }: { id: string }) {
 	const handleReview = async (id: string, data: ReviewCraftVillageRequest) => {
 		try {
 			const response = await reviewCraftVillageRequest(id, data)
+
 			if (response) {
 				toast.success(data.status === CraftVillageRequestStatus.Approved ? "Đã duyệt đơn đăng ký" : "Đã từ chối đơn đăng ký")
 				fetchData()
