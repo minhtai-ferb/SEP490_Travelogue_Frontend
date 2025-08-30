@@ -234,10 +234,10 @@ export default function RequestsTable({
     },
     {
       title: "Thời gian yêu cầu",
-      dataIndex: "createdTime",
-      key: "createdTime",
+      dataIndex: "requestedAt",
+      key: "requestedAt",
       sorter: (a, b) =>
-        dayjs(a.createdTime).valueOf() - dayjs(b.createdTime).valueOf(),
+        dayjs(a.requestedAt).valueOf() - dayjs(b.requestedAt).valueOf(),
       render: (v: string) => (
         <div className="text-xs">
           <div>{dayjs(v).format("DD/MM/YYYY")}</div>
@@ -248,13 +248,13 @@ export default function RequestsTable({
     },
     {
       title: "Thời gian phản hồi",
-      dataIndex: "lastUpdatedTime",
-      key: "lastUpdatedTime",
+      dataIndex: "respondedAt",
+      key: "respondedAt",
       sorter: (a, b) =>
-        dayjs(a.lastUpdatedTime).valueOf() - dayjs(b.lastUpdatedTime).valueOf(),
+        dayjs(a.respondedAt).valueOf() - dayjs(b.respondedAt).valueOf(),
       render: (v: string, record) => {
         const isUpdated =
-          dayjs(record.createdTime).format("YYYY-MM-DD HH:mm") !==
+          dayjs(record.respondedAt).format("YYYY-MM-DD HH:mm") !==
           dayjs(v).format("YYYY-MM-DD HH:mm");
         return (
           <div className="text-xs">
@@ -302,7 +302,7 @@ export default function RequestsTable({
           `${range[0]}-${range[1]} của ${total} yêu cầu`,
       }}
       scroll={{ x: 'max-content' }}
-      className="mt-4 [&_.ant-table-container]:overflow-auto"
+      className="mt-4"
       size="small"
       locale={{
         emptyText: (

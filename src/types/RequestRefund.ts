@@ -7,7 +7,7 @@ export interface RefundRequest {
   userName: string;
   status: RefundStatus;
   statusText: string;
-  createdTime: string;
+  requestedAt: string;
   respondedAt: string;
   lastUpdatedTime: string;
   bookingDataModel: BookingInfo;

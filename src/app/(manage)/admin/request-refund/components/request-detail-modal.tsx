@@ -178,9 +178,9 @@ export default function RequestDetailModal({
                     <Space>
                       <CalendarOutlined />
                       <div>
-                        <div>{dayjs(data.createdTime).format("DD/MM/YYYY")}</div>
+                        <div>{dayjs(data.requestedAt).format("DD/MM/YYYY")}</div>
                         <div className="text-xs text-gray-500">
-                          {dayjs(data.createdTime).format("HH:mm:ss")}
+                          {dayjs(data.requestedAt).format("HH:mm:ss")}
                         </div>
                       </div>
                     </Space>
@@ -189,14 +189,14 @@ export default function RequestDetailModal({
                     <Space>
                       <CalendarOutlined />
                       <div>
-                        {dayjs(data.createdTime).format("YYYY-MM-DD HH:mm") ===
-                        dayjs(data.lastUpdatedTime).format("YYYY-MM-DD HH:mm") ? (
+                        {dayjs(data.requestedAt).format("YYYY-MM-DD HH:mm") ===
+                        dayjs(data.respondedAt).format("YYYY-MM-DD HH:mm") ? (
                           <span className="text-gray-400">Chưa phản hồi</span>
                         ) : (
                           <>
-                            <div>{dayjs(data.lastUpdatedTime).format("DD/MM/YYYY")}</div>
+                            <div>{dayjs(data.respondedAt).format("DD/MM/YYYY")}</div>
                             <div className="text-xs text-gray-500">
-                              {dayjs(data.lastUpdatedTime).format("HH:mm:ss")}
+                              {dayjs(data.respondedAt).format("HH:mm:ss")}
                             </div>
                           </>
                         )}
