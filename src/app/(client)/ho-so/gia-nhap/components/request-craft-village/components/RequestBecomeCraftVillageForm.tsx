@@ -58,7 +58,7 @@ const TICKET_TYPES = {
 	EXPERIENCE: 2,
 } as const
 
-export default function ProfessionalApplicationForm() {
+export default function RequestBecomeCraftVillageForm() {
 	const {
 		districts,
 		formData,
