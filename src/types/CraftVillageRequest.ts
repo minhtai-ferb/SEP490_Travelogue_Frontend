@@ -53,8 +53,6 @@ export interface RecurringSession {
 // Recurring Rule structure
 export interface RecurringRule {
 	daysOfWeek: number[] // 0 = Sunday, 1 = Monday, etc.
-	startDate: string // ISO 8601 DateTime
-	endDate: string // ISO 8601 DateTime
 	sessions: RecurringSession[]
 }
 

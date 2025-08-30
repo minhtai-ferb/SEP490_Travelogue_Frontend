@@ -106,37 +106,8 @@ export default function RequestBecomeCraftVillageForm() {
 	}, [formData, modelFiles.length, uploadedModelUrls.length])
 
 	const addWorkshop = useCallback(() => {
-
-		const newWorkshop: WorkshopData = {
-			name: "",
-			description: "",
-			content: "",
-			status: WORKSHOP_STATUS.PENDING,
-			ticketTypes: [
-				{
-					type: TICKET_TYPES.VISIT,
-					name: "Vé tham quan",
-					price: 0,
-					isCombo: false,
-					durationMinutes: 0,
-					content: "Du khách tham quan và nghe giới thiệu về làng nghề",
-					workshopActivities: [],
-				},
-				{
-					type: TICKET_TYPES.EXPERIENCE,
-					name: "Vé trải nghiệm (bao gồm tham quan)",
-					price: 0,
-					isCombo: true,
-					durationMinutes: 0,
-					content: "Tham quan và trải nghiệm thực hành",
-					workshopActivities: [],
-				},
-			],
-			schedules: [],
-			recurringRules: [],
-			exceptions: [],
-		}
-		setEditingWorkshop(newWorkshop)
+		// Don't set editingWorkshop for new workshop creation
+		setEditingWorkshop(null)
 		setShowWorkshopModal(true)
 	}, [formData.workshopsAvailable])
 
@@ -533,7 +504,7 @@ export default function RequestBecomeCraftVillageForm() {
 							</div>
 
 							<div className={`bg-gradient-to-br rounded-xl p-6 transition-all duration-200 ${formData.workshopsAvailable
-								? "from-purple-50 to-pink-50 border-2 border-purple-200"
+								? "from-purple-50 to-blue-50 border-2 border-blue-200"
 								: "from-gray-50 to-gray-100 border border-gray-200"
 								}`}>
 								<div className="flex items-start space-x-4">
@@ -558,8 +529,8 @@ export default function RequestBecomeCraftVillageForm() {
 								{formData.workshopsAvailable && (
 									<div className="mt-4 p-3 bg-purple-100 border border-purple-200 rounded-lg">
 										<div className="flex items-center gap-2">
-											<Activity className="h-4 w-4 text-purple-600" />
-											<span className="text-sm font-medium text-purple-800">
+											<Activity className="h-4 w-4 text-blue-600" />
+											<span className="text-sm font-medium text-blue-600">
 												Tuyệt vời! Bạn có thể tạo workshop ở phần dưới
 											</span>
 										</div>
@@ -572,7 +543,7 @@ export default function RequestBecomeCraftVillageForm() {
 
 				{/* Workshop Section - Chỉ hiển thị khi đã bật workshopsAvailable */}
 				<Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-					<CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+					<CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-lg">
 						<CardTitle className="flex items-center gap-3 text-xl">
 							<Ticket className="h-6 w-6" />
 							<div>
@@ -585,7 +556,7 @@ export default function RequestBecomeCraftVillageForm() {
 					<CardContent className="p-8">
 						{workshops.length === 0 ? (
 							<div className="text-center py-16 space-y-6">
-								<div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto">
+								<div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-gray-100 rounded-full flex items-center justify-center mx-auto">
 									<Plus className="h-12 w-12 text-purple-500" />
 								</div>
 								<div className="space-y-3">
@@ -598,7 +569,7 @@ export default function RequestBecomeCraftVillageForm() {
 									type="button"
 									onClick={addWorkshop}
 									size="lg"
-									className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+									className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
 								>
 									<Plus className="h-5 w-5 mr-2" />
 									Tạo trải nghiệm của làng nghề

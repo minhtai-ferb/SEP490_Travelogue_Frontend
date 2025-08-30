@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,10 +19,9 @@ import {
 	Calendar,
 	Plus,
 	Ticket,
-	Trash2,
-	X
+	Trash2
 } from "lucide-react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 interface ModernWorkshopModalProps {
 	isOpen: boolean
@@ -108,10 +108,83 @@ export default function ModernWorkshopModal({
 		setWorkshop(prev => ({ ...prev, ...updates }))
 	}, [])
 
+	// Reset state when modal opens/closes or editingWorkshop changes
+	useEffect(() => {
+		if (isOpen) {
+			setCurrentStep(1)
+			setErrors({})
+
+			if (editingWorkshop) {
+				// Editing existing workshop
+				setWorkshop({ ...editingWorkshop })
+			} else {
+				// Creating new workshop
+				setWorkshop({
+					name: "",
+					description: "",
+					content: "",
+					status: 1,
+					ticketTypes: [
+						{
+							type: TICKET_TYPES.VISIT,
+							name: "Vé tham quan",
+							price: 0,
+							isCombo: false,
+							durationMinutes: 0,
+							content: "Tham quan và khám phá không gian làng nghề",
+							workshopActivities: [],
+						},
+						{
+							type: TICKET_TYPES.EXPERIENCE,
+							name: "Vé trải nghiệm",
+							price: 0,
+							isCombo: true,
+							durationMinutes: 0,
+							content: "Tham quan và trải nghiệm thực hành",
+							workshopActivities: [],
+						},
+					],
+					schedules: [],
+					recurringRules: [
+						{
+							daysOfWeek: [1], // Thứ 2 mặc định
+							sessions: [
+								{
+									startTime: "08:00:00",
+									endTime: "10:00:00",
+									capacity: 20,
+								},
+							],
+						},
+					],
+					exceptions: [],
+				})
+			}
+		}
+	}, [isOpen, editingWorkshop])
+
+	// Helper function to calculate end time based on experience ticket duration
+	const calculateEndTime = useCallback((startTime: string, durationMinutes?: number) => {
+		if (!durationMinutes || durationMinutes <= 0) {
+			// Default 2 hours if no duration specified
+			durationMinutes = 120
+		}
+
+		const [hours, minutes] = startTime.split(':').map(Number)
+		const startTotalMinutes = hours * 60 + minutes
+		const endTotalMinutes = startTotalMinutes + durationMinutes
+
+		const endHours = Math.floor(endTotalMinutes / 60)
+		const endMins = endTotalMinutes % 60
+
+		return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}:00`
+	}, [])
+
 	// Helper function để kiểm tra có vé trải nghiệm không
 	const hasExperienceTicket = useCallback(() => {
-		return workshop.ticketTypes.some(ticket => ticket.type === TICKET_TYPES.EXPERIENCE && ticket.price > 0)
-	}, [workshop.ticketTypes])
+		// Chỉ hiện step hoạt động khi làng nghề có workshop available
+		return formData.workshopsAvailable && workshop.ticketTypes.some(ticket => ticket.type === TICKET_TYPES.EXPERIENCE)
+	}, [formData.workshopsAvailable, workshop.ticketTypes])
 
 	const visitTicket = useMemo(() =>
 		workshop.ticketTypes.find(t => t.type === TICKET_TYPES.VISIT),
@@ -176,21 +249,21 @@ export default function ModernWorkshopModal({
 
 	const handleNext = useCallback(() => {
 		if (validateStep(currentStep)) {
-			// Nếu đang ở step 1 và không có vé trải nghiệm, bỏ qua step 2 (activities)
-			if (currentStep === 1 && !hasExperienceTicket()) {
-				setCurrentStep(3) // Nhảy thẳng đến step 3 (lịch trình)
-			} else {
-				setCurrentStep((prev) => Math.min(prev + 1, 3))
+			if (currentStep === 1) {
+				// Nếu có experience ticket, đi đến step 2, nếu không thì skip đến step 3
+				setCurrentStep(hasExperienceTicket() ? 2 : 3)
+			} else if (currentStep === 2) {
+				setCurrentStep(3)
 			}
 		}
 	}, [currentStep, validateStep, hasExperienceTicket])
 
 	const handleBack = useCallback(() => {
-		// Logic quay lại: nếu đang ở step 3 và không có vé trải nghiệm, quay về step 1
-		if (currentStep === 3 && !hasExperienceTicket()) {
+		if (currentStep === 3) {
+			// Từ step 3: nếu có experience ticket thì về step 2, nếu không thì về step 1
+			setCurrentStep(hasExperienceTicket() ? 2 : 1)
+		} else if (currentStep === 2) {
 			setCurrentStep(1)
-		} else {
-			setCurrentStep((prev) => prev - 1)
 		}
 	}, [currentStep, hasExperienceTicket])
 
@@ -204,11 +277,18 @@ export default function ModernWorkshopModal({
 	const addActivity = useCallback(() => {
 		if (!experienceTicket) return
 
+		// Tính toán thời gian bắt đầu dựa trên activity cuối cùng
+		const lastActivity = experienceTicket.workshopActivities[experienceTicket.workshopActivities.length - 1]
+		const startMinutes = lastActivity
+			? Number.parseInt(lastActivity.endHour.split(':')[0]) * 60 + Number.parseInt(lastActivity.endHour.split(':')[1])
+			: 0
+		const endMinutes = startMinutes + 30 // Default 30 phút cho mỗi activity
+
 		const newActivity: WorkshopActivity = {
 			activity: "",
 			description: "",
-			startHour: "09:00:00",
-			endHour: "10:00:00",
+			startHour: `${Math.floor(startMinutes / 60).toString().padStart(2, '0')}:${(startMinutes % 60).toString().padStart(2, '0')}:00`,
+			endHour: `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}:00`,
 			activityOrder: experienceTicket.workshopActivities.length + 1,
 		}
 
@@ -247,14 +327,16 @@ export default function ModernWorkshopModal({
 	}, [workshop.ticketTypes, updateWorkshop])
 
 	const addRecurringRule = useCallback(() => {
+		const experienceTicketDuration = experienceTicket?.durationMinutes || 120
+		const startTime = "08:00:00"
+		const endTime = calculateEndTime(startTime, experienceTicketDuration)
+
 		const newRule: RecurringRule = {
 			daysOfWeek: [1], // Thứ 2
-			startDate: new Date().toISOString().split("T")[0],
-			endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
 			sessions: [
 				{
-					startTime: "08:00:00",
-					endTime: "10:00:00",
+					startTime: startTime,
+					endTime: endTime,
 					capacity: 20,
 				},
 			],
@@ -263,7 +345,7 @@ export default function ModernWorkshopModal({
 		updateWorkshop({
 			recurringRules: [...workshop.recurringRules, newRule],
 		})
-	}, [workshop.recurringRules, updateWorkshop])
+	}, [workshop.recurringRules, updateWorkshop, experienceTicket, calculateEndTime])
 
 	const removeRecurringRule = useCallback((index: number) => {
 		updateWorkshop({
@@ -280,9 +362,13 @@ export default function ModernWorkshopModal({
 	}, [workshop.recurringRules, updateWorkshop])
 
 	const addSession = useCallback((ruleIndex: number) => {
+		const experienceTicketDuration = experienceTicket?.durationMinutes || 120
+		const startTime = "14:00:00"
+		const endTime = calculateEndTime(startTime, experienceTicketDuration)
+
 		const newSession = {
-			startTime: "14:00:00", // Default afternoon session
-			endTime: "16:00:00",
+			startTime: startTime,
+			endTime: endTime,
 			capacity: 20,
 		}
 
@@ -291,7 +377,7 @@ export default function ModernWorkshopModal({
 				i === ruleIndex ? { ...rule, sessions: [...rule.sessions, newSession] } : rule,
 			),
 		})
-	}, [workshop.recurringRules, updateWorkshop])
+	}, [workshop.recurringRules, updateWorkshop, experienceTicket, calculateEndTime])
 
 	const removeSession = useCallback((ruleIndex: number, sessionIndex: number) => {
 		updateWorkshop({
@@ -314,55 +400,76 @@ export default function ModernWorkshopModal({
 		})
 	}, [workshop.recurringRules, updateWorkshop])
 
-	// Get steps that should be shown (filter out step 2 if no experience ticket)
-	const availableSteps = useMemo(() => {
-		const steps = [1, 3] // Always show step 1 and 3
-		if (hasExperienceTicket()) {
-			steps.splice(1, 0, 2) // Insert step 2 if experience ticket exists
-		}
-		return steps
-	}, [hasExperienceTicket])
+	// Helper function to auto-update endTime when startTime changes
+	const updateSessionWithDuration = useCallback((ruleIndex: number, sessionIndex: number, newStartTime: string) => {
+		const experienceTicketDuration = experienceTicket?.durationMinutes || 120
+		const newEndTime = calculateEndTime(newStartTime, experienceTicketDuration)
 
-	if (!isOpen) return null
+		updateSession(ruleIndex, sessionIndex, {
+			startTime: newStartTime,
+			endTime: newEndTime
+		})
+	}, [experienceTicket, calculateEndTime, updateSession])
+
+	// Always show all steps, just change display numbering
+	const availableSteps = useMemo(() => {
+		return [1, 2, 3] // Always show all steps
+	}, [])
+
+	// Get the actual step number for display
+	const getDisplayStep = (step: number) => {
+		if (hasExperienceTicket()) {
+			return step // Original numbering: 1, 2, 3
+		} else {
+			// Renumber when no experience ticket: 1, skip 2, 3 becomes 2
+			if (step === 1) return 1
+			if (step === 2) return null // Don't display step 2
+			if (step === 3) return 2   // Step 3 becomes step 2
+		}
+	}
 
 	return (
-		<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-			<div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
-				{/* Header */}
-				<div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-					<h2 className="text-xl font-bold">
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-4xl max-h-screen p-0 gap-0 rounded-3xl">
+				<DialogHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-lg">
+					<DialogTitle className="text-xl font-bold">
 						{editingWorkshop ? "Chỉnh sửa trải nghiệm" : "Tạo trải nghiệm mới"}
-					</h2>
-					<Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
-						<X className="h-5 w-5" />
-					</Button>
-				</div>
+					</DialogTitle>
+				</DialogHeader>
 
 				{/* Step Indicator */}
 				<div className="flex justify-center p-4 bg-gray-50">
 					<div className="flex items-center space-x-4">
-						{availableSteps.map((step, index) => (
-							<div key={step} className="flex items-center">
-								<div
-									className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === currentStep
-										? "bg-purple-500 text-white"
-										: step < currentStep
-											? "bg-green-500 text-white"
-											: "bg-gray-200 text-gray-600"
-										}`}
-								>
-									{step}
-								</div>
-								{index < availableSteps.length - 1 && (
-									<div className="w-12 h-0.5 bg-gray-300 mx-2" />
-								)}
-							</div>
-						))}
+						{availableSteps
+							.filter(step => getDisplayStep(step) !== null) // Only show steps that have display numbers
+							.map((step, index, filteredSteps) => {
+								const displayStep = getDisplayStep(step)
+								const isCurrentStep = step === currentStep
+								const isCompletedStep = step < currentStep || (step === 3 && currentStep === 3 && !hasExperienceTicket())
+
+								return (
+									<div key={step} className="flex items-center">
+										<div
+											className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${isCurrentStep
+												? "bg-blue-500 text-white"
+												: isCompletedStep
+													? "bg-green-500 text-white"
+													: "bg-gray-200 text-gray-600"
+												}`}
+										>
+											{displayStep}
+										</div>
+										{index < filteredSteps.length - 1 && (
+											<div className="w-12 h-0.5 bg-gray-300 mx-2" />
+										)}
+									</div>
+								)
+							})}
 					</div>
 				</div>
 
 				{/* Content */}
-				<div className="p-6 max-h-[60vh] overflow-y-auto">
+				<div className="px-6 max-h-[60vh] overflow-y-auto">
 					{/* Step 1: Thông tin cơ bản */}
 					{currentStep === 1 && (
 						<div className="space-y-6">
@@ -373,7 +480,7 @@ export default function ModernWorkshopModal({
 										value={workshop.name}
 										onChange={(e) => updateWorkshop({ name: e.target.value })}
 										onKeyDown={(e) => e.stopPropagation()}
-										className={`h-10 text-base border-2 ${errors.name ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
+										className={`h-10 text-base border-2 ${errors.name ? "border-red-300" : "border-gray-200 focus:border-blue-400"}`}
 										placeholder="VD: Trải nghiệm làm gốm truyền thống"
 									/>
 									{errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
@@ -385,7 +492,7 @@ export default function ModernWorkshopModal({
 										value={workshop.description}
 										onChange={(e) => updateWorkshop({ description: e.target.value })}
 										onKeyDown={(e) => e.stopPropagation()}
-										className={`h-10 text-base border-2 ${errors.description ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
+										className={`h-10 text-base border-2 ${errors.description ? "border-red-300" : "border-gray-200 focus:border-blue-400"}`}
 										placeholder="VD: Học cách tạo ra sản phẩm gốm độc đáo"
 									/>
 									{errors.description && <p className="text-xs text-red-600">{errors.description}</p>}
@@ -398,7 +505,7 @@ export default function ModernWorkshopModal({
 									value={workshop.content}
 									onChange={(e) => updateWorkshop({ content: e.target.value })}
 									onKeyDown={(e) => e.stopPropagation()}
-									className="min-h-[100px] text-base border-2 border-gray-200 focus:border-purple-400"
+									className="min-h-[100px] text-base border-2 border-gray-200 focus:border-blue-400"
 									placeholder="Mô tả chi tiết về trải nghiệm, quy trình, những gì khách hàng sẽ học được..."
 								/>
 							</div>
@@ -406,7 +513,7 @@ export default function ModernWorkshopModal({
 							{/* Ticket Types */}
 							<div className="space-y-6">
 								<h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-									<Ticket className="h-5 w-5 text-purple-500" />
+									<Ticket className="h-5 w-5 text-blue-500" />
 									Loại vé
 								</h4>
 
@@ -430,7 +537,7 @@ export default function ModernWorkshopModal({
 													})
 												}
 												onKeyDown={(e) => e.stopPropagation()}
-												className={`h-10 text-base border-2 ${errors.visitPrice ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
+												className={`h-10 text-base border-2 ${errors.visitPrice ? "border-red-300" : "border-gray-200 focus:border-blue-400"}`}
 												placeholder="VD: 25000"
 											/>
 											{errors.visitPrice && <p className="text-xs text-red-600">{errors.visitPrice}</p>}
@@ -448,7 +555,7 @@ export default function ModernWorkshopModal({
 													})
 												}
 												onKeyDown={(e) => e.stopPropagation()}
-												className={`h-10 text-base border-2 ${errors.visitDuration ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
+												className={`h-10 text-base border-2 ${errors.visitDuration ? "border-red-300" : "border-gray-200 focus:border-blue-400"}`}
 												placeholder="VD: 60"
 											/>
 											{errors.visitDuration && <p className="text-xs text-red-600">{errors.visitDuration}</p>}
@@ -458,10 +565,10 @@ export default function ModernWorkshopModal({
 
 								{/* Vé trải nghiệm */}
 								{formData.workshopsAvailable && (
-									<div className="space-y-4 p-4 border-2 border-purple-200 rounded-lg bg-purple-50/30">
+									<div className="space-y-4 p-4 border-2 border-blue-200 rounded-lg bg-blue-50/30">
 										<div className="flex items-center justify-between">
 											<h5 className="font-semibold text-gray-800 flex items-center gap-2">
-												<Activity className="h-4 w-4 text-purple-500" />
+												<Activity className="h-4 w-4 text-blue-500" />
 												Vé trải nghiệm (bao gồm tham quan)
 											</h5>
 										</div>
@@ -479,7 +586,7 @@ export default function ModernWorkshopModal({
 														})
 													}
 													onKeyDown={(e) => e.stopPropagation()}
-													className={`h-10 text-base border-2 ${errors.experiencePrice ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
+													className={`h-10 text-base border-2 ${errors.experiencePrice ? "border-red-300" : "border-gray-200 focus:border-blue-400"}`}
 													placeholder="VD: 80000"
 												/>
 												{errors.experiencePrice && <p className="text-xs text-red-600">{errors.experiencePrice}</p>}
@@ -497,16 +604,15 @@ export default function ModernWorkshopModal({
 														})
 													}
 													onKeyDown={(e) => e.stopPropagation()}
-													className={`h-10 text-base border-2 ${errors.experienceDuration ? "border-red-300" : "border-gray-200 focus:border-purple-400"}`}
+													className={`h-10 text-base border-2 ${errors.experienceDuration ? "border-red-300" : "border-gray-200 focus:border-blue-400"}`}
 													placeholder="VD: 120"
 												/>
-												<div className="text-xs text-purple-700 bg-purple-100/50 p-2 rounded">
+												<div className="text-xs text-blue-700 bg-blue-100/50 p-2 rounded">
 													💡 Thời gian này sẽ được dùng để tính tổng thời gian các hoạt động ở bước tiếp theo
 												</div>
 												{errors.experienceDuration && <p className="text-xs text-red-600">{errors.experienceDuration}</p>}
 											</div>
 										</div>
-
 									</div>
 								)}
 							</div>
@@ -514,31 +620,33 @@ export default function ModernWorkshopModal({
 					)}
 
 					{/* Step 2: Hoạt động trải nghiệm */}
-					{currentStep === 2 && formData.workshopsAvailable && experienceTicket && (
+					{currentStep === 2 && hasExperienceTicket() && (
 						<div className="space-y-6">
 							<div className="flex items-center justify-between">
 								<h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-									<Activity className="h-5 w-5 text-purple-500" />
+									<Activity className="h-5 w-5 text-blue-500" />
 									Hoạt động trải nghiệm
 								</h4>
 
 								{/* Duration indicator */}
-								<div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
-									<span className="text-purple-600 font-medium">Yêu cầu: {experienceTicket.durationMinutes} phút</span>
-									{" | "}
-									<span className={`font-medium ${Math.abs((experienceTicket.workshopActivities.reduce((total, activity) => {
-										const startHours = timeToHours(activity.startHour)
-										const endHours = timeToHours(activity.endHour)
-										return total + Math.round((endHours - startHours) * 60)
-									}, 0)) - experienceTicket.durationMinutes) <= 5 ? "text-green-600" : "text-red-600"
-										}`}>
-										Hiện tại: {experienceTicket.workshopActivities.reduce((total, activity) => {
-											const startHours = timeToHours(activity.startHour)
-											const endHours = timeToHours(activity.endHour)
-											return total + Math.round((endHours - startHours) * 60)
-										}, 0)} phút
-									</span>
-								</div>
+								{experienceTicket && (
+									<div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
+										<span className="text-blue-600 font-medium">Tổng thời gian workshop: {experienceTicket.durationMinutes} phút</span>
+										{" | "}
+										<span className={`font-medium ${Math.abs((experienceTicket.workshopActivities.reduce((total, activity) => {
+											const startMinutes = Number.parseInt(activity.startHour.split(':')[0]) * 60 + Number.parseInt(activity.startHour.split(':')[1])
+											const endMinutes = Number.parseInt(activity.endHour.split(':')[0]) * 60 + Number.parseInt(activity.endHour.split(':')[1])
+											return Math.max(total, endMinutes) // Lấy thời điểm kết thúc muộn nhất
+										}, 0)) - experienceTicket.durationMinutes) <= 5 ? "text-green-600" : "text-red-600"
+											}`}>
+											Thời gian đã sử dụng: {experienceTicket.workshopActivities.reduce((total, activity) => {
+												const startMinutes = Number.parseInt(activity.startHour.split(':')[0]) * 60 + Number.parseInt(activity.startHour.split(':')[1])
+												const endMinutes = Number.parseInt(activity.endHour.split(':')[0]) * 60 + Number.parseInt(activity.endHour.split(':')[1])
+												return Math.max(total, endMinutes) // Lấy thời điểm kết thúc muộn nhất
+											}, 0)} phút
+										</span>
+									</div>
+								)}
 							</div>
 
 							{errors.activityDuration && (
@@ -547,135 +655,14 @@ export default function ModernWorkshopModal({
 								</div>
 							)}
 
-							<div className="space-y-4">
-								{experienceTicket.workshopActivities.map((activity, index) => (
-									<Card key={index} className="border-2 border-purple-100">
-										<CardContent className="p-4">
-											<div className="flex items-start justify-between mb-4">
-												<Badge variant="outline" className="bg-purple-50 text-purple-700">
-													Hoạt động {index + 1}
-												</Badge>
-												<Button
-													type="button"
-													size="sm"
-													variant="outline"
-													onClick={(e) => {
-														e.preventDefault()
-														e.stopPropagation()
-														removeActivity(index)
-													}}
-													onKeyDown={(e) => {
-														if (e.key === 'Backspace' || e.key === 'Delete') {
-															e.preventDefault()
-															e.stopPropagation()
-														}
-													}}
-													className="text-red-600 hover:bg-red-50"
-												>
-													<Trash2 className="h-4 w-4" />
-												</Button>
-											</div>
-
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-												<div className="space-y-2">
-													<Label>Tên hoạt động</Label>
-													<Input
-														value={activity.activity}
-														onChange={(e) => updateActivity(index, { activity: e.target.value })}
-														onKeyDown={(e) => e.stopPropagation()}
-														placeholder="VD: Nặn đất sét"
-														className="border-2 border-gray-200 focus:border-purple-400"
-													/>
-												</div>
-
-												<div className="space-y-2">
-													<Label>Mô tả</Label>
-													<Input
-														value={activity.description}
-														onChange={(e) => updateActivity(index, { description: e.target.value })}
-														onKeyDown={(e) => e.stopPropagation()}
-														placeholder="VD: Học cách nặn và tạo hình cơ bản"
-														className="border-2 border-gray-200 focus:border-purple-400"
-													/>
-												</div>
-
-												<div className="space-y-2">
-													<Label>Giờ bắt đầu</Label>
-													<Input
-														type="time"
-														value={activity.startHour.slice(0, 5)}
-														onChange={(e) => updateActivity(index, { startHour: `${e.target.value}:00` })}
-														onKeyDown={(e) => e.stopPropagation()}
-														className="border-2 border-gray-200 focus:border-purple-400"
-													/>
-												</div>
-
-												<div className="space-y-2">
-													<Label>Giờ kết thúc</Label>
-													<Input
-														type="time"
-														value={activity.endHour.slice(0, 5)}
-														onChange={(e) => updateActivity(index, { endHour: `${e.target.value}:00` })}
-														onKeyDown={(e) => e.stopPropagation()}
-														className="border-2 border-gray-200 focus:border-purple-400"
-													/>
-												</div>
-											</div>
-										</CardContent>
-									</Card>
-								))}
-
-								<Button
-									type="button"
-									variant="outline"
-									onClick={addActivity}
-									className="w-full border-dashed border-purple-300 text-purple-600 hover:bg-purple-50"
-								>
-									<Plus className="h-4 w-4 mr-2" />
-									Thêm hoạt động
-								</Button>
-							</div>
-						</div>
-					)}
-
-					{/* Step 3: Lịch trình */}
-					{currentStep === 3 && (
-						<div className="space-y-6">
-							<div className="flex items-center justify-between">
-								<h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-									<Calendar className="h-5 w-5 text-purple-500" />
-									Lịch trình hoạt động
-								</h4>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={addRecurringRule}
-									className="border-purple-300 text-purple-600 hover:bg-purple-50"
-								>
-									<Plus className="h-4 w-4 mr-2" />
-									Thêm lịch trình
-								</Button>
-							</div>
-
-							{errors.schedule && (
-								<div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-									<p className="text-sm text-red-700">{errors.schedule}</p>
-								</div>
-							)}
-
-							{workshop.recurringRules.length === 0 ? (
-								<div className="text-center py-8 text-gray-500">
-									<Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-									<p>Chưa có lịch trình nào. Hãy thêm lịch trình hoạt động.</p>
-								</div>
-							) : (
+							{experienceTicket && (
 								<div className="space-y-4">
-									{workshop.recurringRules.map((rule, index) => (
+									{experienceTicket.workshopActivities.map((activity, index) => (
 										<Card key={index} className="border-2 border-purple-100">
-											<CardContent className="p-6">
+											<CardContent className="p-4">
 												<div className="flex items-start justify-between mb-4">
-													<Badge variant="outline" className="bg-purple-50 text-purple-700">
-														Lịch trình {index + 1}
+													<Badge variant="outline" className="bg-blue-50 text-blue-700">
+														Hoạt động {index + 1}
 													</Badge>
 													<Button
 														type="button"
@@ -684,7 +671,7 @@ export default function ModernWorkshopModal({
 														onClick={(e) => {
 															e.preventDefault()
 															e.stopPropagation()
-															removeRecurringRule(index)
+															removeActivity(index)
 														}}
 														onKeyDown={(e) => {
 															if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -700,167 +687,248 @@ export default function ModernWorkshopModal({
 
 												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 													<div className="space-y-2">
-														<Label>Ngày bắt đầu</Label>
+														<Label>Tên hoạt động</Label>
 														<Input
-															type="date"
-															value={rule.startDate}
-															onChange={(e) => updateRecurringRule(index, { startDate: e.target.value })}
+															value={activity.activity}
+															onChange={(e) => updateActivity(index, { activity: e.target.value })}
 															onKeyDown={(e) => e.stopPropagation()}
-															className="border-2 border-gray-200 focus:border-purple-400"
+															placeholder="VD: Nặn đất sét"
+															className="border-2 border-gray-200 focus:border-blue-400"
 														/>
 													</div>
 
 													<div className="space-y-2">
-														<Label>Ngày kết thúc</Label>
+														<Label>Mô tả</Label>
 														<Input
-															type="date"
-															value={rule.endDate}
-															onChange={(e) => updateRecurringRule(index, { endDate: e.target.value })}
+															value={activity.description}
+															onChange={(e) => updateActivity(index, { description: e.target.value })}
 															onKeyDown={(e) => e.stopPropagation()}
-															className="border-2 border-gray-200 focus:border-purple-400"
+															placeholder="VD: Học cách nặn và tạo hình cơ bản"
+															className="border-2 border-gray-200 focus:border-blue-400"
 														/>
 													</div>
 
-													<div className="space-y-2 md:col-span-2">
-														<Label>Các ngày trong tuần</Label>
-														<div className="flex flex-wrap gap-2">
-															{[
-																{ value: DAYS_OF_WEEK.MONDAY, label: "T2" },
-																{ value: DAYS_OF_WEEK.TUESDAY, label: "T3" },
-																{ value: DAYS_OF_WEEK.WEDNESDAY, label: "T4" },
-																{ value: DAYS_OF_WEEK.THURSDAY, label: "T5" },
-																{ value: DAYS_OF_WEEK.FRIDAY, label: "T6" },
-																{ value: DAYS_OF_WEEK.SATURDAY, label: "T7" },
-																{ value: DAYS_OF_WEEK.SUNDAY, label: "CN" },
-															].map((day) => (
-																<div key={day.value} className="flex items-center space-x-2">
-																	<Checkbox
-																		id={`${index}-${day.value}`}
-																		checked={rule.daysOfWeek.includes(day.value)}
-																		onCheckedChange={(checked) => {
-																			const updatedDays = checked
-																				? [...rule.daysOfWeek, day.value]
-																				: rule.daysOfWeek.filter((d) => d !== day.value)
-																			updateRecurringRule(index, { daysOfWeek: updatedDays })
-																		}}
-																	/>
-																	<Label htmlFor={`${index}-${day.value}`} className="text-sm">
-																		{day.label}
-																	</Label>
-																</div>
-															))}
-														</div>
-													</div>
-												</div>
-
-												{/* Sessions - Multiple time slots per day */}
-												<div className="space-y-4 mt-6">
-													<div className="flex items-center justify-between">
-														<Label className="text-base font-semibold text-gray-700">Các ca trong ngày</Label>
-														<Button
-															type="button"
-															variant="outline"
-															size="sm"
-															onClick={() => addSession(index)}
-															className="border-purple-300 text-purple-600 hover:bg-purple-50"
-														>
-															<Plus className="h-4 w-4 mr-1" />
-															Thêm ca
-														</Button>
+													<div className="space-y-2">
+														<Label>Thời gian bắt đầu (phút)</Label>
+														<Input
+															type="number"
+															value={activity.startHour ? Number.parseInt(activity.startHour.split(':')[0]) * 60 + Number.parseInt(activity.startHour.split(':')[1]) : 0}
+															onChange={(e) => {
+																const minutes = Number.parseInt(e.target.value) || 0
+																const hours = Math.floor(minutes / 60)
+																const mins = minutes % 60
+																updateActivity(index, { startHour: `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00` })
+															}}
+															onKeyDown={(e) => e.stopPropagation()}
+															className="border-2 border-gray-200 focus:border-blue-400"
+															placeholder="VD: 30 (phút)"
+															min="0"
+														/>
+														<p className="text-xs text-gray-500">Thời gian bắt đầu hoạt động (tính từ đầu workshop)</p>
 													</div>
 
-													<div className="text-xs text-blue-700 bg-blue-100/50 p-3 rounded-lg">
-														💡 <strong>Ví dụ:</strong> Ca sáng 8h-10h, ca chiều 14h-16h, ca tối 19h-21h. Mỗi ca có thể có sức chứa khác nhau.
+													<div className="space-y-2">
+														<Label>Thời gian kết thúc (phút)</Label>
+														<Input
+															type="number"
+															value={activity.endHour ? Number.parseInt(activity.endHour.split(':')[0]) * 60 + Number.parseInt(activity.endHour.split(':')[1]) : 0}
+															onChange={(e) => {
+																const minutes = Number.parseInt(e.target.value) || 0
+																const hours = Math.floor(minutes / 60)
+																const mins = minutes % 60
+																updateActivity(index, { endHour: `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00` })
+															}}
+															onKeyDown={(e) => e.stopPropagation()}
+															className="border-2 border-gray-200 focus:border-blue-400"
+															placeholder="VD: 60 (phút)"
+															min="0"
+														/>
+														<p className="text-xs text-gray-500">Thời gian kết thúc hoạt động (tính từ đầu workshop)</p>
 													</div>
-
-													{rule.sessions.map((session, sessionIndex) => (
-														<div key={sessionIndex} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-															<div className="flex items-center justify-between mb-3">
-																<Badge variant="outline" className="bg-blue-50 text-blue-700">
-																	Ca {sessionIndex + 1}
-																</Badge>
-																{rule.sessions.length > 1 && (
-																	<Button
-																		type="button"
-																		variant="outline"
-																		size="sm"
-																		onClick={(e) => {
-																			e.preventDefault()
-																			e.stopPropagation()
-																			removeSession(index, sessionIndex)
-																		}}
-																		onKeyDown={(e) => {
-																			if (e.key === 'Backspace' || e.key === 'Delete') {
-																				e.preventDefault()
-																				e.stopPropagation()
-																			}
-																		}}
-																		className="text-red-600 hover:bg-red-50"
-																	>
-																		<Trash2 className="h-4 w-4" />
-																	</Button>
-																)}
-															</div>
-
-															<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-																<div className="space-y-2">
-																	<Label className="text-sm">Giờ bắt đầu</Label>
-																	<Input
-																		type="time"
-																		value={session.startTime.slice(0, 5)}
-																		onChange={(e) => updateSession(index, sessionIndex, { startTime: `${e.target.value}:00` })}
-																		onKeyDown={(e) => e.stopPropagation()}
-																		className="border-2 border-gray-200 focus:border-purple-400"
-																	/>
-																</div>
-
-																<div className="space-y-2">
-																	<Label className="text-sm">Giờ kết thúc</Label>
-																	<Input
-																		type="time"
-																		value={session.endTime.slice(0, 5)}
-																		onChange={(e) => updateSession(index, sessionIndex, { endTime: `${e.target.value}:00` })}
-																		onKeyDown={(e) => e.stopPropagation()}
-																		className="border-2 border-gray-200 focus:border-purple-400"
-																	/>
-																</div>
-
-																<div className="space-y-2">
-																	<Label className="text-sm">Sức chứa</Label>
-																	<Input
-																		type="number"
-																		value={session.capacity}
-																		onChange={(e) => updateSession(index, sessionIndex, { capacity: Number.parseInt(e.target.value) || 20 })}
-																		onKeyDown={(e) => e.stopPropagation()}
-																		className="border-2 border-gray-200 focus:border-purple-400"
-																		placeholder="VD: 20"
-																	/>
-																</div>
-															</div>
-														</div>
-													))}
 												</div>
 											</CardContent>
 										</Card>
 									))}
+
+									<Button
+										type="button"
+										variant="outline"
+										onClick={addActivity}
+										className="w-full border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+									>
+										<Plus className="h-4 w-4 mr-2" />
+										Thêm hoạt động
+									</Button>
 								</div>
 							)}
+						</div>
+					)}
+
+					{/* Step 3: Lịch trình */}
+					{currentStep === 3 && (
+						<div className="space-y-6">
+							<div className="flex items-center justify-between">
+								<h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+									<Calendar className="h-5 w-5 text-blue-500" />
+									Lịch diễn ra hàng tuần
+								</h4>
+							</div>
+
+							{errors.schedule && (
+								<div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+									<p className="text-sm text-red-700">{errors.schedule}</p>
+								</div>
+							)}
+
+							<div className="space-y-4">
+								{workshop.recurringRules.map((rule, index) => (
+									<Card key={index} className="border-2 border-purple-100">
+										<CardContent className="p-6">
+											<div className="flex items-start justify-between mb-4">
+												<Badge variant="outline" className="bg-blue-50 text-blue-700">
+													Lịch tổ chức định kỳ
+												</Badge>
+											</div>
+
+											<div className="space-y-4">
+												<div className="space-y-2">
+													<Label>Chọn ngày tổ chức</Label>
+													<div className="flex justify-between gap-10">
+														{[
+															{ value: DAYS_OF_WEEK.MONDAY, label: "Thứ 2" },
+															{ value: DAYS_OF_WEEK.TUESDAY, label: "Thứ 3" },
+															{ value: DAYS_OF_WEEK.WEDNESDAY, label: "Thứ 4" },
+															{ value: DAYS_OF_WEEK.THURSDAY, label: "Thứ 5" },
+															{ value: DAYS_OF_WEEK.FRIDAY, label: "Thứ 6" },
+															{ value: DAYS_OF_WEEK.SATURDAY, label: "Thứ 7" },
+															{ value: DAYS_OF_WEEK.SUNDAY, label: "Chủ nhật" },
+														].map((day) => (
+															<div key={day.value} className="flex items-center space-x-2">
+																<Checkbox
+																	id={`${index}-${day.value}`}
+																	checked={rule.daysOfWeek.includes(day.value)}
+																	onCheckedChange={(checked) => {
+																		const updatedDays = checked
+																			? [...rule.daysOfWeek, day.value]
+																			: rule.daysOfWeek.filter((d) => d !== day.value)
+																		updateRecurringRule(index, { daysOfWeek: updatedDays })
+																	}}
+																/>
+																<Label htmlFor={`${index}-${day.value}`} className="text-sm">
+																	{day.label}
+																</Label>
+															</div>
+														))}
+													</div>
+												</div>
+											</div>
+
+											{/* Sessions - Multiple time slots per day */}
+											<div className="space-y-4 mt-6">
+												<div className="flex items-center justify-between">
+													<Label className="text-base font-semibold text-gray-700">Khung giờ tổ chức</Label>
+													<Button
+														type="button"
+														variant="outline"
+														size="sm"
+														onClick={() => addSession(index)}
+														className="border-blue-300 text-blue-600 hover:bg-blue-50"
+													>
+														<Plus className="h-4 w-4 mr-1" />
+														Thêm khung giờ
+													</Button>
+												</div>
+
+												<div className="text-xs text-blue-700 bg-blue-100/50 p-3 rounded-lg">
+													💡 <strong>Tự động tính thời gian:</strong> Giờ kết thúc sẽ được tự động tính dựa trên thời gian của vé trải nghiệm ({experienceTicket?.durationMinutes || 120} phút). Chỉ cần chọn giờ bắt đầu.
+												</div>
+
+												{rule.sessions.map((session, sessionIndex) => (
+													<div key={sessionIndex} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+														<div className="flex items-center justify-between mb-3">
+															<Badge variant="outline" className="bg-blue-50 text-blue-700">
+																Khung giờ {sessionIndex + 1}
+															</Badge>
+															{rule.sessions.length > 1 && (
+																<Button
+																	type="button"
+																	variant="outline"
+																	size="sm"
+																	onClick={(e) => {
+																		e.preventDefault()
+																		e.stopPropagation()
+																		removeSession(index, sessionIndex)
+																	}}
+																	onKeyDown={(e) => {
+																		if (e.key === 'Backspace' || e.key === 'Delete') {
+																			e.preventDefault()
+																			e.stopPropagation()
+																		}
+																	}}
+																	className="text-red-600 hover:bg-red-50"
+																>
+																	<Trash2 className="h-4 w-4" />
+																</Button>
+															)}
+														</div>
+
+														<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+															<div className="space-y-2">
+																<Label className="text-sm">Thời gian bắt đầu</Label>
+																<Input
+																	type="time"
+																	value={session.startTime.slice(0, 5)}
+																	onChange={(e) => updateSessionWithDuration(index, sessionIndex, `${e.target.value}:00`)}
+																	onKeyDown={(e) => e.stopPropagation()}
+																	className="border-2 border-gray-200 focus:border-blue-400"
+																/>
+															</div>
+
+															<div className="space-y-2">
+																<Label className="text-sm">Thời gian kết thúc</Label>
+																<Input
+																	type="time"
+																	value={session.endTime.slice(0, 5)}
+																	onChange={(e) => updateSession(index, sessionIndex, { endTime: `${e.target.value}:00` })}
+																	onKeyDown={(e) => e.stopPropagation()}
+																	className="border-2 border-gray-200 focus:border-blue-400"
+																/>
+															</div>
+
+															<div className="space-y-2">
+																<Label className="text-sm">Sức chứa (người/khung giờ)</Label>
+																<Input
+																	type="number"
+																	value={session.capacity}
+																	onChange={(e) => updateSession(index, sessionIndex, { capacity: Number.parseInt(e.target.value) || 20 })}
+																	onKeyDown={(e) => e.stopPropagation()}
+																	className="border-2 border-gray-200 focus:border-blue-400"
+																	placeholder="VD: 20"
+																/>
+															</div>
+														</div>
+													</div>
+												))}
+											</div>
+										</CardContent>
+									</Card>
+								))}
+							</div>
 						</div>
 					)}
 				</div>
 
 				{/* Footer */}
-				<div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-between">
-					<div className="flex gap-2">
-						{currentStep > 1 && (
-							<Button type="button" variant="outline" onClick={handleBack}>
-								Quay lại
-							</Button>
-						)}
-					</div>
-					<div className="flex gap-2">
+				<DialogFooter className="flex justify-between items-center p-6 border-t bg-gray-50 rounded-b-lg">
+					{currentStep > 1 && (
+						<Button type="button" variant="outline" onClick={handleBack}>
+							Quay lại
+						</Button>
+					)}
+
+					<div className="flex gap-2 ml-auto">
 						{currentStep < 3 ? (
-							<Button type="button" onClick={handleNext} className="bg-gradient-to-r from-purple-500 to-pink-500">
+							<Button type="button" onClick={handleNext} className="bg-gradient-to-r from-blue-500 to-blue-600">
 								Tiếp theo
 							</Button>
 						) : (
@@ -869,8 +937,8 @@ export default function ModernWorkshopModal({
 							</Button>
 						)}
 					</div>
-				</div>
-			</div>
-		</div >
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	)
 }
