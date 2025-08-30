@@ -2,12 +2,40 @@
 export interface RefundRequest {
   id: string;
   bookingId: string;
+  reason: string;
   userId: string;
   userName: string;
   status: RefundStatus;
   statusText: string;
   createdTime: string;
+  respondedAt: string;
   lastUpdatedTime: string;
+  bookingDataModel: BookingInfo;
+}
+
+export interface BookingInfo {
+ 		id: string;
+    tourId: string;
+    tourName: string;
+    tourScheduleId: string;
+    tourGuideId: string;
+    tourGuideName: string;
+    tripPlanId: string;
+    tripPlanName: string;
+    workshopId: string;
+    workshopName: string;
+    workshopScheduleId: string;
+    statusText: string;
+    departureDate: string;
+		bookingTypeText: string;
+		bookingDate: string;
+		startDate: string;
+		endDate: string;
+		finalPrice: number;
+		contactName: string;
+		contactEmail: string;
+		contactPhone: string;
+		contactAddress: string;
 }
 
 export enum RefundStatus {
