@@ -9,6 +9,7 @@ export interface RefundRequest {
   statusText: string;
   requestedAt: string;
   respondedAt: string;
+  note: string;
   lastUpdatedTime: string;
   bookingDataModel: BookingInfo;
 }

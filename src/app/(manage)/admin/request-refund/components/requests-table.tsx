@@ -253,9 +253,7 @@ export default function RequestsTable({
       sorter: (a, b) =>
         dayjs(a.respondedAt).valueOf() - dayjs(b.respondedAt).valueOf(),
       render: (v: string, record) => {
-        const isUpdated =
-          dayjs(record.respondedAt).format("YYYY-MM-DD HH:mm") !==
-          dayjs(v).format("YYYY-MM-DD HH:mm");
+        const isUpdated = record.respondedAt.length > 0;
         return (
           <div className="text-xs">
             {isUpdated ? (

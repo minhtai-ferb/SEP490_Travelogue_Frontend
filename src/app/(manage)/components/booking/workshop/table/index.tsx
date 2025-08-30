@@ -1,4 +1,3 @@
-// app/admin/bookings/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -33,7 +32,7 @@ export default function BookingWorkshopTable() {
     const pn = opts?.resetPage ? 1 : pageNumber;
     const res = await getBookingsPaged({
       status: filter.status,
-      bookingType: 1,
+      bookingType: 2,
       startDate: filter.startDate,
       endDate: filter.endDate,
       pageNumber: pn,
@@ -57,7 +56,7 @@ export default function BookingWorkshopTable() {
   const onReset = async () => {
     const empty = {
       status: undefined,
-      bookingType: 1,
+      bookingType: 2,
       startDate: undefined,
       endDate: undefined,
       keyword: "",

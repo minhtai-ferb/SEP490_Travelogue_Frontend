@@ -47,7 +47,7 @@ export function LocationSelect({
 
   // chống race-condition
   const reqIdRef = useRef(0);
-  
+
   useEffect(() => {
     let mounted = true;
     const doFetch = async () => {
@@ -87,7 +87,34 @@ export function LocationSelect({
     }
   };
 
-  const selectedLocation = locations.find((l) => l.id === value);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchSelectedLocation = async (id: string) => {
+      try {
+        const location = await getLocationById(id);
+        setSelectedLocation(location);
+      } catch (error) {
+        console.error("Error fetching location:", error);
+        setSelectedLocation(null);
+      }
+    };
+
+    if (value) {
+      // Kiểm tra xem location đã có trong danh sách chưa
+      const existingLocation = locations.find((loc) => loc.id === value);
+      if (existingLocation) {
+        setSelectedLocation(existingLocation);
+      } else {
+        // Nếu chưa có, fetch từ API
+        fetchSelectedLocation(value as string);
+      }
+    } else {
+      setSelectedLocation(null);
+    }
+  }, [value, locations, getLocationById]);
 
   return (
     <div className="space-y-2">

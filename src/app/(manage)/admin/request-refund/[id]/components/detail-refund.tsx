@@ -43,14 +43,16 @@ export default function RefundRequestDetail() {
   const [loading, setLoading] = useState(true);
   const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [actionType, setActionType] = useState<"approve" | "reject" | null>(
+    null
+  );
   const [form] = Form.useForm<{ note?: string }>();
 
-  const { 
-    getRefundRequestById, 
+  const {
+    getRefundRequestById,
     approveRefundRequest,
     rejectRefundRequest,
-    loading: serviceLoading 
+    loading: serviceLoading,
   } = useRefundRequests();
 
   const requestId = params.id as string;
@@ -94,8 +96,7 @@ export default function RefundRequestDetail() {
   };
 
   const onViewTourDetail = (tourId: string) => {
-    // TODO: Navigate to tour detail page
-    console.log("View tour detail:", tourId);
+    router.push(`/admin/tour/${tourId}`)
   };
 
   const onViewTripPlanDetail = (tripPlanId: string) => {
@@ -115,9 +116,9 @@ export default function RefundRequestDetail() {
   }, [requestId]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(price);
   };
 
@@ -128,13 +129,13 @@ export default function RefundRequestDetail() {
 
   async function handleSubmit() {
     if (!data || !actionType) return;
-    
+
     try {
-      if (actionType === 'approve') {
+      if (actionType === "approve") {
         setApproveLoading(true);
         await onApprove(data.id);
         toast.success("Đã chấp nhận yêu cầu hoàn tiền.");
-      } else if (actionType === 'reject') {
+      } else if (actionType === "reject") {
         const { note } = form.getFieldsValue();
         if (!note) {
           toast.error("Vui lòng nhập lý do từ chối.");
@@ -144,13 +145,16 @@ export default function RefundRequestDetail() {
         await onReject(data.id, note);
         toast.success("Đã từ chối yêu cầu hoàn tiền.");
       }
-      
+
       resetForm();
       // Refresh data or navigate back
-      router.push('/admin/request-refund');
+      router.push("/admin/request-refund");
     } catch (e: any) {
       toast.error(
-        e?.message || `Không thể ${actionType === 'approve' ? 'chấp nhận' : 'từ chối'} yêu cầu. Vui lòng thử lại.`
+        e?.message ||
+          `Không thể ${
+            actionType === "approve" ? "chấp nhận" : "từ chối"
+          } yêu cầu. Vui lòng thử lại.`
       );
     } finally {
       setApproveLoading(false);
@@ -171,9 +175,9 @@ export default function RefundRequestDetail() {
       <div className="p-6">
         <div className="text-center">
           <p>Không tìm thấy yêu cầu hoàn tiền</p>
-          <Button 
-            type="primary" 
-            onClick={() => router.push('/admin/request-refund')}
+          <Button
+            type="primary"
+            onClick={() => router.push("/admin/request-refund")}
             className="mt-4"
           >
             Quay lại danh sách
@@ -201,14 +205,14 @@ export default function RefundRequestDetail() {
               <Button
                 danger
                 icon={<CloseOutlined />}
-                onClick={() => setActionType('reject')}
+                onClick={() => setActionType("reject")}
               >
                 Từ chối
               </Button>
               <Button
                 type="primary"
                 icon={<CheckOutlined />}
-                onClick={() => setActionType('approve')}
+                onClick={() => setActionType("approve")}
               >
                 Chấp nhận
               </Button>
@@ -216,17 +220,25 @@ export default function RefundRequestDetail() {
           )}
           {actionType && (
             <Space>
-              <Button onClick={() => setActionType(null)}>
-                Hủy
-              </Button>
+              <Button onClick={() => setActionType(null)}>Hủy</Button>
               <Button
-                type={actionType === 'approve' ? 'primary' : 'default'}
-                danger={actionType === 'reject'}
-                loading={actionType === 'approve' ? approveLoading : rejectLoading}
+                type={actionType === "approve" ? "primary" : "default"}
+                danger={actionType === "reject"}
+                loading={
+                  actionType === "approve" ? approveLoading : rejectLoading
+                }
                 onClick={handleSubmit}
-                icon={actionType === 'approve' ? <CheckOutlined /> : <CloseOutlined />}
+                icon={
+                  actionType === "approve" ? (
+                    <CheckOutlined />
+                  ) : (
+                    <CloseOutlined />
+                  )
+                }
               >
-                {actionType === 'approve' ? 'Xác nhận chấp nhận' : 'Xác nhận từ chối'}
+                {actionType === "approve"
+                  ? "Xác nhận chấp nhận"
+                  : "Xác nhận từ chối"}
               </Button>
             </Space>
           )}
@@ -264,7 +276,7 @@ export default function RefundRequestDetail() {
                 <Descriptions.Item label="Thời gian yêu cầu">
                   <Space>
                     <CalendarOutlined />
-                    <div>
+                    <div className="flex flex-row gap-2 justify-center items-center">
                       <div>{dayjs(data.requestedAt).format("DD/MM/YYYY")}</div>
                       <div className="text-sm text-gray-500">
                         {dayjs(data.requestedAt).format("HH:mm:ss")}
@@ -275,25 +287,26 @@ export default function RefundRequestDetail() {
                 <Descriptions.Item label="Thời gian phản hồi">
                   <Space>
                     <CalendarOutlined />
-                    <div>
-                      {dayjs(data.respondedAt).format("YYYY-MM-DD HH:mm") ===
-                      dayjs(data.respondedAt).format("YYYY-MM-DD HH:mm") ? (
+                    <div className="flex flex-row gap-2 justify-center items-center">
+                      {data.respondedAt == null ? (
                         <span className="text-gray-400">Chưa phản hồi</span>
                       ) : (
-                        <>
-                          <div>{dayjs(data.respondedAt).format("DD/MM/YYYY")}</div>
+                        <div className="flex flex-row gap-2 justify-center items-center">
+                          <div>
+                            {dayjs(data.respondedAt).format("DD/MM/YYYY")}
+                          </div>
                           <div className="text-sm text-gray-500">
                             {dayjs(data.respondedAt).format("HH:mm:ss")}
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </Space>
                 </Descriptions.Item>
               </Descriptions>
-              
+
               <Divider />
-              
+
               <div>
                 <h4 className="font-medium mb-3">Lý do hoàn tiền</h4>
                 <div className="p-4 bg-gray-50 rounded-lg border min-h-[120px]">
@@ -327,36 +340,54 @@ export default function RefundRequestDetail() {
         {actionType && (
           <Card
             className={`${
-              actionType === 'approve' 
-                ? 'border-green-200 bg-green-50' 
-                : 'border-red-200 bg-red-50'
+              actionType === "approve"
+                ? "border-green-200 bg-green-50"
+                : "border-red-200 bg-red-50"
             }`}
           >
             <div className="flex items-center gap-2 mb-4">
-              <ExclamationCircleOutlined 
+              <ExclamationCircleOutlined
                 className={`text-xl ${
-                  actionType === 'approve' ? 'text-green-600' : 'text-red-600'
-                }`} 
+                  actionType === "approve" ? "text-green-600" : "text-red-600"
+                }`}
               />
-              <Title level={4} className={`mb-0 ${
-                actionType === 'approve' ? 'text-green-800' : 'text-red-800'
-              }`}>
-                {actionType === 'approve' ? 'Chấp nhận yêu cầu hoàn tiền' : 'Từ chối yêu cầu hoàn tiền'}
+              <Title
+                level={4}
+                className={`mb-0 ${
+                  actionType === "approve" ? "text-green-800" : "text-red-800"
+                }`}
+              >
+                {actionType === "approve"
+                  ? "Chấp nhận yêu cầu hoàn tiền"
+                  : "Từ chối yêu cầu hoàn tiền"}
               </Title>
             </div>
-            
+
             <Form form={form} layout="vertical">
-              <Form.Item 
-                name="note" 
-                label={actionType === 'approve' ? 'Ghi chú (tùy chọn)' : 'Lý do từ chối'}
-                rules={actionType === 'reject' ? [{ required: true, message: 'Vui lòng nhập lý do từ chối' }] : []}
+              <Form.Item
+                name="note"
+                label={
+                  actionType === "approve"
+                    ? "Ghi chú (tùy chọn)"
+                    : "Lý do từ chối"
+                }
+                rules={
+                  actionType === "reject"
+                    ? [
+                        {
+                          required: true,
+                          message: "Vui lòng nhập lý do từ chối",
+                        },
+                      ]
+                    : []
+                }
               >
                 <Input.TextArea
                   rows={4}
                   placeholder={
-                    actionType === 'approve' 
-                      ? 'Nhập ghi chú cho giao dịch hoàn tiền (nếu có)...' 
-                      : 'Nhập lý do từ chối hoặc ghi chú nội bộ...'
+                    actionType === "approve"
+                      ? "Nhập ghi chú cho giao dịch hoàn tiền (nếu có)..."
+                      : "Nhập lý do từ chối hoặc ghi chú nội bộ..."
                   }
                   maxLength={500}
                   showCount

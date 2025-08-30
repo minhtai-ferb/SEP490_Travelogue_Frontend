@@ -4,3 +4,11 @@ export function isAdmin(userRoles: string[] | undefined): boolean {
   }
   return userRoles.includes("admin");
 }
+
+export function hasAdminInPath(pathname: string): boolean {
+  if (!pathname) {
+    return false;
+  }
+  
+  return pathname.toLowerCase().includes("/admin");
+}

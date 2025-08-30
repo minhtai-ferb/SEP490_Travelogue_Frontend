@@ -58,30 +58,19 @@ export default function BookingFilterBar({
           placeholder="Trạng thái"
           style={{ width: 180 }}
           options={[
-            { value: 0, label: "Chờ xác nhận" },
-            { value: 1, label: "Đã xác nhận" },
-            { value: 2, label: "Đã hủy" },
-            { value: 3, label: "Hết hạn" },
-            //   { value: 4, label: "Hoàn thành" },
-            //   { value: 5, label: "Thanh toán thất bại" },
+            { value: 0, label: "Đang chờ thanh toán" },
+            { value: 1, label: "Đã thanh toán" },
+            { value: 2, label: "Bị hủy chưa thanh toán" },
+            { value: 3, label: "Bị hủy đã thanh toán" },
+            { value: 4, label: "Bị hủy bởi nhà cung cấp" },
+            { value: 5, label: "Đã hoàn thành" },
+            { value: 6, label: "Hết hạn" },
           ]}
           value={value.status}
           onChange={(v) =>
             onChange({ ...value, status: v as number | undefined })
           }
         />
-
-        {/* <Select
-        allowClear placeholder="Loại booking" style={{ width: 180 }}
-        options={[
-          { value: 1, label: "Tour" },
-          { value: 2, label: "Workshop" },
-          { value: 3, label: "Tour Guide" },
-          { value: 4, label: "Trip Plan" },
-        ]}
-        value={value.bookingType}
-        onChange={(v) => onChange({ ...value, bookingType: v as number | undefined })}
-      /> */}
 
         <RangePicker
           onChange={onChangeRange}
