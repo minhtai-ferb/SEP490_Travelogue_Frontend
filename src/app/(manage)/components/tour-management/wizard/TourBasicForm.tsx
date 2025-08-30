@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowRight, X, Loader2 } from "lucide-react"
 import { TourTypeLabels, type CreateTourRequest } from "@/types/Tour"
 import { ImageUpload } from "../../locations/create/components/image-upload"
+import { AddressSearchInput } from "@/app/(manage)/components/locations/create/components/address-search-input"
 
 interface TourBasicFormProps {
 	initialData?: CreateTourRequest | null
@@ -28,6 +29,8 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 		totalDays: 1,
 		tourType: 1,
 		mediaDtos: [],
+		pickupAddress: "",
+		stayInfo: "",
 	})
 
 	const [errors, setErrors] = useState<Record<string, string>>({})
@@ -51,6 +54,14 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 
 		if (!formData.content.trim()) {
 			newErrors.content = "Nội dung chuyến đi là bắt buộc"
+		}
+
+		if (!formData.pickupAddress.trim()) {
+			newErrors.pickupAddress = "Địa điểm đón khách là bắt buộc"
+		}
+
+		if (!formData.stayInfo.trim()) {
+			newErrors.stayInfo = "Thông tin chỗ nghỉ ngơi là bắt buộc"
 		}
 
 		if (formData.totalDays <= 0) {
@@ -121,7 +132,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
-								<Label htmlFor="name">Tên chuyến đi *</Label>
+								<Label htmlFor="name">Tên chuyến đi <span className="text-red-500">*</span></Label>
 								<Input
 									id="name"
 									placeholder="Nhập tên chuyến đi"
@@ -134,7 +145,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="description">Mô Tả chuyến đi *</Label>
+								<Label htmlFor="description">Mô Tả chuyến đi <span className="text-red-500">*</span></Label>
 								<Textarea
 									id="description"
 									placeholder="Nhập mô tả chi tiết về chuyến đi"
@@ -148,7 +159,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="content">Nội Dung Chi Tiết *</Label>
+								<Label htmlFor="content">Nội Dung Chi Tiết <span className="text-red-500">*</span></Label>
 								<Textarea
 									id="content"
 									placeholder="Nhập nội dung chi tiết về chuyến đi"
@@ -159,6 +170,18 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 									disabled={isLoading}
 								/>
 								{errors.content && <p className="text-sm text-red-500">{errors.content}</p>}
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="pickupAddress">Địa điểm đón khách <span className="text-red-500">*</span></Label>
+								<Textarea id="pickupAddress" placeholder="Nhập địa điểm đón khách (Nhập tên và địa chỉ chi tiết)" value={formData.pickupAddress} onChange={(e) => handleInputChange("pickupAddress", e.target.value)} className={errors.pickupAddress ? "border-red-500" : ""} disabled={isLoading} />
+								{errors.pickupAddress && <p className="text-sm text-red-500">{errors.pickupAddress}</p>}
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="stayInfo">Thông tin chỗ nghỉ ngơi <span className="text-red-500">*</span></Label>
+								<Textarea id="stayInfo" placeholder="Nhập thông tin chỗ nghỉ ngơi (Nhập tên và địa chỉ chi tiết)" value={formData.stayInfo} onChange={(e) => handleInputChange("stayInfo", e.target.value)} className={errors.stayInfo ? "border-red-500" : ""} disabled={isLoading} />
+								{errors.stayInfo && <p className="text-sm text-red-500">{errors.stayInfo}</p>}
 							</div>
 						</CardContent>
 					</Card>
@@ -173,7 +196,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
-								<Label>Loại chuyến đi *</Label>
+								<Label>Loại chuyến đi <span className="text-red-500">*</span></Label>
 								<Select
 									value={formData.tourType.toString()}
 									onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
@@ -194,7 +217,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							</div>
 
 							<div>
-								<Label>Phương tiện di chuyển *</Label>
+								<Label>Phương tiện di chuyển <span className="text-red-500">*</span></Label>
 								<Select
 									value={formData.transportType}
 									onValueChange={(value) => handleInputChange("transportType", value)}
@@ -216,7 +239,7 @@ export function TourBasicForm({ initialData, onSubmit, onCancel, isLoading = fal
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="totalDays">Số Ngày của chuyến đi *</Label>
+								<Label htmlFor="totalDays">Số Ngày của chuyến đi <span className="text-red-500">*</span></Label>
 								<Input
 									id="totalDays"
 									type="number"

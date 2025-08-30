@@ -96,6 +96,8 @@ export interface CreateTourRequest {
 	description: string
 	content: string
 	transportType: string
+	pickupAddress: string
+	stayInfo: string
 	totalDays: number
 	tourType: number
 	finalPrice?: number
@@ -178,6 +180,12 @@ export interface CreateTourBasicRequest {
 	content: string
 	totalDays: number
 	tourType: number
+	pickupAddress: string
+	stayInfo: string
+	mediaDtos: {
+		mediaUrl: string
+		isThumbnail: boolean
+	}[]
 }
 
 export interface CreateTourScheduleRequest {
