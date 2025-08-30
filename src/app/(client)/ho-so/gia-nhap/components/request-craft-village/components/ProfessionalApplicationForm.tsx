@@ -43,42 +43,25 @@ import { useCraftVillageRequestForm } from "../hooks/useCraftVillageRequestForm"
 import ContentEditor from "@/components/common/content-editor/ContentEditor"
 import { ImageUpload } from "@/app/(manage)/components/locations/create/components/image-upload"
 import type { MediaDto } from "@/app/(manage)/components/locations/create/types/CreateLocation"
+import {
+	Workshop,
+	WorkshopActivity,
+	TicketType,
+	WorkshopSchedule,
+	RecurringSession,
+	RecurringRule,
+	WorkshopException,
+	timeStringToHours,
+	hoursToTimeString,
+	timeStringToTimeString,
+	getCurrentISOString,
+	DAYS_OF_WEEK,
+	TICKET_TYPES,
+	WORKSHOP_STATUS
+} from "@/types/CraftVillageRequest"
 
-// Domain types for Workshop builder (kept local and optional)
-interface WorkshopActivity {
-	activity: string
-	description: string
-	startHour: number
-	endHour: number
-	activityOrder: number
-}
-interface TicketType {
-	type: "Visit" | "Experience"
-	name: string
-	price: number
-	isCombo: boolean
-	durationMinutes: number
-	content: string
-	workshopActivities?: WorkshopActivity[]
-}
-interface RecurringSession {
-	startTime: string
-	endTime: string
-	capacity: number
-}
-interface RecurringRule {
-	daysOfWeek: string[]
-	startDate: string
-	endDate: string
-	sessions: RecurringSession[]
-}
-interface WorkshopData {
-	name: string
-	description: string
-	status: "Pending"
-	ticketTypes: TicketType[]
-	recurringRules: RecurringRule[]
-}
+// Using types from @/types/CraftVillageRequest
+type WorkshopData = Workshop
 
 export default function ProfessionalApplicationForm() {
 	const {
@@ -86,18 +69,12 @@ export default function ProfessionalApplicationForm() {
 		formData,
 		errors,
 		isSubmitting,
-		isSuccess,
 		modelFiles,
-		modelPreviews,
-		modelMimeTypes,
-		modelFileNames,
 		uploadedModelUrls,
 		setUploadedModelUrls,
 		handleInputChange,
 		handlePhoneChange,
 		handleAddressChange,
-		handleModelFileChange,
-		removeModelFile,
 		handleSubmit,
 	} = useCraftVillageRequestForm()
 
@@ -137,18 +114,20 @@ export default function ProfessionalApplicationForm() {
 		const newWorkshop: WorkshopData = {
 			name: "",
 			description: "",
-			status: "Pending",
+			content: "",
+			status: WORKSHOP_STATUS.PENDING,
 			ticketTypes: [
 				{
-					type: "Visit",
+					type: TICKET_TYPES.VISIT,
 					name: "Vé tham quan",
 					price: 20000,
 					isCombo: false,
 					durationMinutes: 60,
 					content: "Du khách tham quan và nghe giới thiệu về làng nghề",
+					workshopActivities: [],
 				},
 				{
-					type: "Experience",
+					type: TICKET_TYPES.EXPERIENCE,
 					name: "Vé trải nghiệm (bao gồm tham quan)",
 					price: 50000,
 					isCombo: true,
@@ -157,7 +136,9 @@ export default function ProfessionalApplicationForm() {
 					workshopActivities: [],
 				},
 			],
+			schedules: [],
 			recurringRules: [],
+			exceptions: [],
 		}
 		setEditingWorkshop(newWorkshop)
 		setShowWorkshopModal(true)
@@ -529,19 +510,19 @@ export default function ProfessionalApplicationForm() {
 							</div>
 							<ImageUpload
 								mediaDtos={(uploadedModelUrls || []).map((u, index) => ({
-									mediaUrl: u,
-									isThumbnail: index === 0 // First image as default thumbnail
+									mediaUrl: u.mediaUrl,
+									isThumbnail: index === 0 // First image as thumbnail
 								}))}
 								onChange={(items: MediaDto[]) => {
 									const urls = items.map((m) => m.mediaUrl).filter(Boolean)
-									setUploadedModelUrls(urls)
+									setUploadedModelUrls(items)
 									console.log("=== IMAGE UPLOAD DEBUG ===")
 									console.log("New media items:", items)
 									console.log("Extracted URLs:", urls)
 									console.log("========================")
 								}}
 							/>
-							{errors.model && <p className="text-sm text-red-600">{errors.model}</p>}
+							{errors.mediaDtos && <p className="text-sm text-red-600">{errors.mediaDtos}</p>}
 						</div>
 
 						<Separator className="my-8" />
@@ -663,13 +644,13 @@ export default function ProfessionalApplicationForm() {
 													<div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
 														<div className="text-center">
 															<div className="text-2xl font-bold text-emerald-600">
-																{workshop.ticketTypes.find((t) => t.type === "Visit")?.price.toLocaleString() || "0"}đ
+																{workshop.ticketTypes.find((t) => t.type === TICKET_TYPES.VISIT)?.price.toLocaleString() || "0"}đ
 															</div>
 															<div className="text-xs text-gray-500">Vé tham quan</div>
 														</div>
 														<div className="text-center">
 															<div className="text-2xl font-bold text-purple-600">
-																{workshop.ticketTypes.find((t) => t.type === "Experience")?.price.toLocaleString() || "0"}đ
+																{workshop.ticketTypes.find((t) => t.type === 2)?.price.toLocaleString() || "0"}đ
 															</div>
 															<div className="text-xs text-gray-500">Vé trải nghiệm</div>
 														</div>
@@ -811,6 +792,10 @@ export default function ProfessionalApplicationForm() {
 }
 
 // Workshop modal (unchanged logic; kept inline for cohesion and future scalability)
+// Helper functions for time string conversion (using utilities from types)
+const timeToHours = (timeString: string): number => timeStringToHours(timeString)
+const hoursToTime = (hours: number): string => hoursToTimeString(hours)
+
 function ModernWorkshopModal({
 	isOpen, onClose, onSave, editingWorkshop,
 }: {
@@ -823,18 +808,20 @@ function ModernWorkshopModal({
 		editingWorkshop || {
 			name: "",
 			description: "",
-			status: "Pending",
+			content: "",
+			status: WORKSHOP_STATUS.PENDING,
 			ticketTypes: [
 				{
-					type: "Visit",
+					type: TICKET_TYPES.VISIT,
 					name: "Vé tham quan",
 					price: 20000,
 					isCombo: false,
 					durationMinutes: 60,
 					content: "Du khách tham quan và nghe giới thiệu về làng nghề",
+					workshopActivities: [],
 				},
 				{
-					type: "Experience",
+					type: TICKET_TYPES.EXPERIENCE,
 					name: "Vé trải nghiệm (bao gồm tham quan)",
 					price: 50000,
 					isCombo: true,
@@ -843,7 +830,9 @@ function ModernWorkshopModal({
 					workshopActivities: [],
 				},
 			],
+			schedules: [],
 			recurringRules: [],
+			exceptions: [],
 		},
 	)
 	const [currentStep, setCurrentStep] = useState(1)
@@ -873,21 +862,21 @@ function ModernWorkshopModal({
 		if (validateStep(1)) onSave(workshop)
 	}
 
-	const experienceTicket = workshop.ticketTypes.find((t) => t.type === "Experience")
-	const visitTicket = workshop.ticketTypes.find((t) => t.type === "Visit")
+	const experienceTicket = workshop.ticketTypes.find((t) => t.type === TICKET_TYPES.EXPERIENCE)
+	const visitTicket = workshop.ticketTypes.find((t) => t.type === TICKET_TYPES.VISIT)
 
 	const addActivity = () => {
 		if (!experienceTicket) return
 		const newActivity: WorkshopActivity = {
 			activity: "",
 			description: "",
-			startHour: 0,
-			endHour: 1,
+			startHour: "09:00:00",
+			endHour: "10:00:00",
 			activityOrder: (experienceTicket.workshopActivities?.length || 0) + 1,
 		}
 		updateWorkshop({
 			ticketTypes: workshop.ticketTypes.map((t) =>
-				t.type === "Experience"
+				t.type === TICKET_TYPES.EXPERIENCE
 					? { ...t, workshopActivities: [...(t.workshopActivities || []), newActivity] }
 					: t,
 			),
@@ -896,7 +885,7 @@ function ModernWorkshopModal({
 	const updateActivity = (index: number, updates: Partial<WorkshopActivity>) => {
 		updateWorkshop({
 			ticketTypes: workshop.ticketTypes.map((t) =>
-				t.type === "Experience"
+				t.type === TICKET_TYPES.EXPERIENCE
 					? {
 						...t,
 						workshopActivities: t.workshopActivities?.map((a, i) => (i === index ? { ...a, ...updates } : a)) || [],
@@ -908,7 +897,7 @@ function ModernWorkshopModal({
 	const removeActivity = (index: number) => {
 		updateWorkshop({
 			ticketTypes: workshop.ticketTypes.map((t) =>
-				t.type === "Experience"
+				t.type === TICKET_TYPES.EXPERIENCE
 					? { ...t, workshopActivities: t.workshopActivities?.filter((_, i) => i !== index) || [] }
 					: t,
 			),
@@ -917,10 +906,14 @@ function ModernWorkshopModal({
 
 	const addRecurringRule = () => {
 		const newRule: RecurringRule = {
-			daysOfWeek: ["Monday"],
-			startDate: new Date().toISOString().split("T")[0],
-			endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-			sessions: [{ startTime: "08:00:00", endTime: "10:00:00", capacity: 20 }],
+			daysOfWeek: [DAYS_OF_WEEK.MONDAY],
+			startDate: getCurrentISOString(),
+			endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+			sessions: [{
+				startTime: "08:00:00",
+				endTime: "10:00:00",
+				capacity: 20
+			}],
 		}
 		updateWorkshop({ recurringRules: [...workshop.recurringRules, newRule] })
 	}
@@ -1000,7 +993,7 @@ function ModernWorkshopModal({
 											onChange={(e) =>
 												updateWorkshop({
 													ticketTypes: workshop.ticketTypes.map((t) =>
-														t.type === "Visit" ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
+														t.type === TICKET_TYPES.VISIT ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
 													),
 												})
 											}
@@ -1015,7 +1008,7 @@ function ModernWorkshopModal({
 											onChange={(e) =>
 												updateWorkshop({
 													ticketTypes: workshop.ticketTypes.map((t) =>
-														t.type === "Experience" ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
+														t.type === 2 ? { ...t, price: Number.parseInt(e.target.value) || 0 } : t,
 													),
 												})
 											}
@@ -1080,15 +1073,15 @@ function ModernWorkshopModal({
 														<div className="flex items-center gap-2">
 															<Input
 																type="number"
-																value={activity.startHour}
-																onChange={(e) => updateActivity(index, { startHour: Number.parseInt(e.target.value) || 0 })}
+																value={timeToHours(activity.startHour)}
+																onChange={(e) => updateActivity(index, { startHour: hoursToTime(Number.parseInt(e.target.value) || 0) })}
 																className="border-2 border-gray-200 focus:border-purple-400"
 															/>
 															<span>-</span>
 															<Input
 																type="number"
-																value={activity.endHour}
-																onChange={(e) => updateActivity(index, { endHour: Number.parseInt(e.target.value) || 0 })}
+																value={timeToHours(activity.endHour)}
+																onChange={(e) => updateActivity(index, { endHour: hoursToTime(Number.parseInt(e.target.value) || 0) })}
 																className="border-2 border-gray-200 focus:border-purple-400"
 															/>
 														</div>
@@ -1174,32 +1167,28 @@ function ModernWorkshopModal({
 													<div className="md:col-span-2 space-y-2">
 														<Label>Các ngày trong tuần</Label>
 														<div className="flex flex-wrap gap-2">
-															{["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-																<div key={day} className="flex items-center space-x-2">
+															{[
+																{ value: DAYS_OF_WEEK.MONDAY, label: "T2" },
+																{ value: DAYS_OF_WEEK.TUESDAY, label: "T3" },
+																{ value: DAYS_OF_WEEK.WEDNESDAY, label: "T4" },
+																{ value: DAYS_OF_WEEK.THURSDAY, label: "T5" },
+																{ value: DAYS_OF_WEEK.FRIDAY, label: "T6" },
+																{ value: DAYS_OF_WEEK.SATURDAY, label: "T7" },
+																{ value: DAYS_OF_WEEK.SUNDAY, label: "CN" },
+															].map((day) => (
+																<div key={day.value} className="flex items-center space-x-2">
 																	<Checkbox
-																		id={`${index}-${day}`}
-																		checked={rule.daysOfWeek.includes(day)}
+																		id={`${index}-${day.value}`}
+																		checked={rule.daysOfWeek.includes(day.value)}
 																		onCheckedChange={(checked) => {
 																			const updatedDays = checked
-																				? [...rule.daysOfWeek, day]
-																				: rule.daysOfWeek.filter((d) => d !== day)
+																				? [...rule.daysOfWeek, day.value]
+																				: rule.daysOfWeek.filter((d) => d !== day.value)
 																			updateRecurringRule(index, { daysOfWeek: updatedDays })
 																		}}
 																	/>
-																	<Label htmlFor={`${index}-${day}`} className="text-sm">
-																		{day === "Monday"
-																			? "T2"
-																			: day === "Tuesday"
-																				? "T3"
-																				: day === "Wednesday"
-																					? "T4"
-																					: day === "Thursday"
-																						? "T5"
-																						: day === "Friday"
-																							? "T6"
-																							: day === "Saturday"
-																								? "T7"
-																								: "CN"}
+																	<Label htmlFor={`${index}-${day.value}`} className="text-sm">
+																		{day.label}
 																	</Label>
 																</div>
 															))}

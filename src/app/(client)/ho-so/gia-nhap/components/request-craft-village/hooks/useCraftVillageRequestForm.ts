@@ -7,6 +7,12 @@ import { useCraftVillage } from "@/services/use-craftvillage"
 import { useDistrictManager } from "@/services/district-manager"
 import { District } from "@/types/District"
 import { useTourguideAssign } from "@/services/tourguide"
+import { MediaDto } from "@/app/(manage)/components/locations/create/types/CreateLocation"
+import {
+  CraftVillageRequest,
+  timeStringToTimeString,
+  WORKSHOP_STATUS
+} from "@/types/CraftVillageRequest"
 
 export interface CraftVillageFormData {
   name: string
@@ -25,7 +31,7 @@ export interface CraftVillageFormData {
   signatureProduct: string
   yearsOfHistory: string
   isRecognizedByUnesco: boolean
-  model: string
+  mediaDtos: MediaDto[]
 }
 
 export type CraftVillageFormErrors = Record<string, string>
@@ -53,7 +59,7 @@ export function useCraftVillageRequestForm() {
     signatureProduct: "",
     yearsOfHistory: "",
     isRecognizedByUnesco: false,
-    model: "",
+    mediaDtos: [],
   })
 
   const [errors, setErrors] = useState<CraftVillageFormErrors>({})
@@ -66,7 +72,7 @@ export function useCraftVillageRequestForm() {
   const [modelMimeTypes, setModelMimeTypes] = useState<string[]>([])
   const [modelFileNames, setModelFileNames] = useState<string[]>([])
   // Allow using pre-uploaded URLs from a custom uploader component
-  const [uploadedModelUrls, setUploadedModelUrls] = useState<string[]>([])
+  const [uploadedModelUrls, setUploadedModelUrls] = useState<MediaDto[]>([])
 
   useEffect(() => {
     getAllDistrict().then((res) => setDistricts(res))
@@ -139,8 +145,7 @@ export function useCraftVillageRequestForm() {
     if (!formData.email.trim()) newErrors.email = "Email là bắt buộc"
     if (!formData.signatureProduct.trim()) newErrors.signatureProduct = "Sản phẩm đặc trưng là bắt buộc"
     if (!formData.yearsOfHistory.trim()) newErrors.yearsOfHistory = "Số năm lịch sử là bắt buộc"
-    // Temporarily disable image validation for testing
-    // if (uploadedModelUrls.length === 0 && modelFiles.length === 0) newErrors.model = "Vui lòng chọn ít nhất 1 hình ảnh"
+    if (uploadedModelUrls.length === 0 && modelFiles.length === 0) newErrors.mediaDtos = "Vui lòng chọn ít nhất 1 hình ảnh"
 
     if (formData.email && !validateEmail(formData.email)) newErrors.email = "Email không hợp lệ"
     if (formData.phoneNumber && !validatePhone(formData.phoneNumber)) newErrors.phoneNumber = "Số điện thoại không hợp lệ (10-11 số)"
@@ -201,7 +206,7 @@ export function useCraftVillageRequestForm() {
       setModelFileNames((prev) => [...prev, ...validNames])
     }
 
-    if (errors.model) setErrors((prev) => ({ ...prev, model: "" }))
+    if (errors.mediaDtos) setErrors((prev) => ({ ...prev, mediaDtos: "" }))
   }
 
   const removeModelFile = (index: number) => {
@@ -223,8 +228,8 @@ export function useCraftVillageRequestForm() {
       address: formData.address.trim(),
       latitude: formData.latitude,
       longitude: formData.longitude,
-      openTime: timeToTimeSpan(formData.openTime),
-      closeTime: timeToTimeSpan(formData.closeTime),
+      openTime: timeStringToTimeString(formData.openTime),
+      closeTime: timeStringToTimeString(formData.closeTime),
       districtId: formData.districtId,
       phoneNumber: formData.phoneNumber.replace(/\s/g, ""),
       email: formData.email.trim(),
@@ -234,7 +239,7 @@ export function useCraftVillageRequestForm() {
       yearsOfHistory: Number.parseInt(formData.yearsOfHistory),
       isRecognizedByUnesco: formData.isRecognizedByUnesco,
       // model will be filled after upload
-      model: "",
+      mediaDtos: [],
     }
   }, [
     formData.address,
@@ -273,13 +278,12 @@ export function useCraftVillageRequestForm() {
       signatureProduct: "",
       yearsOfHistory: "",
       isRecognizedByUnesco: false,
-      model: "",
+      mediaDtos: [],
     })
     setModelFiles([])
     setModelPreviews([])
     setModelMimeTypes([])
     setModelFileNames([])
-    setUploadedModelUrls([])
     setErrors({})
   }
 
@@ -293,16 +297,20 @@ export function useCraftVillageRequestForm() {
     setIsSubmitting(true)
     try {
       // Prefer pre-uploaded URLs from custom uploader; fallback to uploading local files
-      let modelUrls: string[] = uploadedModelUrls
+      let modelUrls: MediaDto[] = uploadedModelUrls
       if ((!Array.isArray(modelUrls) || modelUrls.length === 0) && modelFiles.length > 0) {
-        const uploadedUrls = await uploadCertifications(modelFiles)
+        const uploadedUrls = await uploadCertifications(modelFiles) as unknown as MediaDto[]
         modelUrls = uploadedUrls
+      } else {
+        modelUrls = uploadedModelUrls
       }
 
-      // Create the final payload
+      // Create the final payload with mediaDtos
+      const mediaDtos = modelUrls
+
       const finalPayload = {
         ...requestPayload,
-        model: modelUrls.length > 0 ? modelUrls.join(",") : "", // Allow empty model for testing
+        mediaDtos: mediaDtos,
         // Add workshop data if provided
         ...(workshopData && workshopData.length > 0 && { workshop: workshopData[0] }) // For now, send first workshop
       }
