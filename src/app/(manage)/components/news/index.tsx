@@ -19,7 +19,7 @@ function DashboardNews({ href }: { href: string }) {
         <NewsCard
           title="Sự Kiện"
           description="Quản lý các sự kiện và lễ hội"
-          hrefList={`${href}/event/table`}
+          hrefList={`${href}/event`}
           hrefCreate={`${href}/event/create`}
           Icon={Calendar}
         />
@@ -27,7 +27,7 @@ function DashboardNews({ href }: { href: string }) {
         <NewsCard
           title="Tin Tức"
           description="Quản lý các tin tức và thông báo"
-          hrefList={`${href}/new/table`}
+          hrefList={`${href}/new`}
           hrefCreate={`${href}/new/create`}
           Icon={Newspaper}
         />
@@ -35,7 +35,7 @@ function DashboardNews({ href }: { href: string }) {
         <NewsCard
           title="Trải Nghiệm"
           description="Quản lý các trải nghiệm du lịch"
-          hrefList={`${href}/experience/table`}
+          hrefList={`${href}/experience`}
           hrefCreate={`${href}/experience/create`}
           Icon={MapPin}
         />

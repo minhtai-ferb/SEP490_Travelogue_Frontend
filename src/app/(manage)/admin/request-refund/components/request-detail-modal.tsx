@@ -7,15 +7,17 @@ import {
   Tag,
   Space,
   Button,
-  Upload,
   Form,
   Input,
-  Typography,
+  Card,
+  Tooltip,
+  Row,
+  Col,
 } from "antd";
-import {  ExclamationCircleOutlined } from "@ant-design/icons";
+import {  ExclamationCircleOutlined, CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
-import { Separator } from "@/components/ui/separator";
+import BookingInfoCard from "./booking-info-card";
 import {
   getRefundStatusText,
   RefundRequest,
@@ -28,6 +30,9 @@ type Props = {
   onClose: () => void;
   onApprove: (id: string) => Promise<void>;
   onReject: (id: string, note?: string) => Promise<void>;
+  onViewTourDetail?: (tourId: string) => void;
+  onViewTripPlanDetail?: (tripPlanId: string) => void;
+  onViewWorkshopDetail?: (workshopId: string) => void;
 };
 
 export default function RequestDetailModal({
@@ -36,6 +41,9 @@ export default function RequestDetailModal({
   onClose,
   onApprove,
   onReject,
+  onViewTourDetail,
+  onViewTripPlanDetail,
+  onViewWorkshopDetail,
 }: Props) {
   const [approveLoading, setApproveLoading] = React.useState(false);
   const [rejectLoading, setRejectLoading] = React.useState(false);
@@ -43,6 +51,13 @@ export default function RequestDetailModal({
   const [form] = Form.useForm<{ note?: string }>();
 
   const isPending = data?.status === RefundStatus.PENDING;
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
+  };
 
   function resetForm() {
     form.resetFields();
@@ -131,39 +146,90 @@ export default function RequestDetailModal({
           )}
         </Space>
       }
-      width={720}
+      width={1000}
     >
       {!data ? null : (
         <div className="space-y-4">
-          <Descriptions column={1} bordered size="middle">
-            <Descriptions.Item label="Người yêu cầu">
-              <Space direction="vertical" size={0}>
-                <span className="font-medium">{data.userName}</span>
-              </Space>
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              <Tag
-                color={
-                  data.status === RefundStatus.PENDING
-                    ? "gold"
-                    : data.status === RefundStatus.APPROVED
-                    ? "green"
-                    : "red"
-                }
-              >
-                {getRefundStatusText(data.status)}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Thời điểm yêu cầu">
-              {dayjs(data.createdTime).format("DD/MM/YYYY HH:mm")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Thời điểm phản hồi">
-              {dayjs(data.createdTime).format("YYYY-MM-DD HH:mm") ===
-              dayjs(data.lastUpdatedTime).format("YYYY-MM-DD HH:mm")
-                ? "-"
-                : dayjs(data.lastUpdatedTime).format("DD/MM/YYYY HH:mm")}
-            </Descriptions.Item>
-          </Descriptions>
+          <Row gutter={[16, 16]}>
+            {/* Thông tin yêu cầu hoàn tiền */}
+            <Col xs={24} lg={12}>
+              <Card title="Thông tin yêu cầu hoàn tiền" size="small">
+                <Descriptions column={1} size="small">
+                  <Descriptions.Item label="Người yêu cầu">
+                    <Space direction="vertical" size={0}>
+                      <span className="font-medium">{data.userName}</span>
+                      <span className="text-xs text-gray-500">ID: {data.userId}</span>
+                    </Space>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Trạng thái">
+                    <Tag
+                      color={
+                        data.status === RefundStatus.PENDING
+                          ? "gold"
+                          : data.status === RefundStatus.APPROVED
+                          ? "green"
+                          : "red"
+                      }
+                    >
+                      {getRefundStatusText(data.status)}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thời gian yêu cầu">
+                    <Space>
+                      <CalendarOutlined />
+                      <div>
+                        <div>{dayjs(data.createdTime).format("DD/MM/YYYY")}</div>
+                        <div className="text-xs text-gray-500">
+                          {dayjs(data.createdTime).format("HH:mm:ss")}
+                        </div>
+                      </div>
+                    </Space>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thời gian phản hồi">
+                    <Space>
+                      <CalendarOutlined />
+                      <div>
+                        {dayjs(data.createdTime).format("YYYY-MM-DD HH:mm") ===
+                        dayjs(data.lastUpdatedTime).format("YYYY-MM-DD HH:mm") ? (
+                          <span className="text-gray-400">Chưa phản hồi</span>
+                        ) : (
+                          <>
+                            <div>{dayjs(data.lastUpdatedTime).format("DD/MM/YYYY")}</div>
+                            <div className="text-xs text-gray-500">
+                              {dayjs(data.lastUpdatedTime).format("HH:mm:ss")}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </Space>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Lý do hoàn tiền">
+                    <div className="p-3 bg-gray-50 rounded border max-h-32 overflow-y-auto">
+                      {data.reason}
+                    </div>
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+            </Col>
+
+            {/* Thông tin đặt chỗ */}
+            <Col xs={24} lg={12}>
+              {data.bookingDataModel ? (
+                <BookingInfoCard
+                  booking={data.bookingDataModel}
+                  onViewTourDetail={onViewTourDetail}
+                  onViewTripPlanDetail={onViewTripPlanDetail}
+                  onViewWorkshopDetail={onViewWorkshopDetail}
+                />
+              ) : (
+                <Card title="Thông tin đặt chỗ" size="small">
+                  <div className="text-center text-gray-500 py-8">
+                    Không có thông tin đặt chỗ
+                  </div>
+                </Card>
+              )}
+            </Col>
+          </Row>
 
           {actionType && (
             <div className={`p-4 border rounded-lg ${
