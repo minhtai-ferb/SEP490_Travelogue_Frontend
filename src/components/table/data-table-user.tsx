@@ -14,6 +14,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 
+import { Button } from "@/components/ui/button"
 import {
     Table,
     TableBody,
@@ -22,11 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { PlusCircleIcon } from "lucide-react"
-import SearchInput from "./search-user"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -98,7 +95,10 @@ export function DataTable<TData, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                    Không có dữ liệu. {" "}
+                                    <Link href="/craftvillage/dashboard/workshop/create" className="text-blue-500 hover:underline">
+                                        Tạo mới
+                                    </Link>
                                 </TableCell>
                             </TableRow>
                         )}

@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Traveloge",
-  description: "Traveloge - Tây Ninh Du khảo Về Nguồn",
+  title: "Travelogue",
+  description: "Travelogue - Tây Ninh Du khảo Về Nguồn",
 };
 
 

@@ -19,7 +19,7 @@ export default function TourCalendar({ schedules, selectedSchedule, onScheduleSe
 	// Group schedules by month for better organization
 	const schedulesByMonth = schedules.reduce(
 		(acc, schedule) => {
-			const date = new Date(schedule.departureDate)
+			const date = new Date(schedule.startTime)
 			const monthKey = `${date.getFullYear()}-${date.getMonth()}`
 			if (!acc[monthKey]) {
 				acc[monthKey] = []
@@ -31,10 +31,26 @@ export default function TourCalendar({ schedules, selectedSchedule, onScheduleSe
 	)
 
 	const getAvailabilityStatus = (schedule: TourSchedule) => {
+		// Prefer departureDate if present; fallback to startTime
+		const rawDate = (schedule as any).departureDate || schedule.startTime
+		let parsed: Date | null = null
+		if (typeof rawDate === "string" && rawDate.length > 0) {
+			// Normalize to date-only (ignore time) to avoid marking "today" as past
+			const datePart = rawDate.includes("T") ? rawDate.split("T")[0] : rawDate
+			parsed = new Date(`${datePart}T00:00:00`)
+		}
+		if (!parsed || isNaN(parsed.getTime())) {
+			return { status: "invalid", text: "Ngày không hợp lệ", color: "bg-gray-100 text-gray-700" }
+		}
+		const today = new Date()
+		today.setHours(0, 0, 0, 0)
+		if (parsed < today) {
+			return { status: "past", text: "Đã diễn ra", color: "bg-gray-100 text-gray-700" }
+		}
 		const available = schedule.maxParticipant - schedule.currentBooked
-		if (available === 0) return { status: "full", text: "Hết chỗ", color: "bg-red-100 text-red-700" }
+		if (available <= 0) return { status: "full", text: "Hết chỗ", color: "bg-red-100 text-red-700" }
 		if (available <= 5)
-			return { status: "limited", text: `Còn ${available} chỗ`, color: "bg-orange-100 text-orange-700" }
+			return { status: "limited", text: `Còn ${Math.max(available, 0)} chỗ`, color: "bg-orange-100 text-orange-700" }
 		return { status: "available", text: `Còn ${available} chỗ`, color: "bg-green-100 text-green-700" }
 	}
 
@@ -44,7 +60,7 @@ export default function TourCalendar({ schedules, selectedSchedule, onScheduleSe
 				{schedules.map((schedule) => {
 					const availability = getAvailabilityStatus(schedule)
 					const isSelected = selectedSchedule?.scheduleId === schedule.scheduleId
-					const isAvailable = schedule.currentBooked < schedule.maxParticipant
+					const isAvailable = availability.status === "available" || availability.status === "limited"
 
 					return (
 						<Card
@@ -61,7 +77,7 @@ export default function TourCalendar({ schedules, selectedSchedule, onScheduleSe
 										</div>
 
 										<div>
-											<div className="font-semibold text-lg text-gray-900">{formatDate(schedule.departureDate)}</div>
+											<div className="font-semibold text-lg text-gray-900">{formatDate(schedule.startTime)}</div>
 											<div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
 												<div className="flex items-center gap-1">
 													<Clock className="h-4 w-4" />

@@ -453,10 +453,10 @@ export default function HeroSlider() {
 						loop
 						className="relative inset-0 w-full h-full z-10"
 					>
-						{slides.map((slide, index) => (
+						{slides.map((slide: any, index: number) => (
 							<SwiperSlide key={index}>
 								<img
-									src={slide.image || "/placeholder_image.jpg"}
+									src={slide.image || "/placeholder.svg"}
 									alt={slide.title}
 									className="w-full h-full object-cover" // Changed to object-cover for better fit
 								/>

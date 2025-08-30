@@ -17,12 +17,12 @@ export default function Loading() {
         }
         return prev + 1
       })
-    }, 5)
+    }, 4)
 
     return () => clearInterval(timer)
   }, [])
 
-  const letters = "TRAVELOGE".split("")
+  const letters = "TRAVELOGUE".split("")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 flex items-center justify-center relative overflow-hidden">

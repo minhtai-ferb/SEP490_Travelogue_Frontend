@@ -6,16 +6,35 @@ import { Button } from "@/components/ui/button"
 import WorkshopCreateForm from "../organisms/WorkshopCreateForm"
 import ActivitiesForm from "./steps/ActivitiesForm"
 import SchedulesForm from "./steps/SchedulesForm"
+import BreadcrumbHeader from "@/components/common/breadcrumb-header"
 
 export default function WorkshopCreateFlowPage() {
 	const [workshopId, setWorkshopId] = useState<string | null>(null)
 	const [step, setStep] = useState<number>(1)
 
+	const breadcrumbItems = {
+		label: "Tạo trải nghiệm",
+		items: [
+			{
+				label: "Dashboard",
+				href: "/craftvillage/dashboard",
+			},
+			{
+				label: "Trải nghiệm",
+				href: "/craftvillage/dashboard/workshop",
+			},
+			{
+				label: "Tạo trải nghiệm",
+			},
+		],
+	}
+
 	return (
 		<div className="space-y-6">
-			<Card>
+			<BreadcrumbHeader items={breadcrumbItems.items} />
+			<Card className="mx-4">
 				<CardHeader className="flex flex-row items-center justify-between">
-					<CardTitle>Tạo workshop</CardTitle>
+					<CardTitle>Tạo trải nghiệm</CardTitle>
 					<div className="text-sm text-gray-500">Bước {step} / 3</div>
 				</CardHeader>
 				<CardContent className="space-y-6">
@@ -29,7 +48,7 @@ export default function WorkshopCreateFlowPage() {
 						<SchedulesForm workshopId={workshopId} onBack={() => setStep(2)} />
 					)}
 					{!workshopId && step > 1 && (
-						<div className="text-sm text-red-500">Vui lòng tạo workshop trước khi tiếp tục.</div>
+						<div className="text-sm text-red-500">Vui lòng tạo trải nghiệm trước khi tiếp tục.</div>
 					)}
 				</CardContent>
 			</Card>

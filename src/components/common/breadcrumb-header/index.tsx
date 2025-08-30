@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
+import { Button } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 export type Crumb = {
   /** Text hiển thị */
@@ -26,6 +29,8 @@ export interface AppBreadcrumbHeaderProps {
   items: Crumb[];
   /** Có hiển thị nút mở Sidebar không */
   showSidebarTrigger?: boolean;
+  /** Có hiển thị nút quay lại không */
+  showBackButton?: boolean;
   /** Sticky header ở top */
   sticky?: boolean;
   /** Thêm className tùy biến */
@@ -39,9 +44,14 @@ export interface AppBreadcrumbHeaderProps {
 export default function BreadcrumbHeader({
   items,
   showSidebarTrigger = true,
+  showBackButton = false,
   sticky = true,
   className,
 }: AppBreadcrumbHeaderProps) {
+  const router = useRouter();
+  const handleGoBack = () => {
+    router.back();
+  };
   return (
     <header
       className={[
@@ -52,6 +62,19 @@ export default function BreadcrumbHeader({
     >
       {showSidebarTrigger ? <SidebarTrigger className="-ml-1" /> : null}
       <Separator orientation="vertical" className="mr-2 h-4" />
+
+      {/* Nút quay lại */}
+      {showBackButton && (
+        <>
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={handleGoBack}
+            type="default"
+          >
+          </Button>
+          <Separator orientation="vertical" className="mx-2 h-4" />
+        </>
+      )}
 
       <Breadcrumb>
         <BreadcrumbList>
@@ -65,12 +88,12 @@ export default function BreadcrumbHeader({
                   {isLast || !item.href ? (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                    <BreadcrumbLink href={item.href}>
+                      {item.label}
+                    </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
-                {!isLast && (
-                  <BreadcrumbSeparator className={hiddenCls} />
-                )}
+                {!isLast && <BreadcrumbSeparator className={hiddenCls} />}
               </React.Fragment>
             );
           })}

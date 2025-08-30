@@ -1,4 +1,6 @@
 "use client"
+
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -18,6 +20,7 @@ import {
 	AlertCircle,
 	Star,
 	WorkflowIcon as Workshop,
+	Loader2,
 } from "lucide-react"
 import { type CraftVillageRequestResponse, CraftVillageRequestStatus, type ReviewCraftVillageRequest } from "@/types/CraftVillage"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -53,6 +56,7 @@ export default function CraftVillageDetailView({
 	reviewReason,
 	setReviewReason,
 }: CraftVillageDetailViewProps) {
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const getStatusConfig = (status: CraftVillageRequestStatus) => {
 		switch (status) {
@@ -166,7 +170,7 @@ export default function CraftVillageDetailView({
 						<CardContent className="space-y-4">
 							<div>
 								<h4 className="font-semibold text-gray-900 mb-2">Nội dung mô tả</h4>
-								<p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{data.content}</p>
+								<p className="text-gray-700 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: data.content }} />
 							</div>
 
 							<Separator />
@@ -227,6 +231,161 @@ export default function CraftVillageDetailView({
 							</div>
 						</CardContent>
 					</Card>
+
+					{/* Workshop Information (if available) */}
+					{(data as any)?.workshop && (
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<Workshop className="w-5 h-5 text-purple-600" />
+									Thông tin Workshop
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-6">
+								{/* Workshop Basic Info */}
+								<div>
+									<h4 className="font-semibold text-gray-900 mb-2">Thông tin cơ bản</h4>
+									<div className="bg-gray-50 rounded-lg p-4 space-y-3">
+										<div>
+											<span className="text-sm font-medium text-gray-700">Tên workshop:</span>
+											<p className="text-gray-900">{(data as any).workshop.name}</p>
+										</div>
+										<div>
+											<span className="text-sm font-medium text-gray-700">Mô tả:</span>
+											<p className="text-gray-900">{(data as any).workshop.description}</p>
+										</div>
+										<div>
+											<span className="text-sm font-medium text-gray-700">Nội dung:</span>
+											<p className="text-gray-900">{(data as any).workshop.content}</p>
+										</div>
+									</div>
+								</div>
+
+								{/* Ticket Types */}
+								<div>
+									<h4 className="font-semibold text-gray-900 mb-3">Loại vé</h4>
+									<div className="grid gap-4">
+										{(data as any).workshop.ticketTypes?.map((ticket: any, index: number) => (
+											<div key={ticket.id || index} className="border rounded-lg p-4">
+												<div className="flex items-center justify-between mb-3">
+													<h5 className="font-medium text-gray-900">{ticket.name}</h5>
+													<div className="flex items-center gap-2">
+														<Badge variant={ticket.type === 1 ? "secondary" : "default"}>
+															{ticket.type === 1 ? "Tham quan" : "Trải nghiệm"}
+														</Badge>
+														{ticket.isCombo && (
+															<Badge variant="outline" className="text-purple-600">
+																Combo
+															</Badge>
+														)}
+													</div>
+												</div>
+
+												<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+													<div>
+														<span className="text-gray-600">Giá:</span>
+														<p className="font-semibold text-green-600">
+															{ticket.price?.toLocaleString("vi-VN")}đ
+														</p>
+													</div>
+													<div>
+														<span className="text-gray-600">Thời gian:</span>
+														<p className="font-semibold">{ticket.durationMinutes} phút</p>
+													</div>
+													<div>
+														<span className="text-gray-600">Hoạt động:</span>
+														<p className="font-semibold">{ticket.workshopActivities?.length || 0} hoạt động</p>
+													</div>
+												</div>
+
+												{ticket.content && (
+													<p className="text-gray-700 text-sm mt-2">{ticket.content}</p>
+												)}
+
+												{/* Workshop Activities */}
+												{ticket.workshopActivities && ticket.workshopActivities.length > 0 && (
+													<div className="mt-4">
+														<h6 className="font-medium text-gray-900 mb-2">Chi tiết hoạt động:</h6>
+														<div className="space-y-2">
+															{ticket.workshopActivities.map((activity: any, actIndex: number) => (
+																<div key={activity.id || actIndex} className="bg-gray-50 rounded p-3">
+																	<div className="flex items-center justify-between mb-1">
+																		<span className="font-medium text-gray-900">{activity.activity}</span>
+																		<span className="text-sm text-gray-600">
+																			{activity.startHour} - {activity.endHour}
+																		</span>
+																	</div>
+																	<p className="text-sm text-gray-700">{activity.description}</p>
+																</div>
+															))}
+														</div>
+													</div>
+												)}
+											</div>
+										))}
+									</div>
+								</div>
+
+								{/* Recurring Rules (Schedule) */}
+								{(data as any).workshop.recurringRules && (data as any).workshop.recurringRules.length > 0 && (
+									<div>
+										<h4 className="font-semibold text-gray-900 mb-3">Lịch trình hoạt động</h4>
+										<div className="space-y-4">
+											{(data as any).workshop.recurringRules.map((rule: any, index: number) => (
+												<div key={rule.id || index} className="border rounded-lg p-4">
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+														<div>
+															<span className="text-sm font-medium text-gray-700">Thời gian:</span>
+															<p className="text-gray-900">
+																{dayjs(rule.startDate).format("DD/MM/YYYY")} - {dayjs(rule.endDate).format("DD/MM/YYYY")}
+															</p>
+														</div>
+														<div>
+															<span className="text-sm font-medium text-gray-700">Các ngày trong tuần:</span>
+															<div className="flex flex-wrap gap-1 mt-1">
+																{rule.daysOfWeek?.map((day: number) => {
+																	const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+																	return (
+																		<Badge key={day} variant="outline" className="text-xs">
+																			{dayNames[day]}
+																		</Badge>
+																	);
+																})}
+															</div>
+														</div>
+													</div>
+
+													{/* Sessions */}
+													{rule.sessions && rule.sessions.length > 0 && (
+														<div>
+															<span className="text-sm font-medium text-gray-700 block mb-2">Các ca trong ngày:</span>
+															<div className="grid gap-2">
+																{rule.sessions.map((session: any, sessionIndex: number) => (
+																	<div key={session.id || sessionIndex} className="bg-blue-50 rounded p-3 flex items-center justify-between">
+																		<div className="flex items-center gap-4">
+																			<Badge variant="outline" className="bg-blue-100 text-blue-700">
+																				Ca {sessionIndex + 1}
+																			</Badge>
+																			<span className="text-sm font-medium">
+																				{session.startTime} - {session.endTime}
+																			</span>
+																		</div>
+																		<span className="text-sm text-gray-600">
+																			Sức chứa: <span className="font-medium">{session.capacity} người</span>
+																		</span>
+																	</div>
+																))}
+															</div>
+														</div>
+													)}
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					)}
 
 					{/* Rejection Reason (if rejected) */}
 					{data?.status === CraftVillageRequestStatus.Rejected && data?.rejectionReason && (
@@ -370,6 +529,7 @@ export default function CraftVillageDetailView({
 				</div>
 			</div>
 			<Dialog open={isReviewRequestOpen} onOpenChange={(open) => {
+				if (isSubmitting) return // Prevent closing while submitting
 				setIsReviewRequestOpen(open)
 				if (!open) {
 					setReviewAction?.(null)
@@ -409,22 +569,42 @@ export default function CraftVillageDetailView({
 						</div>
 
 						<DialogFooter>
-							<Button onClick={() => setIsReviewRequestOpen(false)} variant="outline">Hủy</Button>
+							<Button
+								onClick={() => setIsReviewRequestOpen(false)}
+								variant="outline"
+								disabled={isSubmitting}
+							>
+								Hủy
+							</Button>
 							<Button
 								type="button"
-								disabled={!canSubmit || loading}
-								onClick={() => {
-									onSubmitReview?.({
-										status: reviewAction === "approve" ? CraftVillageRequestStatus.Approved : CraftVillageRequestStatus.Rejected,
-										rejectionReason: reviewReason?.trim() || undefined,
-									})
-									setIsReviewRequestOpen(false)
-									setReviewAction?.(null)
-									setReviewReason?.("")
+								disabled={!canSubmit || loading || isSubmitting}
+								onClick={async () => {
+									try {
+										setIsSubmitting(true)
+										await onSubmitReview?.({
+											status: reviewAction === "approve" ? CraftVillageRequestStatus.Approved : CraftVillageRequestStatus.Rejected,
+											rejectionReason: reviewReason?.trim() || undefined,
+										})
+										setIsReviewRequestOpen(false)
+										setReviewAction?.(null)
+										setReviewReason?.("")
+									} catch (error) {
+										console.error("Error submitting review:", error)
+									} finally {
+										setIsSubmitting(false)
+									}
 								}}
 								className={reviewAction === "reject" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
 							>
-								{reviewAction === "approve" ? "Duyệt" : reviewAction === "reject" ? "Từ chối" : "Xác nhận"}
+								{isSubmitting ? (
+									<>
+										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+										Đang xử lý...
+									</>
+								) : (
+									reviewAction === "approve" ? "Duyệt" : reviewAction === "reject" ? "Từ chối" : "Xác nhận"
+								)}
 							</Button>
 						</DialogFooter>
 					</div>

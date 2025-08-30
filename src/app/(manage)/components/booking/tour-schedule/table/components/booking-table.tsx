@@ -14,7 +14,7 @@ export interface BookingItem {
   tourId: string | null;
   tourName: string | null;
   tourScheduleId: string | null;
-  departureDate: string | null;       // có thể null
+  departureDate: string | null; 
   tourGuideId: string | null;
   tourGuideName: string | null;
   tripPlanId: string | null;
@@ -23,13 +23,13 @@ export interface BookingItem {
   workshopName: string | null;
   workshopScheduleId: string | null;
   paymentLinkId: string | null;
-  status: number;                     // 0: pending, 1: confirmed, 2: cancelled, ...
+  status: number; 
   statusText: string;
-  bookingType: number;                // 1: Tour, 2: Workshop, 3: Tour Guide, 4: Trip Plan ...
+  bookingType: number; 
   bookingTypeText: string;
-  bookingDate: string;                // ISO
-  startDate: string;                  // ISO
-  endDate: string;                    // ISO
+  bookingDate: string; 
+  startDate: string; 
+  endDate: string; 
   cancelledAt: string | null;
   promotionId: string | null;
   originalPrice: number;
@@ -58,20 +58,23 @@ export interface BookingTableProps {
 const fmtMoney = (n: number) =>
   n.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
-const isDefaultDate = (iso?: string) =>
-  !iso || iso.startsWith("0001-01-01");
+const isDefaultDate = (iso?: string) => !iso || iso.startsWith("0001-01-01");
 
 const fmtDate = (iso?: string | null) =>
   !iso || isDefaultDate(iso) ? "—" : new Date(iso).toLocaleString("vi-VN");
 
 const statusTag = (r: BookingItem) => {
   const map: Record<number, { color: string; text: string }> = {
-    0: { color: "gold", text: r.statusText || "Đang chờ" },
-    1: { color: "green", text: r.statusText || "Đã xác nhận" },
-    2: { color: "red", text: r.statusText || "Đã hủy" },
+    0: { color: "gold", text: r.statusText || "Đang chờ thanh toán" },
+    1: { color: "blue", text: r.statusText || "Đã thanh toán" },
+    2: { color: "red", text: r.statusText || "Bị hủy chưa thanh toán" },
+    3: { color: "red", text: r.statusText || "Bị hủy đã thanh toán" },
+    4: { color: "red", text: r.statusText || "Bị hủy bởi nhà cung cấp" },
+    5: { color: "green", text: r.statusText || "Đã hoàn thành" },
+    6: { color: "default", text: r.statusText || "Hết hạn" },
   };
   const s = map[r.status] ?? { color: "default", text: r.statusText ?? "—" };
-  return <Tag color={s.color}>{ s.text }</Tag>;
+  return <Tag color={s.color}>{s.text}</Tag>;
 };
 
 export function BookingTableComponent({
@@ -94,30 +97,14 @@ export function BookingTableComponent({
       ellipsis: true,
       width: 180,
     },
-    // {
-    //   title: "Loại đặt chỗ",
-    //   dataIndex: "bookingTypeText",
-    //   key: "bookingTypeText",
-    //   width: 140,
-    //   render: (t: string) => <Tag>{t}</Tag>,
-    // },
     {
       title: "Chuyến tham quan",
       key: "tourName",
       ellipsis: true,
       width: 140,
       render: (_: any, r: BookingItem) => (
-        <Tooltip title={r.tourName || "—"}>
-          {r.tourName || "—"}
-        </Tooltip>
+        <Tooltip title={r.tourName || "—"}>{r.tourName || "—"}</Tooltip>
       ),
-    },
-    {
-      title: "Khởi hành",
-      dataIndex: "departureDate",
-      key: "departureDate",
-      width: 170,
-      render: (v: string | null) => fmtDate(v ?? undefined),
     },
     {
       title: "Ngày đặt",
@@ -128,16 +115,26 @@ export function BookingTableComponent({
       sorter: (a: BookingItem, b: BookingItem) =>
         new Date(a.bookingDate).getTime() - new Date(b.bookingDate).getTime(),
     },
-    
+    {
+      title: "Khởi hành",
+      dataIndex: "departureDate",
+      key: "departureDate",
+      width: 170,
+      render: (v: string | null) => fmtDate(v ?? undefined),
+    },
     {
       title: "Trạng thái",
       key: "status",
       width: 150,
       render: (_: any, r: BookingItem) => statusTag(r),
       filters: [
-        { text: "Chờ xác nhận", value: 0 },
-        { text: "Đã xác nhận", value: 1 },
-        { text: "Đã hủy", value: 2 },
+        { text: "Đang chờ thanh toán", value: 0 },
+        { text: "Đã thanh toán", value: 1 },
+        { text: "Bị hủy chưa thanh toán", value: 2 },
+        { text: "Bị hủy đã thanh toán", value: 3 },
+        { text: "Bị hủy bởi nhà cung cấp", value: 4 },
+        { text: "Đã hoàn thành", value: 5 },
+        { text: "Hết hạn", value: 6 },
       ],
       onFilter: (value: any, record: BookingItem) => record.status === value,
     },
@@ -162,14 +159,17 @@ export function BookingTableComponent({
       title: "Thao tác",
       key: "action",
       fixed: "right" as const,
-      width: 180,
+      width: 80,
       render: (_: any, r: BookingItem) => (
-        <Space size="small">
-          <Button onClick={() => onView(r)} variant="outline" size="sm">
-            <Eye className="h-4 w-4" />
-          </Button>
+        <Space size="small" className="flex items-center justify-center">
+          <Tooltip title="Xem chi tiết đặt chỗ">
+            <Eye
+              className="h-4 w-4 cursor-pointer text-blue-500 hover:text-blue-600"
+              onClick={() => onView(r)}
+            />
+          </Tooltip>
 
-          {onPay && r.paymentLinkId && r.status === 0 && (
+          {/* {onPay && r.paymentLinkId && r.status === 0 && (
             <Button onClick={() => onPay(r)} variant="outline" size="sm">
               <Wallet className="h-4 w-4" />
             </Button>
@@ -184,7 +184,7 @@ export function BookingTableComponent({
             >
               <XCircle className="h-4 w-4" />
             </Button>
-          )}
+          )} */}
         </Space>
       ),
     },

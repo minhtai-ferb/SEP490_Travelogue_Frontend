@@ -7,6 +7,12 @@ import { useCraftVillage } from "@/services/use-craftvillage"
 import { useDistrictManager } from "@/services/district-manager"
 import { District } from "@/types/District"
 import { useTourguideAssign } from "@/services/tourguide"
+import { MediaDto } from "@/app/(manage)/components/locations/create/types/CreateLocation"
+import {
+  CraftVillageRequest,
+  timeStringToTimeString,
+  WORKSHOP_STATUS
+} from "@/types/CraftVillageRequest"
 
 export interface CraftVillageFormData {
   name: string
@@ -25,7 +31,7 @@ export interface CraftVillageFormData {
   signatureProduct: string
   yearsOfHistory: string
   isRecognizedByUnesco: boolean
-  model: string
+  mediaDtos: MediaDto[]
 }
 
 export type CraftVillageFormErrors = Record<string, string>
@@ -53,7 +59,7 @@ export function useCraftVillageRequestForm() {
     signatureProduct: "",
     yearsOfHistory: "",
     isRecognizedByUnesco: false,
-    model: "",
+    mediaDtos: [],
   })
 
   const [errors, setErrors] = useState<CraftVillageFormErrors>({})
@@ -65,6 +71,8 @@ export function useCraftVillageRequestForm() {
   const [modelPreviews, setModelPreviews] = useState<string[]>([])
   const [modelMimeTypes, setModelMimeTypes] = useState<string[]>([])
   const [modelFileNames, setModelFileNames] = useState<string[]>([])
+  // Allow using pre-uploaded URLs from a custom uploader component
+  const [uploadedModelUrls, setUploadedModelUrls] = useState<MediaDto[]>([])
 
   useEffect(() => {
     getAllDistrict().then((res) => setDistricts(res))
@@ -137,7 +145,7 @@ export function useCraftVillageRequestForm() {
     if (!formData.email.trim()) newErrors.email = "Email là bắt buộc"
     if (!formData.signatureProduct.trim()) newErrors.signatureProduct = "Sản phẩm đặc trưng là bắt buộc"
     if (!formData.yearsOfHistory.trim()) newErrors.yearsOfHistory = "Số năm lịch sử là bắt buộc"
-    if (modelFiles.length === 0) newErrors.model = "Vui lòng chọn ít nhất 1 hình ảnh/PDF"
+    if (uploadedModelUrls.length === 0 && modelFiles.length === 0) newErrors.mediaDtos = "Vui lòng chọn ít nhất 1 hình ảnh"
 
     if (formData.email && !validateEmail(formData.email)) newErrors.email = "Email không hợp lệ"
     if (formData.phoneNumber && !validatePhone(formData.phoneNumber)) newErrors.phoneNumber = "Số điện thoại không hợp lệ (10-11 số)"
@@ -198,7 +206,7 @@ export function useCraftVillageRequestForm() {
       setModelFileNames((prev) => [...prev, ...validNames])
     }
 
-    if (errors.model) setErrors((prev) => ({ ...prev, model: "" }))
+    if (errors.mediaDtos) setErrors((prev) => ({ ...prev, mediaDtos: "" }))
   }
 
   const removeModelFile = (index: number) => {
@@ -220,8 +228,8 @@ export function useCraftVillageRequestForm() {
       address: formData.address.trim(),
       latitude: formData.latitude,
       longitude: formData.longitude,
-      openTime: timeToTimeSpan(formData.openTime),
-      closeTime: timeToTimeSpan(formData.closeTime),
+      openTime: timeStringToTimeString(formData.openTime),
+      closeTime: timeStringToTimeString(formData.closeTime),
       districtId: formData.districtId,
       phoneNumber: formData.phoneNumber.replace(/\s/g, ""),
       email: formData.email.trim(),
@@ -231,7 +239,7 @@ export function useCraftVillageRequestForm() {
       yearsOfHistory: Number.parseInt(formData.yearsOfHistory),
       isRecognizedByUnesco: formData.isRecognizedByUnesco,
       // model will be filled after upload
-      model: "",
+      mediaDtos: [],
     }
   }, [
     formData.address,
@@ -270,7 +278,7 @@ export function useCraftVillageRequestForm() {
       signatureProduct: "",
       yearsOfHistory: "",
       isRecognizedByUnesco: false,
-      model: "",
+      mediaDtos: [],
     })
     setModelFiles([])
     setModelPreviews([])
@@ -279,7 +287,7 @@ export function useCraftVillageRequestForm() {
     setErrors({})
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, workshopData?: any[]) => {
     e.preventDefault()
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin")
@@ -288,18 +296,33 @@ export function useCraftVillageRequestForm() {
 
     setIsSubmitting(true)
     try {
-      let modelUrls: string[] = []
-      if (modelFiles.length > 0) {
-        const uploadedUrls = await uploadCertifications(modelFiles)
+      // Prefer pre-uploaded URLs from custom uploader; fallback to uploading local files
+      let modelUrls: MediaDto[] = uploadedModelUrls
+      if ((!Array.isArray(modelUrls) || modelUrls.length === 0) && modelFiles.length > 0) {
+        const uploadedUrls = await uploadCertifications(modelFiles) as unknown as MediaDto[]
         modelUrls = uploadedUrls
-        if (!Array.isArray(modelUrls) || modelUrls.length === 0) {
-          toast.error("Upload tệp thất bại. Vui lòng thử lại hoặc chọn tệp khác")
-          setIsSubmitting(false)
-          return
-        }
+      } else {
+        modelUrls = uploadedModelUrls
       }
 
-      await createCraftVillageRequest({ ...requestPayload, model: modelUrls.join(",") })
+      // Create the final payload with mediaDtos
+      const mediaDtos = modelUrls
+
+      const finalPayload = {
+        ...requestPayload,
+        mediaDtos: mediaDtos,
+        // Add workshop data if provided
+        ...(workshopData && workshopData.length > 0 && { workshop: workshopData[0] }) // For now, send first workshop
+      }
+
+      // Debug: Log what we're sending
+      console.log("=== CRAFT VILLAGE REQUEST PAYLOAD ===")
+      console.log("Final payload:", JSON.stringify(finalPayload, null, 2))
+      console.log("Model URLs:", modelUrls)
+      console.log("Workshop data:", workshopData)
+      console.log("====================================")
+
+      await createCraftVillageRequest(finalPayload)
       setIsSuccess(true)
       toast.success("Đăng ký thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.")
 
@@ -326,6 +349,8 @@ export function useCraftVillageRequestForm() {
     modelPreviews,
     modelMimeTypes,
     modelFileNames,
+    uploadedModelUrls,
+    setUploadedModelUrls,
     // handlers
     handleInputChange,
     handlePhoneChange,

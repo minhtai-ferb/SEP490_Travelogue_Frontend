@@ -73,7 +73,7 @@ export function LocationSelect({
 						className={`w-full justify-between ${error ? "border-red-500" : ""}`}
 					>
 						{selected ? (
-							<div className="flex items-center gap-2 truncate text-left">
+							<div className="flex items-center gap-2 truncate text-left w-full">
 								<MapPin className="w-4 h-4 text-blue-500 shrink-0" />
 								<div className="flex flex-col truncate">
 									<span className="font-medium truncate">{selected.name}</span>
@@ -86,7 +86,12 @@ export function LocationSelect({
 						<ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent className="p-0 w-[480px]" align="start">
+				<PopoverContent
+					className="p-0 max-w-[92vw] w-[360px] sm:w-[420px] md:w-full"
+					align="start"
+					sideOffset={8}
+					collisionPadding={8}
+				>
 					<div className="p-2 border-b flex items-center gap-2">
 						<Command className="w-full">
 							<CommandInput placeholder="Tìm theo tên, địa chỉ hoặc loại..." />
@@ -114,7 +119,7 @@ export function LocationSelect({
 							{isLoading ? (
 								<div className="p-4 space-y-3">
 									{Array.from({ length: 6 }).map((_, i) => (
-										<div key={i} className="h-10 bg-gray-100 animate-pulse rounded" />
+										<div key={i} className="h-10 bg-gray-100 animate-pulse rounded w-full" />
 									))}
 								</div>
 							) : (

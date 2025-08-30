@@ -15,7 +15,7 @@ export default function BookingSchedulePage() {
   return (
     <SidebarInset className="space-y-2">
       <BreadcrumbHeader items={crumb} />
-      <BookingScheduleTable />
+      <BookingScheduleTable href="/moderator/booking/tour-schedule" />
     </SidebarInset>
   );
 }

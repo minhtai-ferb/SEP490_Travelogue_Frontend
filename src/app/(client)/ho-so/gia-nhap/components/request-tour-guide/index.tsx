@@ -3,8 +3,8 @@
 import RegisterTourGuideRequestForm from "./register-form"
 
 
-export default function CraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
-	return <RegisterTourGuideRequestForm fetchLatest={fetchLatest} />
+export default function TourGuideForm({ fetchLatest }: { fetchLatest: () => void }) {
+    return <RegisterTourGuideRequestForm fetchLatest={fetchLatest} />
 }
 
 

@@ -15,8 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMemo } from "react";
 import { Check, Eye, X } from "lucide-react";
+import dayjs from "dayjs";
 
-function CraftVillageRequestTable({href} : {href: string}) {
+function CraftVillageRequestTable({ href }: { href: string }) {
 	const router = useRouter()
 
 	const [dataTable, setDataTable] = useState<CraftVillageRequestResponse[]>([])
@@ -32,6 +33,7 @@ function CraftVillageRequestTable({href} : {href: string}) {
 
 	const fetchData = async () => {
 		const data = await getCraftVillageRequest()
+		// const filteredData = data.filter((a: CraftVillageRequestResponse, b: CraftVillageRequestResponse) => dayjs(b?.reviewedAt).diff(dayjs(a?.reviewedAt)) > 0)
 		setDataTable(Array.isArray(data) ? data : [])
 	}
 

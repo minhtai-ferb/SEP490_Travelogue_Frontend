@@ -7,26 +7,23 @@ import { Separator } from "@/components/ui/separator";
 import { WithdrawalRequest } from "@/types/RequestWithdrawal";
 import Filters, { FilterValues } from "./filters";
 import RequestsTable from "./requests-table";
-import RequestDetailModal from "./request-detail-modal";
 import { useMediaUpload } from "@/services/use-media-upload";
 import { useRefundRequests } from "@/services/use-refundrequest";
 import { RefundRequest } from "@/types/RequestRefund";
+import { useRouter } from "next/navigation";
 
 export default function RefundContainer() {
   const {
     filterRefundRequests,
-    approveRefundRequest,
-    rejectRefundRequest,
     loading,
   } = useRefundRequests();
   const [rows, setRows] = React.useState<RefundRequest[]>([]);
   const [kw, setKw] = React.useState<string>("");
-  const [selected, setSelected] = React.useState<RefundRequest | null>(null);
-  const [detailOpen, setDetailOpen] = React.useState(false);
+  const router = useRouter();
 
   const initialRange = React.useMemo(() => {
     const to = dayjs();
-    const from = to.subtract(7, "day");
+    const from = to.subtract(30, "day");
     return [from, to] as [dayjs.Dayjs, dayjs.Dayjs];
   }, []);
 
@@ -59,35 +56,39 @@ export default function RefundContainer() {
     return rows.filter((r) => r.userName?.toLowerCase().includes(k));
   }, [rows, kw]);
 
-  // CHẤP NHẬN: bắt buộc có ảnh; note tuỳ chọn
-  const handleApprove = React.useCallback(async (id: string) => {
-    await approveRefundRequest(id);
-
-    await handleReset();
+  // Handlers for viewing details
+  const handleViewTourDetail = React.useCallback((tourId: string) => {
+    // TODO: Implement navigation to tour details
+    console.log("View tour details:", tourId);
+    router.push(`/admin/tour/${tourId}`);
   }, []);
 
-  // TỪ CHỐI: note tuỳ chọn
-  const handleReject = React.useCallback(async (id: string, note?: string) => {
-    await rejectRefundRequest(id, note ?? "");
-    await handleReset();
+  const handleViewTripPlanDetail = React.useCallback((tripPlanId: string) => {
+    // TODO: Implement navigation to trip plan details
+    console.log("View trip plan details:", tripPlanId);
+    // window.open(`/admin/trip-plans/${tripPlanId}`, '_blank');
+  }, []);
+
+  const handleViewWorkshopDetail = React.useCallback((workshopId: string) => {
+    // TODO: Implement navigation to workshop details
+    console.log("View workshop details:", workshopId);
+    // window.open(`/admin/workshops/${workshopId}`, '_blank');
   }, []);
 
   return (
-    <div className="p-4 md:p-6">
-      <Card className="p-4 md:p-6">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold">
-              Yêu cầu hoàn tiền
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Lọc theo trạng thái, khoảng ngày; và tìm theo tên người dùng.
-            </p>
-          </div>
+    <div className="absolute p-4 w-full mt-16">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold">
+            Yêu cầu hoàn tiền
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Lọc theo trạng thái, khoảng ngày; và tìm theo tên người dùng.
+          </p>
         </div>
-
-        <Separator className="my-4" />
-
+      </div>
+      <Separator className="my-4" />
+      <Card className="md:p-6">
         <Filters
           loading={loading}
           initialRange={initialRange}
@@ -99,21 +100,9 @@ export default function RefundContainer() {
         <RequestsTable
           data={dataFilteredByName}
           loading={loading}
-          onOpenDetail={(row) => {
-            setSelected(row);
-            setDetailOpen(true);
-          }}
-        />
-
-        <RequestDetailModal
-          open={detailOpen}
-          data={selected}
-          onClose={() => {
-            setDetailOpen(false);
-            setSelected(null);
-          }}
-          onApprove={handleApprove}
-          onReject={handleReject}
+          onViewTourDetail={handleViewTourDetail}
+          onViewTripPlanDetail={handleViewTripPlanDetail}
+          onViewWorkshopDetail={handleViewWorkshopDetail}
         />
       </Card>
     </div>

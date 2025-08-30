@@ -1,9 +1,8 @@
 "use client"
 
-import RegisterCraftVillageRequestForm from "./RegisterCraftVillageRequestForm"
+import ProfessionalApplicationForm from "./components/RequestBecomeCraftVillageForm"
+export default function CraftVillageClient({ fetchLatest }: { fetchLatest: () => void }) {
 
-export default function CraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
-	return <RegisterCraftVillageRequestForm fetchLatest={fetchLatest} />
+	return <ProfessionalApplicationForm />
 }
-
 

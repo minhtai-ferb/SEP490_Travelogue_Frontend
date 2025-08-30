@@ -47,8 +47,24 @@ export function useBookings() {
     [callApi, setIsLoading]
   );
 
+  const getBookingById = useCallback(
+    async (bookingId: string) => {
+      setIsLoading(true);
+      try {
+        const res = await callApi("get", `booking/${bookingId}`);
+        return res?.data;
+      } catch (e: any) {
+        throw e;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [callApi, setIsLoading]
+  );
+
   return {
     getBookingsPaged,
+    getBookingById,
     loading: isLoading || loading,
   };
 }

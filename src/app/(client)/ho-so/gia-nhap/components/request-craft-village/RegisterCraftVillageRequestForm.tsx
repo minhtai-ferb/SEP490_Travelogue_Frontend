@@ -13,12 +13,37 @@ import { useDistrictManager } from "@/services/district-manager"
 import { AddressSearchWithMap } from "./components/organisms/AddressSearchWithMap"
 import toast from "react-hot-toast"
 import { Loader2, FileCog, MapPin, Clock, Award } from "lucide-react"
-import { MediaDto } from "@/services/use-news"
+import type { MediaDto } from "@/services/use-news"
 import { ImageUpload } from "@/app/(manage)/components/locations/create/components/image-upload"
 
 type FieldErrors = Record<string, string | undefined>
 
-export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetchLatest: () => void }) {
+interface CraftVillageData {
+	name: string
+	description: string
+	content: string
+	address: string
+	latitude: number
+	longitude: number
+	openTime: string
+	closeTime: string
+	districtId: string
+	phoneNumber: string
+	email: string
+	website: string
+	workshopsAvailable: boolean
+	signatureProduct: string
+	yearsOfHistory: number
+	isRecognizedByUnesco: boolean
+	mediaDtos: MediaDto[]
+}
+
+interface CraftVillageFormProps {
+	onComplete: (data: CraftVillageData) => void
+	fetchLatest: () => void
+}
+
+export default function RegisterCraftVillageRequestForm({ onComplete, fetchLatest }: CraftVillageFormProps) {
 	const { createCraftVillageRequest, loading } = useCraftVillage()
 	const { getAllDistrict } = useDistrictManager()
 
@@ -52,15 +77,12 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 		return () => {
 			isMounted = false
 		}
-		// Intentionally run once on mount
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+	}, [getAllDistrict])
 
 	const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 	const isValidWebsite = (v: string) => {
 		if (!v) return true
 		try {
-			// eslint-disable-next-line no-new
 			new URL(v.startsWith("http") ? v : `https://${v}`)
 			return true
 		} catch {
@@ -97,66 +119,33 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 		setErrors((e) => ({ ...e, address: undefined, coordinates: undefined }))
 	}, [])
 
-	const toHHMMSS = (time: string): string => {
-		// input from <input type="time"> usually is HH:mm
-		if (!time) return "00:00:00"
-		return time.length === 5 ? `${time}:00` : time
-	}
-
-	const buildPayload = () => ({
-		name: name.trim(),
-		description: description.trim(),
-		content: content.trim(),
-		address: address.trim(),
-		latitude,
-		longitude,
-		openTime: toHHMMSS(openTime),
-		closeTime: toHHMMSS(closeTime),
-		districtId,
-		phoneNumber: phoneNumber.replace(/\s/g, ""),
-		email: email.trim(),
-		website: website.trim(),
-		workshopsAvailable,
-		signatureProduct: signatureProduct.trim(),
-		yearsOfHistory: Number(yearsOfHistory) || 0,
-		isRecognizedByUnesco,
-		mediaDtos,
-	})
-
-	const onSubmit = async () => {
+	const handleContinue = () => {
 		if (!validate()) {
 			toast.error("Vui lòng kiểm tra lại thông tin")
 			return
 		}
 
-		try {
-			const payload = buildPayload()
-			const res = await createCraftVillageRequest(payload)
-			console.log(res)
-			toast.success("Gửi yêu cầu đăng ký làng nghề thành công")
-			// reset
-			setName("")
-			setDescription("")
-			setContent("")
-			setDistrictId("")
-			setAddress("")
-			setLatitude(11.314528)
-			setLongitude(106.086614)
-			setOpenTime("08:00")
-			setCloseTime("17:00")
-			setPhoneNumber("")
-			setEmail("")
-			setWebsite("")
-			setWorkshopsAvailable(false)
-			setSignatureProduct("")
-			setYearsOfHistory("")
-			setIsRecognizedByUnesco(false)
-			setMediaDtos([])
-			setErrors({})
-			fetchLatest()
-		} catch (e: any) {
-			toast.error(e?.response?.data?.Message || "Không thể gửi yêu cầu, vui lòng thử lại")
+		const craftVillageData: CraftVillageData = {
+			name: name.trim(),
+			description: description.trim(),
+			content: content.trim(),
+			address: address.trim(),
+			latitude,
+			longitude,
+			openTime,
+			closeTime,
+			districtId,
+			phoneNumber: phoneNumber.replace(/\s/g, ""),
+			email: email.trim(),
+			website: website.trim(),
+			workshopsAvailable,
+			signatureProduct: signatureProduct.trim(),
+			yearsOfHistory: Number(yearsOfHistory) || 0,
+			isRecognizedByUnesco,
+			mediaDtos,
 		}
+
+		onComplete(craftVillageData)
 	}
 
 	const hasThumbnail = mediaDtos.some((m) => m.isThumbnail)
@@ -166,15 +155,24 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 			<Card className="overflow-hidden">
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
-						<FileCog className="h-5 w-5 text-blue-600" /> Yêu cầu đăng ký làng nghề
+						<FileCog className="h-5 w-5 text-blue-600" />
+						Thông tin làng nghề
 					</CardTitle>
+					<p className="text-sm text-muted-foreground">
+						Điền đầy đủ thông tin về làng nghề của bạn. Sau bước này, bạn có thể thêm trải nghiệm để thu hút khách hàng.
+					</p>
 				</CardHeader>
 				<CardContent className="space-y-8">
 					{/* Basic Info */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-2">
 							<Label htmlFor="name">Tên làng nghề</Label>
-							<Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="VD: Làng nghề mây tre" />
+							<Input
+								id="name"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								placeholder="VD: Làng nghề mây tre"
+							/>
 							{errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
 						</div>
 						<div className="space-y-2">
@@ -195,12 +193,24 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 						</div>
 						<div className="md:col-span-2 space-y-2">
 							<Label htmlFor="description">Mô tả ngắn</Label>
-							<Textarea id="description" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả 1-2 câu" />
+							<Textarea
+								id="description"
+								rows={3}
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								placeholder="Mô tả 1-2 câu"
+							/>
 							{errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
 						</div>
 						<div className="md:col-span-2 space-y-2">
 							<Label htmlFor="content">Nội dung chi tiết</Label>
-							<Textarea id="content" rows={5} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Mô tả chi tiết lịch sử, sản phẩm, quy trình..." />
+							<Textarea
+								id="content"
+								rows={5}
+								value={content}
+								onChange={(e) => setContent(e.target.value)}
+								placeholder="Mô tả chi tiết lịch sử, sản phẩm, quy trình..."
+							/>
 							{errors.content && <p className="text-xs text-red-500">{errors.content}</p>}
 						</div>
 					</div>
@@ -211,14 +221,25 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 							<MapPin className="h-4 w-4 text-green-600" />
 							<Label>Địa chỉ & Bản đồ</Label>
 						</div>
-						<AddressSearchWithMap address={address} latitude={latitude} longitude={longitude} onAddressChange={onAddressChange} addressError={errors.address} coordinatesError={errors.coordinates} />
+						<AddressSearchWithMap
+							address={address}
+							latitude={latitude}
+							longitude={longitude}
+							onAddressChange={onAddressChange}
+							addressError={errors.address}
+							coordinatesError={errors.coordinates}
+						/>
 					</div>
 
 					{/* Contact & Time */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-2">
 							<Label>Số điện thoại</Label>
-							<Input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="VD: 0912 345 678" />
+							<Input
+								value={phoneNumber}
+								onChange={(e) => setPhoneNumber(e.target.value)}
+								placeholder="VD: 0912 345 678"
+							/>
 							{errors.phoneNumber && <p className="text-xs text-red-500">{errors.phoneNumber}</p>}
 						</div>
 						<div className="space-y-2">
@@ -259,22 +280,39 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="space-y-2">
 								<Label>Sản phẩm đặc trưng</Label>
-								<Input value={signatureProduct} onChange={(e) => setSignatureProduct(e.target.value)} placeholder="VD: Gốm sứ, mây tre..." />
+								<Input
+									value={signatureProduct}
+									onChange={(e) => setSignatureProduct(e.target.value)}
+									placeholder="VD: Gốm sứ, mây tre..."
+								/>
 								{errors.signatureProduct && <p className="text-xs text-red-500">{errors.signatureProduct}</p>}
 							</div>
 							<div className="space-y-2">
 								<Label>Số năm lịch sử</Label>
-								<Input type="number" value={yearsOfHistory} onChange={(e) => setYearsOfHistory(e.target.value === "" ? "" : Number(e.target.value))} placeholder="VD: 200" />
+								<Input
+									type="number"
+									value={yearsOfHistory}
+									onChange={(e) => setYearsOfHistory(e.target.value === "" ? "" : Number(e.target.value))}
+									placeholder="VD: 200"
+								/>
 								{errors.yearsOfHistory && <p className="text-xs text-red-500">{errors.yearsOfHistory}</p>}
 							</div>
 						</div>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="flex items-center gap-2">
-								<Checkbox id="workshopsAvailable" checked={workshopsAvailable} onCheckedChange={(v) => setWorkshopsAvailable(!!v)} />
-								<Label htmlFor="workshopsAvailable">Có workshop/trải nghiệm</Label>
+								<Checkbox
+									id="workshopsAvailable"
+									checked={workshopsAvailable}
+									onCheckedChange={(v) => setWorkshopsAvailable(!!v)}
+								/>
+								<Label htmlFor="workshopsAvailable">Có trải nghiệm</Label>
 							</div>
 							<div className="flex items-center gap-2">
-								<Checkbox id="isRecognizedByUnesco" checked={isRecognizedByUnesco} onCheckedChange={(v) => setIsRecognizedByUnesco(!!v)} />
+								<Checkbox
+									id="isRecognizedByUnesco"
+									checked={isRecognizedByUnesco}
+									onCheckedChange={(v) => setIsRecognizedByUnesco(!!v)}
+								/>
 								<Label htmlFor="isRecognizedByUnesco">Được UNESCO công nhận</Label>
 							</div>
 						</div>
@@ -291,22 +329,32 @@ export default function RegisterCraftVillageRequestForm({ fetchLatest }: { fetch
 
 					{/* Summary */}
 					<div className="rounded-lg border p-3 bg-muted/30 text-sm text-muted-foreground space-y-1">
-						<div><span className="font-medium text-foreground">Tên:</span> {name || "(chưa có)"}</div>
-						<div><span className="font-medium text-foreground">Địa chỉ:</span> {address || "(chưa có)"}</div>
-						<div><span className="font-medium text-foreground">Tọa độ:</span> {latitude?.toFixed(6)}, {longitude?.toFixed(6)}</div>
-						<div><span className="font-medium text-foreground">Giờ:</span> {openTime} - {closeTime}</div>
-						<div><span className="font-medium text-foreground">Hình ảnh:</span> {mediaDtos.length} ảnh{hasThumbnail ? " (đã chọn ảnh đại diện)" : ""}</div>
+						<div>
+							<span className="font-medium text-foreground">Tên:</span> {name || "(chưa có)"}
+						</div>
+						<div>
+							<span className="font-medium text-foreground">Địa chỉ:</span> {address || "(chưa có)"}
+						</div>
+						<div>
+							<span className="font-medium text-foreground">Tọa độ:</span> {latitude?.toFixed(6)},{" "}
+							{longitude?.toFixed(6)}
+						</div>
+						<div>
+							<span className="font-medium text-foreground">Giờ:</span> {openTime} - {closeTime}
+						</div>
+						<div>
+							<span className="font-medium text-foreground">Hình ảnh:</span> {mediaDtos.length} ảnh
+							{hasThumbnail ? " (đã chọn ảnh đại diện)" : ""}
+						</div>
 					</div>
 				</CardContent>
 				<CardFooter className="justify-end">
-					<Button type="button" onClick={onSubmit} disabled={loading}>
+					<Button type="button" onClick={handleContinue} disabled={loading}>
 						{loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-						Gửi yêu cầu
+						Tiếp theo: Thêm trải nghiệm
 					</Button>
 				</CardFooter>
 			</Card>
 		</div>
 	)
 }
-
-

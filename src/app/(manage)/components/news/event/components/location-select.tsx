@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -33,7 +37,7 @@ export function LocationSelect({
   onLocationChange,
   showSearch = true,
 }: LocationSelectProps) {
-  const { searchAllLocations } = useLocations();
+  const { searchAllLocations, getLocationById } = useLocations();
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,7 +88,34 @@ export function LocationSelect({
     }
   };
 
-  const selectedLocation = locations.find((l) => l.id === value);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchSelectedLocation = async (id: string) => {
+      try {
+        const location = await getLocationById(id);
+        setSelectedLocation(location);
+      } catch (error) {
+        console.error("Error fetching location:", error);
+        setSelectedLocation(null);
+      }
+    };
+
+    if (value) {
+      // Kiểm tra xem location đã có trong danh sách chưa
+      const existingLocation = locations.find((loc) => loc.id === value);
+      if (existingLocation) {
+        setSelectedLocation(existingLocation);
+      } else {
+        // Nếu chưa có, fetch từ API
+        fetchSelectedLocation(value as string);
+      }
+    } else {
+      setSelectedLocation(null);
+    }
+  }, [value, locations, getLocationById]);
 
   return (
     <div className="space-y-2">

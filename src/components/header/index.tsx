@@ -100,10 +100,10 @@ function Header() {
         <div className="relative z-10 flex top-1/3 -translate-y-1/2 flex-col gap-20 lg:top-20 lg:mt-0 lg:gap-64 lg:px-60 xxl:top-40 xxl:px-96">
           <section className="text-gray-50 flex flex-col gap-6">
             <h1 className="text-3xl lg:text-left text-balance md:text-nowrap text-center lg:text-3xl font-medium mx-auto lg:mx-0">
-              Chào mừng đến với Traveloge
+              Chào mừng đến với Travelogue
             </h1>
             <p className="font-[400] text-lg lg:text-xl lg:mx-0 mx-auto">
-              Traveloge! - "Theo dấu chân lịch sử"
+              Travelogue! - "Theo dấu chân lịch sử"
             </p>
             <Link href="/kham-pha" className="w-fit lg:mx-0 mx-auto">
               <InteractiveHoverButton className="md:w-full w-full md:px-5 md:py-2 px-10 py-2 text-lg md:text-xl">

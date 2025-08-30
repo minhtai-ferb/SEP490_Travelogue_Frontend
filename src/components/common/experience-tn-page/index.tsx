@@ -80,7 +80,7 @@ const ExperienceTNPage = () => {
 					{filteredExperience?.slice(0, 8).map((item: Experience, index) => (
 						<Link href={`/trai-nghiem/thong-tin/${item.id}`} key={index}>
 							<Frame
-								image={Array.isArray(item?.medias) && item.medias.length > 0 ? item.medias[0].mediaUrl : '/image/default_image.png	'}
+								image={Array.isArray(item?.medias) && item.medias.length > 0 ? item?.medias[0]?.mediaUrl : '/placeholder.svg'}
 								title={item?.title}
 							/>
 						</Link>

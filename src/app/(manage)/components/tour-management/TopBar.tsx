@@ -50,12 +50,12 @@ export function TopBar({ searchValue, onSearchChange, statusFilter, onStatusChan
           </Select>
           <Button onClick={onCreate} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
-            Tạo Tour Mới
+            Tạo chuyến tham quan mới
           </Button>
         </div>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-500">Tổng cộng {totalCount} tour</span>
+        <span className="text-sm text-gray-500">Tổng cộng {totalCount} chuyến tham quan</span>
       </div>
     </div>
   )

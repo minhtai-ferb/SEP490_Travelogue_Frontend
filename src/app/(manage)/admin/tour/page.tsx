@@ -11,7 +11,7 @@ const crumbs: Crumb[] = [
 export default function ManageLocation() {
   return (
     <SidebarInset>
-      <BreadcrumbHeader items={crumbs} />
+      <BreadcrumbHeader items={crumbs}/>
       <TourManagement href="/admin/tour" />
     </SidebarInset>
   );
