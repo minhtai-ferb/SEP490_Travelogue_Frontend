@@ -10,13 +10,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { ArrowLeft, Loader2, Sparkles, Wand2, CheckCircle2 } from "lucide-react"
-import type { TripPlan } from "@/types/TripPlan"
+import type { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface PreferencesStepProps {
 	formData: any
 	updateFormData: (data: any) => void
 	onBack: () => void
-	onComplete: (plan: TripPlan) => void
+	onComplete: (plan: TripPlanTourGuide) => void
 }
 
 export function PreferencesStep({ formData, updateFormData, onBack, onComplete }: PreferencesStepProps) {
@@ -42,7 +42,7 @@ export function PreferencesStep({ formData, updateFormData, onBack, onComplete }
 		}
 
 		// Create the trip plan
-		const plan: TripPlan = {
+		const plan: TripPlanTourGuide = {
 			id: `trip-${Date.now()}`,
 			title: `Chuyến du lịch Tây Ninh - ${format(date || new Date(), "dd/MM/yyyy", { locale: vi })}`,
 			startDate: date || new Date(),

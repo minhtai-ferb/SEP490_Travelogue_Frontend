@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import type { TripPlan } from "@/types/TripPlan"
+import type { TripPlanTourGuide } from "@/types/TripPlan"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowRight, Compass, Eye, MapPin, Plus, Save, Share2, Star, Users } from 'lucide-react'
 import { useState } from "react"
@@ -10,9 +10,9 @@ import TripPlanningWizard from "./form/trip-planning-wizard"
 
 export default function TripPlannerPage() {
 	const [activeView, setActiveView] = useState<"landing" | "create" | "view">("landing")
-	const [currentPlan, setCurrentPlan] = useState<TripPlan | null>(null)
+	const [currentPlan, setCurrentPlan] = useState<TripPlanTourGuide | null>(null)
 
-	const handlePlanCreated = (plan: TripPlan) => {
+	const handlePlanCreated = (plan: TripPlanTourGuide) => {
 		setCurrentPlan(plan)
 		setActiveView("view")
 	}

@@ -12,14 +12,14 @@ import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, Loader2, MapPin, Sparkles, Utensils, Briefcase } from "lucide-react"
-import type { TripPlan, TripLocation } from "@/types/TripPlan"
+import type { TripLocation, TripPlanTourGuide } from "@/types/TripPlan"
 import DestinationSelector from "../destination-selector"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 
 interface TripPlanningFormProps {
-	onPlanCreated: (plan: TripPlan) => void
+	onPlanCreated: (plan: TripPlanTourGuide) => void
 }
 
 export default function TripPlanningForm({ onPlanCreated }: TripPlanningFormProps) {
@@ -52,7 +52,7 @@ export default function TripPlanningForm({ onPlanCreated }: TripPlanningFormProp
 		}
 
 		// Create the trip plan
-		const plan: TripPlan = {
+		const plan: TripPlanTourGuide = {
 			id: `trip-${Date.now()}`,
 			title: `Chuyến du lịch Tây Ninh - ${format(date || new Date(), "dd/MM/yyyy", { locale: vi })}`,
 			startDate: date || new Date(),

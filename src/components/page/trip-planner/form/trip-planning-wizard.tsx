@@ -6,14 +6,13 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@heroui/react"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, Calendar, MapPin, Sparkles } from 'lucide-react'
-import type { TripPlan } from "@/types/TripPlan"
+import type { TripPlanTourGuide } from "@/types/TripPlan"
 import { BasicInfoStep } from "./step/basic-info-step"
 import { DestinationStep } from "./step/destination-step"
-import { PreferencesStep } from "./step/preferences-step"
 import { StepIndicator } from "./step-indicator"
 
 interface TripPlanningWizardProps {
-	onPlanCreated: (plan: TripPlan) => void
+	onPlanCreated: (plan: TripPlanTourGuide) => void
 }
 
 export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizardProps) {
@@ -47,7 +46,7 @@ export default function TripPlanningWizard({ onPlanCreated }: TripPlanningWizard
 		setCurrentStep(prev => Math.max(prev - 1, 1))
 	}
 
-	const handleComplete = (plan: TripPlan) => {
+	const handleComplete = (plan: TripPlanTourGuide) => {
 		onPlanCreated(plan)
 		console.log('====================================');
 		console.log('Plan created:', plan);

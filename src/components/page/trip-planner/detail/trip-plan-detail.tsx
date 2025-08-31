@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { Star, AlertCircle } from "lucide-react"
-import type { TripPlan } from "@/types/TripPlan"
+import type { TripPlan, TripPlanTourGuide } from "@/types/TripPlan"
 import { TripHeader } from "./trip-detail-component/trip-header"
 import { TripOverview } from "./trip-detail-component/trip-overview"
 import { TripItinerary } from "./trip-detail-component/trip-itinerary"
@@ -19,7 +19,7 @@ import { BookingConfirmationModal } from "./trip-detail-component/booking-comfir
 import { useTripBooking } from "@/hooks/use-trip-booking"
 
 interface TripPlanDetailProps {
-	plan: TripPlan
+	plan: TripPlanTourGuide
 }
 
 export default function TripPlanDetailUpdate({ plan }: TripPlanDetailProps) {

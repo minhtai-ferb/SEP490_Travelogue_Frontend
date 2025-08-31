@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Users, Share2, Download, Printer, Sparkles, Wallet } from "lucide-react"
-import type { TripPlan } from "@/types/TripPlan"
+import type { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface TripHeaderProps {
-	plan: TripPlan
+	plan: TripPlanTourGuide
 	formatDate: (date: Date) => string
 	getEndDate: () => Date
 }
