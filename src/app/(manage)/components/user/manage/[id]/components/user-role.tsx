@@ -12,7 +12,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useUserManager } from "@/services/user-manager";
-import { addToast } from "@heroui/react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -54,6 +53,7 @@ export const AssignRoleDialog: React.FC<AssignRoleDialogProps> = ({
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     if (!open) return;
     fetchRoles();
@@ -84,33 +84,69 @@ export const AssignRoleDialog: React.FC<AssignRoleDialogProps> = ({
       console.log("rolesToAdd: ", rolesToAdd);
       console.log("rolesToRemove: ", rolesToRemove);
       
+      // Kiểm tra quy tắc: chỉ cho phép gán role Moderator
+      const invalidRolesToAdd = rolesToAdd.filter(role => role.name !== 'Moderator');
+      if (invalidRolesToAdd.length > 0) {
+        const invalidRoleNames = invalidRolesToAdd.map(role => role.name).join(', ');
+        toast.error(`Chỉ có thể gán vai trò Moderator. Không thể gán: ${invalidRoleNames}`);
+        return;
+      }
+      
       if (rolesToAdd.length === 0 && rolesToRemove.length === 0) {
         toast.error("Không có thay đổi nào được thực hiện.");
         setOpen(false);
         return;
       }
 
-      // Thêm role mới
+      // Thêm role mới (chỉ Moderator được phép)
       if (rolesToAdd.length > 0) {
         await Promise.all(
           rolesToAdd.map((role) => assignRoleToUser(userId, role.id))
         );
       }
       
-      // Xóa role không còn chọn
+      // Xóa role không còn chọn (cho phép xóa tất cả các role)
       if (rolesToRemove.length > 0) {
         await Promise.all(
           rolesToRemove.map((role) => removeRoleFromUser(userId, role.id))
         );
       }
+
+      toast.success("Cập nhật vai trò thành công!");
       
-      toast.success("Vai trò đã được cập nhật thành công.");
-      onRolesUpdated?.(selectedRoles);
+      // Cập nhật UI
+      if (onRolesUpdated) {
+        onRolesUpdated(selectedRoles);
+      }
+      
       setOpen(false);
-    } catch (err) {
-      toast.error("Cập nhật vai trò thất bại");   
+    } catch (err: any) {
+      toast.error(err?.message || "Có lỗi xảy ra khi cập nhật vai trò");
       console.error("Lỗi khi cập nhật vai trò:", err);
     }
+  };
+
+  // Filter available roles based on business rules
+  const getAvailableRoles = () => {
+    return roles.map(role => {
+      // Chỉ cho phép chọn role đã có (để remove) hoặc Moderator (để add)
+      const userHasRole = currentRoles.includes(role.name);
+      const isModerator = role.name === 'Moderator';
+      const isSelectable = userHasRole || isModerator;
+      
+      return {
+        label: (
+          <div className="flex items-center justify-between">
+            <span>{role.name}</span>
+            {!isSelectable && (
+              <span className="text-xs text-gray-400 ml-2">(Không thể gán)</span>
+            )}
+          </div>
+        ),
+        value: role.id,
+        disabled: !isSelectable
+      };
+    });
   };
 
   return (
@@ -126,7 +162,12 @@ export const AssignRoleDialog: React.FC<AssignRoleDialogProps> = ({
             <div>
               <DialogTitle>Gán vai trò cho người dùng</DialogTitle>
               <DialogDescription>
-                Chọn 1 hoặc nhiều vai trò rồi bấm “Lưu” để cập nhật.
+                <div className="space-y-1">
+                  <p>Chọn 1 hoặc nhiều vai trò rồi bấm "Lưu" để cập nhật.</p>
+                  <p className="text-amber-600 font-medium">
+                    ⚠️ Chỉ có thể gán vai trò Moderator. Các vai trò khác chỉ có thể xóa nếu user đã có.
+                  </p>
+                </div>
               </DialogDescription>
             </div>
           </div>
@@ -150,10 +191,7 @@ export const AssignRoleDialog: React.FC<AssignRoleDialogProps> = ({
                     ).filter(Boolean) as Role[];
                     setSelectedRoles(selectedRoleObjects);
                   }}
-                  options={roles.map((r) => ({
-                    label: r.name,
-                    value: r.id,
-                  }))}
+                  options={getAvailableRoles()}
                   getPopupContainer={(triggerNode) =>
                     triggerNode.parentNode as HTMLElement
                   }

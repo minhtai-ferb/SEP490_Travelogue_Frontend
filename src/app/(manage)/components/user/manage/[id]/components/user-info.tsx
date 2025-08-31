@@ -13,6 +13,7 @@ import { User } from "@/types/Users";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AssignRoleDialog } from "./user-role";
+import UserRoleManager from "../../components/UserRoleManager";
 
 interface UserInfoDisplayProps {
   user: User | null;
@@ -24,6 +25,7 @@ export default function UserInfoDisplay({
   setUserData,
 }: UserInfoDisplayProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const [roleManagerOpen, setRoleManagerOpen] = useState(false);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
@@ -114,7 +116,7 @@ export default function UserInfoDisplay({
                         {user?.roles && user.roles.length > 0 ? (
                           user.roles.map((role, index) => (
                             <Badge key={index} variant="secondary">
-                              {role}
+                              {role.name}
                             </Badge>
                           ))
                         ) : (
@@ -124,16 +126,28 @@ export default function UserInfoDisplay({
 
                       <AssignRoleDialog
                         userId={user.id}
-                        currentRoles={user.roles ?? []}
+                        currentRoles={user.roles?.map(r => r.name) ?? []}
                         onRolesUpdated={(newRoles) => {
                           if (setUserData && user) {
                             setUserData({
                               ...user,
-                              roles: newRoles.map((r) => r.name),
+                              roles: newRoles.map((r) => ({
+                                name: r.name,
+                                createdAt: new Date().toISOString(),
+                                isActive: true
+                              })),
                             });
                           }
                         }}
                       />
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => setRoleManagerOpen(true)}
+                        className="ml-2"
+                      >
+                        Quản lý chi tiết
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -148,6 +162,20 @@ export default function UserInfoDisplay({
           </CardContent>
         </CollapsibleContent>
       </Card>
+      
+      {/* User Role Manager Modal */}
+      <UserRoleManager
+        user={user}
+        open={roleManagerOpen}
+        onClose={() => setRoleManagerOpen(false)}
+        onUserUpdated={() => {
+          // Refresh user data if needed
+          if (setUserData && user) {
+            // You might want to refetch user data here
+            console.log("User roles updated");
+          }
+        }}
+      />
     </Collapsible>
   );
 }

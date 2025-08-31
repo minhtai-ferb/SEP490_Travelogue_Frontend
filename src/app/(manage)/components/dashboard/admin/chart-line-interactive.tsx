@@ -3,6 +3,8 @@
 import * as React from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import { CalendarDays } from "lucide-react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 import {
   Card,
@@ -30,6 +32,8 @@ import {
   type DailyStat,
 } from "@/services/use-dashbroad";
 
+const { RangePicker } = DatePicker;
+
 const chartConfig = {
   total: {
     label: "Tổng doanh thu",
@@ -49,16 +53,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type TimeFilter = "7d" | "1m" | "3m" | "6m" | "1y";
-
-const timeFilterOptions = [
-  { value: "7d", label: "7 ngày qua" },
-  { value: "1m", label: "1 tháng qua" },
-  { value: "3m", label: "3 tháng qua" },
-  { value: "6m", label: "6 tháng qua" },
-  { value: "1y", label: "1 năm qua" },
-];
-
 type RevenueType = "grossRevenue" | "netRevenue";
 
 const revenueTypeOptions = [
@@ -66,69 +60,52 @@ const revenueTypeOptions = [
   { value: "netRevenue", label: "Doanh thu ròng" },
 ];
 
-function getDateRange(filter: TimeFilter): {
+function getDefaultDateRange(): {
   fromDate: string;
   toDate: string;
+  days: number;
 } {
   const today = new Date();
   const toDate = today.toISOString().split("T")[0];
+  
+  // Mặc định 30 ngày (±15 từ ngày hiện tại)
+  const fromDate = new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+  
+  const futureToDate = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
 
-  let fromDate: string;
-  switch (filter) {
-    case "7d":
-      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-      break;
-    case "1m":
-      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-      break;
-    case "3m":
-      fromDate = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-      break;
-    case "6m":
-      fromDate = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-      break;
-    case "1y":
-      fromDate = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-      break;
-    default:
-      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-  }
+  return { fromDate, toDate: futureToDate, days: 30 };
+}
 
-  return { fromDate, toDate };
+function calculateDays(fromDate: string, toDate: string): number {
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+  const diffTime = Math.abs(to.getTime() - from.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 }
 
 export function AdminRevenueChart() {
-  const [timeFilter, setTimeFilter] = React.useState<TimeFilter>("1m");
   const [revenueType, setRevenueType] =
     React.useState<RevenueType>("grossRevenue");
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("total");
   const [revenueData, setRevenueData] =
     React.useState<RevenueStatisticResponse | null>(null);
+  const [dateRange, setDateRange] = React.useState(() => getDefaultDateRange());
 
   const { getRevenueAdminStatistics, loading } = useBookingStats();
 
   const fetchRevenueData = React.useCallback(async () => {
     try {
-      const { fromDate, toDate } = getDateRange(timeFilter);
-      const response = await getRevenueAdminStatistics(fromDate, toDate);
+      const response = await getRevenueAdminStatistics(dateRange.fromDate, dateRange.toDate);
       setRevenueData(response);
     } catch (error) {
       console.error("Error fetching revenue data:", error);
     }
-  }, [timeFilter, getRevenueAdminStatistics]);
+  }, [dateRange.fromDate, dateRange.toDate, getRevenueAdminStatistics]);
 
   React.useEffect(() => {
     fetchRevenueData();
@@ -148,6 +125,15 @@ export function AdminRevenueChart() {
       commissionWorkshop: stat.commissionWorkshop,
     }));
   }, [revenueData, revenueType]);
+
+  const handleDateRangeChange = (dates: any) => {
+    if (dates && dates[0] && dates[1]) {
+      const fromDate = dates[0].format("YYYY-MM-DD");
+      const toDate = dates[1].format("YYYY-MM-DD");
+      const days = calculateDays(fromDate, toDate);
+      setDateRange({ fromDate, toDate, days });
+    }
+  };
 
   const totalStats = React.useMemo(() => {
     if (!revenueData?.data) return { total: 0, tour: 0, commissionTourGuide: 0, commissionWorkshop: 0 }
@@ -186,28 +172,34 @@ export function AdminRevenueChart() {
             Biểu đồ doanh thu Quản trị viên
           </CardTitle>
           <CardDescription>
-            Theo dõi doanh thu và hoa hồng theo thời gian
+            Theo dõi doanh thu và hoa hồng theo thời gian 
+            {dateRange.days > 0 && (
+              <span className="ml-1 text-sm font-medium">
+                ({dateRange.days} ngày)
+              </span>
+            )}
           </CardDescription>
+          {dateRange.fromDate && dateRange.toDate && (
+            <div className="text-sm text-muted-foreground mt-1">
+              Từ {new Date(dateRange.fromDate).toLocaleDateString("vi-VN")} đến{" "}
+              {new Date(dateRange.toDate).toLocaleDateString("vi-VN")}
+            </div>
+          )}
         </div>
 
         {/* Filter Controls */}
-        <div className="flex flex-col gap-3 px-6 py-4 sm:py-6 border-t sm:border-t-0 sm:border-l">
-          <div className="flex gap-2">
-            <Select
-              value={timeFilter}
-              onValueChange={(value: TimeFilter) => setTimeFilter(value)}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {timeFilterOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="flex justify-between items-center gap-3 my-auto px-6 sm:py-6 border-t sm:border-t-0 sm:border-l">
+          <div className="flex gap-2 justify-between items-center">
+            <RangePicker
+              value={[
+                dateRange.fromDate ? dayjs(dateRange.fromDate) : null,
+                dateRange.toDate ? dayjs(dateRange.toDate) : null,
+              ]}
+              onChange={handleDateRangeChange}
+              format="DD/MM/YYYY"
+              placeholder={["Từ ngày", "Đến ngày"]}
+              className="w-full"
+            />
 
             <Select
               value={revenueType}

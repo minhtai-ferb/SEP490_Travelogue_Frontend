@@ -35,15 +35,15 @@ function ManageUser() {
   ];
 
   return (
-    <SidebarInset >
+    <SidebarInset className="min-w-0">
       <BreadcrumbHeader items={crumbs} />
-      <div>
-        <Card className="shadow-lg">
+      <div className="p-4 min-w-0 w-full">
+        <Card className="shadow-lg min-w-0 overflow-hidden">
           <Tabs
             defaultActiveKey="1"
             items={tabItems}
             size="large"
-            className="px-4"
+            className="w-full min-w-0"
             tabBarStyle={{
               borderBottom: '2px solid #f0f0f0',
               marginBottom: '24px'
