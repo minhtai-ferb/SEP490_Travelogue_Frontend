@@ -6,8 +6,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTripPlan } from "@/services/trip-plan"
-import type { TourGuideTripplan, TripPlanStatus } from "@/types/Tripplan"
+import { useTripPlan } from "@/services/use-trip-plan"
+import { TripPlanStatus } from "@/types/Tourguide"
+import { TourGuideTripplan } from "@/types/TripPlan"
 import { CalendarCheck2, Search } from 'lucide-react'
 import { useEffect, useState } from "react"
 
@@ -17,7 +18,7 @@ export default function TripPlansBoard() {
 	const [status, setStatus] = useState<TripPlanStatus | "all">("all")
 	const { getTripPlanSearch } = useTripPlan()
 	const [loading, setLoading] = useState(false)
-	const [items, setItems] = useState<TourGuideTripplan[]>([])
+	const [items, setItems] = useState<TourGuideTripplan []>([])
 	const [page, setPage] = useState(1)
 	const [pageSize, setPageSize] = useState(10)
 	const skeletonCount = 6

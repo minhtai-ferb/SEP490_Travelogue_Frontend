@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowRight, Compass, Eye, MapPin, Plus, Save, Share2, Star, Users } from 'lucide-react'
 import { useState } from "react"

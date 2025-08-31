@@ -56,10 +56,7 @@ export default function RefundContainer() {
     return rows.filter((r) => r.userName?.toLowerCase().includes(k));
   }, [rows, kw]);
 
-  // Handlers for viewing details
   const handleViewTourDetail = React.useCallback((tourId: string) => {
-    // TODO: Implement navigation to tour details
-    console.log("View tour details:", tourId);
     router.push(`/admin/tour/${tourId}`);
   }, []);
 

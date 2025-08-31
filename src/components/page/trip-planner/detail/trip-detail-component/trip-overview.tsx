@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Utensils, Briefcase, MessageSquare, Calendar } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 
 interface TripOverviewProps {
 	plan: TripPlan

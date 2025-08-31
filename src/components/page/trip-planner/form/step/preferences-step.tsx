@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { ArrowLeft, Loader2, Sparkles, Wand2, CheckCircle2 } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 
 interface PreferencesStepProps {
 	formData: any

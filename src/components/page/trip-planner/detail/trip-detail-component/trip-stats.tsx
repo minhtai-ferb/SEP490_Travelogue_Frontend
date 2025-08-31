@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Utensils, Briefcase, Route } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 
 interface TripStatsProps {
 	plan: TripPlan

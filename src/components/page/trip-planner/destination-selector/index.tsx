@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search } from "lucide-react"
-import type { TripLocation } from "@/types/Tripplan"
+import type { TripLocation } from "@/types/TripPlan"
 
 // Sample data - would be replaced with API calls
 const sampleDestinations: TripLocation[] = [

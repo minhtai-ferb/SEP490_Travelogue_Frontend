@@ -1,5 +1,5 @@
 import { TourGuide, TripPlanStatus } from "./Tourguide"
-import type { TripPlan } from "./Tripplan"
+import type { TripPlan } from "./TripPlan"
 
 export interface TripBookingData {
 	id: string

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { X, MapPin, Calendar, Users, Star, CreditCard, Shield, CheckCircle2, Clock, User } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 import type { TourGuide } from "@/types/Tourguide"
 
 interface BookingConfirmationModalProps {

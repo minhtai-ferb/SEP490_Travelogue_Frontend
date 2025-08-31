@@ -15,6 +15,7 @@ import {
   MapPinned,
   LocateFixed,
   CirclePercent,
+  MapPinCheckInsideIcon,
 } from "lucide-react";
 import * as React from "react";
 
@@ -131,6 +132,11 @@ const data = {
       title: "Quản lý chuyến tham quan",
       url: "/admin/tour",
       icon: Map,
+    },
+    {
+      title: "Quản lý kế hoạch cá nhân",
+      url: "/admin/personal-plan",
+      icon: MapPinCheckInsideIcon,
     },
     {
       title: "Quản lý trải nghiệm làng nghề",

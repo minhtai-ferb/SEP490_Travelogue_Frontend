@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 import type { TourGuide } from "@/types/Tourguide"
 import type { TripBookingData, UserTripPlan } from "@/types/TripBooking"
 

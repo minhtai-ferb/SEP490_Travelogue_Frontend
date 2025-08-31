@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@heroui/react"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, Calendar, MapPin, Sparkles } from 'lucide-react'
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan } from "@/types/TripPlan"
 import { BasicInfoStep } from "./step/basic-info-step"
 import { DestinationStep } from "./step/destination-step"
 import { PreferencesStep } from "./step/preferences-step"
