@@ -77,7 +77,8 @@ export function useTour() {
 	const deleteTour = useCallback(async (id: string) => {
 		setLoading(true);
 		try {
-			const response = await callApi("delete", `${TOUR_API_URL.ALL_TOURS}`, { params: { id } });
+			// patch  /tour/{id}
+			const response = await callApi("patch", `${TOUR_API_URL.TOUR_UPDATE.replace(':id', id)}`);
 			return response?.data;
 		} catch (e: any) {
 			throw e;

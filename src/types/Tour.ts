@@ -311,6 +311,8 @@ export interface TourDetail {
 	rating: number
 	startLocation?: StartEndLocation
 	endLocation?: StartEndLocation
+	pickupAddress: string
+	stayInfo: string
 }
 
 export interface TourDay {
@@ -361,11 +363,16 @@ export interface TourLocationBulkRequest {
 	locationId: string
 	dayOrder: number
 	startTime: string
+	activityType: number
 	endTime: string
 	notes: string
 	travelTimeFromPrev: number
 	distanceFromPrev: number
 	estimatedStartTime: number
 	estimatedEndTime: number
-	workshopData?: WorkshopData
+	workshopId?: string
+	workshopTicketTypeId?: string
+	workshopSessionRuleId?: string
+	preferredStartTime?: string
+	preferredEndTime?: string
 }

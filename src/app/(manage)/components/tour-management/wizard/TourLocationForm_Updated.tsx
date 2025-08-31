@@ -25,8 +25,8 @@ import {
 import { useEffect, useState } from "react"
 import { LocationSelect } from "./LocationSelect"
 
-const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route?api-version=1.1"
-// https://smartlog-lc.map.zone/api/route/v3?apikey={your-apikey}&point={point}&point={point}&points_encoded={points_encoded}&vehicle={vehicle}
+const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route"
+
 // Activity Types Constants
 const ACTIVITY_TYPES = [
 	{ value: 1, label: "Tham quan" },
@@ -44,57 +44,12 @@ const timeStringToTicks = (timeStr: string): number => {
 	return totalMilliseconds * 10000 // Convert to .NET ticks (100 nanoseconds)
 }
 
-// Helper function to add minutes to time string
-const addMinutesToTime = (timeStr: string, minutes: number): string => {
-	if (!timeStr) return ""
-
-	const [hours, mins] = timeStr.split(':').map(Number)
-	const totalMinutes = hours * 60 + mins + minutes
-	const newHours = Math.floor(totalMinutes / 60) % 24
-	const newMins = totalMinutes % 60
-
-	return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`
-}
-
-// Helper function to calculate suggested start time
-const calculateSuggestedStartTime = (prevEndTime: string, travelTimeMinutes: number): string => {
-	if (!prevEndTime || travelTimeMinutes === 0) return ""
-	return addMinutesToTime(prevEndTime, travelTimeMinutes)
-}
+// Helper function to normalize time strings
 const normalizeTimeString = (time: string): string => {
 	if (!time) return "00:00:00"
 	const parts = time.split(":")
 	if (parts.length === 2) return `${parts[0]}:${parts[1]}:00`
 	return time
-}
-
-// Helper function to convert HH:MM:SS to minutes for comparison
-const timeToMinutes = (timeStr: string): number => {
-	if (!timeStr) return 0
-	const [hours, minutes] = timeStr.split(':').map(Number)
-	return hours * 60 + minutes
-}
-
-// Helper function to check if times overlap
-const timesOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
-	const start1Min = timeToMinutes(start1)
-	const end1Min = timeToMinutes(end1)
-	const start2Min = timeToMinutes(start2)
-	const end2Min = timeToMinutes(end2)
-
-	return (start1Min < end2Min && end1Min > start2Min)
-}
-
-// Helper function to check if time is within location's operating hours
-const isTimeWithinOperatingHours = (startTime: string, endTime: string, location: Location): boolean => {
-	if (!location.openTime || !location.closeTime) return true // No operating hours specified
-
-	const startMin = timeToMinutes(startTime)
-	const endMin = timeToMinutes(endTime)
-	const openMin = timeToMinutes(location.openTime)
-	const closeMin = timeToMinutes(location.closeTime)
-
-	return startMin >= openMin && endMin <= closeMin
 }
 
 interface TourLocationFormProps {
@@ -105,15 +60,6 @@ interface TourLocationFormProps {
 	onPrevious: () => void
 	onCancel: () => void
 	isLoading?: boolean
-}
-
-interface DialogData {
-	suggestedTime?: string
-	travelInfo?: {
-		previousEndTime: string
-		duration: number // in seconds
-		distance: number // in meters
-	}
 }
 
 export function TourLocationForm({
@@ -139,8 +85,8 @@ export function TourLocationForm({
 		notes: "",
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
-		estimatedStartTime: 0,
-		estimatedEndTime: 0,
+		estimatedStartTime: "00:00:00",
+		estimatedEndTime: "00:00:00",
 		activityType: 1,
 		workshopId: undefined,
 		workshopTicketTypeId: undefined,
@@ -151,7 +97,6 @@ export function TourLocationForm({
 
 	// Dialog and workshop states
 	const [showWorkshopDialog, setShowWorkshopDialog] = useState(false)
-	const [dialogData, setDialogData] = useState<DialogData | null>(null)
 	const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
 	const [selectedTicketType, setSelectedTicketType] = useState<TicketType | null>(null)
 	const [selectedSession, setSelectedSession] = useState<WorkshopSession | null>(null)
@@ -238,55 +183,9 @@ export function TourLocationForm({
 		setSelectedTicketType(null)
 		setSelectedSession(null)
 		setAvailableSessions([])
-
-		// Calculate travel time and suggested time for dialog
-		const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
-		if (prevLocation) {
-			setLoadingRouteCalculation(true)
-			try {
-				const fromCoords = getCoordsByLocationId(prevLocation.locationId)
-				const toCoords = { lat: location.latitude, lng: location.longitude }
-
-				if (fromCoords && toCoords) {
-					const metrics = await fetchRouteMetrics(fromCoords, toCoords)
-					if (metrics) {
-						const travelTimeMinutes = Math.ceil(metrics.travelTime)
-						const suggestedStartTime = calculateSuggestedStartTime(prevLocation.endTime, travelTimeMinutes)
-
-						// Set dialog data for suggested time display
-						setDialogData({
-							suggestedTime: suggestedStartTime.substring(0, 5), // HH:MM format
-							travelInfo: {
-								previousEndTime: prevLocation.endTime.substring(0, 5),
-								duration: metrics.travelTime * 60, // convert to seconds
-								distance: metrics.distance * 1000 // convert to meters
-							}
-						})
-
-						// Also update the form
-						setNewLocation(prev => ({
-							...prev,
-							travelTimeFromPrev: travelTimeMinutes,
-							distanceFromPrev: Math.ceil(metrics.distance),
-							startTime: suggestedStartTime
-						}))
-					}
-				}
-			} catch (error) {
-				console.error("Error calculating travel time for workshop:", error)
-			} finally {
-				setLoadingRouteCalculation(false)
-			}
-		} else {
-			// No previous location, reset dialog data
-			setDialogData(null)
-		}
-
-		// Also calculate travel time for craft village locations
-		await calculateTravelTime(location)
 	}
 
-	// Calculate travel time from previous location and auto-suggest start time
+	// Calculate travel time from previous location
 	const calculateTravelTime = async (toLocation: Location) => {
 		const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
 		if (!prevLocation) {
@@ -306,18 +205,10 @@ export function TourLocationForm({
 			if (fromCoords && toCoords) {
 				const metrics = await fetchRouteMetrics(fromCoords, toCoords)
 				if (metrics) {
-					const travelTimeMinutes = Math.ceil(metrics.travelTime)
-					const distanceKm = Math.ceil(metrics.distance)
-
-					// Calculate suggested start time: previous end time + travel time
-					const suggestedStartTime = calculateSuggestedStartTime(prevLocation.endTime, travelTimeMinutes)
-
 					setNewLocation(prev => ({
 						...prev,
-						travelTimeFromPrev: travelTimeMinutes,
-						distanceFromPrev: distanceKm,
-						// Auto-fill suggested start time
-						startTime: suggestedStartTime
+						travelTimeFromPrev: Math.ceil(metrics.travelTime),
+						distanceFromPrev: Math.ceil(metrics.distance)
 					}))
 				}
 			}
@@ -383,54 +274,25 @@ export function TourLocationForm({
 		setAvailableSessions(allSessions)
 	}
 
-	// Step 2a.2: Handle session selection with travel time consideration
+	// Step 2a.2: Handle session selection
 	const handleSessionSelect = (sessionId: string) => {
 		const session = availableSessions.find(s => s.id === sessionId)
 		if (!session) return
 
 		setSelectedSession(session)
 
-		// Get previous location to calculate travel time
-		const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
-		let finalStartTime = session.startTime.substring(0, 5) // HH:MM from session
-		let finalEndTime = session.endTime.substring(0, 5)
-
-		// If there's a previous location, suggest start time based on travel time
-		if (prevLocation && newLocation.travelTimeFromPrev > 0) {
-			const suggestedStartTime = calculateSuggestedStartTime(prevLocation.endTime, newLocation.travelTimeFromPrev)
-
-			// Compare suggested time with session time
-			const sessionStartTime = session.startTime.substring(0, 5)
-
-			// If suggested time is later than session start, use suggested time
-			// This handles the case where travel time pushes the start time later
-			if (suggestedStartTime && suggestedStartTime > sessionStartTime) {
-				finalStartTime = suggestedStartTime
-
-				// Calculate session duration to adjust end time
-				const sessionStart = session.startTime.substring(0, 5)
-				const sessionEnd = session.endTime.substring(0, 5)
-				const [startH, startM] = sessionStart.split(':').map(Number)
-				const [endH, endM] = sessionEnd.split(':').map(Number)
-				const durationMinutes = (endH * 60 + endM) - (startH * 60 + startM)
-
-				// Adjust end time based on new start time and session duration
-				finalEndTime = addMinutesToTime(finalStartTime, durationMinutes)
-			}
-		}
-
-		// Convert to HH:MM:SS format
-		const startTimeWithSeconds = finalStartTime.includes(':') ? `${finalStartTime}:00` : finalStartTime
-		const endTimeWithSeconds = finalEndTime.includes(':') ? `${finalEndTime}:00` : finalEndTime
+		// Auto-fill start and end times from session
+		const startTime = session.startTime.substring(0, 8) // HH:MM:SS
+		const endTime = session.endTime.substring(0, 8)
 
 		setNewLocation(prev => ({
 			...prev,
-			startTime: startTimeWithSeconds,
-			endTime: endTimeWithSeconds,
+			startTime: startTime,
+			endTime: endTime,
 			workshopSessionRuleId: sessionId,
-			// Send actual workshop time in HH:MM:SS format
-			preferredStartTime: startTimeWithSeconds,
-			preferredEndTime: endTimeWithSeconds
+			// Convert to .NET ticks as specified in requirement
+			preferredStartTime: timeStringToTicks(startTime).toString(),
+			preferredEndTime: timeStringToTicks(endTime).toString()
 		}))
 	}
 
@@ -495,8 +357,8 @@ export function TourLocationForm({
 			...newLocation,
 			startTime: normalizeTimeString(newLocation.startTime),
 			endTime: normalizeTimeString(newLocation.endTime),
-			estimatedStartTime: 0, // Not needed as per requirement
-			estimatedEndTime: 0
+			estimatedStartTime: "00:00:00", // Not needed as per requirement
+			estimatedEndTime: "00:00:00"
 		}
 
 		setLocations(prev => [...prev, itemToAdd])
@@ -523,29 +385,6 @@ export function TourLocationForm({
 			newErrors.time = "Thời gian kết thúc phải sau thời gian bắt đầu"
 		}
 
-		// Check operating hours
-		if (newLocation.locationId && newLocation.startTime && newLocation.endTime) {
-			const locationData = availableLocations.find(l => l.id === newLocation.locationId)
-			if (locationData && !isTimeWithinOperatingHours(newLocation.startTime, newLocation.endTime, locationData)) {
-				const openTime = locationData.openTime?.substring(0, 5) || "N/A"
-				const closeTime = locationData.closeTime?.substring(0, 5) || "N/A"
-				newErrors.operatingHours = `Thời gian hoạt động của địa điểm: ${openTime} - ${closeTime}`
-			}
-		}
-
-		// Check for time conflicts with existing locations on the same day
-		if (newLocation.startTime && newLocation.endTime && newLocation.dayOrder) {
-			const existingLocationsOnDay = locations.filter(loc => loc.dayOrder === newLocation.dayOrder)
-
-			for (const existingLocation of existingLocationsOnDay) {
-				if (timesOverlap(newLocation.startTime, newLocation.endTime, existingLocation.startTime, existingLocation.endTime)) {
-					const conflictLocation = availableLocations.find(l => l.id === existingLocation.locationId)
-					newErrors.timeConflict = `Thời gian bị trùng với địa điểm: ${conflictLocation?.name || 'N/A'} (${existingLocation.startTime.substring(0, 5)} - ${existingLocation.endTime.substring(0, 5)})`
-					break
-				}
-			}
-		}
-
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
@@ -560,8 +399,8 @@ export function TourLocationForm({
 			notes: "",
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
-			estimatedStartTime: 0,
-			estimatedEndTime: 0,
+			estimatedStartTime: "00:00:00",
+			estimatedEndTime: "00:00:00",
 			activityType: 1,
 			workshopId: undefined,
 			workshopTicketTypeId: undefined,
@@ -589,10 +428,13 @@ export function TourLocationForm({
 
 	const fetchRouteMetrics = async (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
 		try {
-
-			const url = `${VIETMAP_ROUTE_ENDPOINT}&apikey=${SeccretKey.VIET_MAP_KEY}&point=${from.lat},${from.lng}&point=${to.lat},${to.lng}&vehicle=car`;
-
-			const response = await axios.get(url)
+			const response = await axios.get(VIETMAP_ROUTE_ENDPOINT, {
+				params: {
+					api_key: SeccretKey.VIET_MAP_KEY,
+					points: `${from.lat},${from.lng}|${to.lat},${to.lng}`,
+					vehicle: 'car'
+				}
+			})
 
 			if (response.data.paths && response.data.paths[0]) {
 				const path = response.data.paths[0]
@@ -612,68 +454,12 @@ export function TourLocationForm({
 		setLocations(prev => prev.filter((_, i) => i !== index))
 	}
 
-	// Validate locations for time conflicts and operating hours
-	const validateLocations = (): { isValid: boolean; errors: Record<string, string> } => {
-		const validationErrors: Record<string, string> = {}
-
-		// Check for time conflicts within the same day
-		const locationsByDay = locations.reduce((acc, loc) => {
-			if (!acc[loc.dayOrder]) acc[loc.dayOrder] = []
-			acc[loc.dayOrder].push(loc)
-			return acc
-		}, {} as Record<number, TourLocationBulkRequest[]>)
-
-		Object.entries(locationsByDay).forEach(([dayOrder, dayLocations]) => {
-			// Sort locations by start time for easier conflict detection
-			const sortedLocations = dayLocations.sort((a, b) =>
-				timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
-			)
-
-			// Check for overlapping times
-			for (let i = 0; i < sortedLocations.length - 1; i++) {
-				const current = sortedLocations[i]
-				const next = sortedLocations[i + 1]
-
-				if (timesOverlap(current.startTime, current.endTime, next.startTime, next.endTime)) {
-					validationErrors[`conflict_day_${dayOrder}`] =
-						`Ngày ${dayOrder}: Thời gian các địa điểm bị trùng lặp. Vui lòng điều chỉnh lại.`
-				}
-			}
-		})
-
-		// Check operating hours
-		locations.forEach((loc, index) => {
-			const locationData = availableLocations.find(l => l.id === loc.locationId)
-			if (locationData && !isTimeWithinOperatingHours(loc.startTime, loc.endTime, locationData)) {
-				const openTime = locationData.openTime?.substring(0, 5) || "N/A"
-				const closeTime = locationData.closeTime?.substring(0, 5) || "N/A"
-				validationErrors[`hours_${index}`] =
-					`${locationData.name}: Thời gian hoạt động không phù hợp. Giờ mở cửa: ${openTime} - ${closeTime}`
-			}
-		})
-
-		return {
-			isValid: Object.keys(validationErrors).length === 0,
-			errors: validationErrors
-		}
-	}
-
 	// Submit handler - Create payload matching the required format
 	const handleSubmit = () => {
 		if (locations.length === 0) {
 			setErrors({ submit: "Vui lòng thêm ít nhất một địa điểm" })
 			return
 		}
-
-		// Validate locations before submitting
-		const validation = validateLocations()
-		if (!validation.isValid) {
-			setErrors(validation.errors)
-			return
-		}
-
-		// Clear any previous errors
-		setErrors({})
 
 		// Transform data to match required API format
 		const payload = locations.map(loc => ({
@@ -686,15 +472,15 @@ export function TourLocationForm({
 			notes: loc.notes || "",
 			travelTimeFromPrev: loc.travelTimeFromPrev || 0,
 			distanceFromPrev: loc.distanceFromPrev || 0,
-			estimatedStartTime: 0, // Number format as per interface
-			estimatedEndTime: 0,   // Number format as per interface
+			estimatedStartTime: "00:00:00", // String format as per interface
+			estimatedEndTime: "00:00:00",   // String format as per interface
 			// Workshop fields (only if workshop is selected)
 			...(loc.workshopId && {
 				workshopId: loc.workshopId,                    // = locationId for craft villages
 				workshopTicketTypeId: loc.workshopTicketTypeId, // ticketId
 				workshopSessionRuleId: loc.workshopSessionRuleId, // sessionId
-				preferredStartTime: loc.preferredStartTime, // Workshop time in HH:MM:SS format
-				preferredEndTime: loc.preferredEndTime      // Workshop time in HH:MM:SS format
+				preferredStartTime: loc.preferredStartTime, // Already in ticks string format
+				preferredEndTime: loc.preferredEndTime      // Already in ticks string format
 			})
 		}))
 
@@ -733,16 +519,6 @@ export function TourLocationForm({
 							/>
 							{errors.location && (
 								<p className="text-sm text-destructive mt-1">{errors.location}</p>
-							)}
-
-							{/* Show operating hours when location is selected */}
-							{selectedLocation && selectedLocation.openTime && selectedLocation.closeTime && (
-								<div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-									<div className="flex items-center gap-2 text-sm text-blue-800">
-										<Clock className="h-4 w-4" />
-										<span>Giờ hoạt động: {selectedLocation.openTime.substring(0, 5)} - {selectedLocation.closeTime.substring(0, 5)}</span>
-									</div>
-								</div>
 							)}
 						</div>
 
@@ -792,73 +568,40 @@ export function TourLocationForm({
 
 					{/* Step 2: Time Input (for regular locations) */}
 					{selectedLocation && !showWorkshopDialog && (
-						<>
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<Label htmlFor="startTime">Thời gian bắt đầu *</Label>
-									<Input
-										id="startTime"
-										type="time"
-										value={newLocation.startTime}
-										onChange={(e) => setNewLocation(prev => ({
-											...prev,
-											startTime: e.target.value
-										}))}
-									/>
-									{errors.startTime && (
-										<p className="text-sm text-destructive mt-1">{errors.startTime}</p>
-									)}
-								</div>
-
-								<div>
-									<Label htmlFor="endTime">Thời gian kết thúc *</Label>
-									<Input
-										id="endTime"
-										type="time"
-										value={newLocation.endTime}
-										onChange={(e) => setNewLocation(prev => ({
-											...prev,
-											endTime: e.target.value
-										}))}
-									/>
-									{errors.endTime && (
-										<p className="text-sm text-destructive mt-1">{errors.endTime}</p>
-									)}
-								</div>
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<Label htmlFor="startTime">Thời gian bắt đầu *</Label>
+								<Input
+									id="startTime"
+									type="time"
+									value={newLocation.startTime}
+									onChange={(e) => setNewLocation(prev => ({
+										...prev,
+										startTime: e.target.value
+									}))}
+								/>
+								{errors.startTime && (
+									<p className="text-sm text-destructive mt-1">{errors.startTime}</p>
+								)}
 							</div>
 
-							{/* Time validation errors */}
-							{errors.time && (
-								<p className="text-sm text-destructive">{errors.time}</p>
-							)}
-							{errors.operatingHours && (
-								<p className="text-sm text-destructive">{errors.operatingHours}</p>
-							)}
-							{errors.timeConflict && (
-								<p className="text-sm text-destructive">{errors.timeConflict}</p>
-							)}
-						</>
-					)}
-
-					{/* Auto-suggested Time Information */}
-					{/* {newLocation.startTime && newLocation.travelTimeFromPrev > 0 && (
-						<div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-							<div className="flex items-center gap-2 text-green-800 mb-2">
-								<Clock className="h-4 w-4" />
-								<span className="font-medium">Thời gian được đề xuất</span>
-							</div>
-							<div className="text-sm text-green-700">
-								<p>🕐 Thời gian bắt đầu được tự động tính từ:</p>
-								<p className="ml-4">• Thời gian kết thúc địa điểm trước: {(() => {
-									const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
-									return prevLocation?.endTime || "N/A"
-								})()}</p>
-								<p className="ml-4">• + Thời gian di chuyển: {newLocation.travelTimeFromPrev} phút</p>
-								<p className="ml-4">• = Thời gian bắt đầu đề xuất: <strong>{newLocation.startTime}</strong></p>
-								<p className="text-xs mt-1 text-green-600">💡 Bạn có thể điều chỉnh thời gian này nếu cần</p>
+							<div>
+								<Label htmlFor="endTime">Thời gian kết thúc *</Label>
+								<Input
+									id="endTime"
+									type="time"
+									value={newLocation.endTime}
+									onChange={(e) => setNewLocation(prev => ({
+										...prev,
+										endTime: e.target.value
+									}))}
+								/>
+								{errors.endTime && (
+									<p className="text-sm text-destructive mt-1">{errors.endTime}</p>
+								)}
 							</div>
 						</div>
-					)} */}
+					)}
 
 					{/* Travel Information */}
 					{(newLocation.travelTimeFromPrev > 0 || newLocation.distanceFromPrev > 0) && (
@@ -886,10 +629,10 @@ export function TourLocationForm({
 					</div>
 
 					{/* Errors */}
-					{(errors.time || errors.submit || errors.operatingHours || errors.timeConflict) && (
+					{(errors.time || errors.submit) && (
 						<div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
 							<p className="text-sm text-destructive">
-								{errors.time || errors.submit || errors.operatingHours || errors.timeConflict}
+								{errors.time || errors.submit}
 							</p>
 						</div>
 					)}
@@ -918,11 +661,6 @@ export function TourLocationForm({
 						</DialogTitle>
 						<DialogDescription>
 							{selectedLocation?.name} - Vui lòng chọn loại vé và session phù hợp
-							{selectedLocation?.openTime && selectedLocation?.closeTime && (
-								<div className="text-sm text-muted-foreground mt-1">
-									⏰ Giờ mở cửa: {selectedLocation.openTime.substring(0, 5)} - {selectedLocation.closeTime.substring(0, 5)}
-								</div>
-							)}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -991,25 +729,6 @@ export function TourLocationForm({
 									)}
 								</div>
 							)}
-
-						{/* Suggested Time Info */}
-						{dialogData?.suggestedTime && (
-							<div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
-								<div className="flex items-center gap-2 text-blue-800 mb-2">
-									<Clock className="h-4 w-4" />
-									<span className="font-medium">Thời gian được đề xuất</span>
-								</div>
-								<div className="text-sm text-blue-600">
-									<p>🕐 Đề xuất bắt đầu: {dialogData.suggestedTime}</p>
-									{dialogData.travelInfo && (
-										<p className="mt-1 text-xs opacity-75">
-											Dựa trên kết thúc địa điểm trước ({dialogData.travelInfo.previousEndTime}) +
-											thời gian di chuyển ({Math.round(dialogData.travelInfo.duration / 60)} phút)
-										</p>
-									)}
-								</div>
-							</div>
-						)}
 
 						{/* Selected Time Display */}
 						{selectedSession && (
@@ -1083,30 +802,6 @@ export function TourLocationForm({
 										</Button>
 									</div>
 								)
-							})}
-						</div>
-					</CardContent>
-				</Card>
-			)}
-
-			{/* Global Validation Errors */}
-			{Object.entries(errors).some(([key, _]) => key.startsWith('conflict_') || key.startsWith('hours_')) && (
-				<Card className="border-destructive/20">
-					<CardHeader>
-						<CardTitle className="text-destructive">Lỗi validation</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-2">
-							{Object.entries(errors).map(([key, message]) => {
-								if (key.startsWith('conflict_') || key.startsWith('hours_')) {
-									return (
-										<div key={key} className="flex items-start gap-2">
-											<div className="w-2 h-2 rounded-full bg-destructive mt-2 flex-shrink-0" />
-											<p className="text-sm text-destructive">{message}</p>
-										</div>
-									)
-								}
-								return null
 							})}
 						</div>
 					</CardContent>
