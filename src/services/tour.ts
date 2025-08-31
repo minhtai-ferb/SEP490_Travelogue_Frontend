@@ -9,6 +9,27 @@ export function useTour() {
 	const { callApi, loading } = useApiService();
 	const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
+	// Validate schedule with tourId query parameter
+	// data: {
+	//   "departureDate": "2025-08-31T13:19:14.587Z",
+	//   "maxParticipant": 2147483647,
+	//   "adultPrice": 0,
+	//   "childrenPrice": 0,
+	//   "tourGuideId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+	// }
+	const validateSchedule = useCallback(async (data: any, tourId: string) => {
+		setLoading(true);
+		try {
+			const url = `${TOUR_API_URL.TOUR_SCHEDULE_VALIDATE}?tourId=${tourId}`;
+			const response = await callApi("post", url, data);
+			return response?.data;
+		} catch (e: any) {
+			throw e;
+		} finally {
+			setLoading(false);
+		}
+	}, [callApi, setLoading]);
+
 	const getAllTour = useCallback(
 		async () => {
 			setLoading(true);
@@ -143,6 +164,7 @@ export function useTour() {
 		createTourBulk,
 		deleteTour,
 		deleteTourSchedule,
+		validateSchedule,
 		loading: isLoading || loading,
 	};
 }

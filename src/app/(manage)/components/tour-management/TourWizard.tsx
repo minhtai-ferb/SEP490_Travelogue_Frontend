@@ -158,6 +158,7 @@ export function TourWizard({ onComplete, onCancel }: TourWizardProps) {
 			case 3:
 				return (
 					<TourScheduleForm
+						tourId={createdTourId!}
 						initialData={schedules}
 						tourDays={basicInfo?.totalDays || 1}
 						onChange={(data) => setSchedules(data)}
