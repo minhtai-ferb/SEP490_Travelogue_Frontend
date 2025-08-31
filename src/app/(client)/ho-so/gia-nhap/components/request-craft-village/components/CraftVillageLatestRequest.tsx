@@ -349,7 +349,7 @@ function CraftVillageLatestRequest({
 						<Button size="default" variant="outline" onClick={fetchCraftLatest}>
 							Tải lại
 						</Button>
-						{latestCraftVillage?.statusText === "Đã xác nhận" && (
+						{latestCraftVillage?.statusText !== "Đã xác nhận" && (
 							<Button size="default" onClick={() => setLatestCraftVillage(null)}>
 								Đăng ký mới
 							</Button>
