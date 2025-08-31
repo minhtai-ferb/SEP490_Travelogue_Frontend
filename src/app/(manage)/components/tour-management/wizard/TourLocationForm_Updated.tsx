@@ -85,8 +85,6 @@ export function TourLocationForm({
 		notes: "",
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
-		estimatedStartTime: "00:00:00",
-		estimatedEndTime: "00:00:00",
 		activityType: 1,
 		workshopId: undefined,
 		workshopTicketTypeId: undefined,
@@ -356,9 +354,7 @@ export function TourLocationForm({
 		const itemToAdd: TourLocationBulkRequest = {
 			...newLocation,
 			startTime: normalizeTimeString(newLocation.startTime),
-			endTime: normalizeTimeString(newLocation.endTime),
-			estimatedStartTime: "00:00:00", // Not needed as per requirement
-			estimatedEndTime: "00:00:00"
+			endTime: normalizeTimeString(newLocation.endTime)
 		}
 
 		setLocations(prev => [...prev, itemToAdd])
@@ -399,8 +395,6 @@ export function TourLocationForm({
 			notes: "",
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
-			estimatedStartTime: "00:00:00",
-			estimatedEndTime: "00:00:00",
 			activityType: 1,
 			workshopId: undefined,
 			workshopTicketTypeId: undefined,
@@ -548,7 +542,7 @@ export function TourLocationForm({
 					<div>
 						<Label htmlFor="activityType">Loại hoạt động *</Label>
 						<Select
-							value={newLocation.activityType.toString()}
+							value={newLocation.activityType?.toString()}
 							onValueChange={(value) =>
 								setNewLocation(prev => ({ ...prev, activityType: parseInt(value) }))
 							}

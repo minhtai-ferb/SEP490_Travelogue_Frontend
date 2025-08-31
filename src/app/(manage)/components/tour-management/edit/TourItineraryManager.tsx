@@ -50,8 +50,6 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 			notes: activity.notes || "",
 			travelTimeFromPrev: activity.travelTimeFromPrev || 0,
 			distanceFromPrev: activity.distanceFromPrev || 0,
-			estimatedStartTime: 0,
-			estimatedEndTime: 0,
 		}
 		const prev = acts[editing.activityIndex - 1]
 		const prevOfDay = prev ? { locationId: (prev as any).locationId || prev.id } : null
@@ -135,8 +133,6 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 					notes: act.notes || "",
 					travelTimeFromPrev: act.travelTimeFromPrev || 0,
 					distanceFromPrev: act.distanceFromPrev || 0,
-					estimatedStartTime: 0,
-					estimatedEndTime: 0,
 				})
 			})
 		})

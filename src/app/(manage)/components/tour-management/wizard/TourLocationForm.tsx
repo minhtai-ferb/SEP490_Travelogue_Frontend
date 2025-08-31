@@ -37,12 +37,6 @@ const ACTIVITY_TYPES = [
 	{ value: 6, label: "Trải nghiệm" }
 ] as const
 
-// Helper function to convert time string to .NET ticks
-const timeStringToTicks = (timeStr: string): number => {
-	const [hours, minutes, seconds] = timeStr.split(':').map(Number)
-	const totalMilliseconds = (hours * 3600 + minutes * 60 + (seconds || 0)) * 1000
-	return totalMilliseconds * 10000 // Convert to .NET ticks (100 nanoseconds)
-}
 
 // Helper function to add minutes to time string
 const addMinutesToTime = (timeStr: string, minutes: number): string => {
@@ -139,8 +133,6 @@ export function TourLocationForm({
 		notes: "",
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
-		estimatedStartTime: 0,
-		estimatedEndTime: 0,
 		activityType: 1,
 		workshopId: undefined,
 		workshopTicketTypeId: undefined,
@@ -494,9 +486,7 @@ export function TourLocationForm({
 		const itemToAdd: TourLocationBulkRequest = {
 			...newLocation,
 			startTime: normalizeTimeString(newLocation.startTime),
-			endTime: normalizeTimeString(newLocation.endTime),
-			estimatedStartTime: 0, // Not needed as per requirement
-			estimatedEndTime: 0
+			endTime: normalizeTimeString(newLocation.endTime)
 		}
 
 		setLocations(prev => [...prev, itemToAdd])
@@ -560,8 +550,6 @@ export function TourLocationForm({
 			notes: "",
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
-			estimatedStartTime: 0,
-			estimatedEndTime: 0,
 			activityType: 1,
 			workshopId: undefined,
 			workshopTicketTypeId: undefined,
@@ -686,8 +674,6 @@ export function TourLocationForm({
 			notes: loc.notes || "",
 			travelTimeFromPrev: loc.travelTimeFromPrev || 0,
 			distanceFromPrev: loc.distanceFromPrev || 0,
-			estimatedStartTime: 0, // Number format as per interface
-			estimatedEndTime: 0,   // Number format as per interface
 			// Workshop fields (only if workshop is selected)
 			...(loc.workshopId && {
 				workshopId: loc.workshopId,                    // = locationId for craft villages
@@ -772,7 +758,7 @@ export function TourLocationForm({
 					<div>
 						<Label htmlFor="activityType">Loại hoạt động *</Label>
 						<Select
-							value={newLocation.activityType.toString()}
+							value={newLocation.activityType?.toString()}
 							onValueChange={(value) =>
 								setNewLocation(prev => ({ ...prev, activityType: parseInt(value) }))
 							}

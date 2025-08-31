@@ -259,6 +259,7 @@ export interface WorkshopSession {
 export interface TicketType {
 	id: string
 	name: string
+	isCombo: boolean
 	description?: string
 	price: number
 	durationMinutes: number
@@ -363,13 +364,11 @@ export interface TourLocationBulkRequest {
 	locationId: string
 	dayOrder: number
 	startTime: string
-	activityType: number
+	activityType?: number
 	endTime: string
 	notes: string
 	travelTimeFromPrev: number
 	distanceFromPrev: number
-	estimatedStartTime: number
-	estimatedEndTime: number
 	workshopId?: string
 	workshopTicketTypeId?: string
 	workshopSessionRuleId?: string
