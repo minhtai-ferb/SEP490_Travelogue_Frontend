@@ -937,7 +937,7 @@ export function TourLocationForm({
 									disabled={availableSessions.length === 0}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder={availableSessions.length === 0 ? "Không có khung giờ khả dụng" : "Chọn khung giờ hoạt động"} />
+										<SelectValue placeholder={availableSessions.length === 0 ? "Không có khung giờ khả dụng cho lịch trình của bạn" : "Chọn khung giờ hoạt động"} />
 									</SelectTrigger>
 									<SelectContent>
 										{availableSessions.map(session => (
@@ -953,11 +953,11 @@ export function TourLocationForm({
 									</SelectContent>
 								</Select>
 
-								{availableSessions.length === 0 && (
+								{/* {availableSessions.length === 0 && (
 									<p className="text-sm text-muted-foreground mt-1">
-										Không có khung giờ khả dụng cho ngày này
+										Không có khung giờ khả dụng cho lịch trình của bạn
 									</p>
-								)}
+								)} */}
 							</div>
 						)}
 
