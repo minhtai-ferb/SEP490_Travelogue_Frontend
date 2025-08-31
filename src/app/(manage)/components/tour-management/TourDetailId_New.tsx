@@ -82,7 +82,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 							<p className="text-xl text-white/90 mb-4">{tour.description}</p>
 							<div className="flex items-center gap-6 text-white/80">
 								<div className="flex items-center gap-2">
-									<Ticket className="h-5 w-5" />
+									<DollarSign className="h-5 w-5" />
 									<span className="font-semibold">{tour.finalPrice.toLocaleString('vi-VN')} VNĐ</span>
 								</div>
 								<div className="flex items-center gap-2">
@@ -119,9 +119,9 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
+			<div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
 				{/* Main Content */}
-				<div className="xl:col-span-4 space-y-8">
+				<div className="xl:col-span-3 space-y-8">
 					{/* Tour Content */}
 					<Card className="shadow-sm">
 						<CardHeader>
@@ -146,7 +146,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<Accordion type="single" collapsible className="space-y-4 py-6">
+							<Accordion type="single" collapsible className="space-y-4">
 								{tour.days.map((day, dayIndex) => (
 									<AccordionItem key={dayIndex} value={`day-${day.dayNumber}`} className="border rounded-lg">
 										<AccordionTrigger className="px-6 py-4 hover:bg-gray-50">
@@ -184,11 +184,11 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 																{/* Activity Content */}
 																<div className="flex-1">
 																	<div className={`p-6 rounded-lg border-2 ${activityExt.workshop
-																		? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-md'
-																		: 'bg-white border-gray-200 shadow-sm'
+																			? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-md'
+																			: 'bg-white border-gray-200 shadow-sm'
 																		}`}>
 																		{/* Activity Header */}
-																		<div className="flex sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+																		<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
 																			<div className="flex-1">
 																				<div className="flex items-center gap-3 mb-2">
 																					<h4 className="text-xl font-semibold text-gray-900">
@@ -221,29 +221,17 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 																		</div>
 
 																		{/* Activity Details Grid */}
-																		<div className="flex flex-col mb-4">
-																			<div className="flex gap-3">
-																				{/* Time */}
-																				<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-																					<Clock className="h-4 w-4 text-green-600" />
-																					<div>
-																						<p className="text-xs text-gray-500 uppercase tracking-wide">Thời gian</p>
-																						<p className="font-semibold">{activity.startTimeFormatted} - {activity.endTimeFormatted}</p>
-																						<p className="text-xs text-gray-600">{activity.duration}</p>
-																					</div>
+																		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+																			{/* Time */}
+																			<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+																				<Clock className="h-4 w-4 text-green-600" />
+																				<div>
+																					<p className="text-xs text-gray-500 uppercase tracking-wide">Thời gian</p>
+																					<p className="font-semibold">{activity.startTimeFormatted} - {activity.endTimeFormatted}</p>
+																					<p className="text-xs text-gray-600">{activity.duration}</p>
 																				</div>
-																				{/* Travel Info */}
-																				{activityExt.travelTimeFromPrev > 0 && (
-																					<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-																						<Navigation className="h-4 w-4 text-blue-500" />
-																						<div>
-																							<p className="text-xs text-gray-500 uppercase tracking-wide">Di chuyển</p>
-																							<p className="font-semibold">{activityExt.travelTimeFromPrev} phút</p>
-																							<p className="text-xs text-gray-600">{activityExt.distanceFromPrev} km</p>
-																						</div>
-																					</div>
-																				)}
 																			</div>
+
 																			{/* Location */}
 																			<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
 																				<MapPin className="h-4 w-4 text-red-500" />
@@ -252,6 +240,18 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 																					<p className="font-semibold text-sm">{activity.address}</p>
 																				</div>
 																			</div>
+
+																			{/* Travel Info */}
+																			{activityExt.travelTimeFromPrev > 0 && (
+																				<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+																					<Navigation className="h-4 w-4 text-blue-500" />
+																					<div>
+																						<p className="text-xs text-gray-500 uppercase tracking-wide">Di chuyển</p>
+																						<p className="font-semibold">{activityExt.travelTimeFromPrev} phút</p>
+																						<p className="text-xs text-gray-600">{activityExt.distanceFromPrev} km</p>
+																					</div>
+																				</div>
+																			)}
 
 																			{/* Workshop specific info */}
 																			{activityExt.workshop && (
@@ -284,43 +284,14 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 									</AccordionItem>
 								))}
 							</Accordion>
-							{/* Schedules */}
-							{tour.schedules && tour.schedules.length > 0 && (
-								<Card className="sticky shadow-md">
-									<CardHeader>
-										<CardTitle className="text-lg flex items-center gap-2">
-											<Calendar className="h-5 w-5" />
-											Lịch Khởi Hành
-										</CardTitle>
-									</CardHeader>
-									<CardContent className="space-y-3">
-										{tour.schedules.map((schedule, index) => (
-											<div key={index} className="p-3 border border-gray-200 rounded-lg">
-												<div className="flex items-center justify-between mb-2">
-													<span className="font-semibold">
-														{formatDate(new Date(schedule.startTime), 'dd/MM/yyyy')}
-													</span>
-													<Badge variant="outline">
-														{schedule.maxParticipant - schedule.currentBooked} chỗ trống
-													</Badge>
-												</div>
-												<div className="text-sm text-gray-600">
-													<p>HDV: {(schedule.tourGuide as any)?.userName || 'Chưa phân công'}</p>
-													<p>Đã đặt: {schedule.currentBooked}/{schedule.maxParticipant}</p>
-												</div>
-											</div>
-										))}
-									</CardContent>
-								</Card>
-							)}
 						</CardContent>
 					</Card>
 				</div>
 
 				{/* Sidebar */}
-				<div className="xl:col-span-2 space-y-10">
+				<div className="xl:col-span-1 space-y-6">
 					{/* Quick Info */}
-					<Card className="top-6 shadow-md">
+					<Card className="sticky top-6 shadow-md">
 						<CardHeader>
 							<CardTitle className="text-lg">Thông Tin Tour</CardTitle>
 						</CardHeader>
@@ -364,6 +335,36 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 							</div>
 						</CardContent>
 					</Card>
+
+					{/* Schedules */}
+					{tour.schedules && tour.schedules.length > 0 && (
+						<Card className="shadow-md">
+							<CardHeader>
+								<CardTitle className="text-lg flex items-center gap-2">
+									<Calendar className="h-5 w-5" />
+									Lịch Khởi Hành
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								{tour.schedules.map((schedule, index) => (
+									<div key={index} className="p-3 border border-gray-200 rounded-lg">
+										<div className="flex items-center justify-between mb-2">
+											<span className="font-semibold">
+												{formatDate(new Date(schedule.startTime), 'dd/MM/yyyy')}
+											</span>
+											<Badge variant="outline">
+												{schedule.maxParticipant - schedule.currentBooked} chỗ trống
+											</Badge>
+										</div>
+										<div className="text-sm text-gray-600">
+											<p>HDV: {(schedule.tourGuide as any)?.userName || 'Chưa phân công'}</p>
+											<p>Đã đặt: {schedule.currentBooked}/{schedule.maxParticipant}</p>
+										</div>
+									</div>
+								))}
+							</CardContent>
+						</Card>
+					)}
 				</div>
 			</div>
 		</div>
