@@ -172,6 +172,7 @@ export interface TourLocationRequest {
 	distanceFromPrev: number
 	estimatedStartTime: number
 	estimatedEndTime: number
+	workshopData?: WorkshopData
 }
 
 export interface CreateTourBasicRequest {
@@ -218,6 +219,55 @@ export interface Location {
 	districtId: string
 	districtName: string
 	medias: LocationMedia[]
+	craftVillage?: CraftVillage
+}
+
+// Simple interfaces for craft village with sessions only
+export interface CraftVillage {
+	ownerId: string
+	phoneNumber: string
+	email: string
+	website?: string | null
+	signatureProduct: string
+	yearsOfHistory: number
+	workshopsAvailable: boolean
+	isRecognizedByUnesco: boolean
+	workshop: Workshop
+}
+
+export interface Workshop {
+	name: string
+	description: string
+	content: string
+	status: number
+	ticketTypes: TicketType[]
+	recurringRules: WorkshopRecurringRule[]
+}
+
+export interface WorkshopRecurringRule {
+	daysOfWeek: number[] // 0 = Sunday, 1 = Monday, etc.
+	sessions: WorkshopSession[]
+}
+
+export interface WorkshopSession {
+	id: string
+	startTime: string // Time format "HH:MM:SS"
+	endTime: string // Time format "HH:MM:SS"
+	capacity: number
+}
+
+export interface TicketType {
+	id: string
+	name: string
+	description?: string
+	price: number
+	durationMinutes: number
+	isActive: boolean
+}
+
+export interface WorkshopData {
+	sessionId: string
+	ticketTypeId: string
 }
 
 
@@ -317,4 +367,5 @@ export interface TourLocationBulkRequest {
 	distanceFromPrev: number
 	estimatedStartTime: number
 	estimatedEndTime: number
+	workshopData?: WorkshopData
 }
