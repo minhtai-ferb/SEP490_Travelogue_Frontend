@@ -221,7 +221,7 @@ export default function RequestsTable({
       width: 200,
       render: (text: string) => (
         <div className="text-xs" title={text}>
-          {text && text.length > 50 ? `${text.slice(0, 50)}...` : text || "-"}
+          {text && text?.length > 50 ? `${text.slice(0, 50)}...` : text || "-"}
         </div>
       ),
     },
@@ -253,7 +253,7 @@ export default function RequestsTable({
       sorter: (a, b) =>
         dayjs(a.respondedAt).valueOf() - dayjs(b.respondedAt).valueOf(),
       render: (v: string, record) => {
-        const isUpdated = record.respondedAt.length > 0;
+        const isUpdated = record?.respondedAt?.length > 0;
         return (
           <div className="text-xs">
             {isUpdated ? (
