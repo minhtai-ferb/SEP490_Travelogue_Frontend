@@ -18,12 +18,17 @@ import {
 	Clock,
 	Loader2,
 	MapPin,
+	Navigation,
 	Plus,
 	Settings,
-	Trash2
+	Trash2,
+	Users,
+	Wrench
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { LocationSelect } from "./LocationSelect"
+import { getActivityColor } from "@/utils/format"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route?api-version=1.1"
 // https://smartlog-lc.map.zone/api/route/v3?apikey={your-apikey}&point={point}&point={point}&points_encoded={points_encoded}&vehicle={vehicle}
@@ -331,26 +336,8 @@ export function TourLocationForm({
 			workshopTicketTypeId: ticketId
 		}))
 
-		// Check if it's a combo ticket (experience ticket) - using type checking instead of isCombo
-		// Assuming combo tickets have certain characteristics, we'll check by ticket type or name
-		const isExperienceTicket = ticket.name.toLowerCase().includes('trải nghiệm') ||
-			ticket.name.toLowerCase().includes('workshop') ||
-			ticket.name.toLowerCase().includes('combo')
-
-		if (isExperienceTicket) {
-			// Step 2a.2: Load available sessions for experience ticket
-			loadAvailableSessionsForTicket(ticket)
-		} else {
-			// Step 2a.1: Regular sightseeing ticket - user can set custom time
-			setAvailableSessions([])
-			setSelectedSession(null)
-			setNewLocation(prev => ({
-				...prev,
-				workshopSessionRuleId: undefined,
-				preferredStartTime: undefined,
-				preferredEndTime: undefined
-			}))
-		}
+		// All ticket types need to have sessions - load available sessions for any ticket type
+		loadAvailableSessionsForTicket(ticket)
 	}
 
 	// Load available sessions for experience tickets
@@ -449,12 +436,9 @@ export function TourLocationForm({
 			return
 		}
 
-		const isExperienceTicket = selectedTicketType.name.toLowerCase().includes('trải nghiệm') ||
-			selectedTicketType.name.toLowerCase().includes('workshop') ||
-			selectedTicketType.name.toLowerCase().includes('combo')
-
-		if (isExperienceTicket && !selectedSession) {
-			setErrors({ workshop: "Vui lòng chọn session trải nghiệm" })
+		// All ticket types now require session selection
+		if (!selectedSession) {
+			setErrors({ workshop: "Vui lòng chọn khung giờ hoạt động" })
 			return
 		}
 
@@ -943,40 +927,39 @@ export function TourLocationForm({
 							</Select>
 						</div>
 
-						{/* Session Selection (for experience tickets) */}
-						{selectedTicketType && (selectedTicketType.name.toLowerCase().includes('trải nghiệm') ||
-							selectedTicketType.name.toLowerCase().includes('workshop') ||
-							selectedTicketType.name.toLowerCase().includes('combo')) && (
-								<div>
-									<Label>Session trải nghiệm *</Label>
-									<Select
-										value={selectedSession?.id || ""}
-										onValueChange={handleSessionSelect}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Chọn khung giờ trải nghiệm" />
-										</SelectTrigger>
-										<SelectContent>
-											{availableSessions.map(session => (
-												<SelectItem key={session.id} value={session.id}>
-													<div className="flex items-center gap-2">
-														<Clock className="h-4 w-4" />
-														<span>
-															{session.startTime.substring(0, 5)} - {session.endTime.substring(0, 5)}
-														</span>
-													</div>
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+						{/* Session Selection (for all ticket types) */}
+						{selectedTicketType && (
+							<div>
+								<Label>Khung giờ hoạt động *</Label>
+								<Select
+									value={selectedSession?.id || ""}
+									onValueChange={handleSessionSelect}
+									disabled={availableSessions.length === 0}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={availableSessions.length === 0 ? "Không có khung giờ khả dụng" : "Chọn khung giờ hoạt động"} />
+									</SelectTrigger>
+									<SelectContent>
+										{availableSessions.map(session => (
+											<SelectItem key={session.id} value={session.id}>
+												<div className="flex items-center gap-2">
+													<Clock className="h-4 w-4" />
+													<span>
+														{session.startTime.substring(0, 5)} - {session.endTime.substring(0, 5)}
+													</span>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
-									{availableSessions.length === 0 && (
-										<p className="text-sm text-muted-foreground mt-1">
-											Không có session khả dụng cho ngày này
-										</p>
-									)}
-								</div>
-							)}
+								{availableSessions.length === 0 && (
+									<p className="text-sm text-muted-foreground mt-1">
+										Không có khung giờ khả dụng cho ngày này
+									</p>
+								)}
+							</div>
+						)}
 
 						{/* Suggested Time Info */}
 						{dialogData?.suggestedTime && (
@@ -1028,76 +1011,191 @@ export function TourLocationForm({
 			</Dialog>
 
 			{/* Added Locations List */}
-			{locations.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle>Danh sách địa điểm đã thêm</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-3">
-							{locations.map((location, index) => {
-								const locationData = availableLocations.find(loc => loc.id === location.locationId)
-								const activityType = ACTIVITY_TYPES.find(type => type.value === location.activityType)
+			{
+				locations.length > 0 && (
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<div className="w-2 h-2 bg-blue-500 rounded-full" />
+								Danh sách địa điểm đã thêm ({locations.length} địa điểm)
+							</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<Accordion type="multiple" className="w-full">
+								{(() => {
+									// Group locations by dayOrder
+									const locationsByDay = locations.reduce((acc, location, originalIndex) => {
+										if (!acc[location.dayOrder]) {
+											acc[location.dayOrder] = []
+										}
+										acc[location.dayOrder].push({ ...location, originalIndex })
+										return acc
+									}, {} as Record<number, Array<TourLocationBulkRequest & { originalIndex: number }>>)
 
-								return (
-									<div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-										<div className="flex-1">
-											<div className="flex items-center gap-2 mb-2">
-												<Badge variant="outline">Ngày {location.dayOrder}</Badge>
-												<Badge>{activityType?.label}</Badge>
-												{location.workshopId && (
-													<Badge variant="secondary">Làng nghề</Badge>
-												)}
-											</div>
-											<h4 className="font-medium">{locationData?.name || 'Unknown Location'}</h4>
-											<div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-												<span className="flex items-center gap-1">
-													<Clock className="h-3 w-3" />
-													{location.startTime} - {location.endTime}
-												</span>
-												{location.travelTimeFromPrev > 0 && (
-													<span>🚗 {location.travelTimeFromPrev}p</span>
-												)}
-											</div>
-										</div>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => handleRemoveLocation(index)}
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</div>
-								)
-							})}
-						</div>
-					</CardContent>
-				</Card>
-			)}
+									// Sort days
+									const sortedDays = Object.keys(locationsByDay).sort((a, b) => parseInt(a) - parseInt(b))
+
+									return sortedDays.map(dayOrder => {
+										const dayNumber = parseInt(dayOrder)
+										const dayLocations = locationsByDay[dayNumber].sort((a, b) =>
+											timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+										)
+
+										// Calculate day stats
+										const totalTravelTime = dayLocations.reduce((sum, loc) => sum + (loc.travelTimeFromPrev || 0), 0)
+										const totalDistance = dayLocations.reduce((sum, loc) => sum + (loc.distanceFromPrev || 0), 0)
+										const workshopCount = dayLocations.filter(loc => loc.workshopId).length
+
+										return (
+											<AccordionItem key={dayNumber} value={`day-${dayNumber}`}>
+												<AccordionTrigger className="hover:no-underline">
+													<div className="flex items-center gap-4 w-full">
+														<Badge variant="outline" className="bg-blue-50 text-blue-700">
+															Ngày {dayNumber}
+														</Badge>
+														<div className="flex items-center gap-4 text-sm text-gray-600">
+															<span className="flex items-center gap-1">
+																<MapPin className="w-3 h-3" />
+																{dayLocations.length} địa điểm
+															</span>
+															<span className="flex items-center gap-1">
+																<Clock className="w-3 h-3" />
+																{dayLocations.length > 0 ? `${dayLocations[0].startTime.substring(0, 5)} - ${dayLocations[dayLocations.length - 1].endTime.substring(0, 5)}` : 'N/A'}
+															</span>
+															<span className="flex items-center gap-1">
+																<Navigation className="w-3 h-3" />
+																{totalDistance}km
+															</span>
+															<span className="flex items-center gap-1">
+																🚗
+																{totalTravelTime}phút
+															</span>
+															{workshopCount > 0 && (
+																<span className="flex items-center gap-1">
+																	<Wrench className="w-3 h-3" />
+																	{workshopCount} workshop
+																</span>
+															)}
+														</div>
+													</div>
+												</AccordionTrigger>
+												<AccordionContent>
+													{dayLocations.length === 0 ? (
+														<p className="text-gray-500 text-sm py-4">Chưa có hoạt động nào cho ngày này</p>
+													) : (
+														<div className="space-y-4">
+															{dayLocations.map((location) => {
+																const locationData = availableLocations.find(loc => loc.id === location.locationId)
+																const activityType = ACTIVITY_TYPES.find(type => type.value === location.activityType)
+
+																return (
+																	<div key={location.originalIndex} className="border rounded-lg p-4 bg-gray-50">
+																		<div className="flex items-start justify-between">
+																			<div className="flex-1">
+																				<div className="flex items-center gap-2 mb-2">
+																					<div className="flex items-center gap-2">
+																						{/* <Badge className={`text-xs ${getActivityColor(location?.activityType)}`}>
+																						{getActivityIcon(location.activityType)}
+																						<span className="ml-1">{activityType?.label}</span>
+																					</Badge> */}
+																						{location.workshopId && (
+																							<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+																								🏭 Workshop
+																							</Badge>
+																						)}
+																					</div>
+																					<h4 className="font-semibold">{locationData?.name || 'Unknown Location'}</h4>
+																					<Badge variant="outline" className="text-xs">
+																						<Clock className="w-3 h-3 mr-1" />
+																						{location.startTime.substring(0, 5)} - {location.endTime.substring(0, 5)}
+																					</Badge>
+																				</div>
+
+																				<p className="text-sm text-gray-500 mb-2">📍 {locationData?.address || 'Chưa có địa chỉ'}</p>
+
+																				{location.notes && (
+																					<p className="text-sm text-blue-600 italic mb-2">💡 {location.notes}</p>
+																				)}
+
+																				{/* Workshop Information */}
+																				{location.workshopId && (
+																					<div className="p-2 bg-purple-50 border border-purple-200 rounded-lg mb-2">
+																						<div className="text-sm space-y-1">
+																							{location.workshopTicketTypeId && (
+																								<p><span className="text-purple-600 font-medium">Loại vé:</span> {availableLocations.find(loc => loc.id === location.locationId)?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId)?.name}</p>
+																							)}
+																							{location.preferredStartTime && (
+																								<p><span className="text-purple-600 font-medium">Thời gian workshop:</span> {location.preferredStartTime.substring(0, 5)} - {location.preferredEndTime?.substring(0, 5)}</p>
+																							)}
+																						</div>
+																					</div>
+																				)}
+
+																				<div className="flex gap-4 text-xs text-gray-500">
+																					{location.travelTimeFromPrev > 0 && (
+																						<span className="flex items-center gap-1">
+																							🚗
+																							Di chuyển: {location.travelTimeFromPrev} phút
+																						</span>
+																					)}
+																					{location.distanceFromPrev > 0 && (
+																						<span className="flex items-center gap-1">
+																							<Navigation className="w-3 h-3" />
+																							Khoảng cách: {location.distanceFromPrev} km
+																						</span>
+																					)}
+																				</div>
+																			</div>
+
+																			<div className="flex items-center gap-2 ml-4">
+																				<div className="flex flex-col gap-1">
+																					<Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleRemoveLocation(location.originalIndex)}>
+																						<Trash2 className="w-4 h-4" />
+																					</Button>
+																				</div>
+																			</div>
+																		</div>
+																	</div>
+																)
+															})}
+														</div>
+													)}
+												</AccordionContent>
+											</AccordionItem>
+										)
+									})
+								})()}
+							</Accordion>
+						</CardContent>
+					</Card>
+				)
+			}
 
 			{/* Global Validation Errors */}
-			{Object.entries(errors).some(([key, _]) => key.startsWith('conflict_') || key.startsWith('hours_')) && (
-				<Card className="border-destructive/20">
-					<CardHeader>
-						<CardTitle className="text-destructive">Lỗi validation</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-2">
-							{Object.entries(errors).map(([key, message]) => {
-								if (key.startsWith('conflict_') || key.startsWith('hours_')) {
-									return (
-										<div key={key} className="flex items-start gap-2">
-											<div className="w-2 h-2 rounded-full bg-destructive mt-2 flex-shrink-0" />
-											<p className="text-sm text-destructive">{message}</p>
-										</div>
-									)
-								}
-								return null
-							})}
-						</div>
-					</CardContent>
-				</Card>
-			)}
+			{
+				Object.entries(errors).some(([key, _]) => key.startsWith('conflict_') || key.startsWith('hours_')) && (
+					<Card className="border-destructive/20">
+						<CardHeader>
+							<CardTitle className="text-destructive">Lỗi validation</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-2">
+								{Object.entries(errors).map(([key, message]) => {
+									if (key.startsWith('conflict_') || key.startsWith('hours_')) {
+										return (
+											<div key={key} className="flex items-start gap-2">
+												<div className="w-2 h-2 rounded-full bg-destructive mt-2 flex-shrink-0" />
+												<p className="text-sm text-destructive">{message}</p>
+											</div>
+										)
+									}
+									return null
+								})}
+							</div>
+						</CardContent>
+					</Card>
+				)
+			}
 
 			{/* Footer Actions */}
 			<div className="flex justify-between">
@@ -1117,6 +1215,6 @@ export function TourLocationForm({
 					</Button>
 				</div>
 			</div>
-		</div>
+		</div >
 	)
 }

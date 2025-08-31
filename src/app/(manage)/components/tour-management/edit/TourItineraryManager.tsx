@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { MapPin, Clock, Calendar, Edit, Trash2, Plus, AlertCircle, CheckCircle, Car, Route } from "lucide-react"
+import { MapPin, Clock, Calendar, Edit, Trash2, Plus, AlertCircle, CheckCircle, Car, Route, Wrench } from "lucide-react"
 import type { TourDetail, TourDay, TourLocationBulkRequest } from "@/types/Tour"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useTour } from "@/services/tour"
@@ -314,7 +314,12 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 					) : (
 						<Accordion type="multiple" className="w-full">
 							{tour.days.map((day) => {
+								console.log('====================================');
+								console.log(day);
+								console.log('====================================');
 								const stats = getDayStats(day)
+								const workshopCount = day.activities.filter(activity => activity.address === "workshop").length
+
 								return (
 									<AccordionItem key={day.dayNumber} value={`day-${day.dayNumber}`}>
 										<AccordionTrigger className="hover:no-underline">
@@ -337,8 +342,14 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 													</span>
 													<span className="flex items-center gap-1">
 														<Car className="w-3 h-3" />
-														{stats.totalTravelTime}min
+														{stats.totalTravelTime}phút
 													</span>
+													{workshopCount > 0 && (
+														<span className="flex items-center gap-1">
+															<Wrench className="w-3 h-3" />
+															{workshopCount} workshop
+														</span>
+													)}
 												</div>
 											</div>
 										</AccordionTrigger>

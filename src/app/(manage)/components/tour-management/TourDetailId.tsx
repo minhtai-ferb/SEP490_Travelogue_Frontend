@@ -29,38 +29,27 @@ import {
 	Navigation
 } from 'lucide-react'
 import React from 'react'
+import { getActivityColor } from '@/utils/format'
+
+
+// Activity type icons mapping
+export const getActivityIcon = (activityType: number) => {
+	switch (activityType) {
+		case 1: return <Camera className="h-4 w-4" />
+		case 2: return <Utensils className="h-4 w-4" />
+		case 3: return <ShoppingBag className="h-4 w-4" />
+		case 4: return <Coffee className="h-4 w-4" />
+		case 5: return <Gamepad2 className="h-4 w-4" />
+		case 6: return <Activity className="h-4 w-4" />
+		default: return <MapPin className="h-4 w-4" />
+	}
+}
 
 function TourDetailId({ tour }: { tour: TourDetail }) {
 
 	// Safe access for extended fields not in TourDetail type
 	const startLoc = (tour as any)?.startLocation
 	const endLoc = (tour as any)?.endLocation
-
-	// Activity type icons mapping
-	const getActivityIcon = (activityType: number) => {
-		switch (activityType) {
-			case 1: return <Camera className="h-4 w-4" />
-			case 2: return <Utensils className="h-4 w-4" />
-			case 3: return <ShoppingBag className="h-4 w-4" />
-			case 4: return <Coffee className="h-4 w-4" />
-			case 5: return <Gamepad2 className="h-4 w-4" />
-			case 6: return <Activity className="h-4 w-4" />
-			default: return <MapPin className="h-4 w-4" />
-		}
-	}
-
-	// Activity type colors
-	const getActivityColor = (activityType: number) => {
-		switch (activityType) {
-			case 1: return "bg-blue-100 text-blue-800 border-blue-200"
-			case 2: return "bg-orange-100 text-orange-800 border-orange-200"
-			case 3: return "bg-purple-100 text-purple-800 border-purple-200"
-			case 4: return "bg-green-100 text-green-800 border-green-200"
-			case 5: return "bg-pink-100 text-pink-800 border-pink-200"
-			case 6: return "bg-red-100 text-red-800 border-red-200"
-			default: return "bg-gray-100 text-gray-800 border-gray-200"
-		}
-	}
 
 	return (
 		<div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -142,25 +131,48 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
 								<Route className="h-5 w-5 text-blue-500" />
-								Lịch Trình Chi Tiết
+								Lịch Trình Chi Tiết ({tour.days.length} ngày)
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<Accordion type="single" collapsible className="space-y-4 py-6">
+							<Accordion type="multiple" className="space-y-3">
 								{tour.days.map((day, dayIndex) => (
-									<AccordionItem key={dayIndex} value={`day-${day.dayNumber}`} className="border rounded-lg">
-										<AccordionTrigger className="px-6 py-4 hover:bg-gray-50">
-											<div className="flex items-center gap-4">
-												<div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold">
-													{day.dayNumber}
+									<AccordionItem key={dayIndex} value={`day-${day.dayNumber}`} className="border-2 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+										<AccordionTrigger className="px-6 py-5 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+											<div className="flex items-center justify-between w-full mr-4">
+												<div className="flex items-center gap-4">
+													<div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
+														{day.dayNumber}
+													</div>
+													<div className="text-left">
+														<h3 className="text-lg font-bold text-gray-800">Ngày {day.dayNumber}</h3>
+														<div className="flex items-center gap-3 mt-1">
+															<Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+																<Activity className="h-3 w-3 mr-1" />
+																{day.activities.length} hoạt động
+															</Badge>
+															{day.activities.some((act: any) => act.workshop) && (
+																<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+																	<Wrench className="h-3 w-3 mr-1" />
+																	Có workshop
+																</Badge>
+															)}
+														</div>
+													</div>
 												</div>
-												<div className="text-left">
-													<h3 className="font-semibold">Ngày {day.dayNumber}</h3>
-													<p className="text-sm text-gray-600">{day.activities.length} hoạt động</p>
+												<div className="text-right text-sm text-gray-500">
+													<div className="flex items-center gap-1">
+														<Clock className="h-4 w-4" />
+														{day.activities.length > 0 && (
+															<span>
+																{day.activities[0].startTimeFormatted} - {day.activities[day.activities.length - 1].endTimeFormatted}
+															</span>
+														)}
+													</div>
 												</div>
 											</div>
 										</AccordionTrigger>
-										<AccordionContent className="px-6 pb-6">
+										<AccordionContent className="px-6 pb-6 bg-gray-50/50">
 											<div className="space-y-4">
 												{day.activities.map((activity, activityIndex) => {
 													// Safe access to extended properties

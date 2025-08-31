@@ -334,7 +334,63 @@ export function TourScheduleForm({
 								className={errors.childrenPrice ? "border-red-500" : ""}
 								disabled={isLoading}
 							/>
-							<p className="text-xs text-gray-500">{formatCurrency(newSchedule.childrenPrice)}</p>
+							<div className="space-y-2">
+								<p className="text-xs text-gray-500 font-medium">{formatCurrency(newSchedule.childrenPrice)}</p>
+
+								<p className="text-xs text-gray-600 font-medium">Tính nhanh theo % giá người lớn:</p>
+								<div className="flex gap-2 flex-wrap">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.25) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										25%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.3) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										30%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.5) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										50%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.75) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										75%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: 0 })}
+										disabled={isLoading}
+										className="text-xs px-2 py-1 h-7 text-gray-500"
+									>
+										Miễn phí
+									</Button>
+								</div>
+							</div>
 							{errors.childrenPrice && <p className="text-sm text-red-500">{errors.childrenPrice}</p>}
 						</div>
 

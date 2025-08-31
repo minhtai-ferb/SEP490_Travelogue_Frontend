@@ -104,25 +104,18 @@ export default function TourDetailClient({
             <h1 className="text-3xl font-bold">{tour.name}</h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge
-                className={`${
-                  statusColorMap[
-                    tour.statusText == "Draft"
-                      ? "Nháp"
-                      : tour.statusText == "Confirmed"
+                className={`${statusColorMap[
+                  tour.statusText == "Draft"
+                    ? "Nháp"
+                    : tour.statusText == "Confirmed"
                       ? "Đã xác nhận"
                       : tour.statusText == "Cancelled"
-                      ? "Đã hủy"
-                      : tour.statusText
-                  ] || "bg-gray-100 text-gray-800"
-                } text-xs`}
+                        ? "Đã hủy"
+                        : tour.statusText
+                ] || "bg-gray-100 text-gray-800"
+                  } text-xs`}
               >
-                {tour.statusText == "Draft"
-                  ? "Nháp"
-                  : tour.statusText == "Confirmed"
-                  ? "Đã xác nhận"
-                  : tour.statusText == "Cancelled"
-                  ? "Đã hủy"
-                  : tour.statusText}
+                {tour.statusText}
               </Badge>
               <Badge variant="outline" className="text-xs">
                 {TourTypeLabels[tour.tourType as keyof typeof TourTypeLabels]}
