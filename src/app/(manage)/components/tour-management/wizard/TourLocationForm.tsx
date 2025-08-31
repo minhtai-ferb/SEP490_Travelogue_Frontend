@@ -1,33 +1,100 @@
 "use client"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useLocationController } from "@/services/location-controller"
-import type { Location, TourLocationBulkRequest } from "@/types/Tour"
+import type { Location, TourLocationBulkRequest, WorkshopSession, TicketType } from "@/types/Tour"
 import axios from "axios"
 import { SeccretKey } from "@/secret/secret"
 import {
-	AlertTriangle,
 	ArrowLeft,
 	ArrowRight,
-	Calendar,
-	CheckCircle,
+	CheckCircle2,
 	Clock,
 	Loader2,
 	MapPin,
+	Navigation,
 	Plus,
-	Trash2
+	Settings,
+	Trash2,
+	Users,
+	Wrench
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { LocationSelect } from "./LocationSelect"
+import { getActivityColor } from "@/utils/format"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
-const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route"
+const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route?api-version=1.1"
+// https://smartlog-lc.map.zone/api/route/v3?apikey={your-apikey}&point={point}&point={point}&points_encoded={points_encoded}&vehicle={vehicle}
+// Activity Types Constants
+const ACTIVITY_TYPES = [
+	{ value: 1, label: "Tham quan" },
+	{ value: 2, label: "Ăn uống" },
+	{ value: 3, label: "Mua sắm" },
+	{ value: 4, label: "Nghỉ ngơi" },
+	{ value: 5, label: "Giải trí" },
+	{ value: 6, label: "Trải nghiệm" }
+] as const
+
+
+// Helper function to add minutes to time string
+const addMinutesToTime = (timeStr: string, minutes: number): string => {
+	if (!timeStr) return ""
+
+	const [hours, mins] = timeStr.split(':').map(Number)
+	const totalMinutes = hours * 60 + mins + minutes
+	const newHours = Math.floor(totalMinutes / 60) % 24
+	const newMins = totalMinutes % 60
+
+	return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`
+}
+
+// Helper function to calculate suggested start time
+const calculateSuggestedStartTime = (prevEndTime: string, travelTimeMinutes: number): string => {
+	if (!prevEndTime || travelTimeMinutes === 0) return ""
+	return addMinutesToTime(prevEndTime, travelTimeMinutes)
+}
+const normalizeTimeString = (time: string): string => {
+	if (!time) return "00:00:00"
+	const parts = time.split(":")
+	if (parts.length === 2) return `${parts[0]}:${parts[1]}:00`
+	return time
+}
+
+// Helper function to convert HH:MM:SS to minutes for comparison
+const timeToMinutes = (timeStr: string): number => {
+	if (!timeStr) return 0
+	const [hours, minutes] = timeStr.split(':').map(Number)
+	return hours * 60 + minutes
+}
+
+// Helper function to check if times overlap
+const timesOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
+	const start1Min = timeToMinutes(start1)
+	const end1Min = timeToMinutes(end1)
+	const start2Min = timeToMinutes(start2)
+	const end2Min = timeToMinutes(end2)
+
+	return (start1Min < end2Min && end1Min > start2Min)
+}
+
+// Helper function to check if time is within location's operating hours
+const isTimeWithinOperatingHours = (startTime: string, endTime: string, location: Location): boolean => {
+	if (!location.openTime || !location.closeTime) return true // No operating hours specified
+
+	const startMin = timeToMinutes(startTime)
+	const endMin = timeToMinutes(endTime)
+	const openMin = timeToMinutes(location.openTime)
+	const closeMin = timeToMinutes(location.closeTime)
+
+	return startMin >= openMin && endMin <= closeMin
+}
 
 interface TourLocationFormProps {
 	tourId: string
@@ -39,6 +106,15 @@ interface TourLocationFormProps {
 	isLoading?: boolean
 }
 
+interface DialogData {
+	suggestedTime?: string
+	travelInfo?: {
+		previousEndTime: string
+		duration: number // in seconds
+		distance: number // in meters
+	}
+}
+
 export function TourLocationForm({
 	tourId,
 	tourDays,
@@ -48,10 +124,12 @@ export function TourLocationForm({
 	onCancel,
 	isLoading = false,
 }: TourLocationFormProps) {
+	// Main state
 	const [locations, setLocations] = useState<TourLocationBulkRequest[]>([])
 	const [availableLocations, setAvailableLocations] = useState<Location[]>([])
 	const [loadingLocations, setLoadingLocations] = useState(true)
-	const [searchTerm, setSearchTerm] = useState("")
+
+	// New location form states
 	const [newLocation, setNewLocation] = useState<TourLocationBulkRequest>({
 		locationId: "",
 		dayOrder: 1,
@@ -60,600 +138,1083 @@ export function TourLocationForm({
 		notes: "",
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
-		estimatedStartTime: 0,
-		estimatedEndTime: 0,
+		activityType: 1,
+		workshopId: undefined,
+		workshopTicketTypeId: undefined,
+		workshopSessionRuleId: undefined,
+		preferredStartTime: undefined,
+		preferredEndTime: undefined
 	})
+
+	// Dialog and workshop states
+	const [showWorkshopDialog, setShowWorkshopDialog] = useState(false)
+	const [dialogData, setDialogData] = useState<DialogData | null>(null)
+	const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
+	const [selectedTicketType, setSelectedTicketType] = useState<TicketType | null>(null)
+	const [selectedSession, setSelectedSession] = useState<WorkshopSession | null>(null)
+	const [availableTickets, setAvailableTickets] = useState<TicketType[]>([])
+	const [availableSessions, setAvailableSessions] = useState<WorkshopSession[]>([])
+
+	// Loading states
+	const [loadingLocationDetail, setLoadingLocationDetail] = useState(false)
+	const [loadingRouteCalculation, setLoadingRouteCalculation] = useState(false)
 	const [errors, setErrors] = useState<Record<string, string>>({})
 
-	const { getAllLocation } = useLocationController()
+	const { getAllLocation, getLocationById } = useLocationController()
 
+	// Load all available locations on component mount
 	useEffect(() => {
-		const fetchLocations = async () => {
+		loadAvailableLocations()
+		if (initialData.length > 0) {
+			setLocations(initialData)
+		}
+	}, [initialData])
+
+	const loadAvailableLocations = async () => {
+		try {
+			setLoadingLocations(true)
+			const data = await getAllLocation()
+			setAvailableLocations(data || [])
+		} catch (error) {
+			console.error("Error loading locations:", error)
+		} finally {
+			setLoadingLocations(false)
+		}
+	}
+
+	// Step 1: Location Selection Handler
+	const handleLocationSelect = async (locationId: string) => {
+		if (!locationId) return
+
+		setLoadingLocationDetail(true)
+		setErrors({})
+
+		try {
+			const locationData = await getLocationById(locationId)
+			if (!locationData) throw new Error("Location not found")
+
+			setSelectedLocation(locationData)
+			setNewLocation(prev => ({
+				...prev,
+				locationId: locationId
+			}))
+
+			// Step 2: Check if it's a craft village
+			if (locationData.craftVillage?.workshopsAvailable && locationData.craftVillage.workshop) {
+				// Step 2a: Show workshop dialog for craft village
+				await loadWorkshopData(locationData)
+				setShowWorkshopDialog(true)
+			} else {
+				// Step 2: Regular location - user inputs start/end time manually
+				setShowWorkshopDialog(false)
+				await calculateTravelTime(locationData)
+			}
+		} catch (error) {
+			console.error("Error loading location:", error)
+			setErrors({ location: "Không thể tải thông tin địa điểm" })
+		} finally {
+			setLoadingLocationDetail(false)
+		}
+	}
+
+	// Load workshop data for craft village locations
+	const loadWorkshopData = async (location: Location) => {
+		const workshop = location.craftVillage?.workshop
+		if (!workshop) return
+
+		// Set workshop ID to location ID as specified
+		setNewLocation(prev => ({
+			...prev,
+			workshopId: location.id  // workshopId = locationId as per requirement
+		}))
+
+		// Load available tickets
+		setAvailableTickets(workshop.ticketTypes || [])
+
+		// Reset selections
+		setSelectedTicketType(null)
+		setSelectedSession(null)
+		setAvailableSessions([])
+
+		// Calculate travel time and suggested time for dialog
+		const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
+		if (prevLocation) {
+			setLoadingRouteCalculation(true)
 			try {
-				setLoadingLocations(true)
-				const response = await getAllLocation()
-				if (response) {
-					setAvailableLocations(response)
+				const fromCoords = getCoordsByLocationId(prevLocation.locationId)
+				const toCoords = { lat: location.latitude, lng: location.longitude }
+
+				if (fromCoords && toCoords) {
+					const metrics = await fetchRouteMetrics(fromCoords, toCoords)
+					if (metrics) {
+						const travelTimeMinutes = Math.ceil(metrics.travelTime)
+						const suggestedStartTime = calculateSuggestedStartTime(prevLocation.endTime, travelTimeMinutes)
+
+						// Set dialog data for suggested time display
+						setDialogData({
+							suggestedTime: suggestedStartTime.substring(0, 5), // HH:MM format
+							travelInfo: {
+								previousEndTime: prevLocation.endTime.substring(0, 5),
+								duration: metrics.travelTime * 60, // convert to seconds
+								distance: metrics.distance * 1000 // convert to meters
+							}
+						})
+
+						// Also update the form
+						setNewLocation(prev => ({
+							...prev,
+							travelTimeFromPrev: travelTimeMinutes,
+							distanceFromPrev: Math.ceil(metrics.distance),
+							startTime: suggestedStartTime
+						}))
+					}
 				}
 			} catch (error) {
-				console.error("Error fetching locations:", error)
+				console.error("Error calculating travel time for workshop:", error)
 			} finally {
-				setLoadingLocations(false)
+				setLoadingRouteCalculation(false)
+			}
+		} else {
+			// No previous location, reset dialog data
+			setDialogData(null)
+		}
+
+		// Also calculate travel time for craft village locations
+		await calculateTravelTime(location)
+	}
+
+	// Calculate travel time from previous location and auto-suggest start time
+	const calculateTravelTime = async (toLocation: Location) => {
+		const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
+		if (!prevLocation) {
+			setNewLocation(prev => ({
+				...prev,
+				travelTimeFromPrev: 0,
+				distanceFromPrev: 0
+			}))
+			return
+		}
+
+		setLoadingRouteCalculation(true)
+		try {
+			const fromCoords = getCoordsByLocationId(prevLocation.locationId)
+			const toCoords = { lat: toLocation.latitude, lng: toLocation.longitude }
+
+			if (fromCoords && toCoords) {
+				const metrics = await fetchRouteMetrics(fromCoords, toCoords)
+				if (metrics) {
+					const travelTimeMinutes = Math.ceil(metrics.travelTime)
+					const distanceKm = Math.ceil(metrics.distance)
+
+					// Calculate suggested start time: previous end time + travel time
+					const suggestedStartTime = calculateSuggestedStartTime(prevLocation.endTime, travelTimeMinutes)
+
+					setNewLocation(prev => ({
+						...prev,
+						travelTimeFromPrev: travelTimeMinutes,
+						distanceFromPrev: distanceKm,
+						// Auto-fill suggested start time
+						startTime: suggestedStartTime
+					}))
+				}
+			}
+		} catch (error) {
+			console.error("Error calculating travel time:", error)
+		} finally {
+			setLoadingRouteCalculation(false)
+		}
+	}
+
+	// Step 2a.1: Handle ticket type selection
+	const handleTicketSelect = (ticketId: string) => {
+		const ticket = availableTickets.find(t => t.id === ticketId)
+		if (!ticket) return
+
+		setSelectedTicketType(ticket)
+		setNewLocation(prev => ({
+			...prev,
+			workshopTicketTypeId: ticketId
+		}))
+
+		// All ticket types need to have sessions - load available sessions for any ticket type
+		loadAvailableSessionsForTicket(ticket)
+	}
+
+	// Load available sessions for experience tickets
+	const loadAvailableSessionsForTicket = (ticket: TicketType) => {
+		if (!selectedLocation?.craftVillage?.workshop?.recurringRules) return
+
+		const currentDayOfWeek = new Date().getDay() // For demo, use current day
+		const availableRules = selectedLocation.craftVillage.workshop.recurringRules
+			.filter(rule => rule.daysOfWeek.includes(currentDayOfWeek))
+
+		const allSessions: WorkshopSession[] = []
+		availableRules.forEach(rule => {
+			if (rule.sessions) {
+				// Filter out conflicting sessions
+				const nonConflictingSessions = rule.sessions.filter(session =>
+					!isSessionConflicting(session, newLocation.dayOrder)
+				)
+				allSessions.push(...nonConflictingSessions)
+			}
+		})
+
+		setAvailableSessions(allSessions)
+	}
+
+	// Step 2a.2: Handle session selection with travel time consideration
+	const handleSessionSelect = (sessionId: string) => {
+		const session = availableSessions.find(s => s.id === sessionId)
+		if (!session) return
+
+		setSelectedSession(session)
+
+		// Get previous location to calculate travel time
+		const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
+		let finalStartTime = session.startTime.substring(0, 5) // HH:MM from session
+		let finalEndTime = session.endTime.substring(0, 5)
+
+		// If there's a previous location, suggest start time based on travel time
+		if (prevLocation && newLocation.travelTimeFromPrev > 0) {
+			const suggestedStartTime = calculateSuggestedStartTime(prevLocation.endTime, newLocation.travelTimeFromPrev)
+
+			// Compare suggested time with session time
+			const sessionStartTime = session.startTime.substring(0, 5)
+
+			// If suggested time is later than session start, use suggested time
+			// This handles the case where travel time pushes the start time later
+			if (suggestedStartTime && suggestedStartTime > sessionStartTime) {
+				finalStartTime = suggestedStartTime
+
+				// Calculate session duration to adjust end time
+				const sessionStart = session.startTime.substring(0, 5)
+				const sessionEnd = session.endTime.substring(0, 5)
+				const [startH, startM] = sessionStart.split(':').map(Number)
+				const [endH, endM] = sessionEnd.split(':').map(Number)
+				const durationMinutes = (endH * 60 + endM) - (startH * 60 + startM)
+
+				// Adjust end time based on new start time and session duration
+				finalEndTime = addMinutesToTime(finalStartTime, durationMinutes)
 			}
 		}
 
-		fetchLocations()
-	}, [getAllLocation])
+		// Convert to HH:MM:SS format
+		const startTimeWithSeconds = finalStartTime.includes(':') ? `${finalStartTime}:00` : finalStartTime
+		const endTimeWithSeconds = finalEndTime.includes(':') ? `${finalEndTime}:00` : finalEndTime
 
-	// Hydrate with initial data when provided (preserves state across wizard navigation)
-	useEffect(() => {
-		if (initialData && initialData.length > 0) {
-			setLocations(initialData)
+		setNewLocation(prev => ({
+			...prev,
+			startTime: startTimeWithSeconds,
+			endTime: endTimeWithSeconds,
+			workshopSessionRuleId: sessionId,
+			// Send actual workshop time in HH:MM:SS format
+			preferredStartTime: startTimeWithSeconds,
+			preferredEndTime: endTimeWithSeconds
+		}))
+	}
+
+	// Check if session conflicts with existing tour locations
+	const isSessionConflicting = (session: WorkshopSession, dayOrder: number): boolean => {
+		const existingLocations = locations.filter(loc => loc.dayOrder === dayOrder)
+
+		return existingLocations.some(loc => {
+			const sessionStart = session.startTime.substring(0, 8)
+			const sessionEnd = session.endTime.substring(0, 8)
+
+			return (
+				(sessionStart >= loc.startTime && sessionStart < loc.endTime) ||
+				(sessionEnd > loc.startTime && sessionEnd <= loc.endTime) ||
+				(sessionStart <= loc.startTime && sessionEnd >= loc.endTime)
+			)
+		})
+	}
+
+	// Confirm workshop selection
+	const handleWorkshopConfirm = () => {
+		if (!selectedTicketType) {
+			setErrors({ workshop: "Vui lòng chọn loại vé" })
+			return
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [initialData])
 
-	const validateNewLocation = () => {
+		// All ticket types now require session selection
+		if (!selectedSession) {
+			setErrors({ workshop: "Vui lòng chọn khung giờ hoạt động" })
+			return
+		}
+
+		setShowWorkshopDialog(false)
+		setErrors({})
+	}
+
+	// Cancel workshop selection
+	const handleWorkshopCancel = () => {
+		setShowWorkshopDialog(false)
+		setSelectedLocation(null)
+		setSelectedTicketType(null)
+		setSelectedSession(null)
+		setNewLocation(prev => ({
+			...prev,
+			locationId: "",
+			workshopId: undefined,
+			workshopTicketTypeId: undefined,
+			workshopSessionRuleId: undefined,
+			preferredStartTime: undefined,
+			preferredEndTime: undefined
+		}))
+	}
+
+	// Add location to tour
+	const handleAddLocation = async () => {
+		if (!validateNewLocation()) return
+
+		const itemToAdd: TourLocationBulkRequest = {
+			...newLocation,
+			startTime: normalizeTimeString(newLocation.startTime),
+			endTime: normalizeTimeString(newLocation.endTime)
+		}
+
+		setLocations(prev => [...prev, itemToAdd])
+		resetForm()
+	}
+
+	// Validation
+	const validateNewLocation = (): boolean => {
 		const newErrors: Record<string, string> = {}
 
 		if (!newLocation.locationId) {
-			newErrors.locationId = "Địa điểm là bắt buộc"
+			newErrors.location = "Vui lòng chọn địa điểm"
 		}
 
 		if (!newLocation.startTime) {
-			newErrors.startTime = "Thời gian bắt đầu là bắt buộc"
+			newErrors.startTime = "Vui lòng nhập thời gian bắt đầu"
 		}
 
 		if (!newLocation.endTime) {
-			newErrors.endTime = "Thời gian kết thúc là bắt buộc"
+			newErrors.endTime = "Vui lòng nhập thời gian kết thúc"
 		}
 
-		if (newLocation.startTime && newLocation.endTime) {
-			if (newLocation.startTime >= newLocation.endTime) {
-				newErrors.endTime = "Thời gian kết thúc phải sau thời gian bắt đầu"
+		if (newLocation.startTime && newLocation.endTime && newLocation.startTime >= newLocation.endTime) {
+			newErrors.time = "Thời gian kết thúc phải sau thời gian bắt đầu"
+		}
+
+		// Check operating hours
+		if (newLocation.locationId && newLocation.startTime && newLocation.endTime) {
+			const locationData = availableLocations.find(l => l.id === newLocation.locationId)
+			if (locationData && !isTimeWithinOperatingHours(newLocation.startTime, newLocation.endTime, locationData)) {
+				const openTime = locationData.openTime?.substring(0, 5) || "N/A"
+				const closeTime = locationData.closeTime?.substring(0, 5) || "N/A"
+				newErrors.operatingHours = `Thời gian hoạt động của địa điểm: ${openTime} - ${closeTime}`
 			}
 		}
 
-		if (newLocation.dayOrder < 1 || newLocation.dayOrder > tourDays) {
-			newErrors.dayOrder = `Ngày phải từ 1 đến ${tourDays}`
-		}
+		// Check for time conflicts with existing locations on the same day
+		if (newLocation.startTime && newLocation.endTime && newLocation.dayOrder) {
+			const existingLocationsOnDay = locations.filter(loc => loc.dayOrder === newLocation.dayOrder)
 
-		if (newLocation.travelTimeFromPrev < 0) {
-			newErrors.travelTimeFromPrev = "Thời gian di chuyển không được âm"
-		}
-
-		if (newLocation.distanceFromPrev < 0) {
-			newErrors.distanceFromPrev = "Khoảng cách không được âm"
-		}
-
-		// Check for time conflicts on the same day
-		const sameDay = locations.filter((loc) => loc.dayOrder === newLocation.dayOrder)
-		const hasTimeConflict = sameDay.some((loc) => {
-			const existingStart = loc.startTime
-			const existingEnd = loc.endTime
-			const newStart = newLocation.startTime
-			const newEnd = newLocation.endTime
-
-			return (
-				(newStart >= existingStart && newStart < existingEnd) ||
-				(newEnd > existingStart && newEnd <= existingEnd) ||
-				(newStart <= existingStart && newEnd >= existingEnd)
-			)
-		})
-
-		if (hasTimeConflict) {
-			newErrors.startTime = "Thời gian bị trùng với địa điểm khác trong cùng ngày"
+			for (const existingLocation of existingLocationsOnDay) {
+				if (timesOverlap(newLocation.startTime, newLocation.endTime, existingLocation.startTime, existingLocation.endTime)) {
+					const conflictLocation = availableLocations.find(l => l.id === existingLocation.locationId)
+					newErrors.timeConflict = `Thời gian bị trùng với địa điểm: ${conflictLocation?.name || 'N/A'} (${existingLocation.startTime.substring(0, 5)} - ${existingLocation.endTime.substring(0, 5)})`
+					break
+				}
+			}
 		}
 
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
 
-	// Helper: get last added location for a specific day
-	const getLastLocationOfDay = (day: number) => {
-		const sameDay = locations.filter((loc) => loc.dayOrder === day)
-		return sameDay.length > 0 ? sameDay[sameDay.length - 1] : null
-	}
-
-	// Helper: get coords by locationId from availableLocations
-	const getCoordsByLocationId = (id: string) => {
-		const loc = availableLocations.find((l) => l.id === id)
-		if (!loc) return null
-		return { latitude: loc.latitude, longitude: loc.longitude }
-	}
-
-	// Helper: fetch route distance/time (km, minutes)
-	const fetchRouteMetrics = async (
-		from: { latitude: number; longitude: number },
-		to: { latitude: number; longitude: number },
-	): Promise<{ distanceKm: number; durationMin: number } | null> => {
-		try {
-			const params = new URLSearchParams({
-				"api-version": "1.1",
-				apikey: String(SeccretKey.VIET_MAP_KEY ?? ""),
-				points_encoded: "false",
-				vehicle: "car",
-				point: `${from.latitude},${from.longitude}`,
-			})
-			// Note: duplicate 'point' for destination
-			const url = `${VIETMAP_ROUTE_ENDPOINT}?${params.toString()}&point=${to.latitude},${to.longitude}`
-			const res = await axios.get(url)
-			const path = res?.data?.paths?.[0]
-			if (!path) return null
-			const distanceMeters = Number(path.distance ?? 0)
-			const timeMs = Number(path.time ?? 0)
-			return {
-				distanceKm: Math.round(distanceMeters / 1000),
-				durationMin: Math.round(timeMs / 60000),
-			}
-		} catch (err) {
-			console.error("Failed to fetch Vietmap route:", err)
-			return null
-		}
-	}
-
-	// Auto-compute distance/time when a previous location exists for the same day
-	useEffect(() => {
-		const compute = async () => {
-			if (!newLocation.locationId) return
-			const prev = getLastLocationOfDay(newLocation.dayOrder)
-			if (!prev) {
-				// first location of the day → zeroes
-				setNewLocation((p) => ({ ...p, travelTimeFromPrev: 0, distanceFromPrev: 0 }))
-				return
-			}
-			const fromCoords = getCoordsByLocationId(prev.locationId)
-			const toCoords = getCoordsByLocationId(newLocation.locationId)
-			if (!fromCoords || !toCoords) return
-			const metrics = await fetchRouteMetrics(fromCoords, toCoords)
-			if (metrics) {
-				setNewLocation((p) => ({
-					...p,
-					distanceFromPrev: metrics.distanceKm,
-					travelTimeFromPrev: metrics.durationMin,
-				}))
-			}
-		}
-		compute().catch((e) => console.error(e))
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [newLocation.locationId, newLocation.dayOrder])
-
-	const handleAddLocation = async () => {
-		if (!validateNewLocation()) return
-		// Prepare item with current, possibly auto-computed values
-		const itemToAdd: TourLocationBulkRequest = {
-			...newLocation,
-			startTime: normalizeTimeString(newLocation.startTime),
-			endTime: normalizeTimeString(newLocation.endTime),
-			estimatedStartTime: toSecondsSinceMidnight(newLocation.startTime),
-			estimatedEndTime: toSecondsSinceMidnight(newLocation.endTime),
-		}
-		const prev = getLastLocationOfDay(itemToAdd.dayOrder)
-		if (!prev) {
-			itemToAdd.travelTimeFromPrev = 0
-			itemToAdd.distanceFromPrev = 0
-		} else if (itemToAdd.distanceFromPrev === 0 && itemToAdd.travelTimeFromPrev === 0) {
-			// If inputs haven’t auto-computed yet, compute now
-			const fromCoords = getCoordsByLocationId(prev.locationId)
-			const toCoords = getCoordsByLocationId(itemToAdd.locationId)
-			if (fromCoords && toCoords) {
-				const metrics = await fetchRouteMetrics(fromCoords, toCoords)
-				if (metrics) {
-					itemToAdd.distanceFromPrev = metrics.distanceKm
-					itemToAdd.travelTimeFromPrev = metrics.durationMin
-				}
-			}
-		}
-
-		setLocations((list) => [...list, itemToAdd])
-		// Reset form
+	// Reset form after adding location
+	const resetForm = () => {
 		setNewLocation({
 			locationId: "",
-			dayOrder: itemToAdd.dayOrder,
+			dayOrder: newLocation.dayOrder,
 			startTime: "",
 			endTime: "",
 			notes: "",
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
-			estimatedStartTime: 0,
-			estimatedEndTime: 0,
+			activityType: 1,
+			workshopId: undefined,
+			workshopTicketTypeId: undefined,
+			workshopSessionRuleId: undefined,
+			preferredStartTime: undefined,
+			preferredEndTime: undefined
 		})
+		setSelectedLocation(null)
+		setSelectedTicketType(null)
+		setSelectedSession(null)
+		setShowWorkshopDialog(false)
 		setErrors({})
 	}
 
-	const handleRemoveLocation = (index: number) => {
-		setLocations(locations.filter((_, i) => i !== index))
+	// Helper functions
+	const getLastLocationOfDay = (dayOrder: number) => {
+		const locationsOfDay = locations.filter(loc => loc.dayOrder === dayOrder)
+		return locationsOfDay.length > 0 ? locationsOfDay[locationsOfDay.length - 1] : null
 	}
 
+	const getCoordsByLocationId = (locationId: string) => {
+		const location = availableLocations.find(loc => loc.id === locationId)
+		return location ? { lat: location.latitude, lng: location.longitude } : null
+	}
+
+	const fetchRouteMetrics = async (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
+		try {
+
+			const url = `${VIETMAP_ROUTE_ENDPOINT}&apikey=${SeccretKey.VIET_MAP_KEY}&point=${from.lat},${from.lng}&point=${to.lat},${to.lng}&vehicle=car`;
+
+			const response = await axios.get(url)
+
+			if (response.data.paths && response.data.paths[0]) {
+				const path = response.data.paths[0]
+				return {
+					travelTime: Math.ceil(path.time / 60000), // Convert to minutes
+					distance: Math.ceil(path.distance / 1000)  // Convert to km
+				}
+			}
+		} catch (error) {
+			console.error("Error fetching route:", error)
+		}
+		return null
+	}
+
+	// Remove location
+	const handleRemoveLocation = (index: number) => {
+		setLocations(prev => prev.filter((_, i) => i !== index))
+	}
+
+	// Validate locations for time conflicts and operating hours
+	const validateLocations = (): { isValid: boolean; errors: Record<string, string> } => {
+		const validationErrors: Record<string, string> = {}
+
+		// Check for time conflicts within the same day
+		const locationsByDay = locations.reduce((acc, loc) => {
+			if (!acc[loc.dayOrder]) acc[loc.dayOrder] = []
+			acc[loc.dayOrder].push(loc)
+			return acc
+		}, {} as Record<number, TourLocationBulkRequest[]>)
+
+		Object.entries(locationsByDay).forEach(([dayOrder, dayLocations]) => {
+			// Sort locations by start time for easier conflict detection
+			const sortedLocations = dayLocations.sort((a, b) =>
+				timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+			)
+
+			// Check for overlapping times
+			for (let i = 0; i < sortedLocations.length - 1; i++) {
+				const current = sortedLocations[i]
+				const next = sortedLocations[i + 1]
+
+				if (timesOverlap(current.startTime, current.endTime, next.startTime, next.endTime)) {
+					validationErrors[`conflict_day_${dayOrder}`] =
+						`Ngày ${dayOrder}: Thời gian các địa điểm bị trùng lặp. Vui lòng điều chỉnh lại.`
+				}
+			}
+		})
+
+		// Check operating hours
+		locations.forEach((loc, index) => {
+			const locationData = availableLocations.find(l => l.id === loc.locationId)
+			if (locationData && !isTimeWithinOperatingHours(loc.startTime, loc.endTime, locationData)) {
+				const openTime = locationData.openTime?.substring(0, 5) || "N/A"
+				const closeTime = locationData.closeTime?.substring(0, 5) || "N/A"
+				validationErrors[`hours_${index}`] =
+					`${locationData.name}: Thời gian hoạt động không phù hợp. Giờ mở cửa: ${openTime} - ${closeTime}`
+			}
+		})
+
+		return {
+			isValid: Object.keys(validationErrors).length === 0,
+			errors: validationErrors
+		}
+	}
+
+	// Submit handler - Create payload matching the required format
 	const handleSubmit = () => {
 		if (locations.length === 0) {
-			setErrors({ general: "Vui lòng thêm ít nhất một địa điểm" })
+			setErrors({ submit: "Vui lòng thêm ít nhất một địa điểm" })
 			return
 		}
-		const payload = locations.map((loc) => ({
-			...loc,
-			startTime: normalizeTimeString(loc.startTime),
-			endTime: normalizeTimeString(loc.endTime),
-			estimatedStartTime:
-				typeof loc.estimatedStartTime === "number" && loc.estimatedStartTime > 0
-					? loc.estimatedStartTime
-					: toSecondsSinceMidnight(loc.startTime),
-			estimatedEndTime:
-				typeof loc.estimatedEndTime === "number" && loc.estimatedEndTime > 0
-					? loc.estimatedEndTime
-					: toSecondsSinceMidnight(loc.endTime),
-		}))
-		onSubmit(payload)
-	}
 
-	const getLocationsByDay = (day: number) => {
-		return locations.filter((loc) => loc.dayOrder === day)
-	}
-
-	const getDayArray = () => {
-		return Array.from({ length: tourDays }, (_, i) => i + 1)
-	}
-
-	const getLocationName = (locationId: string) => {
-		const location = availableLocations.find((loc) => loc.id === locationId)
-		return location?.name || "Unknown Location"
-	}
-
-	const getLocationDetails = (locationId: string) => {
-		return availableLocations.find((loc) => loc.id === locationId)
-	}
-
-	const filteredLocations = availableLocations.filter(
-		(location) =>
-			location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			location.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			location.category.toLowerCase().includes(searchTerm.toLowerCase()),
-	)
-
-	const formatTime = (time: string) => {
-		return time.substring(0, 5) // HH:MM format
-	}
-
-	const calculateDuration = (startTime: string, endTime: string) => {
-		if (!startTime || !endTime) return ""
-
-		const start = new Date(`2000-01-01T${startTime}`)
-		const end = new Date(`2000-01-01T${endTime}`)
-		const diffMs = end.getTime() - start.getTime()
-		const diffMins = Math.floor(diffMs / 60000)
-
-		if (diffMins < 60) {
-			return `${diffMins} phút`
-		} else {
-			const hours = Math.floor(diffMins / 60)
-			const mins = diffMins % 60
-			return `${hours}h${mins > 0 ? ` ${mins}m` : ""}`
+		// Validate locations before submitting
+		const validation = validateLocations()
+		if (!validation.isValid) {
+			setErrors(validation.errors)
+			return
 		}
-	}
 
-	// Helpers to format time fields for API
-	const normalizeTimeString = (time: string): string => {
-		if (!time) return "00:00:00"
-		const parts = time.split(":")
-		if (parts.length === 2) return `${time}:00`
-		return time
-	}
+		// Clear any previous errors
+		setErrors({})
 
-	const toSecondsSinceMidnight = (time: string): number => {
-		const [h, m, s] = normalizeTimeString(time).split(":").map((v) => Number.parseInt(v, 10) || 0)
-		return h * 3600 + m * 60 + s
+		// Transform data to match required API format
+		const payload = locations.map(loc => ({
+			// tourPlanLocationId will be null for new requests
+			locationId: loc.locationId,
+			dayOrder: loc.dayOrder,
+			activityType: loc.activityType,
+			startTime: normalizeTimeString(loc.startTime), // "HH:MM:SS" format
+			endTime: normalizeTimeString(loc.endTime),     // "HH:MM:SS" format
+			notes: loc.notes || "",
+			travelTimeFromPrev: loc.travelTimeFromPrev || 0,
+			distanceFromPrev: loc.distanceFromPrev || 0,
+			// Workshop fields (only if workshop is selected)
+			...(loc.workshopId && {
+				workshopId: loc.workshopId,                    // = locationId for craft villages
+				workshopTicketTypeId: loc.workshopTicketTypeId, // ticketId
+				workshopSessionRuleId: loc.workshopSessionRuleId, // sessionId
+				preferredStartTime: loc.preferredStartTime, // Workshop time in HH:MM:SS format
+				preferredEndTime: loc.preferredEndTime      // Workshop time in HH:MM:SS format
+			})
+		}))
+
+		onSubmit(payload)
 	}
 
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="text-center">
-				<h2 className="text-2xl font-bold">Địa Điểm Của chuyến đi</h2>
-				<p className="text-gray-600 mt-2">Thêm các địa điểm tham quan cho chuyến đi {tourDays} ngày</p>
+			<div className="flex items-center justify-between">
+				<h2 className="text-2xl font-bold">Thêm địa điểm cho tour</h2>
+				<div className="text-sm text-muted-foreground">
+					Đã thêm: {locations.length} địa điểm
+				</div>
 			</div>
 
-			{/* Add New Location */}
+			{/* Add New Location Form */}
 			<Card>
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
-						<Plus className="w-5 h-5" />
-						Thêm Địa Điểm Mới
+						<Plus className="h-5 w-5" />
+						Thêm địa điểm mới
 					</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label className="flex items-center gap-2">
-								<MapPin className="w-4 h-4" />
-								Chọn Địa Điểm <span className="text-red-500">*</span>
-							</Label>
+				<CardContent className="space-y-4">
+					{/* Step 1: Location Selection */}
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<Label htmlFor="location">Chọn địa điểm *</Label>
 							<LocationSelect
-								locations={filteredLocations}
+								locations={availableLocations}
 								value={newLocation.locationId}
-								onChange={(value) => setNewLocation({ ...newLocation, locationId: value })}
-								placeholder={loadingLocations ? "Đang tải..." : "Chọn địa điểm"}
-								disabled={isLoading || loadingLocations}
-								error={errors.locationId}
+								onChange={handleLocationSelect}
+								isLoading={loadingLocations}
+								placeholder="Tìm kiếm địa điểm..."
 							/>
+							{errors.location && (
+								<p className="text-sm text-destructive mt-1">{errors.location}</p>
+							)}
+
+							{/* Show operating hours when location is selected */}
+							{selectedLocation && selectedLocation.openTime && selectedLocation.closeTime && (
+								<div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+									<div className="flex items-center gap-2 text-sm text-blue-800">
+										<Clock className="h-4 w-4" />
+										<span>Giờ hoạt động: {selectedLocation.openTime.substring(0, 5)} - {selectedLocation.closeTime.substring(0, 5)}</span>
+									</div>
+								</div>
+							)}
 						</div>
 
-						<div className="space-y-2">
-							<Label className="flex items-center gap-2">
-								<Calendar className="w-4 h-4" />
-								Ngày Thứ <span className="text-red-500">*</span>
-							</Label>
+						<div>
+							<Label htmlFor="dayOrder">Ngày thứ *</Label>
 							<Select
 								value={newLocation.dayOrder.toString()}
-								onValueChange={(value) => setNewLocation({ ...newLocation, dayOrder: Number.parseInt(value) })}
-								disabled={isLoading}
+								onValueChange={(value) =>
+									setNewLocation(prev => ({ ...prev, dayOrder: parseInt(value) }))
+								}
 							>
-								<SelectTrigger className={errors.dayOrder ? "border-red-500" : ""}>
-									<SelectValue placeholder="Chọn ngày" />
+								<SelectTrigger>
+									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{getDayArray().map((day) => (
-										<SelectItem key={day} value={day.toString()}>
-											Ngày {day}
+									{Array.from({ length: tourDays }, (_, i) => (
+										<SelectItem key={i + 1} value={(i + 1).toString()}>
+											Ngày {i + 1}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
-							{errors.dayOrder && <p className="text-sm text-red-500">{errors.dayOrder}</p>}
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="startTime" className="flex items-center gap-2">
-								<Clock className="w-4 h-4" />
-								Thời Gian Bắt Đầu <span className="text-red-500">*</span>
-							</Label>
-							<Input
-								id="startTime"
-								type="time"
-								value={newLocation.startTime}
-								onChange={(e) => setNewLocation({ ...newLocation, startTime: e.target.value })}
-								className={errors.startTime ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
-							{errors.startTime && <p className="text-sm text-red-500">{errors.startTime}</p>}
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="endTime" className="flex items-center gap-2">
-								<Clock className="w-4 h-4" />
-								Thời Gian Kết Thúc <span className="text-red-500">*</span>
-							</Label>
-							<Input
-								id="endTime"
-								type="time"
-								value={newLocation.endTime}
-								onChange={(e) => setNewLocation({ ...newLocation, endTime: e.target.value })}
-								className={errors.endTime ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
-							{errors.endTime && <p className="text-sm text-red-500">{errors.endTime}</p>}
-							{newLocation.startTime && newLocation.endTime && (
-								<p className="text-xs text-blue-600">
-									Thời gian: {calculateDuration(newLocation.startTime, newLocation.endTime)}
-								</p>
-							)}
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="travelTimeFromPrev">Thời Gian Di Chuyển (phút) <span className="text-red-500">*</span></Label>
-							<Input
-								id="travelTimeFromPrev"
-								type="number"
-								min="0"
-								placeholder="0"
-								value={newLocation.travelTimeFromPrev}
-								onChange={(e) =>
-									setNewLocation({ ...newLocation, travelTimeFromPrev: Number.parseInt(e.target.value) || 0 })
-								}
-								className={errors.travelTimeFromPrev ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
-							{errors.travelTimeFromPrev && <p className="text-sm text-red-500">{errors.travelTimeFromPrev}</p>}
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="distanceFromPrev">Khoảng Cách (km)</Label>
-							<Input
-								id="distanceFromPrev"
-								type="number"
-								min="0"
-								placeholder="0"
-								value={newLocation.distanceFromPrev}
-								onChange={(e) =>
-									setNewLocation({ ...newLocation, distanceFromPrev: Number.parseInt(e.target.value) || 0 })
-								}
-								className={errors.distanceFromPrev ? "border-red-500" : ""}
-								disabled={isLoading}
-							/>
-							{errors.distanceFromPrev && <p className="text-sm text-red-500">{errors.distanceFromPrev}</p>}
-						</div>
-
-						<div className="md:col-span-2 space-y-2">
-							<Label htmlFor="notes">Ghi Chú</Label>
-							<Textarea
-								id="notes"
-								placeholder="Nhập ghi chú về địa điểm (tùy chọn)"
-								value={newLocation.notes}
-								onChange={(e) => setNewLocation({ ...newLocation, notes: e.target.value })}
-								rows={3}
-								disabled={isLoading}
-							/>
 						</div>
 					</div>
 
-					{/* Location Preview */}
-					{newLocation.locationId && (
-						<div className="mt-4 p-4 bg-blue-50 rounded-lg">
-							<h4 className="font-medium text-blue-900 mb-2">Xem Trước Địa Điểm</h4>
-							{(() => {
-								const locationDetails = getLocationDetails(newLocation.locationId)
-								return locationDetails ? (
-									<div className="space-y-2 text-sm text-blue-800">
-										<p>
-											<strong>Tên:</strong> {locationDetails.name}
-										</p>
-										<p>
-											<strong>Địa chỉ:</strong> {locationDetails.address}
-										</p>
-										<p>
-											<strong>Loại:</strong> {locationDetails.category}
-										</p>
-										<p>
-											<strong>Mô tả:</strong> {locationDetails.description}
-										</p>
-										{locationDetails.openTime && locationDetails.closeTime && (
-											<p>
-												<strong>Giờ mở cửa:</strong> {formatTime(locationDetails.openTime)} -{" "}
-												{formatTime(locationDetails.closeTime)}
-											</p>
-										)}
-									</div>
-								) : null
-							})()}
+					{/* Activity Type Selection */}
+					<div>
+						<Label htmlFor="activityType">Loại hoạt động *</Label>
+						<Select
+							value={newLocation.activityType?.toString()}
+							onValueChange={(value) =>
+								setNewLocation(prev => ({ ...prev, activityType: parseInt(value) }))
+							}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{ACTIVITY_TYPES.map(type => (
+									<SelectItem key={type.value} value={type.value.toString()}>
+										{type.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Step 2: Time Input (for regular locations) */}
+					{selectedLocation && !showWorkshopDialog && (
+						<>
+							<div className="grid grid-cols-2 gap-4">
+								<div>
+									<Label htmlFor="startTime">Thời gian bắt đầu *</Label>
+									<Input
+										id="startTime"
+										type="time"
+										value={newLocation.startTime}
+										onChange={(e) => setNewLocation(prev => ({
+											...prev,
+											startTime: e.target.value
+										}))}
+									/>
+									{errors.startTime && (
+										<p className="text-sm text-destructive mt-1">{errors.startTime}</p>
+									)}
+								</div>
+
+								<div>
+									<Label htmlFor="endTime">Thời gian kết thúc *</Label>
+									<Input
+										id="endTime"
+										type="time"
+										value={newLocation.endTime}
+										onChange={(e) => setNewLocation(prev => ({
+											...prev,
+											endTime: e.target.value
+										}))}
+									/>
+									{errors.endTime && (
+										<p className="text-sm text-destructive mt-1">{errors.endTime}</p>
+									)}
+								</div>
+							</div>
+
+							{/* Time validation errors */}
+							{errors.time && (
+								<p className="text-sm text-destructive">{errors.time}</p>
+							)}
+							{errors.operatingHours && (
+								<p className="text-sm text-destructive">{errors.operatingHours}</p>
+							)}
+							{errors.timeConflict && (
+								<p className="text-sm text-destructive">{errors.timeConflict}</p>
+							)}
+						</>
+					)}
+
+					{/* Auto-suggested Time Information */}
+					{/* {newLocation.startTime && newLocation.travelTimeFromPrev > 0 && (
+						<div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+							<div className="flex items-center gap-2 text-green-800 mb-2">
+								<Clock className="h-4 w-4" />
+								<span className="font-medium">Thời gian được đề xuất</span>
+							</div>
+							<div className="text-sm text-green-700">
+								<p>🕐 Thời gian bắt đầu được tự động tính từ:</p>
+								<p className="ml-4">• Thời gian kết thúc địa điểm trước: {(() => {
+									const prevLocation = getLastLocationOfDay(newLocation.dayOrder)
+									return prevLocation?.endTime || "N/A"
+								})()}</p>
+								<p className="ml-4">• + Thời gian di chuyển: {newLocation.travelTimeFromPrev} phút</p>
+								<p className="ml-4">• = Thời gian bắt đầu đề xuất: <strong>{newLocation.startTime}</strong></p>
+								<p className="text-xs mt-1 text-green-600">💡 Bạn có thể điều chỉnh thời gian này nếu cần</p>
+							</div>
+						</div>
+					)} */}
+
+					{/* Travel Information */}
+					{(newLocation.travelTimeFromPrev > 0 || newLocation.distanceFromPrev > 0) && (
+						<div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+							<div className="flex items-center gap-2 text-blue-800 mb-2">
+								<MapPin className="h-4 w-4" />
+								<span className="font-medium">Thông tin di chuyển</span>
+							</div>
+							<div className="text-sm text-blue-600">
+								<p>⏱️ Thời gian di chuyển: {newLocation.travelTimeFromPrev} phút</p>
+								<p>📍 Khoảng cách: {newLocation.distanceFromPrev} km</p>
+							</div>
 						</div>
 					)}
 
-					<div className="flex justify-end mt-4">
-						<Button onClick={handleAddLocation} className="flex items-center gap-2" disabled={isLoading}>
-							<Plus className="w-4 h-4" />
-							Thêm Địa Điểm
+					{/* Notes */}
+					<div>
+						<Label htmlFor="notes">Ghi chú</Label>
+						<Textarea
+							id="notes"
+							value={newLocation.notes}
+							onChange={(e) => setNewLocation(prev => ({ ...prev, notes: e.target.value }))}
+							placeholder="Ghi chú về địa điểm này..."
+						/>
+					</div>
+
+					{/* Errors */}
+					{(errors.time || errors.submit || errors.operatingHours || errors.timeConflict) && (
+						<div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+							<p className="text-sm text-destructive">
+								{errors.time || errors.submit || errors.operatingHours || errors.timeConflict}
+							</p>
+						</div>
+					)}
+
+					{/* Add Button */}
+					<Button
+						onClick={handleAddLocation}
+						className="w-full"
+						disabled={loadingLocationDetail || loadingRouteCalculation}
+					>
+						{(loadingLocationDetail || loadingRouteCalculation) && (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						)}
+						Thêm địa điểm
+					</Button>
+				</CardContent>
+			</Card>
+
+			{/* Step 2a: Workshop Dialog */}
+			<Dialog open={showWorkshopDialog} onOpenChange={setShowWorkshopDialog}>
+				<DialogContent className="max-w-2xl">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<Settings className="h-5 w-5" />
+							Chọn trải nghiệm làng nghề
+						</DialogTitle>
+						<DialogDescription>
+							{selectedLocation?.name} - Vui lòng chọn loại vé và session phù hợp
+							{selectedLocation?.openTime && selectedLocation?.closeTime && (
+								<div className="text-sm text-muted-foreground mt-1">
+									⏰ Giờ mở cửa: {selectedLocation.openTime.substring(0, 5)} - {selectedLocation.closeTime.substring(0, 5)}
+								</div>
+							)}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="space-y-4">
+						{/* Ticket Type Selection */}
+						<div>
+							<Label>Loại vé *</Label>
+							<Select
+								value={selectedTicketType?.id || ""}
+								onValueChange={handleTicketSelect}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Chọn loại vé" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableTickets.map(ticket => {
+										const isExperience = ticket.name.toLowerCase().includes('trải nghiệm') ||
+											ticket.name.toLowerCase().includes('workshop') ||
+											ticket.name.toLowerCase().includes('combo')
+										return (
+											<SelectItem key={ticket.id} value={ticket.id}>
+												<div className="flex items-center justify-between w-full">
+													<span>{ticket.name}</span>
+													<Badge variant={isExperience ? "default" : "secondary"}>
+														{isExperience ? "Trải nghiệm" : "Tham quan"}
+													</Badge>
+												</div>
+											</SelectItem>
+										)
+									})}
+								</SelectContent>
+							</Select>
+						</div>
+
+						{/* Session Selection (for all ticket types) */}
+						{selectedTicketType && (
+							<div>
+								<Label>Khung giờ hoạt động *</Label>
+								<Select
+									value={selectedSession?.id || ""}
+									onValueChange={handleSessionSelect}
+									disabled={availableSessions.length === 0}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={availableSessions.length === 0 ? "Không có khung giờ khả dụng cho lịch trình của bạn" : "Chọn khung giờ hoạt động"} />
+									</SelectTrigger>
+									<SelectContent>
+										{availableSessions.map(session => (
+											<SelectItem key={session.id} value={session.id}>
+												<div className="flex items-center gap-2">
+													<Clock className="h-4 w-4" />
+													<span>
+														{session.startTime.substring(0, 5)} - {session.endTime.substring(0, 5)}
+													</span>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+
+								{/* {availableSessions.length === 0 && (
+									<p className="text-sm text-muted-foreground mt-1">
+										Không có khung giờ khả dụng cho lịch trình của bạn
+									</p>
+								)} */}
+							</div>
+						)}
+
+						{/* Suggested Time Info */}
+						{dialogData?.suggestedTime && (
+							<div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+								<div className="flex items-center gap-2 text-blue-800 mb-2">
+									<Clock className="h-4 w-4" />
+									<span className="font-medium">Thời gian được đề xuất</span>
+								</div>
+								<div className="text-sm text-blue-600">
+									<p>🕐 Đề xuất bắt đầu: {dialogData.suggestedTime}</p>
+									{dialogData.travelInfo && (
+										<p className="mt-1 text-xs opacity-75">
+											Dựa trên kết thúc địa điểm trước ({dialogData.travelInfo.previousEndTime}) +
+											thời gian di chuyển ({Math.round(dialogData.travelInfo.duration / 60)} phút)
+										</p>
+									)}
+								</div>
+							</div>
+						)}
+
+						{/* Selected Time Display */}
+						{selectedSession && (
+							<div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+								<div className="flex items-center gap-2 text-green-800 mb-2">
+									<CheckCircle2 className="h-4 w-4" />
+									<span className="font-medium">Thời gian đã chọn</span>
+								</div>
+								<div className="text-sm text-green-600">
+									<p>🕐 Bắt đầu: {selectedSession.startTime.substring(0, 5)}</p>
+									<p>🕐 Kết thúc: {selectedSession.endTime.substring(0, 5)}</p>
+								</div>
+							</div>
+						)}
+
+						{errors.workshop && (
+							<p className="text-sm text-destructive">{errors.workshop}</p>
+						)}
+					</div>
+
+					<div className="flex gap-2 justify-end">
+						<Button variant="outline" onClick={handleWorkshopCancel}>
+							Hủy
+						</Button>
+						<Button onClick={handleWorkshopConfirm}>
+							Xác nhận
 						</Button>
 					</div>
-				</CardContent>
-			</Card>
+				</DialogContent>
+			</Dialog>
 
-			{/* Locations by Day */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center justify-between">
-						<span>Lịch Trình Theo Ngày ({locations.length} địa điểm)</span>
-						{locations.length > 0 && (
-							<Badge variant="secondary" className="bg-green-100 text-green-800">
-								{locations.length} địa điểm
-							</Badge>
-						)}
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{locations.length === 0 ? (
-						<div className="text-center py-8 text-gray-500">
-							<MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
-							<p>Chưa có địa điểm nào</p>
-							<p className="text-sm">Vui lòng thêm ít nhất một địa điểm để tiếp tục</p>
-						</div>
-					) : (
-						<Accordion type="multiple" className="w-full">
-							{getDayArray().map((day) => {
-								const dayLocations = getLocationsByDay(day).sort((a, b) => a.startTime.localeCompare(b.startTime))
-								return (
-									<AccordionItem key={day} value={`day-${day}`}>
-										<AccordionTrigger className="hover:no-underline">
-											<div className="flex items-center gap-3">
-												<Badge variant="outline" className="bg-blue-50 text-blue-700">
-													Ngày {day}
-												</Badge>
-												<span className="text-sm text-gray-600">{dayLocations.length} địa điểm</span>
-												{dayLocations.length > 0 && <CheckCircle className="w-4 h-4 text-green-500" />}
-											</div>
-										</AccordionTrigger>
-										<AccordionContent>
-											{dayLocations.length === 0 ? (
-												<p className="text-gray-500 text-sm py-4">Chưa có địa điểm nào cho ngày này</p>
-											) : (
-												<div className="space-y-3">
-													{dayLocations.map((location, index) => {
-														const globalIndex = locations.findIndex((loc) => loc === location)
-														const locationDetails = getLocationDetails(location.locationId)
-														return (
-															<div key={index} className="border rounded-lg p-4 bg-gray-50">
-																<div className="flex items-start justify-between">
-																	<div className="flex-1">
-																		<div className="flex items-center gap-2 mb-2">
-																			<MapPin className="w-4 h-4 text-blue-500" />
-																			<h4 className="font-semibold">{getLocationName(location.locationId)}</h4>
-																			<Badge variant="outline" className="text-xs">
-																				<Clock className="w-3 h-3 mr-1" />
-																				{formatTime(location.startTime)} - {formatTime(location.endTime)}
-																			</Badge>
-																			<Badge variant="secondary" className="text-xs">
-																				{calculateDuration(location.startTime, location.endTime)}
-																			</Badge>
-																		</div>
-																		{locationDetails && (
-																			<div>
-																				<p className="text-sm text-gray-600 mb-2">{locationDetails.description}</p>
-																				<p>Giờ mở cửa: {formatTime(locationDetails.openTime || "")} - {formatTime(locationDetails.closeTime || "")}</p>
+			{/* Added Locations List */}
+			{
+				locations.length > 0 && (
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<div className="w-2 h-2 bg-blue-500 rounded-full" />
+								Danh sách địa điểm đã thêm ({locations.length} địa điểm)
+							</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<Accordion type="multiple" className="w-full">
+								{(() => {
+									// Group locations by dayOrder
+									const locationsByDay = locations.reduce((acc, location, originalIndex) => {
+										if (!acc[location.dayOrder]) {
+											acc[location.dayOrder] = []
+										}
+										acc[location.dayOrder].push({ ...location, originalIndex })
+										return acc
+									}, {} as Record<number, Array<TourLocationBulkRequest & { originalIndex: number }>>)
+
+									// Sort days
+									const sortedDays = Object.keys(locationsByDay).sort((a, b) => parseInt(a) - parseInt(b))
+
+									return sortedDays.map(dayOrder => {
+										const dayNumber = parseInt(dayOrder)
+										const dayLocations = locationsByDay[dayNumber].sort((a, b) =>
+											timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+										)
+
+										// Calculate day stats
+										const totalTravelTime = dayLocations.reduce((sum, loc) => sum + (loc.travelTimeFromPrev || 0), 0)
+										const totalDistance = dayLocations.reduce((sum, loc) => sum + (loc.distanceFromPrev || 0), 0)
+										const workshopCount = dayLocations.filter(loc => loc.workshopId).length
+
+										return (
+											<AccordionItem key={dayNumber} value={`day-${dayNumber}`}>
+												<AccordionTrigger className="hover:no-underline">
+													<div className="flex items-center gap-4 w-full">
+														<Badge variant="outline" className="bg-blue-50 text-blue-700">
+															Ngày {dayNumber}
+														</Badge>
+														<div className="flex items-center gap-4 text-sm text-gray-600">
+															<span className="flex items-center gap-1">
+																<MapPin className="w-3 h-3" />
+																{dayLocations.length} địa điểm
+															</span>
+															<span className="flex items-center gap-1">
+																<Clock className="w-3 h-3" />
+																{dayLocations.length > 0 ? `${dayLocations[0].startTime.substring(0, 5)} - ${dayLocations[dayLocations.length - 1].endTime.substring(0, 5)}` : 'N/A'}
+															</span>
+															<span className="flex items-center gap-1">
+																<Navigation className="w-3 h-3" />
+																{totalDistance}km
+															</span>
+															<span className="flex items-center gap-1">
+																🚗
+																{totalTravelTime}phút
+															</span>
+															{workshopCount > 0 && (
+																<span className="flex items-center gap-1">
+																	<Wrench className="w-3 h-3" />
+																	{workshopCount} workshop
+																</span>
+															)}
+														</div>
+													</div>
+												</AccordionTrigger>
+												<AccordionContent>
+													{dayLocations.length === 0 ? (
+														<p className="text-gray-500 text-sm py-4">Chưa có hoạt động nào cho ngày này</p>
+													) : (
+														<div className="space-y-4">
+															{dayLocations.map((location) => {
+																const locationData = availableLocations.find(loc => loc.id === location.locationId)
+																const activityType = ACTIVITY_TYPES.find(type => type.value === location.activityType)
+
+																return (
+																	<div key={location.originalIndex} className="border rounded-lg p-4 bg-gray-50">
+																		<div className="flex items-start justify-between">
+																			<div className="flex-1">
+																				<div className="flex items-center gap-2 mb-2">
+																					<div className="flex items-center gap-2">
+																						{/* <Badge className={`text-xs ${getActivityColor(location?.activityType)}`}>
+																						{getActivityIcon(location.activityType)}
+																						<span className="ml-1">{activityType?.label}</span>
+																					</Badge> */}
+																						{location.workshopId && (
+																							<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+																								🏭 Workshop
+																							</Badge>
+																						)}
+																					</div>
+																					<h4 className="font-semibold">{locationData?.name || 'Unknown Location'}</h4>
+																					<Badge variant="outline" className="text-xs">
+																						<Clock className="w-3 h-3 mr-1" />
+																						{location.startTime.substring(0, 5)} - {location.endTime.substring(0, 5)}
+																					</Badge>
+																				</div>
+
+																				<p className="text-sm text-gray-500 mb-2">📍 {locationData?.address || 'Chưa có địa chỉ'}</p>
+
+																				{location.notes && (
+																					<p className="text-sm text-blue-600 italic mb-2">💡 {location.notes}</p>
+																				)}
+
+																				{/* Workshop Information */}
+																				{location.workshopId && (
+																					<div className="p-2 bg-purple-50 border border-purple-200 rounded-lg mb-2">
+																						<div className="text-sm space-y-1">
+																							{location.workshopTicketTypeId && (
+																								<p><span className="text-purple-600 font-medium">Loại vé:</span> {availableLocations.find(loc => loc.id === location.locationId)?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId)?.name}</p>
+																							)}
+																							{location.preferredStartTime && (
+																								<p><span className="text-purple-600 font-medium">Thời gian workshop:</span> {location.preferredStartTime.substring(0, 5)} - {location.preferredEndTime?.substring(0, 5)}</p>
+																							)}
+																						</div>
+																					</div>
+																				)}
+
+																				<div className="flex gap-4 text-xs text-gray-500">
+																					{location.travelTimeFromPrev > 0 && (
+																						<span className="flex items-center gap-1">
+																							🚗
+																							Di chuyển: {location.travelTimeFromPrev} phút
+																						</span>
+																					)}
+																					{location.distanceFromPrev > 0 && (
+																						<span className="flex items-center gap-1">
+																							<Navigation className="w-3 h-3" />
+																							Khoảng cách: {location.distanceFromPrev} km
+																						</span>
+																					)}
+																				</div>
 																			</div>
-																		)}
-																		{location.notes && (
-																			<p className="text-sm text-blue-600 italic">Ghi chú: {location.notes}</p>
-																		)}
-																		<div className="flex gap-4 mt-2 text-xs text-gray-500">
-																			{location.travelTimeFromPrev > 0 && (
-																				<span>Di chuyển: {location.travelTimeFromPrev} phút</span>
-																			)}
-																			{location.distanceFromPrev > 0 && (
-																				<span>Khoảng cách: {location.distanceFromPrev} km</span>
-																			)}
+
+																			<div className="flex items-center gap-2 ml-4">
+																				<div className="flex flex-col gap-1">
+																					<Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleRemoveLocation(location.originalIndex)}>
+																						<Trash2 className="w-4 h-4" />
+																					</Button>
+																				</div>
+																			</div>
 																		</div>
 																	</div>
-																	<Button
-																		variant="ghost"
-																		size="sm"
-																		onClick={() => handleRemoveLocation(globalIndex)}
-																		className="text-red-500 hover:text-red-700"
-																		disabled={isLoading}
-																	>
-																		<Trash2 className="w-4 h-4" />
-																	</Button>
-																</div>
-															</div>
-														)
-													})}
-												</div>
-											)}
-										</AccordionContent>
-									</AccordionItem>
-								)
-							})}
-						</Accordion>
-					)}
-				</CardContent>
-			</Card>
+																)
+															})}
+														</div>
+													)}
+												</AccordionContent>
+											</AccordionItem>
+										)
+									})
+								})()}
+							</Accordion>
+						</CardContent>
+					</Card>
+				)
+			}
 
-			{errors.general && (
-				<Alert className="border-red-200 bg-red-50">
-					<AlertTriangle className="h-4 w-4 text-red-600" />
-					<AlertDescription className="text-red-800">{errors.general}</AlertDescription>
-				</Alert>
-			)}
+			{/* Global Validation Errors */}
+			{
+				Object.entries(errors).some(([key, _]) => key.startsWith('conflict_') || key.startsWith('hours_')) && (
+					<Card className="border-destructive/20">
+						<CardHeader>
+							<CardTitle className="text-destructive">Lỗi validation</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-2">
+								{Object.entries(errors).map(([key, message]) => {
+									if (key.startsWith('conflict_') || key.startsWith('hours_')) {
+										return (
+											<div key={key} className="flex items-start gap-2">
+												<div className="w-2 h-2 rounded-full bg-destructive mt-2 flex-shrink-0" />
+												<p className="text-sm text-destructive">{message}</p>
+											</div>
+										)
+									}
+									return null
+								})}
+							</div>
+						</CardContent>
+					</Card>
+				)
+			}
 
-			{/* Action Buttons */}
-			<div className="flex justify-between items-center pt-6 border-t">
-				<Button
-					variant="outline"
-					onClick={onPrevious}
-					className="flex items-center gap-2 bg-transparent"
-					disabled={isLoading}
-				>
-					<ArrowLeft className="w-4 h-4" />
+			{/* Footer Actions */}
+			<div className="flex justify-between">
+				<Button variant="outline" onClick={onPrevious}>
+					<ArrowLeft className="mr-2 h-4 w-4" />
 					Quay lại
 				</Button>
-				<div className="flex gap-3">
-					<Button variant="ghost" onClick={onCancel} disabled={isLoading}>
+
+				<div className="flex gap-2">
+					<Button variant="outline" onClick={onCancel}>
 						Hủy
 					</Button>
-					<Button onClick={handleSubmit} disabled={isLoading} className="flex items-center gap-2">
-						{isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-						Tiếp theo
-						<ArrowRight className="w-4 h-4" />
+					<Button onClick={handleSubmit} disabled={isLoading || locations.length === 0}>
+						{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						Tiếp tục
+						<ArrowRight className="ml-2 h-4 w-4" />
 					</Button>
 				</div>
 			</div>
-		</div>
+		</div >
 	)
 }

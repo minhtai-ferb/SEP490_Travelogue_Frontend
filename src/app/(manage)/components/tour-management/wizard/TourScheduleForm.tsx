@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useTour } from "@/services/tour"
 import { useTourguideAssign } from "@/services/tourguide"
 import type { ScheduleFormData } from "@/types/Tour"
 import { TourGuideItem } from "@/types/Tourguide"
@@ -17,6 +18,7 @@ import { useEffect, useState } from "react"
 
 interface TourScheduleFormProps {
 	initialData?: ScheduleFormData[]
+	tourId: string
 	tourDays: number
 	onChange?: (data: ScheduleFormData[]) => void
 	onSubmit: (data: ScheduleFormData[]) => void
@@ -27,6 +29,7 @@ interface TourScheduleFormProps {
 
 export function TourScheduleForm({
 	initialData = [],
+	tourId,
 	tourDays,
 	onChange,
 	onSubmit,
@@ -41,13 +44,16 @@ export function TourScheduleForm({
 		totalDays: tourDays,
 		adultPrice: 0,
 		childrenPrice: 0,
+		tourGuideId: "",
 	})
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [openDatePicker, setOpenDatePicker] = useState(false)
 	const [quickAddOpen, setQuickAddOpen] = useState(false)
+	const [validating, setValidating] = useState(false)
 	const { getTourguideFilter } = useTourguideAssign()
 	const [guides, setGuides] = useState<Array<TourGuideItem>>([])
 	const [guidesLoading, setGuidesLoading] = useState(false)
+	const { validateSchedule } = useTour()
 
 	useEffect(() => {
 		if (initialData.length > 0) {
@@ -149,17 +155,57 @@ export function TourScheduleForm({
 		return Object.keys(newErrors).length === 0
 	}
 
-	const handleAddSchedule = () => {
-		if (validateNewSchedule()) {
-			setSchedules([...schedules, { ...newSchedule }])
-			setNewSchedule({
-				departureDate: "",
-				maxParticipant: 20,
-				totalDays: tourDays,
-				adultPrice: 0,
-				childrenPrice: 0,
-			})
-			setErrors({})
+	const handleAddSchedule = async () => {
+		// Step 1: Basic form validation
+		if (!validateNewSchedule()) {
+			return
+		}
+
+		// Step 2: Server-side validation with loading state
+		setValidating(true)
+		setErrors({}) // Clear previous errors
+
+		try {
+			// Prepare data for validation
+			const validationData = {
+				departureDate: new Date(newSchedule.departureDate).toISOString(),
+				maxParticipant: newSchedule.maxParticipant,
+				adultPrice: newSchedule.adultPrice,
+				childrenPrice: newSchedule.childrenPrice,
+				tourGuideId: newSchedule.tourGuideId || "",
+			}
+
+			const response = await validateSchedule(validationData, tourId)
+
+			// Step 3: Handle validation result
+			if (response?.success || response?.isValid !== false) {
+				// Validation passed - add schedule
+				setSchedules([...schedules, { ...newSchedule }])
+				setNewSchedule({
+					departureDate: "",
+					maxParticipant: 20,
+					totalDays: tourDays,
+					adultPrice: 0,
+					childrenPrice: 0,
+					tourGuideId: "",
+				})
+				setErrors({})
+			} else {
+				// Validation failed - show server errors
+				const serverMessage = response?.message || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+				setErrors({
+					validation: serverMessage,
+					...(response?.errors || {}) // Include field-specific errors if available
+				})
+			}
+		} catch (error: any) {
+			// Handle API errors
+			const errorMessage = error?.response?.data?.message ||
+				error?.message ||
+				"Không thể kiểm tra lịch trình. Vui lòng thử lại."
+			setErrors({ validation: errorMessage })
+		} finally {
+			setValidating(false)
 		}
 	}
 
@@ -189,17 +235,76 @@ export function TourScheduleForm({
 		setNewSchedule({ ...base })
 	}
 
-	const handleQuickAddWeekly = (weeks: number) => {
-		if (!newSchedule.departureDate) return
-		const baseDate = parseYMD(newSchedule.departureDate) as Date
-		const batch: ScheduleFormData[] = []
-		for (let i = 0; i < weeks; i += 1) {
-			const d = new Date(baseDate)
-			d.setDate(d.getDate() + i * 7)
-			batch.push({ ...newSchedule, departureDate: toYMD(d) })
+	const handleQuickAddWeekly = async (weeks: number) => {
+		// First validate and add the current schedule
+		if (!validateNewSchedule()) {
+			return // Stop if basic validation fails
 		}
-		setSchedules((prev) => [...prev, ...batch])
-		setQuickAddOpen(false)
+
+		if (!newSchedule.departureDate) return
+
+		// Validate current schedule first
+		setValidating(true)
+		setErrors({})
+
+		try {
+			const validationData = {
+				departureDate: new Date(newSchedule.departureDate).toISOString(),
+				maxParticipant: newSchedule.maxParticipant,
+				adultPrice: newSchedule.adultPrice,
+				childrenPrice: newSchedule.childrenPrice,
+				tourGuideId: newSchedule.tourGuideId || "",
+			}
+
+			const response = await validateSchedule(validationData, tourId)
+
+			if (!response?.success && response?.isValid === false) {
+				// Validation failed - show error and stop
+				const serverMessage = response?.message || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+				setErrors({
+					validation: serverMessage,
+					...(response?.errors || {})
+				})
+				return
+			}
+
+			// Validation passed - proceed with batch creation
+			const baseDate = parseYMD(newSchedule.departureDate) as Date
+			const batch: ScheduleFormData[] = []
+
+			// Add current schedule first
+			batch.push({ ...newSchedule })
+
+			// Then add weekly schedules
+			for (let i = 1; i <= weeks; i += 1) {
+				const d = new Date(baseDate)
+				d.setDate(d.getDate() + i * 7)
+				batch.push({ ...newSchedule, departureDate: toYMD(d) })
+			}
+
+			setSchedules((prev) => [...prev, ...batch])
+
+			// Reset form
+			setNewSchedule({
+				departureDate: "",
+				maxParticipant: 20,
+				totalDays: tourDays,
+				adultPrice: 0,
+				childrenPrice: 0,
+				tourGuideId: "",
+			})
+
+			setQuickAddOpen(false)
+			setErrors({})
+
+		} catch (error: any) {
+			const errorMessage = error?.response?.data?.message ||
+				error?.message ||
+				"Không thể kiểm tra lịch trình. Vui lòng thử lại."
+			setErrors({ validation: errorMessage })
+		} finally {
+			setValidating(false)
+		}
 	}
 
 	const handleRemoveSchedule = (index: number) => {
@@ -334,7 +439,63 @@ export function TourScheduleForm({
 								className={errors.childrenPrice ? "border-red-500" : ""}
 								disabled={isLoading}
 							/>
-							<p className="text-xs text-gray-500">{formatCurrency(newSchedule.childrenPrice)}</p>
+							<div className="space-y-2">
+								<p className="text-xs text-gray-500 font-medium">{formatCurrency(newSchedule.childrenPrice)}</p>
+
+								<p className="text-xs text-gray-600 font-medium">Tính nhanh theo % giá người lớn:</p>
+								<div className="flex gap-2 flex-wrap">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.25) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										25%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.3) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										30%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.5) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										50%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.75) })}
+										disabled={isLoading || !newSchedule.adultPrice}
+										className="text-xs px-2 py-1 h-7"
+									>
+										75%
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: 0 })}
+										disabled={isLoading}
+										className="text-xs px-2 py-1 h-7 text-gray-500"
+									>
+										Miễn phí
+									</Button>
+								</div>
+							</div>
 							{errors.childrenPrice && <p className="text-sm text-red-500">{errors.childrenPrice}</p>}
 						</div>
 
@@ -378,11 +539,41 @@ export function TourScheduleForm({
 						</div>
 					</div>
 
+					{/* Validation Errors Display */}
+					{errors.validation && (
+						<div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+							<div className="flex items-start gap-2">
+								<div className="w-5 h-5 text-red-600 mt-0.5">⚠️</div>
+								<div className="flex-1">
+									<h4 className="text-sm font-medium text-red-800 mb-1">Lỗi validation lịch trình</h4>
+									<p className="text-sm text-red-600">{errors.validation}</p>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Individual Field Errors */}
+					{Object.keys(errors).length > 0 && !errors.validation && (
+						<div className="mt-4 space-y-2">
+							{Object.entries(errors).map(([field, message]) => (
+								<div key={field} className="flex items-center gap-2 text-sm text-red-600">
+									<div className="w-2 h-2 rounded-full bg-red-400" />
+									<span>{message}</span>
+								</div>
+							))}
+						</div>
+					)}
+
 					<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mt-4 gap-3">
 						<div className="flex items-center gap-2">
 							<Popover open={quickAddOpen} onOpenChange={setQuickAddOpen}>
 								<PopoverTrigger asChild>
-									<Button type="button" variant="secondary" className="gap-2">
+									<Button
+										type="button"
+										variant="secondary"
+										className="gap-2"
+										disabled={validating}
+									>
 										<Sparkles className="w-4 h-4" />
 										Thêm nhanh chuỗi ngày
 									</Button>
@@ -391,19 +582,51 @@ export function TourScheduleForm({
 									<div className="space-y-3">
 										<p className="text-sm text-gray-600">Bắt đầu từ ngày đang chọn, thêm các lịch trình cách nhau 7 ngày.</p>
 										<div className="grid grid-cols-3 gap-2">
-											<Button type="button" variant="outline" onClick={() => handleQuickAddWeekly(2)}>+ 2 tuần</Button>
-											<Button type="button" variant="outline" onClick={() => handleQuickAddWeekly(4)}>+ 4 tuần</Button>
-											<Button type="button" variant="outline" onClick={() => handleQuickAddWeekly(8)}>+ 8 tuần</Button>
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => handleQuickAddWeekly(2)}
+												disabled={validating}
+											>
+												{validating ? "..." : "+ 2 tuần"}
+											</Button>
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => handleQuickAddWeekly(4)}
+												disabled={validating}
+											>
+												{validating ? "..." : "+ 4 tuần"}
+											</Button>
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => handleQuickAddWeekly(8)}
+												disabled={validating}
+											>
+												{validating ? "..." : "+ 8 tuần"}
+											</Button>
 										</div>
 										<p className="text-xs text-gray-500">Các mục thêm sẽ sao chép số người và giá hiện tại.</p>
+										{validating && (
+											<div className="flex items-center gap-2 text-sm text-blue-600">
+												<Loader2 className="w-4 h-4 animate-spin" />
+												<span>Đang kiểm tra lịch trình...</span>
+											</div>
+										)}
 									</div>
 								</PopoverContent>
 							</Popover>
 						</div>
 						<div className="flex items-center gap-2 ml-auto">
-							<Button onClick={handleAddSchedule} className="flex items-center gap-2" disabled={isLoading}>
-								<Plus className="w-4 h-4" />
-								Thêm Lịch Trình
+							<Button
+								onClick={handleAddSchedule}
+								className="flex items-center gap-2"
+								disabled={isLoading || validating}
+							>
+								{validating && <Loader2 className="w-4 h-4 animate-spin" />}
+								{!validating && <Plus className="w-4 h-4" />}
+								{validating ? "Đang kiểm tra..." : "Thêm Lịch Trình"}
 							</Button>
 						</div>
 					</div>
