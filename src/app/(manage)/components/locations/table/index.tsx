@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { TableProps } from "antd";
 import type { District } from "@/types/District";
 import { useDistrictManager } from "@/services/district-manager";
@@ -36,6 +36,7 @@ export default function LocationsTable({ href }: { href: string }) {
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [searchText, setSearchText] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] =
     useState<LocationTable | null>(null);
@@ -79,7 +80,7 @@ export default function LocationsTable({ href }: { href: string }) {
     }
   }, [searchAllLocations, query]);
 
-  // Load districts once
+  // Load districts once and set initial filter from URL params
   useEffect(() => {
     const loadDistricts = async () => {
       try {
@@ -91,16 +92,42 @@ export default function LocationsTable({ href }: { href: string }) {
             label: district.name,
           })),
         ]);
+
+        // Set initial filters from URL params
+        const districtIdFromUrl = searchParams.get('districtId');
+        const typeFromUrl = searchParams.get('type');
+        const searchFromUrl = searchParams.get('search');
+        const pageFromUrl = searchParams.get('page');
+        const pageSizeFromUrl = searchParams.get('pageSize');
+        
+        if (districtIdFromUrl) {
+          setSelectedOption(districtIdFromUrl);
+        }
+        if (typeFromUrl) {
+          setSelectedType(typeFromUrl);
+        }
+        if (searchFromUrl) {
+          setSearchText(searchFromUrl);
+        }
+        if (pageFromUrl) {
+          setCurrentPage(parseInt(pageFromUrl, 10));
+        }
+        if (pageSizeFromUrl) {
+          setPageSize(parseInt(pageSizeFromUrl, 10));
+        }
       } catch (error) {
         console.error("Error loading districts:", error);
       }
     };
     loadDistricts();
-  }, [getAllDistrict]);
+  }, [getAllDistrict, searchParams]);
 
   // Debounced effect for fetching data
   useEffect(() => {
-    fetchLocations();
+    // Only fetch if we have loaded districts (options)
+    if (options.length > 0) {
+      fetchLocations();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     debouncedSearchText,
@@ -108,6 +135,7 @@ export default function LocationsTable({ href }: { href: string }) {
     selectedOption,
     currentPage,
     pageSize,
+    options.length, // Add this to ensure districts are loaded first
   ]);
 
   const handleViewDetails = (record: LocationTable) => {
@@ -153,16 +181,43 @@ export default function LocationsTable({ href }: { href: string }) {
   const onChangeDistrict = async (value: string) => {
     setSelectedOption(value);
     setCurrentPage(1); // Reset to first page when filter changes
+    
+    // Update URL params
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set('districtId', value);
+    } else {
+      params.delete('districtId');
+    }
+    router.replace(`${href}?${params.toString()}`, { scroll: false });
   };
 
   const onChangeTypeLocation = async (value: string) => {
     setSelectedType(value);
     setCurrentPage(1); // Reset to first page when filter changes
+    
+    // Update URL params
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set('type', value);
+    } else {
+      params.delete('type');
+    }
+    router.replace(`${href}?${params.toString()}`, { scroll: false });
   };
 
   const onSearch = (value: string) => {
     setSearchText(value);
     setCurrentPage(1); // Reset to first page when search changes
+    
+    // Update URL params
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set('search', value);
+    } else {
+      params.delete('search');
+    }
+    router.replace(`${href}?${params.toString()}`, { scroll: false });
   };
 
   const handleResetFilters = () => {
@@ -170,10 +225,13 @@ export default function LocationsTable({ href }: { href: string }) {
     setSelectedType(undefined);
     setSearchText("");
     setCurrentPage(1);
+    
+    // Clear URL params
+    router.replace(href, { scroll: false });
   };
 
   return (
-    <>
+    <div>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <LocationFilterBar
           href={href}
@@ -186,6 +244,7 @@ export default function LocationsTable({ href }: { href: string }) {
           selectedType={selectedType}
           searchText={searchText}
           onReset={handleResetFilters}
+          totalCount={totalCount}
         />
         <div>
           {loadingButton ? (
@@ -200,6 +259,12 @@ export default function LocationsTable({ href }: { href: string }) {
               onPaginationChange={(page, size) => {
                 setCurrentPage(page);
                 setPageSize(size);
+                
+                // Update URL params for pagination
+                const params = new URLSearchParams(searchParams.toString());
+                params.set('page', page.toString());
+                params.set('pageSize', size.toString());
+                router.replace(`${href}?${params.toString()}`, { scroll: false });
               }}
               onChange={handleChange}
               onView={handleViewDetails}
@@ -216,6 +281,6 @@ export default function LocationsTable({ href }: { href: string }) {
         onDelete={handleDelete}
         location={locationToDelete}
       />
-    </>
+    </div>
   );
 }

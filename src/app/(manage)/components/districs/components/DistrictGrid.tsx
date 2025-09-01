@@ -19,7 +19,7 @@ export const DistrictGrid = ({ districts, href }: DistrictGridProps) => {
       {districts.map((district) => (
         <div
           key={`district-${district.id}`}
-          onClick={() => router.push(`${href}/${district.id}`)}
+          onClick={() => router.push(`${href}/districts/${district.id}`)}
           className="cursor-pointer"
         >
           <CityCard

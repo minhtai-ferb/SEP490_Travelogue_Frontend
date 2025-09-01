@@ -14,7 +14,7 @@ export default function CreateDistrictsPage() {
     <SidebarInset>
       <BreadcrumbHeader items={crumb} />
       <div className="flex flex-1 flex-col gap-4 p-10">
-        <DistrictCreateForm hrefCreate="/admin/districts" />
+        <DistrictCreateForm hrefCreate="/admin" />
       </div>
     </SidebarInset>
   );

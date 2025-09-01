@@ -58,7 +58,7 @@ function DistricsManage() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumb} />
-      {loading ? <LoadingContent /> : <MainContent districts={districts} href={"/admin/districts"} />}
+      {loading ? <LoadingContent /> : <MainContent districts={districts} href={"/admin"} />}
     </SidebarInset>
   );
 }

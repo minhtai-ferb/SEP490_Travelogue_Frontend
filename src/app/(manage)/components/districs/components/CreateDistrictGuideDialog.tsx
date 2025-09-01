@@ -26,7 +26,7 @@ export const CreateDistrictGuideDialog = ({ children, href }: CreateDistrictGuid
   const handleStartCreate = () => {
     setOpen(false);
     // Điều hướng đến trang tạo quận huyện mới
-    router.push(`${href}/create`);
+    router.push(`${href}/districts/create`);
   };
 
   const handleClose = () => {
