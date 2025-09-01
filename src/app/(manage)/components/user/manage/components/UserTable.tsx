@@ -87,8 +87,8 @@ const UserTable: React.FC<UserTableProps> = ({
       key: "createdTime",
       width: 140,
       sorter: (a, b) =>
-        new Date(a.createdTime).getTime() - new Date(b.createdTime).getTime(),
-      render: (_, record) => <DateCell date={record.createdTime} />,
+        new Date(a.createdTime ?? 0).getTime() - new Date(b.createdTime ?? 0).getTime(),
+      render: (_, record) => <DateCell date={record.createdTime ?? ""} />,
     },
     {
       title: "Hành động",
