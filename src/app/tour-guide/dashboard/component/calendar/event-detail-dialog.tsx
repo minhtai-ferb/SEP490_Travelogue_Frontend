@@ -24,6 +24,7 @@ import RejectionDialog from "../rejection-dialog"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { CiMoneyBill } from "react-icons/ci"
 
 export default function EventDetailDialog({
 	open,
@@ -135,7 +136,7 @@ export default function EventDetailDialog({
 									{typeof item.price === "number" && (
 										<div className="flex items-center gap-3">
 											<div className="p-2 bg-emerald-50 rounded-lg">
-												<DollarSign className="w-5 h-5 text-emerald-600" />
+												<CiMoneyBill className="w-5 h-5 text-emerald-600" />
 											</div>
 											<div>
 												<p className="text-sm text-muted-foreground">Thu nhập dự kiến</p>
@@ -162,7 +163,7 @@ export default function EventDetailDialog({
 						</Card>
 
 						{/* Rejection Request Status */}
-						{hasRejectionRequest && (
+						{hasRejectionRequest && scheduleType === "TourSchedule" && (
 							<Card className="border-l-4 border-l-amber-500">
 								<CardContent className="pt-6">
 									<div className="space-y-4">

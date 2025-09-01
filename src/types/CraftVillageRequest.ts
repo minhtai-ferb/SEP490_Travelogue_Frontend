@@ -16,8 +16,7 @@ export interface MediaDto {
 export interface WorkshopActivity {
 	activity: string
 	description: string
-	startHour: TimeString // "HH:MM:SS" format
-	endHour: TimeString // "HH:MM:SS" format
+	durationMinutes: number
 	activityOrder: number
 }
 

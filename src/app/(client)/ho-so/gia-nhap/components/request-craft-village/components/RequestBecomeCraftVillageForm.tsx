@@ -58,7 +58,7 @@ const TICKET_TYPES = {
 	EXPERIENCE: 2,
 } as const
 
-export default function RequestBecomeCraftVillageForm() {
+export default function RequestBecomeCraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
 	const {
 		districts,
 		formData,
@@ -768,6 +768,7 @@ export default function RequestBecomeCraftVillageForm() {
 						onSave={saveWorkshop}
 						editingWorkshop={editingWorkshop}
 						formData={formData}
+						fetchLatest={fetchLatest}
 					/>
 				)}
 			</div>

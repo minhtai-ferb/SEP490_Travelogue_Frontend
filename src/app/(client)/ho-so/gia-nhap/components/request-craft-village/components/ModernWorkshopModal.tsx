@@ -29,6 +29,7 @@ interface ModernWorkshopModalProps {
 	onSave: (workshop: Workshop) => void
 	editingWorkshop?: Workshop | null
 	formData: any
+	fetchLatest?: () => void
 }
 
 const TICKET_TYPES = {
@@ -63,7 +64,8 @@ export default function ModernWorkshopModal({
 	onClose,
 	onSave,
 	editingWorkshop,
-	formData
+	formData,
+	fetchLatest
 }: ModernWorkshopModalProps) {
 	const [currentStep, setCurrentStep] = useState(1)
 	const [errors, setErrors] = useState<Record<string, string>>({})
@@ -226,9 +228,7 @@ export default function ModernWorkshopModal({
 			// Validate activities duration vs ticket duration
 			if (experienceTicket) {
 				const totalActivityMinutes = experienceTicket.workshopActivities.reduce((total, activity) => {
-					const startHours = timeToHours(activity.startHour)
-					const endHours = timeToHours(activity.endHour)
-					return total + Math.round((endHours - startHours) * 60)
+					return total + (activity.durationMinutes || 0)
 				}, 0)
 
 				if (Math.abs(totalActivityMinutes - experienceTicket.durationMinutes) > 5) {
@@ -269,26 +269,77 @@ export default function ModernWorkshopModal({
 
 	const handleSave = useCallback(() => {
 		if (validateStep(currentStep)) {
-			onSave(workshop)
+			// Remove startTime and endTime from workshopActivities before sending to server
+			const cleanedWorkshop = {
+				...workshop,
+				ticketTypes: workshop.ticketTypes.map(ticket => ({
+					...ticket,
+					workshopActivities: ticket.workshopActivities?.map(({ activity, description, durationMinutes, activityOrder }) => ({
+						activity,
+						description,
+						durationMinutes,
+						activityOrder,
+					})) || [],
+				})),
+			}
+			onSave(cleanedWorkshop)
 			onClose()
+			// Reset form state
+			setWorkshop({
+				name: "",
+				description: "",
+				content: "",
+				status: 1,
+				ticketTypes: [
+					{
+						type: TICKET_TYPES.VISIT,
+						name: "Vé tham quan",
+						price: 0,
+						isCombo: false,
+						durationMinutes: 0,
+						content: "Tham quan và khám phá không gian làng nghề",
+						workshopActivities: [],
+					},
+					{
+						type: TICKET_TYPES.EXPERIENCE,
+						name: "Vé trải nghiệm",
+						price: 0,
+						isCombo: true,
+						durationMinutes: 0,
+						content: "Tham quan và trải nghiệm thực hành",
+						workshopActivities: [],
+					},
+				],
+				schedules: [],
+				recurringRules: [
+					{
+						daysOfWeek: [1],
+						sessions: [
+							{
+								startTime: "08:00:00",
+								endTime: "10:00:00",
+								capacity: 20,
+							},
+						],
+					},
+				],
+				exceptions: [],
+			})
+			setCurrentStep(1)
+			setErrors({})
+			if (typeof fetchLatest === 'function') {
+				fetchLatest()
+			}
 		}
-	}, [currentStep, validateStep, workshop, onSave, onClose])
+	}, [currentStep, validateStep, workshop, onSave, onClose, fetchLatest])
 
 	const addActivity = useCallback(() => {
 		if (!experienceTicket) return
 
-		// Tính toán thời gian bắt đầu dựa trên activity cuối cùng
-		const lastActivity = experienceTicket.workshopActivities[experienceTicket.workshopActivities.length - 1]
-		const startMinutes = lastActivity
-			? Number.parseInt(lastActivity.endHour.split(':')[0]) * 60 + Number.parseInt(lastActivity.endHour.split(':')[1])
-			: 0
-		const endMinutes = startMinutes + 30 // Default 30 phút cho mỗi activity
-
 		const newActivity: WorkshopActivity = {
 			activity: "",
 			description: "",
-			startHour: `${Math.floor(startMinutes / 60).toString().padStart(2, '0')}:${(startMinutes % 60).toString().padStart(2, '0')}:00`,
-			endHour: `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}:00`,
+			durationMinutes: 0,
 			activityOrder: experienceTicket.workshopActivities.length + 1,
 		}
 
@@ -629,24 +680,22 @@ export default function ModernWorkshopModal({
 								</h4>
 
 								{/* Duration indicator */}
-								{experienceTicket && (
-									<div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
-										<span className="text-blue-600 font-medium">Tổng thời gian workshop: {experienceTicket.durationMinutes} phút</span>
-										{" | "}
-										<span className={`font-medium ${Math.abs((experienceTicket.workshopActivities.reduce((total, activity) => {
-											const startMinutes = Number.parseInt(activity.startHour.split(':')[0]) * 60 + Number.parseInt(activity.startHour.split(':')[1])
-											const endMinutes = Number.parseInt(activity.endHour.split(':')[0]) * 60 + Number.parseInt(activity.endHour.split(':')[1])
-											return Math.max(total, endMinutes) // Lấy thời điểm kết thúc muộn nhất
-										}, 0)) - experienceTicket.durationMinutes) <= 5 ? "text-green-600" : "text-red-600"
-											}`}>
-											Thời gian đã sử dụng: {experienceTicket.workshopActivities.reduce((total, activity) => {
-												const startMinutes = Number.parseInt(activity.startHour.split(':')[0]) * 60 + Number.parseInt(activity.startHour.split(':')[1])
-												const endMinutes = Number.parseInt(activity.endHour.split(':')[0]) * 60 + Number.parseInt(activity.endHour.split(':')[1])
-												return Math.max(total, endMinutes) // Lấy thời điểm kết thúc muộn nhất
-											}, 0)} phút
-										</span>
-									</div>
-								)}
+								{experienceTicket && (() => {
+									const totalUsedMinutes = experienceTicket.workshopActivities.reduce((total: number, activity) => {
+										return total + (Number(activity.durationMinutes) || 0)
+									}, 0);
+									const durationMinutes = Number(experienceTicket.durationMinutes) || 0;
+									const isValid = Math.abs(totalUsedMinutes - durationMinutes) <= 5;
+									return (
+										<div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
+											<span className="text-blue-600 font-medium">Tổng thời gian workshop: {durationMinutes} phút</span>
+											{" | "}
+											<span className={`font-medium ${isValid ? "text-green-600" : "text-red-600"}`}>
+												Thời gian đã sử dụng: {totalUsedMinutes} phút
+											</span>
+										</div>
+									);
+								})()}
 							</div>
 
 							{errors.activityDuration && (
@@ -709,41 +758,16 @@ export default function ModernWorkshopModal({
 													</div>
 
 													<div className="space-y-2">
-														<Label>Thời gian bắt đầu (phút)</Label>
+														<Label>Thời lượng hoạt động (phút)</Label>
 														<Input
 															type="number"
-															value={activity.startHour ? Number.parseInt(activity.startHour.split(':')[0]) * 60 + Number.parseInt(activity.startHour.split(':')[1]) : 0}
-															onChange={(e) => {
-																const minutes = Number.parseInt(e.target.value) || 0
-																const hours = Math.floor(minutes / 60)
-																const mins = minutes % 60
-																updateActivity(index, { startHour: `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00` })
-															}}
-															onKeyDown={(e) => e.stopPropagation()}
+															value={activity.durationMinutes || 0}
+															onChange={e => updateActivity(index, { durationMinutes: Number.parseInt(e.target.value) || 0 })}
+															onKeyDown={e => e.stopPropagation()}
 															className="border-2 border-gray-200 focus:border-blue-400"
 															placeholder="VD: 30 (phút)"
 															min="0"
 														/>
-														<p className="text-xs text-gray-500">Thời gian bắt đầu hoạt động (tính từ đầu workshop)</p>
-													</div>
-
-													<div className="space-y-2">
-														<Label>Thời gian kết thúc (phút)</Label>
-														<Input
-															type="number"
-															value={activity.endHour ? Number.parseInt(activity.endHour.split(':')[0]) * 60 + Number.parseInt(activity.endHour.split(':')[1]) : 0}
-															onChange={(e) => {
-																const minutes = Number.parseInt(e.target.value) || 0
-																const hours = Math.floor(minutes / 60)
-																const mins = minutes % 60
-																updateActivity(index, { endHour: `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00` })
-															}}
-															onKeyDown={(e) => e.stopPropagation()}
-															className="border-2 border-gray-200 focus:border-blue-400"
-															placeholder="VD: 60 (phút)"
-															min="0"
-														/>
-														<p className="text-xs text-gray-500">Thời gian kết thúc hoạt động (tính từ đầu workshop)</p>
 													</div>
 												</div>
 											</CardContent>

@@ -1,4 +1,3 @@
-
 import { useCallback, useRef } from 'react'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -115,9 +114,12 @@ function RequestDialog({
 									</p>
 								</div>
 							) : mode === 'approve' ? (
-								<>
-									<ApproveAction guideOptions={guideOptions} onSuccess={onSuccess} requestId={detail?.id} />
-								</>
+								<ApproveAction
+									guideOptions={guideOptions}
+									onSuccess={onSuccess}
+									requestId={detail?.id}
+									currentGuideId={tourguideProfile?.id}
+								/>
 							) : mode === 'reject' ? (
 								<RejectAction requestId={detail?.id} onSuccess={onSuccess} />
 							) : null}
