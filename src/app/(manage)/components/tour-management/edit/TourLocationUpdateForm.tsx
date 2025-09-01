@@ -45,8 +45,7 @@ export default function TourLocationUpdateForm({ tourDays, initial, onSubmit, on
 		notes: initial.notes || "",
 		travelTimeFromPrev: initial.travelTimeFromPrev ?? 0,
 		distanceFromPrev: initial.distanceFromPrev ?? 0,
-		estimatedStartTime: initial.estimatedStartTime ?? 0,
-		estimatedEndTime: initial.estimatedEndTime ?? 0,
+		activityType: initial.activityType || 1,
 	})
 
 	useEffect(() => {
@@ -104,14 +103,7 @@ export default function TourLocationUpdateForm({ tourDays, initial, onSubmit, on
 				...form,
 				startTime: normalizeTimeString(form.startTime),
 				endTime: normalizeTimeString(form.endTime),
-				estimatedStartTime:
-					typeof form.estimatedStartTime === "number" && form.estimatedStartTime > 0
-						? form.estimatedStartTime
-						: toSecondsSinceMidnight(form.startTime),
-				estimatedEndTime:
-					typeof form.estimatedEndTime === "number" && form.estimatedEndTime > 0
-						? form.estimatedEndTime
-						: toSecondsSinceMidnight(form.endTime),
+				activityType: form.activityType || 1,
 			}
 			await onSubmit(payload)
 		} catch (e: any) {

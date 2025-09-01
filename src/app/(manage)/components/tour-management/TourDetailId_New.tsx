@@ -29,27 +29,38 @@ import {
 	Navigation
 } from 'lucide-react'
 import React from 'react'
-import { getActivityColor } from '@/utils/format'
-
-
-// Activity type icons mapping
-export const getActivityIcon = (activityType: number) => {
-	switch (activityType) {
-		case 1: return <Camera className="h-4 w-4" />
-		case 2: return <Utensils className="h-4 w-4" />
-		case 3: return <ShoppingBag className="h-4 w-4" />
-		case 4: return <Coffee className="h-4 w-4" />
-		case 5: return <Gamepad2 className="h-4 w-4" />
-		case 6: return <Activity className="h-4 w-4" />
-		default: return <MapPin className="h-4 w-4" />
-	}
-}
 
 function TourDetailId({ tour }: { tour: TourDetail }) {
 
 	// Safe access for extended fields not in TourDetail type
 	const startLoc = (tour as any)?.startLocation
 	const endLoc = (tour as any)?.endLocation
+
+	// Activity type icons mapping
+	const getActivityIcon = (activityType: number) => {
+		switch (activityType) {
+			case 1: return <Camera className="h-4 w-4" />
+			case 2: return <Utensils className="h-4 w-4" />
+			case 3: return <ShoppingBag className="h-4 w-4" />
+			case 4: return <Coffee className="h-4 w-4" />
+			case 5: return <Gamepad2 className="h-4 w-4" />
+			case 6: return <Activity className="h-4 w-4" />
+			default: return <MapPin className="h-4 w-4" />
+		}
+	}
+
+	// Activity type colors
+	const getActivityColor = (activityType: number) => {
+		switch (activityType) {
+			case 1: return "bg-blue-100 text-blue-800 border-blue-200"
+			case 2: return "bg-orange-100 text-orange-800 border-orange-200"
+			case 3: return "bg-purple-100 text-purple-800 border-purple-200"
+			case 4: return "bg-green-100 text-green-800 border-green-200"
+			case 5: return "bg-pink-100 text-pink-800 border-pink-200"
+			case 6: return "bg-red-100 text-red-800 border-red-200"
+			default: return "bg-gray-100 text-gray-800 border-gray-200"
+		}
+	}
 
 	return (
 		<div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -71,7 +82,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 							<p className="text-xl text-white/90 mb-4">{tour.description}</p>
 							<div className="flex items-center gap-6 text-white/80">
 								<div className="flex items-center gap-2">
-									<Ticket className="h-5 w-5" />
+									<DollarSign className="h-5 w-5" />
 									<span className="font-semibold">{tour.finalPrice.toLocaleString('vi-VN')} VNĐ</span>
 								</div>
 								<div className="flex items-center gap-2">
@@ -108,9 +119,9 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
+			<div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
 				{/* Main Content */}
-				<div className="xl:col-span-4 space-y-8">
+				<div className="xl:col-span-3 space-y-8">
 					{/* Tour Content */}
 					<Card className="shadow-sm">
 						<CardHeader>
@@ -131,48 +142,25 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
 								<Route className="h-5 w-5 text-blue-500" />
-								Lịch Trình Chi Tiết ({tour.days.length} ngày)
+								Lịch Trình Chi Tiết
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<Accordion type="multiple" className="space-y-3">
+							<Accordion type="single" collapsible className="space-y-4">
 								{tour.days.map((day, dayIndex) => (
-									<AccordionItem key={dayIndex} value={`day-${day.dayNumber}`} className="border-2 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
-										<AccordionTrigger className="px-6 py-5 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
-											<div className="flex items-center justify-between w-full mr-4">
-												<div className="flex items-center gap-4">
-													<div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
-														{day.dayNumber}
-													</div>
-													<div className="text-left">
-														<h3 className="text-lg font-bold text-gray-800">Ngày {day.dayNumber}</h3>
-														<div className="flex items-center gap-3 mt-1">
-															<Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-																<Activity className="h-3 w-3 mr-1" />
-																{day.activities.length} hoạt động
-															</Badge>
-															{day.activities.some((act: any) => act.workshop) && (
-																<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
-																	<Wrench className="h-3 w-3 mr-1" />
-																	Có workshop
-																</Badge>
-															)}
-														</div>
-													</div>
+									<AccordionItem key={dayIndex} value={`day-${day.dayNumber}`} className="border rounded-lg">
+										<AccordionTrigger className="px-6 py-4 hover:bg-gray-50">
+											<div className="flex items-center gap-4">
+												<div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold">
+													{day.dayNumber}
 												</div>
-												<div className="text-right text-sm text-gray-500">
-													<div className="flex items-center gap-1">
-														<Clock className="h-4 w-4" />
-														{day.activities.length > 0 && (
-															<span>
-																{day.activities[0].startTimeFormatted} - {day.activities[day.activities.length - 1].endTimeFormatted}
-															</span>
-														)}
-													</div>
+												<div className="text-left">
+													<h3 className="font-semibold">Ngày {day.dayNumber}</h3>
+													<p className="text-sm text-gray-600">{day.activities.length} hoạt động</p>
 												</div>
 											</div>
 										</AccordionTrigger>
-										<AccordionContent className="px-6 pb-6 bg-gray-50/50">
+										<AccordionContent className="px-6 pb-6">
 											<div className="space-y-4">
 												{day.activities.map((activity, activityIndex) => {
 													// Safe access to extended properties
@@ -196,11 +184,11 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 																{/* Activity Content */}
 																<div className="flex-1">
 																	<div className={`p-6 rounded-lg border-2 ${activityExt.workshop
-																		? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-md'
-																		: 'bg-white border-gray-200 shadow-sm'
+																			? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-md'
+																			: 'bg-white border-gray-200 shadow-sm'
 																		}`}>
 																		{/* Activity Header */}
-																		<div className="flex sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+																		<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
 																			<div className="flex-1">
 																				<div className="flex items-center gap-3 mb-2">
 																					<h4 className="text-xl font-semibold text-gray-900">
@@ -233,29 +221,17 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 																		</div>
 
 																		{/* Activity Details Grid */}
-																		<div className="flex flex-col mb-4">
-																			<div className="flex gap-3">
-																				{/* Time */}
-																				<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-																					<Clock className="h-4 w-4 text-green-600" />
-																					<div>
-																						<p className="text-xs text-gray-500 uppercase tracking-wide">Thời gian</p>
-																						<p className="font-semibold">{activity.startTimeFormatted} - {activity.endTimeFormatted}</p>
-																						<p className="text-xs text-gray-600">{activity.duration}</p>
-																					</div>
+																		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+																			{/* Time */}
+																			<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+																				<Clock className="h-4 w-4 text-green-600" />
+																				<div>
+																					<p className="text-xs text-gray-500 uppercase tracking-wide">Thời gian</p>
+																					<p className="font-semibold">{activity.startTimeFormatted} - {activity.endTimeFormatted}</p>
+																					<p className="text-xs text-gray-600">{activity.duration}</p>
 																				</div>
-																				{/* Travel Info */}
-																				{activityExt.travelTimeFromPrev > 0 && (
-																					<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
-																						<Navigation className="h-4 w-4 text-blue-500" />
-																						<div>
-																							<p className="text-xs text-gray-500 uppercase tracking-wide">Di chuyển</p>
-																							<p className="font-semibold">{activityExt.travelTimeFromPrev} phút</p>
-																							<p className="text-xs text-gray-600">{activityExt.distanceFromPrev} km</p>
-																						</div>
-																					</div>
-																				)}
 																			</div>
+
 																			{/* Location */}
 																			<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
 																				<MapPin className="h-4 w-4 text-red-500" />
@@ -264,6 +240,18 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 																					<p className="font-semibold text-sm">{activity.address}</p>
 																				</div>
 																			</div>
+
+																			{/* Travel Info */}
+																			{activityExt.travelTimeFromPrev > 0 && (
+																				<div className="flex items-center gap-2 p-3 bg-white/50 rounded-lg">
+																					<Navigation className="h-4 w-4 text-blue-500" />
+																					<div>
+																						<p className="text-xs text-gray-500 uppercase tracking-wide">Di chuyển</p>
+																						<p className="font-semibold">{activityExt.travelTimeFromPrev} phút</p>
+																						<p className="text-xs text-gray-600">{activityExt.distanceFromPrev} km</p>
+																					</div>
+																				</div>
+																			)}
 
 																			{/* Workshop specific info */}
 																			{activityExt.workshop && (
@@ -296,43 +284,14 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 									</AccordionItem>
 								))}
 							</Accordion>
-							{/* Schedules */}
-							{tour.schedules && tour.schedules.length > 0 && (
-								<Card className="sticky shadow-md">
-									<CardHeader>
-										<CardTitle className="text-lg flex items-center gap-2">
-											<Calendar className="h-5 w-5" />
-											Lịch Khởi Hành
-										</CardTitle>
-									</CardHeader>
-									<CardContent className="space-y-3">
-										{tour.schedules.map((schedule, index) => (
-											<div key={index} className="p-3 border border-gray-200 rounded-lg">
-												<div className="flex items-center justify-between mb-2">
-													<span className="font-semibold">
-														{formatDate(new Date(schedule.startTime), 'dd/MM/yyyy')}
-													</span>
-													<Badge variant="outline">
-														{schedule.maxParticipant - schedule.currentBooked} chỗ trống
-													</Badge>
-												</div>
-												<div className="text-sm text-gray-600">
-													<p>HDV: {(schedule.tourGuide as any)?.userName || 'Chưa phân công'}</p>
-													<p>Đã đặt: {schedule.currentBooked}/{schedule.maxParticipant}</p>
-												</div>
-											</div>
-										))}
-									</CardContent>
-								</Card>
-							)}
 						</CardContent>
 					</Card>
 				</div>
 
 				{/* Sidebar */}
-				<div className="xl:col-span-2 space-y-10">
+				<div className="xl:col-span-1 space-y-6">
 					{/* Quick Info */}
-					<Card className="top-6 shadow-md">
+					<Card className="sticky top-6 shadow-md">
 						<CardHeader>
 							<CardTitle className="text-lg">Thông Tin Tour</CardTitle>
 						</CardHeader>
@@ -376,6 +335,36 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 							</div>
 						</CardContent>
 					</Card>
+
+					{/* Schedules */}
+					{tour.schedules && tour.schedules.length > 0 && (
+						<Card className="shadow-md">
+							<CardHeader>
+								<CardTitle className="text-lg flex items-center gap-2">
+									<Calendar className="h-5 w-5" />
+									Lịch Khởi Hành
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								{tour.schedules.map((schedule, index) => (
+									<div key={index} className="p-3 border border-gray-200 rounded-lg">
+										<div className="flex items-center justify-between mb-2">
+											<span className="font-semibold">
+												{formatDate(new Date(schedule.startTime), 'dd/MM/yyyy')}
+											</span>
+											<Badge variant="outline">
+												{schedule.maxParticipant - schedule.currentBooked} chỗ trống
+											</Badge>
+										</div>
+										<div className="text-sm text-gray-600">
+											<p>HDV: {(schedule.tourGuide as any)?.userName || 'Chưa phân công'}</p>
+											<p>Đã đặt: {schedule.currentBooked}/{schedule.maxParticipant}</p>
+										</div>
+									</div>
+								))}
+							</CardContent>
+						</Card>
+					)}
 				</div>
 			</div>
 		</div>

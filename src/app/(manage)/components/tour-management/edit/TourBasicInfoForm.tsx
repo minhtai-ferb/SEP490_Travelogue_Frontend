@@ -30,6 +30,8 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 		transportType: tour.transportType,
 		totalDays: tour.totalDays,
 		tourType: tour.tourType,
+		pickupAddress: tour.pickupAddress,
+		stayInfo: tour.stayInfo,
 		medias: tour.medias || [],
 	})
 	const [isLoading, setIsLoading] = useState(false)
@@ -95,7 +97,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 				<form onSubmit={handleSubmit} className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="md:col-span-2 space-y-2">
-							<Label htmlFor="name">Tên Tour *</Label>
+							<Label htmlFor="name">Tên Tour <span className="text-red-600">*</span></Label>
 							<Input
 								id="name"
 								value={formData.name}
@@ -106,7 +108,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 						</div>
 
 						<div className="md:col-span-2 space-y-2">
-							<Label htmlFor="transportType">Phương tiện di chuyển</Label>
+							<Label htmlFor="transportType">Phương tiện di chuyển <span className="text-red-600">*</span></Label>
 							<Select
 								value={formData.transportType}
 								onValueChange={(value) => handleInputChange("transportType", value)}
@@ -126,7 +128,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 						</div>
 
 						<div className="md:col-span-2 space-y-2">
-							<Label htmlFor="description">Mô Tả Tour *</Label>
+							<Label htmlFor="description">Mô Tả Tour <span className="text-red-600">*</span></Label>
 							<Textarea
 								id="description"
 								value={formData.description}
@@ -149,7 +151,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 						</div>
 
 						<div className="space-y-2">
-							<Label>Loại Tour *</Label>
+							<Label>Loại Tour 	<span className="text-red-600">*</span></Label>
 							<Select
 								value={formData.tourType.toString()}
 								onValueChange={(value) => handleInputChange("tourType", Number.parseInt(value))}
@@ -171,7 +173,7 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="totalDays">Số Ngày *</Label>
+							<Label htmlFor="totalDays">Số Ngày <span className="text-red-600">*</span></Label>
 							<Input
 								id="totalDays"
 								type="number"
@@ -180,6 +182,29 @@ export function TourBasicInfoForm({ tour, onUpdate }: TourBasicInfoFormProps) {
 								onChange={(e) => handleInputChange("totalDays", Number.parseInt(e.target.value) || 1)}
 								required
 							/>
+						</div>
+						<div className="md:col-span-2 space-y-2 w-full">
+							<div className="space-y-2">
+								<Label htmlFor="pickupAddress">Địa Chỉ Đón <span className="text-red-600">*</span></Label>
+								<Textarea
+									id="pickupAddress"
+									value={formData.pickupAddress}
+									onChange={(e) => handleInputChange("pickupAddress", e.target.value)}
+									placeholder="Nhập địa chỉ đón"
+									required
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="stayInfo">Thông Tin Lưu Trú <span className="text-red-600">*</span></Label>
+								<Textarea
+									id="stayInfo"
+									value={formData.stayInfo}
+									onChange={(e) => handleInputChange("stayInfo", e.target.value)}
+									placeholder="Nhập thông tin lưu trú"
+									required
+								/>
+							</div>
 						</div>
 
 						<div className="md:col-span-2 space-y-2">
