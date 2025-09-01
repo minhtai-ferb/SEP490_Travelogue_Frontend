@@ -1,7 +1,6 @@
 import { Input, Select } from "antd";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface Option {
   value: string;
@@ -31,74 +30,101 @@ export function LocationFilterBar({
   selectedType,
   searchText,
   onReset,
-  href
+  href,
 }: Props) {
   const router = useRouter();
-  const [search, setSearch] = useState(searchText ?? "");
 
-  // Debounce search input to avoid fetching on every keystroke
-  useEffect(() => {
-    const id = setTimeout(() => {
-      onSearch(search);
-    }, 400);
-    return () => clearTimeout(id);
-  }, [search, onSearch]);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch(e.target.value);
+  };
 
   return (
-    <div className="flex justify-between items-center mb-4 gap-4">
-      <Select
-        showSearch
-        style={{ width: 200 }}
-        placeholder="Chọn quận huyện"
-        allowClear
-        value={selectedDistrict}
-        onChange={onChangeDistrict}
-        optionFilterProp="label"
-        options={options}
-      />
-      <Select
-        showSearch
-        style={{ width: 200 }}
-        placeholder="Chọn loại địa điểm"
-        allowClear
-        value={selectedType}
-        onChange={onChangeTypeLocation}
-        optionFilterProp="label"
-        options={[
-          { value: "", label: "Tất cả" },
-          { value: "1", label: "Làng nghề truyền thống" },
-          { value: "2", label: "Di tích lịch sử" },
-          { value: "3", label: "Ẩm thực" },
-          { value: "4", label: "Danh lam thắng cảnh" },
-        ]}
-      />
-      <Input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm kiếm theo tên địa điểm"
-        allowClear
-      />
-      <Button
-        variant="outline"
-        onClick={() => {
-          setSearch("");
-          onChangeDistrict("");
-          onChangeTypeLocation?.("");
-          onSearch("");
-          onReset?.();
-        }}
-      >
-        Đặt lại
-      </Button>
-      <Button
-        className="bg-blue-500 text-white"
-        onClick={() => {
-          router.push(`${href}/create`);
-          setLoading(true);
-        }}
-      >
-        Tạo mới địa điểm
-      </Button>
+    <div className="space-y-4">
+      {/* First row - Main filters */}
+      <div className="flex justify-between items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap flex-1">
+          <Select
+            showSearch
+            style={{ width: 200 }}
+            placeholder="Chọn quận huyện"
+            allowClear
+            value={selectedDistrict}
+            onChange={onChangeDistrict}
+            optionFilterProp="label"
+            options={options}
+          />
+          <Select
+            showSearch
+            style={{ width: 200 }}
+            placeholder="Chọn loại địa điểm"
+            allowClear
+            value={selectedType}
+            onChange={onChangeTypeLocation}
+            optionFilterProp="label"
+            options={[
+              { value: "", label: "Tất cả" },
+              { value: "1", label: "Làng nghề truyền thống" },
+              { value: "2", label: "Di tích lịch sử" },
+              { value: "3", label: "Ẩm thực" },
+              { value: "4", label: "Danh lam thắng cảnh" },
+            ]}
+          />
+          <Input
+            value={searchText}
+            onChange={handleSearchChange}
+            placeholder="Tìm kiếm theo tên địa điểm"
+            allowClear
+            style={{ width: 250 }}
+          />
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              onSearch("");
+              onChangeDistrict("");
+              onChangeTypeLocation?.("");
+              onReset?.();
+            }}
+          >
+            Đặt lại
+          </Button>
+          <Button
+            className="bg-blue-500 text-white hover:bg-blue-600"
+            onClick={() => {
+              router.push(`${href}/create`);
+              setLoading(true);
+            }}
+          >
+            Tạo mới địa điểm
+          </Button>
+        </div>
+      </div>
+
+      {/* Second row - Price range filter */}
+      {/* {onPriceRangeChange && (
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium min-w-fit">Khoảng giá (VNĐ):</span>
+          <div className="flex-1 max-w-md">
+            <Slider
+              range
+              min={0}
+              max={100000}
+              step={1000}
+              value={priceRange || [0, 100000]}
+              onChange={(value) => onPriceRangeChange(value as [number, number])}
+              marks={{
+                0: '0',
+                25000: '25K',
+                50000: '50K',
+                75000: '75K',
+                100000: '100K+'
+              }}
+            />
+          </div>
+        </div> 
+      )}*/}
     </div>
   );
 }

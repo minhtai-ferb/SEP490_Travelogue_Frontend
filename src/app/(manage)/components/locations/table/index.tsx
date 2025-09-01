@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { TableProps } from "antd";
 import type { District } from "@/types/District";
@@ -12,6 +12,7 @@ import { LocationTable } from "@/types/Location";
 import { LocationTableComponent } from "./components/location-table";
 import { useLocations } from "@/services/use-locations";
 import LoadingContent from "@/components/common/loading-content";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Option {
   value: string;
@@ -27,8 +28,9 @@ export default function LocationsTable({ href }: { href: string }) {
   const [filteredInfo, setFilteredInfo] = useState<Filters>({});
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
   const { getAllDistrict } = useDistrictManager();
-  const { loading, searchAllLocations, deleteLocation } = useLocations();
+  const { searchAllLocations, deleteLocation } = useLocations();
   const [loadingButton, setLoadingButton] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
   const [data, setData] = useState<LocationTable[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
@@ -38,27 +40,33 @@ export default function LocationsTable({ href }: { href: string }) {
   const [locationToDelete, setLocationToDelete] =
     useState<LocationTable | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [selectedType, setSelectedType] = useState<string | undefined>(
     undefined
   );
 
+  // Debounce search text to avoid excessive API calls
+  const debouncedSearchText = useDebounce(searchText, 500);
+
   // Memoized query params used for fetching
   const query = useMemo(
     () => ({
-      title: searchText,
-      type: selectedType ? parseInt(selectedType, 5) : undefined,
+      title: debouncedSearchText,
+      type: selectedType ? parseInt(selectedType, 10) : undefined,
       districtId: selectedOption || undefined,
       heritageRank: undefined as number | undefined,
       pageNumber: currentPage,
       pageSize: pageSize,
     }),
-    [searchText, selectedType, selectedOption, currentPage, pageSize]
+    [debouncedSearchText, selectedType, selectedOption, currentPage, pageSize]
   );
 
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
+    setTableLoading(true);
     try {
+      console.log("Fetching locations with query:", query);
+
       const response = await searchAllLocations(query);
       if (!response)
         throw new Error("No data returned from API getAllLocation");
@@ -66,8 +74,10 @@ export default function LocationsTable({ href }: { href: string }) {
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("Error fetching location data:", error);
+    } finally {
+      setTableLoading(false);
     }
-  };
+  }, [searchAllLocations, query]);
 
   // Load districts once
   useEffect(() => {
@@ -88,9 +98,17 @@ export default function LocationsTable({ href }: { href: string }) {
     loadDistricts();
   }, [getAllDistrict]);
 
+  // Debounced effect for fetching data
   useEffect(() => {
     fetchLocations();
-  }, [query]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    debouncedSearchText,
+    selectedType,
+    selectedOption,
+    currentPage,
+    pageSize,
+  ]);
 
   const handleViewDetails = (record: LocationTable) => {
     setLoadingButton(true);
@@ -109,15 +127,8 @@ export default function LocationsTable({ href }: { href: string }) {
     if (!locationToDelete) return;
     try {
       await deleteLocation(locationToDelete.id);
-      const response = await searchAllLocations({
-        title: "",
-        type: selectedType ? parseInt(selectedType, 10) : undefined,
-        districtId: selectedOption,
-        heritageRank: undefined,
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      });
-      setData(response?.data as LocationTable[]);
+      // Refresh the current page data after deletion
+      await fetchLocations();
       Modal.success({
         title: "Thành công",
         content: "Đã xóa địa điểm thành công",
@@ -141,14 +152,17 @@ export default function LocationsTable({ href }: { href: string }) {
 
   const onChangeDistrict = async (value: string) => {
     setSelectedOption(value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const onChangeTypeLocation = async (value: string) => {
     setSelectedType(value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const onSearch = (value: string) => {
     setSearchText(value);
+    setCurrentPage(1); // Reset to first page when search changes
   };
 
   const handleResetFilters = () => {
@@ -161,30 +175,25 @@ export default function LocationsTable({ href }: { href: string }) {
   return (
     <>
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {useMemo(
-          () =>
-            (typeof loading === "boolean" ? loading : false) || loadingButton,
-          [loading, loadingButton]
-        ) ? (
-          <LoadingContent />
-        ) : (
-          <>
-            <LocationFilterBar
-              href={href}
-              options={options}
-              onChangeTypeLocation={onChangeTypeLocation}
-              onChangeDistrict={onChangeDistrict}
-              onSearch={onSearch}
-              setLoading={setLoadingButton}
-              selectedDistrict={selectedOption}
-              selectedType={selectedType}
-              searchText={searchText}
-              onReset={handleResetFilters}
-            />
-
+        <LocationFilterBar
+          href={href}
+          options={options}
+          onChangeTypeLocation={onChangeTypeLocation}
+          onChangeDistrict={onChangeDistrict}
+          onSearch={onSearch}
+          setLoading={setLoadingButton}
+          selectedDistrict={selectedOption}
+          selectedType={selectedType}
+          searchText={searchText}
+          onReset={handleResetFilters}
+        />
+        <div>
+          {loadingButton ? (
+            <LoadingContent />
+          ) : (
             <LocationTableComponent
               data={data}
-              loading={typeof loading === "boolean" ? loading : false}
+              loading={tableLoading}
               currentPage={currentPage}
               pageSize={pageSize}
               totalCount={totalCount}
@@ -197,8 +206,8 @@ export default function LocationsTable({ href }: { href: string }) {
               onEdit={handleEdit}
               onDelete={handleDeleteConfirm}
             />
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       <DeleteLocationDialog
