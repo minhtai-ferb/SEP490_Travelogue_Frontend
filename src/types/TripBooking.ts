@@ -1,9 +1,9 @@
 import { TourGuide, TripPlanStatus } from "./Tourguide"
-import type { TripPlan } from "./Tripplan"
+import type { TripPlanTourGuide } from "./TripPlan"
 
 export interface TripBookingData {
 	id: string
-	tripPlan: TripPlan
+	tripPlan: TripPlanTourGuide
 	tourGuide?: TourGuide
 	bookingDetails: {
 		totalPrice: number
@@ -26,7 +26,7 @@ export interface TripBookingData {
 	updatedAt: Date
 }
 
-export interface UserTripPlan extends TripPlan {
+export interface UserTripPlan extends TripPlanTourGuide {
 	bookingId?: string
 	tourGuide?: TourGuide
 	status: number

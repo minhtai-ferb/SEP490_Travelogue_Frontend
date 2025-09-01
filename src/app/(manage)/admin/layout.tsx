@@ -35,7 +35,9 @@ export default function Page({
       }
     >
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="relative">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }

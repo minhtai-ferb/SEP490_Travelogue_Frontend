@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { Calendar, Clock, MapPin, Share2, Download, Printer, Sparkles } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface TripPlanDetailProps {
-	plan: TripPlan
+	plan: TripPlanTourGuide
 }
 
 export default function TripPlanDetail({ plan }: TripPlanDetailProps) {

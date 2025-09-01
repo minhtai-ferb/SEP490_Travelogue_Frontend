@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { Star, AlertCircle } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
 import { TripHeader } from "@/components/page/trip-planner/detail/trip-detail-component/trip-header"
 import { TripOverview } from "@/components/page/trip-planner/detail/trip-detail-component/trip-overview"
 import { TripItinerary } from "@/components/page/trip-planner/detail/trip-detail-component/trip-itinerary"
@@ -18,10 +17,11 @@ import TripTourguide from "@/components/page/trip-planner/detail/trip-detail-com
 import { BookingConfirmationModal } from "@/components/page/trip-planner/detail/trip-detail-component/booking-comfirmation"
 import { useTripBooking } from "@/hooks/use-trip-booking"
 import { useSearchParams } from "next/navigation"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 export default function TripPlanDetailPage() {
 	const searchParams = useSearchParams()
-	const [plan, setPlan] = useState<TripPlan | null>(null)
+	const [plan, setPlan] = useState<TripPlanTourGuide | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [activeTab, setActiveTab] = useState("overview")
@@ -50,7 +50,7 @@ export default function TripPlanDetailPage() {
 					const storedPlans = localStorage.getItem("userTripPlans")
 					if (storedPlans) {
 						const plans = JSON.parse(storedPlans)
-						const foundPlan = plans.find((p: TripPlan) => p.id === planId)
+						const foundPlan = plans.find((p: TripPlanTourGuide) => p.id === planId)
 						if (foundPlan) {
 							setPlan(foundPlan)
 							setSelectedTourGuide(foundPlan?.tourguide || null)
@@ -71,7 +71,7 @@ export default function TripPlanDetailPage() {
 	}, [searchParams])
 
 	const { isBooking, bookingError, startTrip, calculateTotalPrice, clearError } = useTripBooking({
-		plan: plan || {} as TripPlan,
+		plan: plan || {} as TripPlanTourGuide,
 		tourGuide: selectedTourGuide || undefined,
 	})
 

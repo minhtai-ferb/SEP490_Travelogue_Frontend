@@ -15,6 +15,7 @@ import {
   MapPinned,
   LocateFixed,
   CirclePercent,
+  MapPinCheckInsideIcon,
 } from "lucide-react";
 import * as React from "react";
 
@@ -133,6 +134,11 @@ const data = {
       icon: Map,
     },
     {
+      title: "Quản lý kế hoạch cá nhân",
+      url: "/admin/personal-plan",
+      icon: MapPinCheckInsideIcon,
+    },
+    {
       title: "Quản lý trải nghiệm làng nghề",
       url: "/admin/workshop",
       icon: LocateFixed,
@@ -164,7 +170,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [user, setUser] = useAtom(userAtom);
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="sidebar" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

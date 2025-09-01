@@ -10,11 +10,12 @@ const crumbs: Crumb[] = [
 ];
 
 export default function UserDetailViewPage() {
-
   return (
-    <SidebarInset>
+    <>
       <BreadcrumbHeader items={crumbs} />
-      <UserDetailView />
-    </SidebarInset>
+      <div>
+        <UserDetailView />
+      </div>
+    </>
   );
 }
