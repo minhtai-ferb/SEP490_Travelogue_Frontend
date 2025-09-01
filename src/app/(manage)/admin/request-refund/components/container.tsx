@@ -73,7 +73,7 @@ export default function RefundContainer() {
   }, []);
 
   return (
-    <div className="absolute p-4 w-full mt-16">
+    <div className="p-4 w-full absolute">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-semibold">

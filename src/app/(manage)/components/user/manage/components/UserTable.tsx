@@ -3,13 +3,13 @@ import { Table, Card } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { FilterValue, SorterResult } from "antd/es/table/interface";
 import { User } from "@/types/Users";
-import { 
-  UserInfoCell, 
-  ContactInfoCell, 
-  RolesCell, 
-  WalletCell, 
-  StatusCell, 
-  DateCell 
+import {
+  UserInfoCell,
+  ContactInfoCell,
+  RolesCell,
+  WalletCell,
+  StatusCell,
+  DateCell,
 } from "./TableCells";
 import UserActionsMenu from "./UserActionsMenu";
 
@@ -39,62 +39,63 @@ const UserTable: React.FC<UserTableProps> = ({
   tableParams,
   onTableChange,
   onViewUserDetails,
-  onManageUserRoles
+  onManageUserRoles,
 }) => {
   const columns: ColumnsType<User> = [
     {
-      title: 'Người dùng',
-      fixed: 'left',
-      key: 'user',
+      title: "Người dùng",
+      fixed: "left",
+      key: "user",
       width: 300,
       render: (_, record) => <UserInfoCell user={record} />,
     },
     {
-      title: 'Thông tin liên hệ',
-      key: 'contact',
+      title: "Thông tin liên hệ",
+      key: "contact",
       width: 280,
       render: (_, record) => <ContactInfoCell user={record} />,
     },
     {
-      title: 'Vai trò',
-      key: 'roles',
+      title: "Vai trò",
+      key: "roles",
       width: 220,
       render: (_, record) => <RolesCell roles={record.roles} />,
     },
     {
-      title: 'Giới tính',
-      dataIndex: 'genderText',
-      key: 'gender',
+      title: "Giới tính",
+      dataIndex: "genderText",
+      key: "gender",
       width: 110,
-      align: 'center',
+      align: "center",
     },
     {
-      title: 'Ví tiền',
-      key: 'wallet',
+      title: "Ví tiền",
+      key: "wallet",
       width: 140,
-      align: 'right',
+      align: "right",
       render: (_, record) => <WalletCell wallet={record.wallet} />,
     },
     {
-      title: 'Trạng thái',
-      key: 'status',
+      title: "Trạng thái",
+      key: "status",
       width: 160,
-      align: 'center',
+      align: "center",
       render: (_, record) => <StatusCell user={record} />,
     },
     {
-      title: 'Ngày tạo',
-      key: 'createdTime',
+      title: "Ngày tạo",
+      key: "createdTime",
       width: 140,
-      sorter: (a, b) => new Date(a.createdTime).getTime() - new Date(b.createdTime).getTime(),
+      sorter: (a, b) =>
+        new Date(a.createdTime).getTime() - new Date(b.createdTime).getTime(),
       render: (_, record) => <DateCell date={record.createdTime} />,
     },
     {
-      title: 'Hành động',
-      key: 'actions',
-      fixed: 'right',
+      title: "Hành động",
+      key: "actions",
+      fixed: "right",
       width: 120,
-      align: 'center',
+      align: "center",
       render: (_, record) => (
         <UserActionsMenu
           user={record}
@@ -106,27 +107,25 @@ const UserTable: React.FC<UserTableProps> = ({
   ];
 
   return (
-    <Card className="overflow-hidden min-w-0">
-      <div className="overflow-x-auto">
-        <Table<User>
-          columns={columns}
-          dataSource={users}
-          rowKey="id"
-          pagination={{
-            ...tableParams.pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `${range[0]}-${range[1]} trên ${total} người dùng`,
-            pageSizeOptions: ['10', '20', '50', '100'],
-          }}
-          onChange={onTableChange}
-          loading={loading}
-          scroll={{ x: 'max-content', y: 600 }}
-          size="middle"
-          bordered
-        />
-      </div>
+    <Card>
+      <Table<User>
+        columns={columns}
+        dataSource={users}
+        rowKey="id"
+        pagination={{
+          ...tableParams.pagination,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} trên ${total} người dùng`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }}
+        onChange={onTableChange}
+        loading={loading}
+        scroll={{ x: "max-content", y: 600 }}
+        size="middle"
+        bordered
+      />
     </Card>
   );
 };

@@ -43,11 +43,11 @@ function ManageUserTable({ href }: { href: string }) {
   } = useUserModals({ href });
 
   return (
-    <div className="w-full min-w-0">
+    <div>
       {loading ? (
         <LoadingContent />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 absolute w-full ">
           {/* Statistics Cards */}
           <UserStatistics users={users} />
 

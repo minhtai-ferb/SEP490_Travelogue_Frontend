@@ -11,9 +11,9 @@ import type { TabsProps } from "antd";
 const crumbs: Crumb[] = [{ label: "Quản lý tài khoản", href: "/admin/user" }];
 
 function ManageUser() {
-  const tabItems: TabsProps['items'] = [
+  const tabItems: TabsProps["items"] = [
     {
-      key: '1',
+      key: "1",
       label: (
         <span className="flex items-center gap-2">
           <UserOutlined />
@@ -23,7 +23,7 @@ function ManageUser() {
       children: <ManageUserTable href="/admin" />,
     },
     {
-      key: '2',
+      key: "2",
       label: (
         <span className="flex items-center gap-2">
           <ExclamationCircleOutlined />
@@ -35,23 +35,14 @@ function ManageUser() {
   ];
 
   return (
-    <SidebarInset className="min-w-0">
+    <>
       <BreadcrumbHeader items={crumbs} />
-      <div className="p-4 min-w-0 w-full">
-        <Card className="shadow-lg min-w-0 overflow-hidden">
-          <Tabs
-            defaultActiveKey="1"
-            items={tabItems}
-            size="large"
-            className="w-full min-w-0"
-            tabBarStyle={{
-              borderBottom: '2px solid #f0f0f0',
-              marginBottom: '24px'
-            }}
-          />
+      <div>
+        <Card>
+          <Tabs defaultActiveKey="1" items={tabItems} size="large" />
         </Card>
       </div>
-    </SidebarInset>
+    </>
   );
 }
 

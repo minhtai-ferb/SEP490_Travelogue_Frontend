@@ -55,7 +55,7 @@ export default function BreadcrumbHeader({
   return (
     <header
       className={[
-        "flex h-16 shrink-0 items-center gap-2 border-b px-4 z-50 bg-background min-w-0",
+        "flex h-16 shrink-0 items-center gap-2 border-b px-4 z-40 bg-background",
         sticky ? "sticky top-0" : "",
         className ?? "",
       ].join(" ")}
@@ -76,8 +76,8 @@ export default function BreadcrumbHeader({
         </>
       )}
 
-      <Breadcrumb className="min-w-0 flex-1">
-        <BreadcrumbList className="truncate">
+      <Breadcrumb>
+        <BreadcrumbList>
           {items.map((item, idx) => {
             const isLast = idx === items.length - 1;
             const hiddenCls = item.hiddenOnMd ? "hidden md:block" : undefined;

@@ -35,7 +35,9 @@ export default function Page({
       }
     >
       <AppSidebar />
-      <SidebarInset className="min-w-0 overflow-hidden">{children}</SidebarInset>
+      <SidebarInset className="relative">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }
