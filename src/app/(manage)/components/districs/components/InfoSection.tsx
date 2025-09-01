@@ -1,6 +1,7 @@
 import Image from "next/image";
+import { CreateDistrictGuideDialog } from "./CreateDistrictGuideDialog";
 
-export const InfoSection = () => {
+export const InfoSection = ({href} : {href : string}) => {
   return (
     <div className="p-6 max-w-4xl mx-auto rounded-lg w-full">
       <h2 className="text-2xl font-bold text-black mb-1">
@@ -29,9 +30,11 @@ export const InfoSection = () => {
               Tạo quận huyện mới để bắt đầu quản lý thông tin của quận
               huyện.
             </p>
-            <button className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
-              Cách Tạo Quận Huyện
-            </button>
+            <CreateDistrictGuideDialog href={href}>
+              <button className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
+                Cách Tạo Quận Huyện
+              </button>
+            </CreateDistrictGuideDialog>
           </div>
         </div>
       </div>
