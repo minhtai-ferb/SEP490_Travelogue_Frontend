@@ -14,9 +14,11 @@ const crumb: Crumb[] = [
 ];
 export default function BookingWorkshopPage() {
   return (
-    <SidebarInset className="space-y-2">
+    <div className="space-y-2">
       <BreadcrumbHeader items={crumb} />
-      <BookingWorkshopTable />
-    </SidebarInset>
+      <div className="">
+        <BookingWorkshopTable />
+      </div>
+    </div>
   );
 }

@@ -21,7 +21,7 @@ export const DistrictEditForm = ({
   const router = useRouter();
 
   const handleCancel = () => {
-    router.push(`${href}/${districtId}`);
+    router.push(`${href}/districts/${districtId}`);
   };
 
   return (

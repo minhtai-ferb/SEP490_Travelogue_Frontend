@@ -14,7 +14,7 @@ export const MainContent = ({ districts, href }: MainContentProps) => {
 
       <div className="border-b border-gray-300 my-6 w-5/6"></div>
       
-      <InfoSection />
+      <InfoSection href={href}/>
     </div>
   );
 };

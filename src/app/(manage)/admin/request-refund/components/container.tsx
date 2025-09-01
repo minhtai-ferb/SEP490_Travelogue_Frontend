@@ -56,10 +56,7 @@ export default function RefundContainer() {
     return rows.filter((r) => r.userName?.toLowerCase().includes(k));
   }, [rows, kw]);
 
-  // Handlers for viewing details
   const handleViewTourDetail = React.useCallback((tourId: string) => {
-    // TODO: Implement navigation to tour details
-    console.log("View tour details:", tourId);
     router.push(`/admin/tour/${tourId}`);
   }, []);
 
@@ -76,7 +73,7 @@ export default function RefundContainer() {
   }, []);
 
   return (
-    <div className="absolute p-4 w-full mt-16">
+    <div className="p-4 w-full absolute">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-semibold">

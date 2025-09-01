@@ -127,7 +127,7 @@ export default function BookingDetail() {
   const handleViewTourDetail = async () => {
     if (booking?.tourId) {
       const isAdminPath = hasAdminInPath(pathname);
-      const basePath = isAdminPath ? "/admin" : "";
+      const basePath = isAdminPath ? "/admin" : "/moderator";
       await router.push(`${basePath}/tour/${booking.tourId}`);
     }
   };

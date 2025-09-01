@@ -4,21 +4,31 @@ export type LocationTable = {
     description: string;
     content: string;
     address: string;
+    minPrice: number;
+    maxPrice: number;
     latitude: number;
     longitude: number;
-    rating: string;
     openTime?: string;
     closeTime?: string;
     category: string;
     districtId: string;
     districtName: string;
     medias?: ListMedia[];
+    createdTime: string;
+    lastUpdatedTime: string;
+    createdBy: string;
+    createdByName?: string | null;
+    lastUpdatedBy: string;
+    lastUpdatedByName?: string | null;
 };
 
 export interface ListMedia {
-    isThumbnail: boolean;
-    fileType: string;
     mediaUrl: string;
+    fileName: string;
+    fileType: string;
+    isThumbnail: boolean;
+    sizeInBytes: number;
+    createdTime: string;
 }
 
 export interface TypeLocation {

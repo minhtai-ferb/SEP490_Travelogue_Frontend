@@ -15,9 +15,8 @@ const crumb: Crumb[] = [{ label: "Cấu hình hoa hồng" }];
 
 function CommissionManagePage() {
   return (
-    <SidebarInset>
+    <>
       <BreadcrumbHeader items={crumb} />
-
       <div className="p-6 space-y-2">
         <Card className="shadow-sm border rounded-2xl">
           <CardHeader>
@@ -36,10 +35,9 @@ function CommissionManagePage() {
             </CardDescription>
           </CardHeader>
         </Card>
-
         <CommissionSettingsPage />
       </div>
-    </SidebarInset>
+    </>
   );
 }
 

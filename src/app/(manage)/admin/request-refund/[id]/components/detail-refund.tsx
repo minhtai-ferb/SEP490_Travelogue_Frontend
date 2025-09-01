@@ -96,7 +96,7 @@ export default function RefundRequestDetail() {
   };
 
   const onViewTourDetail = (tourId: string) => {
-    router.push(`/admin/tour/${tourId}`)
+    router.push(`/admin/tour/${tourId}`);
   };
 
   const onViewTripPlanDetail = (tripPlanId: string) => {
@@ -249,6 +249,66 @@ export default function RefundRequestDetail() {
       <RefundRequestStats data={data} />
 
       <div className="space-y-6">
+        {/* Action form */}
+        {actionType && (
+          <Card
+            className={`${
+              actionType === "approve"
+                ? "border-green-200 bg-green-50"
+                : "border-red-200 bg-red-50"
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <ExclamationCircleOutlined
+                className={`text-xl ${
+                  actionType === "approve" ? "text-green-600" : "text-red-600"
+                }`}
+              />
+              <Title
+                level={4}
+                className={`mb-0 ${
+                  actionType === "approve" ? "text-green-800" : "text-red-800"
+                }`}
+              >
+                {actionType === "approve"
+                  ? "Chấp nhận yêu cầu hoàn tiền"
+                  : "Từ chối yêu cầu hoàn tiền"}
+              </Title>
+            </div>
+
+            <Form form={form} layout="vertical">
+              <Form.Item
+                name="note"
+                label={
+                  actionType === "approve"
+                    ? "Ghi chú (tùy chọn)"
+                    : "Lý do từ chối"
+                }
+                rules={
+                  actionType === "reject"
+                    ? [
+                        {
+                          required: true,
+                          message: "Vui lòng nhập lý do từ chối",
+                        },
+                      ]
+                    : []
+                }
+              >
+                <Input.TextArea
+                  rows={4}
+                  placeholder={
+                    actionType === "approve"
+                      ? "Nhập ghi chú cho giao dịch hoàn tiền (nếu có)..."
+                      : "Nhập lý do từ chối hoặc ghi chú nội bộ..."
+                  }
+                  maxLength={500}
+                  showCount
+                />
+              </Form.Item>
+            </Form>
+          </Card>
+        )}
         <Row gutter={[24, 24]}>
           {/* Thông tin yêu cầu hoàn tiền */}
           <Col xs={24} lg={12}>
@@ -335,67 +395,6 @@ export default function RefundRequestDetail() {
             )}
           </Col>
         </Row>
-
-        {/* Action form */}
-        {actionType && (
-          <Card
-            className={`${
-              actionType === "approve"
-                ? "border-green-200 bg-green-50"
-                : "border-red-200 bg-red-50"
-            }`}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <ExclamationCircleOutlined
-                className={`text-xl ${
-                  actionType === "approve" ? "text-green-600" : "text-red-600"
-                }`}
-              />
-              <Title
-                level={4}
-                className={`mb-0 ${
-                  actionType === "approve" ? "text-green-800" : "text-red-800"
-                }`}
-              >
-                {actionType === "approve"
-                  ? "Chấp nhận yêu cầu hoàn tiền"
-                  : "Từ chối yêu cầu hoàn tiền"}
-              </Title>
-            </div>
-
-            <Form form={form} layout="vertical">
-              <Form.Item
-                name="note"
-                label={
-                  actionType === "approve"
-                    ? "Ghi chú (tùy chọn)"
-                    : "Lý do từ chối"
-                }
-                rules={
-                  actionType === "reject"
-                    ? [
-                        {
-                          required: true,
-                          message: "Vui lòng nhập lý do từ chối",
-                        },
-                      ]
-                    : []
-                }
-              >
-                <Input.TextArea
-                  rows={4}
-                  placeholder={
-                    actionType === "approve"
-                      ? "Nhập ghi chú cho giao dịch hoàn tiền (nếu có)..."
-                      : "Nhập lý do từ chối hoặc ghi chú nội bộ..."
-                  }
-                  maxLength={500}
-                  showCount
-                />
-              </Form.Item>
-            </Form>
-          </Card>
-        )}
       </div>
     </div>
   );
