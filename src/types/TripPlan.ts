@@ -107,4 +107,3 @@ export interface TripPlanTourGuide {
 }
 
 export type TripPlanStatus = "pending" | "confirmed" | "completed" | "cancelled"
-
