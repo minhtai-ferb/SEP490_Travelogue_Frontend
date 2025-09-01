@@ -1,33 +1,35 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import {
-	MapPin,
-	Clock,
-	Phone,
-	Mail,
-	Globe,
-	Award,
-	Calendar,
-	User,
-	Building,
-	CheckCircle,
-	XCircle,
-	AlertCircle,
-	Star,
-	WorkflowIcon as Workshop,
-	Loader2,
-} from "lucide-react"
-import { type CraftVillageRequestResponse, CraftVillageRequestStatus, type ReviewCraftVillageRequest } from "@/types/CraftVillage"
+import { useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import VietmapGL from "@/components/vietmap-gl"
+import { User as Usertype } from "@/interfaces"
 import { SeccretKey } from "@/secret/secret"
+import { type CraftVillageRequestResponse, CraftVillageRequestStatus, type ReviewCraftVillageRequest } from "@/types/CraftVillage"
 import dayjs from "dayjs"
+import {
+	AlertCircle,
+	Award,
+	Building,
+	Calendar,
+	CheckCircle,
+	Clock,
+	Globe,
+	Loader2,
+	Mail,
+	MapPin,
+	Phone,
+	Star,
+	User,
+	WorkflowIcon as Workshop,
+	XCircle,
+} from "lucide-react"
+import { useState } from "react"
 
 interface CraftVillageDetailViewProps {
 	data: CraftVillageRequestResponse
@@ -42,6 +44,7 @@ interface CraftVillageDetailViewProps {
 	setReviewAction?: (action: "approve" | "reject" | null) => void
 	reviewReason?: string
 	setReviewReason?: (reason: string) => void
+	getUserInfo?: (userId: string) => Promise<Usertype>
 }
 
 export default function CraftVillageDetailView({
@@ -55,8 +58,10 @@ export default function CraftVillageDetailView({
 	setReviewAction,
 	reviewReason,
 	setReviewReason,
+	getUserInfo
 }: CraftVillageDetailViewProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false)
+
 
 	const getStatusConfig = (status: CraftVillageRequestStatus) => {
 		switch (status) {
@@ -94,6 +99,28 @@ export default function CraftVillageDetailView({
 	const statusConfig = getStatusConfig(data.status)
 
 	const canSubmit = reviewAction === "approve" || (reviewAction === "reject" && (reviewReason?.trim()?.length || 0) >= 10)
+
+
+	// Helper to get user detail synchronously (for display)
+	// If you want to show reviewer name, you should fetch it in a useEffect and store in state
+	const [reviewedByName, setReviewedByName] = useState<string>("")
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	useEffect(() => {
+		async function fetchReviewer() {
+			if (data?.reviewedBy && getUserInfo) {
+				try {
+					const user = await getUserInfo(data.reviewedBy)
+					setReviewedByName(user?.fullName || "")
+				} catch {
+					setReviewedByName("")
+				}
+			} else {
+				setReviewedByName("")
+			}
+		}
+		fetchReviewer()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [data?.reviewedBy, getUserInfo])
 
 	return (
 		<div className="max-w-6xl mx-auto space-y-6">
@@ -492,7 +519,7 @@ export default function CraftVillageDetailView({
 							{data?.reviewedBy && (
 								<div>
 									<h4 className="font-semibold text-gray-900 mb-1">Người duyệt</h4>
-									<p className="text-gray-700">{data?.reviewedBy}</p>
+									<p className="text-gray-700">{reviewedByName || ""}</p>
 								</div>
 							)}
 						</CardContent>
