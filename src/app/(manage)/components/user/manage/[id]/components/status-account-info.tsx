@@ -133,7 +133,7 @@ export default function UserStatusInfoDisplay({ user }: UserInfoDisplayProps) {
                         <CalendarDays className="h-5 w-5 text-red-600" />
                         <div>
                           <Text strong className="text-red-700">Thời gian khóa đến:</Text>
-                          <p className="text-red-600 font-medium">{formatDate(user.lockoutEnd)}</p>
+                          <p className="text-red-600 font-medium">{formatDate(user.lockoutEnd ?? null)}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -157,7 +157,7 @@ export default function UserStatusInfoDisplay({ user }: UserInfoDisplayProps) {
                             <Text strong className="text-blue-700">Thời gian tạo</Text>
                           </div>
                           <p className="text-blue-800 font-medium">
-                            {formatDate(user.createdTime)}
+                            {formatDate(user.createdTime ?? null)}
                           </p>
                           {user.createdByName && (
                             <p className="text-xs text-blue-600 mt-1">
@@ -173,7 +173,7 @@ export default function UserStatusInfoDisplay({ user }: UserInfoDisplayProps) {
                             <Text strong className="text-green-700">Cập nhật cuối</Text>
                           </div>
                           <p className="text-green-800 font-medium">
-                            {formatDate(user.lastUpdatedTime)}
+                            {formatDate(user.lastUpdatedTime ?? null)}
                           </p>
                           {user.lastUpdatedByName && (
                             <p className="text-xs text-green-600 mt-1">

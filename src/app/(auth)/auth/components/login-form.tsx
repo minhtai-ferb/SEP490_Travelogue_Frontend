@@ -50,7 +50,10 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
 
     try {
       const response = await login(data);
-      const user = response as User;
+      // Use type guard to check if response matches expected User shape
+      const user = response && typeof response === "object" && Array.isArray(response.roles)
+        ? { ...response, roles: response.roles as any }
+        : undefined;
       if (!user) {
         toast.error("Đăng nhập thất bại!");
       } else if (!user.roles || user.roles.length === 0) {
@@ -58,7 +61,7 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
         return;
       } else if (user.roles.length === 1) {
         const only = user.roles[0];
-        navigate.push(routeByRole[only] ?? "/");
+        navigate.push(routeByRole[only as unknown as keyof typeof routeByRole] ?? "/");
       } else {
         navigate.push("/auth/choose-role");
       }
@@ -75,14 +78,14 @@ export function LoginForm({ onSwitchMode, onForgotPassword }: LoginFormProps) {
     setError("");
     try {
       const response = await loginWithGoogle();
-      const user = response as User;
+      const user = response as unknown as User;
       if (!user) {
         toast.error("Đăng nhập thất bại!");
       } else if (!user.roles || user.roles.length === 0) {
         toast.error("Bạn không có quyền truy cập hệ thống");
       } else if (user.roles.length === 1) {
         const only = user.roles[0];
-        navigate.push(routeByRole[only] ?? "/");
+        navigate.push(routeByRole[only as unknown as keyof typeof routeByRole] ?? "/");
       } else {
         navigate.push("/auth/choose-role");
       }
