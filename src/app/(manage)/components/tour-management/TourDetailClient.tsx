@@ -17,7 +17,7 @@ interface TourDetailClientProps {
 }
 
 const statusColorMap: Record<string, string> = {
-  Nháp: "bg-yellow-100 text-yellow-800",
+  "Nháp": "bg-yellow-100 text-yellow-800",
   "Đã xác nhận": "bg-green-100 text-green-800",
   "Đã hủy": "bg-red-100 text-red-800",
 };
@@ -105,17 +105,16 @@ export default function TourDetailClient({
             <div className="flex items-center gap-2 mt-2">
               <Badge
                 className={`${statusColorMap[
-                  tour.statusText == "Draft"
+                  tour.statusText === "Draft"
                     ? "Nháp"
-                    : tour.statusText == "Confirmed"
+                    : tour.statusText === "Confirmed"
                       ? "Đã xác nhận"
-                      : tour.statusText == "Cancelled"
+                      : tour.statusText === "Cancelled"
                         ? "Đã hủy"
                         : tour.statusText
-                ] || "bg-gray-100 text-gray-800"
-                  } text-xs`}
+                ] || "bg-gray-100 text-gray-800"} text-xs`}
               >
-                {tour.statusText}
+                {tour.statusText == "Draft" ? "Nháp" : tour.statusText == "Confirmed" ? "Đã xác nhận" : tour.statusText == "Cancelled" ? "Đã hủy" : tour.statusText}
               </Badge>
               <Badge variant="outline" className="text-xs">
                 {TourTypeLabels[tour.tourType as keyof typeof TourTypeLabels]}

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "react-hot-toast"
+import { useUserManager } from "@/services/user-manager"
 
 
 
@@ -19,6 +20,18 @@ function CraftVillageDetail({ id }: { id: string }) {
 	const [isReviewRequestOpen, setIsReviewRequestOpen] = useState(false)
 	const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null)
 	const [reviewReason, setReviewReason] = useState("")
+	const { getUserById } = useUserManager()
+
+
+	const getUserInfo = async (userId: string) => {
+		try {
+			const user = await getUserById(userId)
+			return user
+		} catch (error) {
+			console.error("Error fetching user info:", error)
+			return null
+		}
+	}
 
 
 	const fetchData = async () => {
@@ -123,6 +136,7 @@ function CraftVillageDetail({ id }: { id: string }) {
 		)
 	}
 
+
 	return (
 		<div className="min-h-screen p-4">
 			<div className="max-w-6xl mx-auto">
@@ -144,6 +158,7 @@ function CraftVillageDetail({ id }: { id: string }) {
 					setReviewAction={setReviewAction}
 					reviewReason={reviewReason}
 					setReviewReason={setReviewReason}
+					getUserInfo={getUserInfo}
 				/>
 			</div>
 		</div>

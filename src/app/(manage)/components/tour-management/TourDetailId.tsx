@@ -74,14 +74,6 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 									<Ticket className="h-5 w-5" />
 									<span className="font-semibold">{tour.finalPrice.toLocaleString('vi-VN')} VNĐ</span>
 								</div>
-								<div className="flex items-center gap-2">
-									<Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-									<span>{tour.averageRating || 'Chưa có đánh giá'}</span>
-								</div>
-								<div className="flex items-center gap-2">
-									<User className="h-5 w-5" />
-									<span>{tour.totalReviews} đánh giá</span>
-								</div>
 							</div>
 						</div>
 
@@ -318,6 +310,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 												</div>
 												<div className="text-sm text-gray-600">
 													<p>HDV: {(schedule.tourGuide as any)?.userName || 'Chưa phân công'}</p>
+													<p>Email: {(schedule.tourGuide as any)?.email || 'Không có email công'}</p>
 													<p>Đã đặt: {schedule.currentBooked}/{schedule.maxParticipant}</p>
 												</div>
 											</div>
