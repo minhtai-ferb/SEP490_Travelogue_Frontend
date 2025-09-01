@@ -150,11 +150,11 @@ const ExportData: React.FC<ExportDataProps> = ({ users, filteredUsers }) => {
 
   return (
     <>
-      <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
+      {/* <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
         <Button icon={<DownloadOutlined />}>
           Xuất dữ liệu
         </Button>
-      </Dropdown>
+      </Dropdown> */}
 
       <Modal
         title="Xuất dữ liệu người dùng"

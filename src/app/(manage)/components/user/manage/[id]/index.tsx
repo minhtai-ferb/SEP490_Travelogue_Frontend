@@ -28,11 +28,11 @@ export default function UserDetailView() {
   }, [id, getUserById]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 min-w-0 w-full">
       {loading || !userData ? (
         <LoadingContent />
       ) : (
-        <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-6 min-w-0">
           <UserProfileCard user={userData} setUserData={setUserData} />
           <UserSystemStatusCard user={userData} />
         </div>

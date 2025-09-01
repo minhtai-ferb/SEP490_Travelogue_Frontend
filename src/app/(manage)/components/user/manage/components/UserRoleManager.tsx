@@ -4,22 +4,16 @@ import React, { useState, useEffect } from "react";
 import { 
   Modal, 
   Button, 
-  Space, 
   Tag, 
   Switch, 
   List, 
-  Card, 
   Typography,
   message,
-  Spin,
-  Divider,
-  Tooltip
+  Spin
 } from "antd";
 import { 
   UserOutlined,
-  SettingOutlined,
-  CheckOutlined,
-  CloseOutlined
+  SettingOutlined
 } from "@ant-design/icons";
 import { User } from "@/types/Users";
 import { useUserManager } from "@/services/user-manager";
@@ -50,18 +44,27 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({
   
   const { getAllRoles, enableUserRole, disableUserRole } = useUserManager();
 
-  // Fetch all available roles
+  // Fetch all roles and filter to show only user's current roles
   useEffect(() => {
     if (open) {
-      fetchRoles();
+      fetchUserRoles();
     }
-  }, [open]);
+  }, [open, user]);
 
-  const fetchRoles = async () => {
+  const fetchUserRoles = async () => {
     setLoading(true);
     try {
       const response = await getAllRoles();
-      setAllRoles(Array.isArray(response) ? response : []);
+      const allAvailableRoles = Array.isArray(response) ? response : [];
+      
+      // Filter to show only roles that user currently has
+      if (user?.roles) {
+        const userRoleNames = user.roles.map(role => role.name);
+        const userRolesWithIds = allAvailableRoles.filter(role => 
+          userRoleNames.includes(role.name)
+        );
+        setAllRoles(userRolesWithIds);
+      }
     } catch (error) {
       console.error("Error fetching roles:", error);
       message.error("Không thể tải danh sách vai trò");
@@ -72,16 +75,6 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({
 
   const handleRoleToggle = async (roleId: string, roleName: string, isEnabled: boolean) => {
     if (!user) return;
-    
-    // Kiểm tra quyền hạn cho từng role
-    if (roleName !== 'Moderator') {
-      // Đối với các role khác ngoài Moderator, chỉ cho phép enable/disable nếu user đã có role đó
-      const userHasRole = user.roles?.some(role => role.name === roleName);
-      if (!userHasRole && isEnabled) {
-        message.warning(`Chỉ có thể gán vai trò Moderator. Không thể gán vai trò ${roleName}.`);
-        return;
-      }
-    }
     
     setActionLoading(roleId);
     try {
@@ -143,118 +136,55 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Role Management Rules */}
-          <Card size="small" className="bg-blue-50 border-blue-200">
-            <div className="flex items-start gap-2">
-              <SettingOutlined className="text-blue-500 mt-1" />
-              <div>
-                <Text strong className="text-blue-700">Quy tắc quản lý vai trò:</Text>
-                <ul className="mt-2 space-y-1 text-sm text-blue-600">
-                  <li>• <strong>Moderator:</strong> Có thể gán hoặc bỏ gán tự do</li>
-                  <li>• <strong>Các vai trò khác:</strong> Chỉ có thể bật/tắt nếu user đã có vai trò đó</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
-
           {/* Current User Roles */}
-          <Card size="small" title="Vai trò hiện tại">
-            <Space wrap>
-              {user?.roles && user.roles.length > 0 ? (
-                user.roles.map((role, index) => (
-                  <Tag
-                    key={index}
-                    color={role.isActive ? getRoleColor(role.name) : 'default'}
-                    icon={role.isActive ? <CheckOutlined /> : <CloseOutlined />}
-                  >
-                    {role.name}
-                    {!role.isActive && ' (Không hoạt động)'}
-                  </Tag>
-                ))
-              ) : (
-                <Text type="secondary">Chưa có vai trò nào</Text>
-              )}
-            </Space>
-          </Card>
-
-          <Divider />
-
-          {/* All Available Roles */}
-          <div>
-            <Title level={5}>Quản lý tất cả vai trò</Title>
-            <List
-              dataSource={allRoles}
-              renderItem={(role) => {
-                const isActive = isRoleActive(role.name);
-                const isLoading = actionLoading === role.id;
-                const userHasRole = user?.roles?.some(userRole => userRole.name === role.name);
-                const isModerator = role.name === 'Moderator';
-                
-                // Disable switch cho các role không phải Moderator mà user chưa có
-                const isDisabled = !isModerator && !userHasRole;
-                
-                return (
-                  <List.Item
-                    actions={[
-                      <Tooltip
-                        key="tooltip"
-                        title={
-                          isDisabled 
-                            ? (isModerator 
-                                ? "Có thể gán vai trò Moderator cho user này" 
-                                : "Chỉ có thể gán vai trò Moderator. Các vai trò khác chỉ enable/disable được nếu user đã có.")
-                            : "Bật/tắt vai trò"
-                        }
-                      >
+          {user?.roles && user.roles.length > 0 ? (
+            <div>
+              <Title level={5}>Vai trò của {user.fullName}</Title>
+              <List
+                dataSource={allRoles}
+                renderItem={(role) => {
+                  const isActive = isRoleActive(role.name);
+                  const isLoading = actionLoading === role.id;
+                  
+                  return (
+                    <List.Item
+                      actions={[
                         <Switch
                           key="switch"
                           checked={isActive}
                           loading={isLoading}
-                          disabled={isDisabled}
                           onChange={(checked) => handleRoleToggle(role.id, role.name, checked)}
                           checkedChildren="Bật"
                           unCheckedChildren="Tắt"
                         />
-                      </Tooltip>
-                    ]}
-                  >
-                    <List.Item.Meta
-                      avatar={
-                        <Tag color={isActive ? getRoleColor(role.name) : 'default'}>
-                          {role.name}
-                        </Tag>
-                      }
-                      title={
-                        <div className="flex items-center gap-2">
-                          <span>{role.name}</span>
-                          {!isModerator && !userHasRole && (
-                            <Tag color="gold">Chỉ có thể enable/disable</Tag>
-                          )}
-                          {isModerator && (
-                            <Tag color="blue">Có thể gán/bỏ gán</Tag>
-                          )}
-                        </div>
-                      }
-                      description={
-                        isActive ? (
-                          <Text type="success">Đang hoạt động</Text>
-                        ) : isDisabled ? (
-                          <Text type="secondary">
-                            {isModerator 
-                              ? "Có thể gán vai trò này cho user" 
-                              : "User chưa có vai trò này - không thể gán"
-                            }
-                          </Text>
-                        ) : (
-                          <Text type="secondary">Có thể bật vai trò này</Text>
-                        )
-                      }
-                    />
-                  </List.Item>
-                );
-              }}
-            />
-          </div>
+                      ]}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <Tag color={isActive ? getRoleColor(role.name) : 'default'}>
+                            {role.name}
+                          </Tag>
+                        }
+                        title={role.name}
+                        description={
+                          isActive ? (
+                            <Text type="success">Đang hoạt động</Text>
+                          ) : (
+                            <Text type="secondary">Đã tắt</Text>
+                          )
+                        }
+                      />
+                    </List.Item>
+                  );
+                }}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <UserOutlined className="text-4xl text-gray-400 mb-4" />
+              <Text type="secondary">User này chưa có vai trò nào</Text>
+            </div>
+          )}
         </div>
       )}
     </Modal>

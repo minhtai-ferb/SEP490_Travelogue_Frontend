@@ -20,7 +20,7 @@ function ManageUser() {
           Quản lý người dùng
         </span>
       ),
-      children: <ManageUserTable href="/admin/user" />,
+      children: <ManageUserTable href="/admin" />,
     },
     {
       key: '2',
