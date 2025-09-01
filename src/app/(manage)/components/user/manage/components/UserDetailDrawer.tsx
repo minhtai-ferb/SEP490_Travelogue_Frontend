@@ -109,7 +109,7 @@ const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({ user, open, onClose
             <Descriptions.Item 
               label={<><CalendarOutlined className="mr-1" />Ngày tạo</>}
             >
-              {new Date(user.createdTime).toLocaleDateString('vi-VN')}
+              {user.createdTime ? new Date(user.createdTime).toLocaleDateString('vi-VN') : 'Không xác định'}
             </Descriptions.Item>
           </Descriptions>
         </Card>
