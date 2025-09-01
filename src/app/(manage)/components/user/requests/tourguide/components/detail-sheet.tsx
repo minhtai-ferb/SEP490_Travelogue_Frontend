@@ -1,7 +1,7 @@
 "use client"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import type { TourGuideRequestItem, TourguideRequestStatus } from "@/types/Tourguide"
+import { TourGuideRequestItem, TourguideRequestStatus } from "@/types/Tourguide"
 import { Button } from "@/components/ui/button"
 import { Check, X } from "lucide-react"
 import { displayPrice, initials, resolveCertUrl } from "../utils/utils"
@@ -60,15 +60,18 @@ export function DetailSheetContent({
           <div className="mt-1">—</div>
         )}
       </div>
-
-      <div className="flex items-center justify-end gap-2 pt-2">
-        <Button size="sm" variant="outline" onClick={onApprove}>
-          <Check className="w-4 h-4 mr-1" /> Chấp nhận
-        </Button>
-        <Button size="sm" variant="destructive" onClick={onReject}>
-          <X className="w-4 h-4 mr-1" /> Từ chối
-        </Button>
-      </div>
+      {
+        it?.status === TourguideRequestStatus.Pending && (
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button size="sm" variant="outline" onClick={onApprove}>
+              <Check className="w-4 h-4 mr-1" /> Chấp nhận
+            </Button>
+            <Button size="sm" variant="destructive" onClick={onReject}>
+              <X className="w-4 h-4 mr-1" /> Từ chối
+            </Button>
+          </div>
+        )
+      }
     </div>
   )
 }
