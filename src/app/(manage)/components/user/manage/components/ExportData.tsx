@@ -65,8 +65,8 @@ const ExportData: React.FC<ExportDataProps> = ({ users, filteredUsers }) => {
       }
       
       if (exportOptions.includeDates) {
-        data['Ngày tạo'] = new Date(user.createdTime).toLocaleDateString('vi-VN');
-        data['Cập nhật lần cuối'] = new Date(user.lastUpdatedTime).toLocaleDateString('vi-VN');
+        data['Ngày tạo'] = user.createdTime ? new Date(user.createdTime).toLocaleDateString('vi-VN') : 'Chưa có';
+        data['Cập nhật lần cuối'] = user.lastUpdatedTime ? new Date(user.lastUpdatedTime).toLocaleDateString('vi-VN') : 'Chưa có';
       }
       
       return data;

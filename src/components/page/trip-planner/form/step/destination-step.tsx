@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, Utensils, Briefcase, ArrowLeft, ArrowRight, X, Loader2, CheckCircle2 } from 'lucide-react'
 import DestinationSelector from "../../destination-selector"
-import { TripPlanTourGuide } from "@/types/TripPlan"
 import { useState } from "react"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface DestinationStepProps {
 	formData: any

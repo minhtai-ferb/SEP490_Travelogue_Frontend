@@ -2,9 +2,9 @@
 
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import type { TripPlanTourGuide } from "@/types/TripPlan"
 import type { TourGuide } from "@/types/Tourguide"
 import type { TripBookingData, UserTripPlan } from "@/types/TripBooking"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface UseTripBookingProps {
 	plan: TripPlanTourGuide
