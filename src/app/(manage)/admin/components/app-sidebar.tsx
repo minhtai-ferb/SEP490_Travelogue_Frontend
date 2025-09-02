@@ -42,12 +42,12 @@ const data = {
   navSecondary: [
     {
       title: "Hỗ trợ",
-      url: "#",
+      url: "mailto:travelogue.fpt@gmail.com",
       icon: LifeBuoy,
     },
     {
       title: "Góp ý",
-      url: "#",
+      url: "https://www.facebook.com/TravelogueDukhaoveNguon",
       icon: Send,
     },
   ],

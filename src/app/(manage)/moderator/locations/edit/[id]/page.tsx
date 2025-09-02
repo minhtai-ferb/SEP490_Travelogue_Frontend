@@ -5,7 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { useLocations } from "@/services/use-locations";
 import { EditLocationForm } from "@/app/(manage)/components/locations/edit/[id]/components/edit-location-form";
-import { CraftVillageData, CuisineData, HistoricalLocationData, LocationType, MediaDto } from "@/app/(manage)/components/locations/edit/[id]/types/EditLocation";
+import {
+  CraftVillageData,
+  CuisineData,
+  HistoricalLocationData,
+  LocationType,
+  MediaDto,
+} from "@/app/(manage)/components/locations/edit/[id]/types/EditLocation";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import LoadingContent from "@/components/common/loading-content";
 
@@ -25,6 +31,8 @@ interface LocationData {
   districtName: string;
   locationType: LocationType;
   medias: MediaDto[];
+  minPrice: number;
+  maxPrice: number;
   cuisine?: CuisineData;
   craftVillage?: CraftVillageData;
   historicalLocation?: HistoricalLocationData;
@@ -54,9 +62,13 @@ export default function EditLocationPage() {
 
   const loadLocationData = async () => {
     try {
-      setLoading(true);
       const data = await getLocationById(locationId);
-      setLocationData(data);
+      // Ensure minPrice and maxPrice are present (fallback to 0 if missing)
+      setLocationData({
+        ...data,
+        minPrice: data.minPrice ?? 0,
+        maxPrice: data.maxPrice ?? 0,
+      });
     } catch (err) {
       setError("Không thể tải thông tin địa điểm");
       console.error("Error loading location:", err);
@@ -72,7 +84,7 @@ export default function EditLocationPage() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumb} />
-      <EditLocationForm 
+      <EditLocationForm
         locationData={locationData}
         backUrl="/moderator/locations"
       />

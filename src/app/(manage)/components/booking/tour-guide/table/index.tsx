@@ -2,15 +2,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { matchKeyword } from "./utils/text";
 import BookingFilterBar, {
   BookingFilter as UIXFilter,
 } from "./components/booking-filter-bar";
 import { useBookings } from "@/services/use-bookings";
 import { BookingItem, BookingTableComponent } from "./components/booking-table";
+import { hasAdminInPath } from "@/utils/check-admin";
 
 export default function BookingTourGuideTable() {
   const { loading, getBookingsPaged } = useBookings();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [filter, setFilter] = useState<UIXFilter>({
     status: undefined,
@@ -33,14 +37,19 @@ export default function BookingTourGuideTable() {
     const pn = opts?.resetPage ? 1 : pageNumber;
     const res = await getBookingsPaged({
       status: filter.status,
-      bookingType: filter.bookingType,
+      bookingType: 3,
       startDate: filter.startDate,
       endDate: filter.endDate,
       pageNumber: pn,
       pageSize,
     });
     if (res) {
-      setRawItems(res.items);
+      // Sort by bookingDate descending (most recent first)
+      const sortedItems = res.items.sort(
+        (a: BookingItem, b: BookingItem) =>
+          new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
+      );
+      setRawItems(sortedItems);
       setServerTotal(res.totalCount);
       if (opts?.resetPage) setPageNumber(1);
     }
@@ -66,7 +75,12 @@ export default function BookingTourGuideTable() {
     setPageNumber(1);
     const res = await getBookingsPaged({ ...empty, pageNumber: 1, pageSize });
     if (res) {
-      setRawItems(res.items);
+      // Sort by bookingDate descending (most recent first)
+      const sortedItems = res.items.sort(
+        (a: BookingItem, b: BookingItem) =>
+          new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
+      );
+      setRawItems(sortedItems);
       setServerTotal(res.totalCount);
     }
   };
@@ -75,7 +89,14 @@ export default function BookingTourGuideTable() {
     const kw = (filter.keyword ?? "").trim();
     if (!kw) return rawItems;
     return rawItems.filter((r) =>
-      matchKeyword(kw, r.tourName, r.tourGuideName, r.userName)
+      matchKeyword(
+        kw,
+        r.tourName,
+        r.tourGuideName,
+        r.userName,
+        r.tripPlanName,
+        r.contactName
+      )
     );
   }, [rawItems, filter.keyword]);
 
@@ -94,8 +115,33 @@ export default function BookingTourGuideTable() {
     return filteredLocal.slice(start, start + clientSize);
   }, [filteredLocal, isClientPaging, clientPage, clientSize]);
 
+  // Handle view booking detail
+  const handleViewBooking = (booking: BookingItem) => {
+    const isAdminPath = hasAdminInPath(pathname);
+    const basePath = isAdminPath ? "/admin" : "/moderator";
+    router.push(`${basePath}/booking/tour-guide/${booking.id}`);
+  };
+
+  // Handle view tour guide
+  const handleViewTourGuide = (booking: BookingItem) => {
+    if (booking.tourGuideId) {
+      const isAdminPath = hasAdminInPath(pathname);
+      const basePath = isAdminPath ? "/admin" : "/moderator";
+      router.push(`${basePath}/tour-guide/${booking.tourGuideId}`);
+    }
+  };
+
+  // Handle view trip plan
+  const handleViewTripPlan = (booking: BookingItem) => {
+    if (booking.tripPlanId) {
+      const isAdminPath = hasAdminInPath(pathname);
+      const basePath = isAdminPath ? "/admin" : "/moderator";
+      router.push(`${basePath}/personal-plan/${booking.tripPlanId}`);
+    }
+  };
+
   return (
-    <div className="gap-4 p-4">
+    <div className="gap-4 p-4 absolute w-full pt-20">
       <BookingFilterBar
         value={filter}
         onChange={setFilter}
@@ -109,7 +155,7 @@ export default function BookingTourGuideTable() {
         currentPage={isClientPaging ? clientPage : pageNumber}
         pageSize={isClientPaging ? clientSize : pageSize}
         totalCount={isClientPaging ? filteredLocal.length : serverTotal}
-        onPaginationChange={(p, s) => {
+        onPaginationChange={(p: number, s: number) => {
           if (isClientPaging) {
             setClientPage(p);
             setClientSize(s);
@@ -118,9 +164,11 @@ export default function BookingTourGuideTable() {
             setPageSize(s);
           }
         }}
-        onView={(r) => console.log("view", r.id)}
-        onCancel={(r) => console.log("cancel", r.id)}
-        onPay={(r) => console.log("pay", r.paymentLinkId)}
+        onView={handleViewBooking}
+        onCancel={(r: BookingItem) => console.log("cancel", r.id)}
+        onPay={(r: BookingItem) => console.log("pay", r.paymentLinkId)}
+        onViewTourGuide={handleViewTourGuide}
+        onViewTripPlan={handleViewTripPlan}
       />
     </div>
   );

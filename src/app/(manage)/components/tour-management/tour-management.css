@@ -1,0 +1,197 @@
+/* Custom styles for Tour Management Ant Design components */
+
+.tour-management-table .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+  border-bottom: 2px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tour-management-table .ant-table-thead {
+  background-color: #fafafa;
+}
+
+.tour-management-table .ant-table-sticky-holder {
+  position: sticky;
+  z-index: 10;
+}
+
+.tour-management-table .ant-table-tbody > tr:hover > td {
+  background-color: #f5f5f5;
+}
+
+.tour-management-table .ant-table {
+  background-color: #ffffff;
+}
+
+.tour-management-table .ant-table-container {
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.tour-management-table .ant-spin-nested-loading > div > .ant-spin {
+  max-height: none;
+}
+
+.tour-management-stats .ant-card {
+  transition: all 0.3s ease;
+}
+
+.tour-management-stats .ant-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tour-management-stats .ant-statistic-title {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.tour-management-stats .ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.tour-table-image {
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.tour-name-cell {
+  max-width: 250px;
+}
+
+.tour-name-cell .tour-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tour-name-cell .tour-description {
+  color: #666;
+  font-size: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tour-status-tag {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.tour-price {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tour-actions .ant-btn {
+  border: none;
+  box-shadow: none;
+}
+
+.tour-actions .ant-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.tour-filters .ant-select-selector {
+  border-radius: 6px;
+}
+
+.tour-filters .ant-input {
+  border-radius: 6px;
+}
+
+.tour-create-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.tour-table-container {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.tour-table-container .ant-table-wrapper {
+  border-radius: 8px;
+}
+
+.tour-table-container .ant-table-container {
+  overflow: auto;
+}
+
+.tour-table-container .ant-table {
+  background-color: #ffffff;
+}
+
+.tour-table-container .ant-table-body {
+  scrollbar-width: thin;
+  scrollbar-color: #d9d9d9 #f0f0f0;
+}
+
+.tour-table-container .ant-table-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tour-table-container .ant-table-body::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.tour-table-container .ant-table-body::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 4px;
+}
+
+.tour-table-container .ant-table-body::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tour-management-stats .ant-col {
+    margin-bottom: 16px;
+  }
+  
+  .tour-table-container {
+    overflow-x: auto;
+  }
+  
+  .tour-management-table .ant-table {
+    min-width: 1200px;
+  }
+}
+
+/* Fixed column styles */
+.tour-management-table .ant-table-cell-fix-left,
+.tour-management-table .ant-table-cell-fix-right {
+  position: sticky !important;
+  background-color: #ffffff;
+  z-index: 5;
+}
+
+.tour-management-table .ant-table-thead .ant-table-cell-fix-left,
+.tour-management-table .ant-table-thead .ant-table-cell-fix-right {
+  background-color: #fafafa;
+  z-index: 15;
+}
+
+.tour-management-table .ant-table-cell-fix-left-first {
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.tour-management-table .ant-table-cell-fix-right-first {
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+}
