@@ -34,7 +34,8 @@ import {
 	LoadingOutlined
 } from '@ant-design/icons'
 import { useTourguideAssign } from "@/services/tourguide"
-import { getUserIdFromLocalStorage } from "@/utils"
+import { useUser } from "@/services/use-user"
+import { getUserFromLocalStorage } from "@/utils"
 import AvatarUpload from "@/app/(client)/ho-so/components/avatar-upload/avatar-upload"
 
 const { Title, Text, Paragraph } = Typography
@@ -76,26 +77,87 @@ export default function AccountClient() {
 	const [updating, setUpdating] = useState(false)
 	const [editMode, setEditMode] = useState(false)
 	const [avatarUrl, setAvatarUrl] = useState<string>("")
+	const [retryCount, setRetryCount] = useState(0)
+	const [error, setError] = useState<string | null>(null)
 	const avatarInputRef = useRef<HTMLInputElement>(null)
 
 	const { getTourguideProfile, updateTourguide } = useTourguideAssign()
+	const { getUserDetail } = useUser()
+	const user = getUserFromLocalStorage()
+
+	// Optimized function to get user detail and tourguide ID
+	const getUserDetailAndTourguideId = async () => {
+		try {
+			if (!user?.userId) {
+				console.warn("No user ID available in localStorage")
+				return { userDetail: null, tourguideId: null }
+			}
+
+			console.log("Fetching user detail for userId:", user.userId)
+			const userDetail = await getUserDetail(user.userId)
+			console.log("User Detail Response:", userDetail)
+
+			if (!userDetail?.tourGuideInfo?.id) {
+				console.warn("No tourGuideInfo found in user detail:", userDetail)
+				return { userDetail, tourguideId: null }
+			}
+
+			const tourguideId = userDetail.tourGuideInfo.id
+			console.log("Found tourguideId:", tourguideId)
+
+			// Cache tourguideId for future use
+			localStorage.setItem("tourguideId", tourguideId.toString())
+
+			return { userDetail, tourguideId }
+		} catch (error) {
+			console.error("Error fetching user detail:", error)
+			return { userDetail: null, tourguideId: null }
+		}
+	}
+
+	// Retry handler for failed operations
+	const handleRetry = async () => {
+		setRetryCount(prev => prev + 1)
+		setError(null)
+		message.info(`Đang thử lại lần ${retryCount + 1}...`)
+		await loadProfile()
+	}
 
 	// Load profile data on component mount
 	useEffect(() => {
-		loadProfile()
-	}, [])
+		if (user?.userId) {
+			loadProfile()
+		} else {
+			console.error("No user found in localStorage")
+			message.error("Không tìm thấy thông tin người dùng trong localStorage")
+			setLoading(false)
+		}
+	}, [user?.userId])
 
 	const loadProfile = async () => {
 		try {
 			setLoading(true)
-			// Get user ID from localStorage
-			const userId = getUserIdFromLocalStorage()
-			if (!userId) {
-				message.error("Không tìm thấy thông tin người dùng! Vui lòng đăng nhập lại.")
+			setError(null)
+
+			// Get tourguide ID using the optimized function
+			const { userDetail, tourguideId } = await getUserDetailAndTourguideId()
+
+			if (!tourguideId) {
+				const errorMsg = "Không tìm thấy thông tin tourguide ID! Vui lòng kiểm tra lại tài khoản."
+				setError(errorMsg)
+				message.error(errorMsg)
+				console.error("No valid tourguide ID found. UserDetail:", userDetail)
 				return
 			}
 
-			const profileData = await getTourguideProfile(userId)
+			console.log("Loading profile for tourguideId:", tourguideId)
+			const profileData = await getTourguideProfile(tourguideId)
+			console.log("Profile data loaded:", profileData)
+
+			if (!profileData) {
+				throw new Error("Không có dữ liệu hồ sơ")
+			}
+
 			setProfile(profileData)
 			setAvatarUrl(profileData.avatarUrl)
 
@@ -110,8 +172,10 @@ export default function AccountClient() {
 				introduction: profileData.introduction || ""
 			})
 		} catch (error) {
+			const errorMsg = `Không thể tải thông tin hồ sơ: ${error instanceof Error ? error.message : "Lỗi không xác định"}`
 			console.error("Error loading profile:", error)
-			message.error("Không thể tải thông tin hồ sơ!")
+			setError(errorMsg)
+			message.error(errorMsg)
 		} finally {
 			setLoading(false)
 		}
@@ -121,15 +185,17 @@ export default function AccountClient() {
 		try {
 			setUpdating(true)
 
-			// Get user ID from localStorage
-			const userId = getUserIdFromLocalStorage()
-			if (!userId) {
-				message.error("Không tìm thấy thông tin người dùng! Vui lòng đăng nhập lại.")
+			// Get tourguide ID using the optimized function
+			const { tourguideId } = await getUserDetailAndTourguideId()
+			if (!tourguideId) {
+				message.error("Không tìm thấy thông tin tourguide ID để cập nhật!")
 				return
 			}
 
-			// Include user ID in the data
-			const updateData = { ...values, id: userId }
+			// Include tourguide ID in the data
+			const updateData = { ...values, id: tourguideId.toString() }
+			console.log("Updating profile with data:", updateData)
+
 			await updateTourguide(updateData)
 
 			message.success("Cập nhật hồ sơ thành công!")
@@ -139,21 +205,75 @@ export default function AccountClient() {
 			await loadProfile()
 		} catch (error) {
 			console.error("Error updating profile:", error)
-			message.error("Có lỗi xảy ra khi cập nhật hồ sơ!")
+			message.error(`Có lỗi xảy ra khi cập nhật hồ sơ: ${error instanceof Error ? error.message : "Lỗi không xác định"}`)
 		} finally {
 			setUpdating(false)
 		}
+	}
+
+	// Error state
+	if (error && !loading) {
+		return (
+			<div style={{
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+				alignItems: 'center',
+				minHeight: '60vh',
+				gap: '16px',
+				padding: '24px'
+			}}>
+				<div style={{
+					textAlign: 'center',
+					maxWidth: '500px',
+					background: '#fff2f0',
+					border: '1px solid #ffccc7',
+					borderRadius: '8px',
+					padding: '24px'
+				}}>
+					<Text type="danger" strong style={{ fontSize: '16px' }}>
+						⚠️ Có lỗi xảy ra
+					</Text>
+					<div style={{ margin: '12px 0' }}>
+						<Text type="secondary">{error}</Text>
+					</div>
+					{retryCount > 0 && (
+						<div style={{ marginBottom: '16px' }}>
+							<Text type="warning">Đã thử lại {retryCount} lần</Text>
+						</div>
+					)}
+					<Button
+						type="primary"
+						onClick={handleRetry}
+						loading={loading}
+						icon={<LoadingOutlined />}
+					>
+						{loading ? "Đang thử lại..." : "Thử lại"}
+					</Button>
+				</div>
+			</div>
+		)
 	}
 
 	if (loading) {
 		return (
 			<div style={{
 				display: 'flex',
+				flexDirection: 'column',
 				justifyContent: 'center',
 				alignItems: 'center',
-				minHeight: '60vh'
+				minHeight: '60vh',
+				gap: '16px'
 			}}>
 				<Spin size="large" indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+				<div style={{ textAlign: 'center' }}>
+					<Text type="secondary">Đang tải thông tin hồ sơ...</Text>
+					{retryCount > 0 && (
+						<div style={{ marginTop: 8 }}>
+							<Text type="warning">Đã thử lại {retryCount} lần</Text>
+						</div>
+					)}
+				</div>
 			</div>
 		)
 	}

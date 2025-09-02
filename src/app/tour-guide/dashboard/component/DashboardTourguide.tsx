@@ -1,27 +1,21 @@
 'use client'
 
-import * as React from 'react'
-import { useState, useEffect } from 'react'
-import {
-	TrendingUp,
-	TrendingDown,
-	Users,
-	DollarSign,
-	Calendar,
-	Eye,
-	Filter,
-	Download,
-	BarChart3,
-	PieChart,
-	Activity,
-	Clock,
-	MapPin,
-	Star
-} from 'lucide-react'
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, ResponsiveContainer, Bar, BarChart, PieChart as RechartsPieChart, Pie, Cell } from 'recharts'
 import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
+import {
+	Activity,
+	BarChart3,
+	Calendar,
+	Download,
+	PieChart,
+	TrendingDown,
+	TrendingUp,
+	Users
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CartesianGrid, Cell, Line, LineChart, Pie, PieChart as RechartsPieChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
 	ChartConfig,
@@ -29,8 +23,13 @@ import {
 	ChartTooltip,
 	ChartTooltipContent
 } from '@/components/ui/chart'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle
+} from '@/components/ui/dialog'
 import {
 	Select,
 	SelectContent,
@@ -38,159 +37,42 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select'
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
+import { useTourguideAssign } from '@/services/tourguide'
+import { getUserFromLocalStorage } from '@/utils'
+import { CiMoneyBill } from 'react-icons/ci'
+import BookingDetailDialog from './TourDetail'
+import { useUser } from '@/services/use-user'
 
 const { RangePicker } = DatePicker
 
-// TypeScript interfaces based on your schema
-interface User {
-	id: string
-	name: string
-	email: string
+// TypeScript interfaces based on your new API schema
+interface DailyStat {
+	date: string
+	revenueDirectGross: number
+	revenueDirectNet: number
+	bookingsDirect: number
+	bookingsFromTours: number
+	bookingsAll: number
 }
 
-interface Tour {
-	id: string
-	name: string
-	startDate: string
-	endDate: string
+interface TourguideStatistics {
+	tourGuideId: string
+	fromDate: string
+	toDate: string
+	grossRevenueDirect: number
+	netRevenueDirect: number
+	bookingsDirectCount: number
+	bookingsFromToursCount: number
+	bookingsAllCount: number
+	dailyStats: DailyStat[]
 }
 
-interface Booking {
-	id: string
-	bookingDate: string
-	status: string
-	grossRevenue: number
-	netRevenue: number
-	user: User
-	tour: Tour
-}
-
-interface BookingResponse {
-	data: Booking[]
-}
-
-// Mock data based on your new schema
-const mockBookings: Booking[] = [
-	{
-		id: "bkg-001",
-		bookingDate: "2025-05-20T12:00:00",
-		status: "confirmed",
-		grossRevenue: 2000000,
-		netRevenue: 1800000,
-		user: {
-			id: "usr-101",
-			name: "Nguyen Van A",
-			email: "nguyenvana@example.com"
-		},
-		tour: {
-			id: "tour-99",
-			name: "Tây Ninh City Tour",
-			startDate: "2025-06-01T08:00:00",
-			endDate: "2025-06-01T18:00:00"
-		}
-	},
-	{
-		id: "bkg-002",
-		bookingDate: "2025-05-21T14:30:00",
-		status: "completed",
-		grossRevenue: 1500000,
-		netRevenue: 1350000,
-		user: {
-			id: "usr-102",
-			name: "Tran Thi B",
-			email: "tranthib@example.com"
-		},
-		tour: {
-			id: "tour-100",
-			name: "Núi Bà Đen Adventure Tour",
-			startDate: "2025-06-02T07:00:00",
-			endDate: "2025-06-02T17:00:00"
-		}
-	},
-	{
-		id: "bkg-003",
-		bookingDate: "2025-05-22T10:15:00",
-		status: "pending",
-		grossRevenue: 2500000,
-		netRevenue: 2250000,
-		user: {
-			id: "usr-103",
-			name: "Le Minh C",
-			email: "leminhc@example.com"
-		},
-		tour: {
-			id: "tour-101",
-			name: "Workshop Gốm Sứ Tây Ninh",
-			startDate: "2025-06-03T09:00:00",
-			endDate: "2025-06-03T16:00:00"
-		}
-	},
-	{
-		id: "bkg-004",
-		bookingDate: "2025-05-23T16:45:00",
-		status: "confirmed",
-		grossRevenue: 1800000,
-		netRevenue: 1620000,
-		user: {
-			id: "usr-104",
-			name: "Pham Van D",
-			email: "phamvand@example.com"
-		},
-		tour: {
-			id: "tour-102",
-			name: "Cao Đài Temple & Black Virgin Mountain",
-			startDate: "2025-06-04T08:30:00",
-			endDate: "2025-06-04T17:30:00"
-		}
-	},
-	{
-		id: "bkg-005",
-		bookingDate: "2025-05-24T11:20:00",
-		status: "cancelled",
-		grossRevenue: 0,
-		netRevenue: 0,
-		user: {
-			id: "usr-105",
-			name: "Hoang Thi E",
-			email: "hoangthie@example.com"
-		},
-		tour: {
-			id: "tour-103",
-			name: "Tây Ninh Cuisine Experience",
-			startDate: "2025-06-05T10:00:00",
-			endDate: "2025-06-05T15:00:00"
-		}
-	}
-]
-
-// Mock dashboard data updated to match booking totals
-const mockDashboardData = {
-	tourGuideId: "08ddda50-0e86-4717-8e0b-43693894c439",
-	fromDate: "2025-01-01T00:00:00",
-	toDate: "2025-10-01T00:00:00",
-	grossRevenueDirect: mockBookings.reduce((sum, booking) => sum + booking.grossRevenue, 0),
-	netRevenueDirect: mockBookings.reduce((sum, booking) => sum + booking.netRevenue, 0),
-	bookingsDirectCount: mockBookings.filter(b => b.status !== 'cancelled').length,
-	bookingsFromToursCount: 3,
-	bookingsAllCount: mockBookings.length,
-	dailyStats: [
-		{ date: "2025-05-20", revenueDirectGross: 2000000, revenueDirectNet: 1800000, bookingsDirect: 1, bookingsFromTours: 0, bookingsAll: 1 },
-		{ date: "2025-05-21", revenueDirectGross: 1500000, revenueDirectNet: 1350000, bookingsDirect: 1, bookingsFromTours: 0, bookingsAll: 1 },
-		{ date: "2025-05-22", revenueDirectGross: 2500000, revenueDirectNet: 2250000, bookingsDirect: 1, bookingsFromTours: 0, bookingsAll: 1 },
-		{ date: "2025-05-23", revenueDirectGross: 1800000, revenueDirectNet: 1620000, bookingsDirect: 1, bookingsFromTours: 0, bookingsAll: 1 },
-		{ date: "2025-05-24", revenueDirectGross: 0, revenueDirectNet: 0, bookingsDirect: 0, bookingsFromTours: 0, bookingsAll: 1 },
-	]
+interface ApiResponse {
+	data: TourguideStatistics
+	message: string
+	succeeded: boolean
+	statusCode: number
 }
 
 const chartConfig = {
@@ -210,14 +92,86 @@ const chartConfig = {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
+
+
 function DashboardTourguide() {
 	const [selectedDateRange, setSelectedDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
 		dayjs().subtract(30, 'day'),
 		dayjs()
 	])
+	const user = getUserFromLocalStorage()
+	const { getUserDetail } = useUser()
 	const [viewType, setViewType] = useState<'revenue' | 'bookings'>('revenue')
-	const [selectedBookings, setSelectedBookings] = useState<Booking[]>([])
+	const [selectedBookingId, setSelectedBookingId] = useState<string>('')
 	const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false)
+
+	// State for API data - initialize with mock data to avoid runtime errors
+	const [statistics, setStatistics] = useState<TourguideStatistics>()
+	const [isLoading, setIsLoading] = useState(false)
+
+	const { tourguideDashboard } = useTourguideAssign()
+
+	const getUserDetailById = async (userId: any) => {
+		try {
+			const userDetail = await getUserDetail(userId)
+			console.log('User Detail:', userDetail)
+			return userDetail
+		} catch (error) {
+			console.error('Error fetching user detail:', error)
+			return null
+		}
+	}
+
+	const fetchDashboardStatistics = async () => {
+		try {
+			setIsLoading(true)
+			const userDetail = await getUserDetailById(user?.userId)
+			const tourguideId = userDetail?.tourGuideInfo?.id
+
+			// Validate tourguideId
+			if (!tourguideId) {
+				console.error('No valid tourguide ID found. Check user detail:', userDetail)
+				return
+			}
+
+			const startDate = selectedDateRange[0].format('YYYY-MM-DD')
+			const toDate = selectedDateRange[1].format('YYYY-MM-DD')
+
+			const response = await tourguideDashboard(tourguideId, startDate, toDate)
+
+			console.log('API Response:', response)
+
+			if (response) {
+				setStatistics(response)
+			} else {
+				console.warn('No data returned from API')
+			}
+		} catch (error: any) {
+			console.error('Error fetching dashboard statistics:', error)
+			console.error('Error details:', {
+				message: error.message,
+				status: error.response?.status,
+				data: error.response?.data,
+				config: error.config
+			})
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	useEffect(() => {
+		// Debug localStorage
+		if (typeof window !== 'undefined') {
+			console.log('LocalStorage Debug:', {
+				tourguideId: localStorage.getItem('tourguideId'),
+				userId: localStorage.getItem('userId'),
+				user: localStorage.getItem('user'),
+				allKeys: Object.keys(localStorage)
+			})
+		}
+
+		fetchDashboardStatistics()
+	}, [selectedDateRange])
 
 	const formatCurrency = (value: number) => {
 		return new Intl.NumberFormat('vi-VN', {
@@ -247,52 +201,196 @@ function DashboardTourguide() {
 	}
 
 	const handleChartClick = (data: any) => {
-		// Filter bookings for the selected date
-		const selectedDate = data.date
-		const filteredBookings = mockBookings.filter(booking =>
-			dayjs(booking.tour.startDate).format('YYYY-MM-DD') === selectedDate
-		)
-		setSelectedBookings(filteredBookings)
-		setIsBookingDialogOpen(true)
-	}	// Stats cards data
+		// For daily stats chart clicks, you might want to show detailed breakdown
+		console.log('Chart clicked:', data)
+	}
+
+	// Calculate trend and percentage change from daily stats
+	const calculateTrend = (type: 'grossRevenue' | 'netRevenue' | 'totalBookings' | 'directBookings') => {
+		if (!statistics?.dailyStats || statistics.dailyStats.length < 2) {
+			return { change: "0%", trend: "neutral" as const }
+		}
+
+		const sortedStats = [...statistics.dailyStats].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+		// For meaningful comparison, we need at least 4 data points
+		if (sortedStats.length < 4) {
+			return { change: "N/A", trend: "neutral" as const }
+		}
+
+		const totalDays = sortedStats.length
+		const halfPoint = Math.floor(totalDays / 2)
+
+		// Compare first half vs second half of the period
+		const firstHalf = sortedStats.slice(0, halfPoint)
+		const secondHalf = sortedStats.slice(halfPoint)
+
+		let firstHalfTotal = 0
+		let secondHalfTotal = 0
+
+		// Calculate totals based on metric type
+		switch (type) {
+			case 'grossRevenue':
+				firstHalfTotal = firstHalf.reduce((sum, stat) => sum + stat.revenueDirectGross, 0)
+				secondHalfTotal = secondHalf.reduce((sum, stat) => sum + stat.revenueDirectGross, 0)
+				break
+			case 'netRevenue':
+				firstHalfTotal = firstHalf.reduce((sum, stat) => sum + stat.revenueDirectNet, 0)
+				secondHalfTotal = secondHalf.reduce((sum, stat) => sum + stat.revenueDirectNet, 0)
+				break
+			case 'totalBookings':
+				firstHalfTotal = firstHalf.reduce((sum, stat) => sum + stat.bookingsAll, 0)
+				secondHalfTotal = secondHalf.reduce((sum, stat) => sum + stat.bookingsAll, 0)
+				break
+			case 'directBookings':
+				firstHalfTotal = firstHalf.reduce((sum, stat) => sum + stat.bookingsDirect, 0)
+				secondHalfTotal = secondHalf.reduce((sum, stat) => sum + stat.bookingsDirect, 0)
+				break
+		}
+
+		// Calculate average per day for more accurate comparison
+		const firstHalfAvg = firstHalfTotal / firstHalf.length
+		const secondHalfAvg = secondHalfTotal / secondHalf.length
+
+		if (firstHalfAvg === 0 && secondHalfAvg === 0) {
+			return { change: "0%", trend: "neutral" as const }
+		}
+
+		if (firstHalfAvg === 0) {
+			return { change: "+∞", trend: "up" as const }
+		}
+
+		const percentChange = ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100
+
+		// Only show significant changes (> 1%)
+		if (Math.abs(percentChange) < 1) {
+			return { change: "~0%", trend: "neutral" as const }
+		}
+
+		const change = `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}%`
+		const trend = percentChange > 5 ? "up" as const : percentChange < -5 ? "down" as const : "neutral" as const
+
+		return { change, trend }
+	}
+
+	// Calculate trends for each metric
+	const revenueTrend = calculateTrend('grossRevenue')
+	const netRevenueTrend = calculateTrend('netRevenue')
+	const bookingTrend = calculateTrend('totalBookings')
+	const directBookingTrend = calculateTrend('directBookings')
+
+	// Generate dynamic descriptions based on data analysis
+	const getSmartDescription = (trend: ReturnType<typeof calculateTrend>, type: string) => {
+		if (trend.change === "N/A") return "Cần thêm dữ liệu"
+		if (trend.change === "0%" || trend.change === "~0%") return "Ổn định so với kỳ trước"
+
+		const isPositive = trend.trend === 'up'
+		const changeValue = parseFloat(trend.change.replace(/[+%∞~]/g, ''))
+
+		if (type === 'revenue') {
+			if (isPositive) {
+				return changeValue > 20 ? "Tăng trưởng mạnh" : changeValue > 10 ? "Tăng trưởng tốt" : "Tăng trưởng ổn định"
+			} else {
+				return changeValue < -20 ? "Cần xem xét lại" : changeValue < -10 ? "Đang giảm" : "Giảm nhẹ"
+			}
+		} else {
+			if (isPositive) {
+				return changeValue > 30 ? "Đặt booking tăng mạnh" : changeValue > 15 ? "Xu hướng tích cực" : "Tăng nhẹ"
+			} else {
+				return changeValue < -30 ? "Cần cải thiện marketing" : changeValue < -15 ? "Booking đang giảm" : "Giảm nhẹ"
+			}
+		}
+	}
+
+	// Create stats cards from statistics data with calculated trends
 	const statsCards = [
 		{
 			title: "Tổng Doanh Thu",
-			value: formatCurrency(mockDashboardData.grossRevenueDirect),
-			change: "+12.5%",
-			trend: "up",
-			icon: DollarSign,
-			description: "So với tháng trước"
+			value: formatCurrency(statistics?.grossRevenueDirect || 0),
+			change: revenueTrend.change,
+			trend: revenueTrend.trend,
+			icon: CiMoneyBill,
+			description: getSmartDescription(revenueTrend, 'revenue')
 		},
 		{
 			title: "Doanh Thu Ròng",
-			value: formatCurrency(mockDashboardData.netRevenueDirect),
-			change: "+8.2%",
-			trend: "up",
+			value: formatCurrency(statistics?.netRevenueDirect || 0),
+			change: netRevenueTrend.change,
+			trend: netRevenueTrend.trend,
 			icon: TrendingUp,
-			description: "Sau khi trừ phí"
+			description: getSmartDescription(netRevenueTrend, 'revenue')
 		},
 		{
-			title: "Tổng Booking",
-			value: mockDashboardData.bookingsAllCount.toString(),
-			change: "+15.3%",
-			trend: "up",
+			title: "Tổng lượt đặt",
+			value: (statistics?.bookingsAllCount || 0).toString(),
+			change: bookingTrend.change,
+			trend: bookingTrend.trend,
 			icon: Users,
-			description: "Booking trong kỳ"
+			description: getSmartDescription(bookingTrend, 'booking')
 		},
 		{
-			title: "Booking Trực Tiếp",
-			value: mockDashboardData.bookingsDirectCount.toString(),
-			change: "-2.1%",
-			trend: "down",
+			title: "Đặt HDV Trực Tiếp",
+			value: (statistics?.bookingsDirectCount || 0).toString(),
+			change: directBookingTrend.change,
+			trend: directBookingTrend.trend,
 			icon: Calendar,
-			description: "Booking không qua tour"
+			description: getSmartDescription(directBookingTrend, 'booking')
 		}
 	]
 
+	// Auto-generate business insights from the data
+	const generateInsights = () => {
+		const insights: string[] = []
+
+		if (!statistics?.dailyStats || statistics.dailyStats.length < 2) {
+			return ["Cần thêm dữ liệu để phân tích xu hướng"]
+		}
+
+		// Revenue analysis
+		if (revenueTrend.trend === 'up' && parseFloat(revenueTrend.change.replace(/[+%∞~]/g, '')) > 15) {
+			insights.push("🚀 Doanh thu đang tăng trưởng mạnh - tiếp tục duy trì chiến lược hiện tại")
+		} else if (revenueTrend.trend === 'down' && parseFloat(revenueTrend.change.replace(/[+\-~%∞]/g, '')) > 15) {
+			insights.push("⚠️ Doanh thu giảm đáng kể - cần xem xét lại giá cả và marketing")
+		}
+
+		// Booking efficiency analysis
+		const directBookingRate = statistics.bookingsDirectCount / (statistics.bookingsAllCount || 1)
+		if (directBookingRate > 0.7) {
+			insights.push("💪 Tỷ lệ booking trực tiếp cao - bạn có thương hiệu cá nhân mạnh")
+		} else if (directBookingRate < 0.3) {
+			insights.push("📈 Cơ hội phát triển booking trực tiếp để tăng lợi nhuận")
+		}
+
+		// Revenue vs Booking correlation
+		const avgRevenuePerBooking = (statistics.grossRevenueDirect || 0) / (statistics.bookingsAllCount || 1)
+		if (avgRevenuePerBooking > 2000000) {
+			insights.push("💰 Doanh thu trung bình cao - tập trung vào khách hàng chất lượng")
+		}
+
+		// Weekly pattern analysis
+		const dailyStats = statistics.dailyStats
+		const weekendRevenue = dailyStats.filter(stat => {
+			const day = new Date(stat.date).getDay()
+			return day === 0 || day === 6 // Sunday or Saturday
+		}).reduce((sum, stat) => sum + stat.revenueDirectGross, 0)
+
+		const weekdayRevenue = dailyStats.filter(stat => {
+			const day = new Date(stat.date).getDay()
+			return day >= 1 && day <= 5 // Monday to Friday
+		}).reduce((sum, stat) => sum + stat.revenueDirectGross, 0)
+
+		if (weekendRevenue > weekdayRevenue * 1.5) {
+			insights.push("🎯 Cuối tuần là thời điểm vàng - tối ưu hóa lịch trình cuối tuần")
+		}
+
+		return insights.length > 0 ? insights.slice(0, 3) : ["Dashboard đang phân tích dữ liệu để đưa ra insights"]
+	}
+
+	const businessInsights = generateInsights()
+
 	const pieChartData = [
-		{ name: 'Booking Trực Tiếp', value: mockDashboardData.bookingsDirectCount },
-		{ name: 'Booking Từ Tour', value: mockDashboardData.bookingsFromToursCount },
+		{ name: 'Booking Trực Tiếp', value: statistics?.bookingsDirectCount || 0 },
+		{ name: 'Booking Từ Tour', value: statistics?.bookingsFromToursCount || 0 },
 	]
 
 	return (
@@ -349,10 +447,15 @@ function DashboardTourguide() {
 								<div className="flex items-center text-xs text-muted-foreground">
 									{card.trend === 'up' ? (
 										<TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-									) : (
+									) : card.trend === 'down' ? (
 										<TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+									) : (
+										<Activity className="h-3 w-3 text-gray-500 mr-1" />
 									)}
-									<span className={card.trend === 'up' ? 'text-green-500' : 'text-red-500'}>
+									<span className={
+										card.trend === 'up' ? 'text-green-500' :
+											card.trend === 'down' ? 'text-red-500' : 'text-gray-500'
+									}>
 										{card.change}
 									</span>
 									<span className="ml-1">{card.description}</span>
@@ -362,6 +465,29 @@ function DashboardTourguide() {
 					)
 				})}
 			</div>
+
+			{/* Business Insights */}
+			<Card className="border-l-4 border-l-blue-500">
+				<CardHeader>
+					<CardTitle className="flex items-center gap-2">
+						<Activity className="h-5 w-5" />
+						Business Insights
+					</CardTitle>
+					<CardDescription>
+						Phân tích tự động từ dữ liệu của bạn
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="space-y-3">
+						{businessInsights.map((insight, index) => (
+							<div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+								<div className="h-2 w-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+								<p className="text-sm text-gray-700 leading-relaxed">{insight}</p>
+							</div>
+						))}
+					</div>
+				</CardContent>
+			</Card>
 
 			{/* Charts Section */}
 			<div className="grid gap-4 md:grid-cols-7">
@@ -380,7 +506,7 @@ function DashboardTourguide() {
 						<ChartContainer config={chartConfig}>
 							<ResponsiveContainer width="100%" height={350}>
 								<LineChart
-									data={mockDashboardData.dailyStats}
+									data={statistics?.dailyStats || []}
 									margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
 								>
 									<CartesianGrid strokeDasharray="3 3" />
@@ -504,118 +630,24 @@ function DashboardTourguide() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{mockBookings.map((booking) => (
-								<TableRow key={booking.id} className="hover:bg-muted/50">
-									<TableCell>
-										<div className="flex items-center gap-2">
-											<Avatar className="w-8 h-8">
-												<AvatarImage src="" />
-												<AvatarFallback>
-													{booking.user.name.charAt(0)}
-												</AvatarFallback>
-											</Avatar>
-											<span className="font-medium">{booking.user.name}</span>
-										</div>
-									</TableCell>
-									<TableCell>
-										<div>
-											<p className="font-medium">{booking.tour.name}</p>
-											<Badge variant="outline" className="text-xs">
-												{booking.status !== 'cancelled' ? 'Đang hoạt động' : 'Đã hủy'}
-											</Badge>
-										</div>
-									</TableCell>
-									<TableCell>
-										<div className="flex items-center gap-1">
-											<Calendar className="h-3 w-3 text-muted-foreground" />
-											{dayjs(booking.bookingDate).format('DD/MM/YYYY')}
-										</div>
-									</TableCell>
-									<TableCell>
-										<div className="flex items-center gap-1">
-											<Clock className="h-3 w-3 text-muted-foreground" />
-											{dayjs(booking.tour.startDate).format('DD/MM/YYYY')}
-										</div>
-									</TableCell>
-									<TableCell>
-										<div className="flex items-center gap-1">
-											<Users className="h-3 w-3 text-muted-foreground" />
-											1
-										</div>
-									</TableCell>
-									<TableCell className="font-semibold text-green-600">
-										{formatCurrency(booking.grossRevenue)}
-									</TableCell>
-									<TableCell>
-										<Badge className={getStatusColor(booking.status)}>
-											{getStatusText(booking.status)}
-										</Badge>
-									</TableCell>
-									<TableCell>
-										<Dialog>
-											<DialogTrigger asChild>
-												<Button variant="outline" size="sm">
-													<Eye className="h-3 w-3 mr-1" />
-													Chi tiết
-												</Button>
-											</DialogTrigger>
-											<DialogContent className="max-w-2xl">
-												<DialogHeader>
-													<DialogTitle>Chi tiết Booking #{booking.id}</DialogTitle>
-													<DialogDescription>
-														Thông tin đầy đủ về booking này
-													</DialogDescription>
-												</DialogHeader>
-												<div className="grid gap-4 py-4">
-													<div className="grid grid-cols-2 gap-4">
-														<div>
-															<h4 className="font-semibold mb-2">Thông tin khách hàng</h4>
-															<div className="space-y-2 text-sm">
-																<p><span className="font-medium">Tên:</span> {booking.user.name}</p>
-																<p><span className="font-medium">Email:</span> {booking.user.email}</p>
-															</div>
-														</div>
-														<div>
-															<h4 className="font-semibold mb-2">Thông tin tour</h4>
-															<div className="space-y-2 text-sm">
-																<p><span className="font-medium">Tên tour:</span> {booking.tour.name}</p>
-																<p><span className="font-medium">Mã tour:</span> {booking.tour.id}</p>
-															</div>
-														</div>
-													</div>
-													<Separator />
-													<div className="grid grid-cols-2 gap-4">
-														<div>
-															<h4 className="font-semibold mb-2">Thời gian</h4>
-															<div className="space-y-2 text-sm">
-																<p><span className="font-medium">Ngày đặt:</span> {dayjs(booking.bookingDate).format('DD/MM/YYYY HH:mm')}</p>
-																<p><span className="font-medium">Ngày bắt đầu:</span> {dayjs(booking.tour.startDate).format('DD/MM/YYYY HH:mm')}</p>
-																<p><span className="font-medium">Ngày kết thúc:</span> {dayjs(booking.tour.endDate).format('DD/MM/YYYY HH:mm')}</p>
-															</div>
-														</div>
-														<div>
-															<h4 className="font-semibold mb-2">Thanh toán</h4>
-															<div className="space-y-2 text-sm">
-																<p><span className="font-medium">Doanh thu gộp:</span> <span className="text-green-600 font-semibold">{formatCurrency(booking.grossRevenue)}</span></p>
-																<p><span className="font-medium">Doanh thu ròng:</span> <span className="text-blue-600 font-semibold">{formatCurrency(booking.netRevenue)}</span></p>
-																<p><span className="font-medium">Trạng thái:</span>
-																	<Badge className={`ml-1 ${getStatusColor(booking.status)}`}>
-																		{getStatusText(booking.status)}
-																	</Badge>
-																</p>
-															</div>
-														</div>
-													</div>
-												</div>
-											</DialogContent>
-										</Dialog>
-									</TableCell>
-								</TableRow>
-							))}
+							<TableRow>
+								<TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+									<div className="space-y-2">
+										<p>Danh sách booking chi tiết sẽ có ở phiên bản tới</p>
+										<p className="text-sm">Hiện tại chỉ hiển thị thống kê tổng hợp từ dailyStats</p>
+									</div>
+								</TableCell>
+							</TableRow>
 						</TableBody>
 					</Table>
 				</CardContent>
 			</Card>
+
+			<BookingDetailDialog
+				open={isBookingDialogOpen}
+				onOpenChange={setIsBookingDialogOpen}
+				bookingId={selectedBookingId}
+			/>
 
 			{/* Booking Details Dialog */}
 			<Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
@@ -638,30 +670,12 @@ function DashboardTourguide() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{selectedBookings.map((booking) => (
-									<TableRow key={booking.id}>
-										<TableCell>
-											<div className="flex items-center gap-2">
-												<Avatar className="w-6 h-6">
-													<AvatarFallback className="text-xs">
-														{booking.user.name.charAt(0)}
-													</AvatarFallback>
-												</Avatar>
-												{booking.user.name}
-											</div>
-										</TableCell>
-										<TableCell>{booking.tour.name}</TableCell>
-										<TableCell>1</TableCell>
-										<TableCell className="font-semibold text-green-600">
-											{formatCurrency(booking.grossRevenue)}
-										</TableCell>
-										<TableCell>
-											<Badge className={getStatusColor(booking.status)}>
-												{getStatusText(booking.status)}
-											</Badge>
-										</TableCell>
-									</TableRow>
-								))}
+								{/* TODO: Add individual bookings when available from API */}
+								<TableRow>
+									<TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+										Dữ liệu booking chi tiết sẽ có ở phiên bản tới
+									</TableCell>
+								</TableRow>
 							</TableBody>
 						</Table>
 					</div>

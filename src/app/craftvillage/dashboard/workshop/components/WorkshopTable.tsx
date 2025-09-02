@@ -1,7 +1,6 @@
 "use client";
 
 import { DataTable } from '@/components/table/data-table-user';
-import { WorkshopDetail } from '@/types/Workshop'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -9,8 +8,19 @@ import { Eye, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Tooltip, TooltipTrigger } from '@/components/tiptap-ui-primitive/tooltip';
 
+interface WorkshopResponseItem {
+	id: string
+	name: string
+	description: string
+	content: string
+	status: number
+	craftVillageId: string
+	locationId: string
+	craftVillageName: string
+}
+
 type WorkshopTableProps = {
-	items: WorkshopDetail[]
+	items: WorkshopResponseItem[]
 }
 
 function WorkshopTable({ items }: WorkshopTableProps) {
@@ -24,7 +34,7 @@ function WorkshopTable({ items }: WorkshopTableProps) {
 		router.push(`/craftvillage/dashboard/workshop/${id}`)
 	}
 
-	const columns: ColumnDef<WorkshopDetail>[] = [
+	const columns: ColumnDef<WorkshopResponseItem>[] = [
 		{
 			header: 'Tên workshop',
 			accessorKey: 'name',
@@ -36,14 +46,22 @@ function WorkshopTable({ items }: WorkshopTableProps) {
 		{
 			header: 'Trạng thái',
 			accessorKey: 'status',
+			cell: ({ row }) => {
+				const status = row.original.status
+				const getStatusText = (status: number) => {
+					switch (status) {
+						case 1: return 'Đã duyệt'
+						case 0: return 'Chờ duyệt'
+						case -1: return 'Bị từ chối'
+						default: return 'Không xác định'
+					}
+				}
+				return <span>{getStatusText(status)}</span>
+			}
 		},
 		{
-			header: 'Ngày tạo',
-			accessorKey: 'createdAt',
-		},
-		{
-			header: 'Ngày cập nhật',
-			accessorKey: 'updatedAt',
+			header: 'Làng nghề',
+			accessorKey: 'craftVillageName',
 		},
 		{
 			header: 'Hành động',

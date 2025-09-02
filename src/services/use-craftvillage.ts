@@ -2,7 +2,7 @@
 
 import { useCallback } from "react"
 import useApiService from "@/hooks/useApi"
-import { CRAFT_VILLAGE_API_URL } from "@/constants/api"
+import { CRAFT_VILLAGE_API_DETAIL, CRAFT_VILLAGE_API_URL } from "@/constants/api"
 
 
 export function useCraftVillage() {
@@ -100,6 +100,36 @@ export function useCraftVillage() {
 		}
 	}, [callApi, setIsLoading])
 
+	const getCraftVillageInfo = useCallback(async (id: any) => {
+		setIsLoading(true)
+		try {
+			const response = await callApi("get", `${CRAFT_VILLAGE_API_DETAIL.GET_CRAFT_VILLAGE.replace(':id', id)}`)
+			return response?.data
+		} catch (error) {
+			throw error
+		} finally {
+			setIsLoading(false)
+		}
+	}, [callApi, setIsLoading])
+
+	// Function to get craft village dashboard data
+	const getCraftVillageDashboard = useCallback(async (craftVillageId: string, fromDate: string, toDate: string) => {
+		const payload = {
+			fromDate,
+			toDate
+		}
+		setIsLoading(true)
+		try {
+			const response = await callApi("get", CRAFT_VILLAGE_API_URL.CRAFT_VILLAGE_DASHBOARD.replace(':id', craftVillageId), payload)
+			return response?.data
+		} catch (error) {
+			console.error("Error fetching craft village dashboard:", error)
+			throw error
+		} finally {
+			setIsLoading(false)
+		}
+	}, [callApi, setIsLoading])
+
 	return {
 		getCraftVillageRequest,
 		getCraftVillageRequestById,
@@ -108,6 +138,8 @@ export function useCraftVillage() {
 		patchCraftVillageRequest,
 		getLastestCraftVillageRequest,
 		transformUserToCraftVillageRole,
+		getCraftVillageInfo,
+		getCraftVillageDashboard,
 		loading
 	}
 }
