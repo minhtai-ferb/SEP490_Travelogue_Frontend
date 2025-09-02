@@ -1,12 +1,8 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
 import VietmapGL from "@/components/vietmap-gl"
 import { User as Usertype } from "@/interfaces"
 import { SeccretKey } from "@/secret/secret"
@@ -20,21 +16,18 @@ import {
 	CheckCircle,
 	Clock,
 	Globe,
-	Loader2,
 	Mail,
 	MapPin,
 	Phone,
 	Star,
 	User,
 	WorkflowIcon as Workshop,
-	XCircle,
+	XCircle
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 interface CraftVillageDetailViewProps {
 	data: CraftVillageRequestResponse
-	onApprove?: () => void
-	onReject?: () => void
 	showActions?: boolean
 	loading?: boolean
 	isReviewRequestOpen?: boolean
@@ -98,9 +91,6 @@ export default function CraftVillageDetailView({
 
 	const statusConfig = getStatusConfig(data.status)
 
-	const canSubmit = reviewAction === "approve" || (reviewAction === "reject" && (reviewReason?.trim()?.length || 0) >= 10)
-
-
 	// Helper to get user detail synchronously (for display)
 	// If you want to show reviewer name, you should fetch it in a useEffect and store in state
 	const [reviewedByName, setReviewedByName] = useState<string>("")
@@ -153,32 +143,6 @@ export default function CraftVillageDetailView({
 							</div>
 							<p className="text-gray-600 leading-relaxed">{data.description}</p>
 						</div>
-
-						{showActions && data.status === CraftVillageRequestStatus.Pending && (
-							<div className="flex gap-2">
-								<Button
-									onClick={() => {
-										setReviewAction?.("reject")
-										setReviewReason?.("")
-										setIsReviewRequestOpen(true)
-									}}
-									variant="outline"
-									disabled={loading}
-									className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
-								>
-									<XCircle className="w-4 h-4 mr-2" />
-									Từ chối
-								</Button>
-								<Button onClick={() => {
-									setReviewAction?.("approve")
-									setReviewReason?.("")
-									setIsReviewRequestOpen(true)
-								}} disabled={loading} className="bg-green-600 hover:bg-green-700">
-									<CheckCircle className="w-4 h-4 mr-2" />
-									Duyệt
-								</Button>
-							</div>
-						)}
 					</div>
 				</CardHeader>
 			</Card>
@@ -555,88 +519,6 @@ export default function CraftVillageDetailView({
 					</Card>
 				</div>
 			</div>
-			<Dialog open={isReviewRequestOpen} onOpenChange={(open) => {
-				if (isSubmitting) return // Prevent closing while submitting
-				setIsReviewRequestOpen(open)
-				if (!open) {
-					setReviewAction?.(null)
-					setReviewReason?.("")
-				}
-			}}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{reviewAction === "approve" ? "Xác nhận duyệt đơn đăng ký" : reviewAction === "reject" ? "Từ chối đơn đăng ký" : "Duyệt đơn đăng ký"}
-						</DialogTitle>
-					</DialogHeader>
-					<div className="space-y-4">
-						{reviewAction === "approve" && (
-							<p className="text-sm text-gray-600">
-								Bạn có chắc chắn muốn duyệt đơn đăng ký này? Hành động này sẽ chấp nhận làng nghề vào hệ thống.
-							</p>
-						)}
-
-						<div className="space-y-2">
-							<label className="text-sm font-medium">{reviewAction === "reject" ? "Lý do từ chối (tối thiểu 10 ký tự)" : "Ghi chú (tuỳ chọn)"}</label>
-							<Textarea
-								rows={4}
-								placeholder={reviewAction === "reject" ? "Nhập lý do từ chối chi tiết để người dùng hiểu rõ..." : "Nhập ghi chú khi duyệt (tuỳ chọn)..."}
-								value={reviewReason}
-								onChange={(e) => setReviewReason?.(e.target.value)}
-							/>
-							{reviewAction === "reject" && (
-								<div className="text-xs">
-									{(reviewReason?.trim()?.length || 0) < 10 ? (
-										<span className="text-red-500">Lý do cần ít nhất 10 ký tự.</span>
-									) : (
-										<span className="text-gray-500">{reviewReason?.trim()?.length || 0} ký tự</span>
-									)}
-								</div>
-							)}
-						</div>
-
-						<DialogFooter>
-							<Button
-								onClick={() => setIsReviewRequestOpen(false)}
-								variant="outline"
-								disabled={isSubmitting}
-							>
-								Hủy
-							</Button>
-							<Button
-								type="button"
-								disabled={!canSubmit || loading || isSubmitting}
-								onClick={async () => {
-									try {
-										setIsSubmitting(true)
-										await onSubmitReview?.({
-											status: reviewAction === "approve" ? CraftVillageRequestStatus.Approved : CraftVillageRequestStatus.Rejected,
-											rejectionReason: reviewReason?.trim() || undefined,
-										})
-										setIsReviewRequestOpen(false)
-										setReviewAction?.(null)
-										setReviewReason?.("")
-									} catch (error) {
-										console.error("Error submitting review:", error)
-									} finally {
-										setIsSubmitting(false)
-									}
-								}}
-								className={reviewAction === "reject" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
-							>
-								{isSubmitting ? (
-									<>
-										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										Đang xử lý...
-									</>
-								) : (
-									reviewAction === "approve" ? "Duyệt" : reviewAction === "reject" ? "Từ chối" : "Xác nhận"
-								)}
-							</Button>
-						</DialogFooter>
-					</div>
-				</DialogContent>
-			</Dialog>
 		</div>
 	)
 }

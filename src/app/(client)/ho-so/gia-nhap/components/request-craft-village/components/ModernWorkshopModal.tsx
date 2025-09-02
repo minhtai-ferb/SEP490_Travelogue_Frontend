@@ -29,7 +29,6 @@ interface ModernWorkshopModalProps {
 	onSave: (workshop: Workshop) => void
 	editingWorkshop?: Workshop | null
 	formData: any
-	fetchLatest?: () => void
 }
 
 const TICKET_TYPES = {
@@ -65,10 +64,10 @@ export default function ModernWorkshopModal({
 	onSave,
 	editingWorkshop,
 	formData,
-	fetchLatest
 }: ModernWorkshopModalProps) {
 	const [currentStep, setCurrentStep] = useState(1)
 	const [errors, setErrors] = useState<Record<string, string>>({})
+	const [isSaving, setIsSaving] = useState(false)
 
 	// Initialize workshop state
 	const [workshop, setWorkshop] = useState<Workshop>(() => {
@@ -153,7 +152,7 @@ export default function ModernWorkshopModal({
 							sessions: [
 								{
 									startTime: "08:00:00",
-									endTime: "10:00:00",
+									endTime: "10:00:00", // Default 2 hours
 									capacity: 20,
 								},
 							],
@@ -197,6 +196,31 @@ export default function ModernWorkshopModal({
 		workshop.ticketTypes.find(t => t.type === TICKET_TYPES.EXPERIENCE),
 		[workshop.ticketTypes]
 	)
+
+	// Auto-fix empty endTime values
+	useEffect(() => {
+		const experienceTicketDuration = experienceTicket?.durationMinutes || 120
+		let needsUpdate = false
+
+		const updatedRules = workshop.recurringRules.map(rule => ({
+			...rule,
+			sessions: rule.sessions.map(session => {
+				// Fix empty endTime
+				if ((!session.endTime || session.endTime === "") && session.startTime && session.startTime !== "00:00:00") {
+					needsUpdate = true
+					return {
+						...session,
+						endTime: calculateEndTime(session.startTime, experienceTicketDuration)
+					}
+				}
+				return session
+			})
+		}))
+
+		if (needsUpdate) {
+			updateWorkshop({ recurringRules: updatedRules })
+		}
+	}, [workshop.recurringRules, experienceTicket?.durationMinutes, calculateEndTime, updateWorkshop])
 
 	const validateStep = useCallback((step: number) => {
 		const newErrors: Record<string, string> = {}
@@ -267,71 +291,40 @@ export default function ModernWorkshopModal({
 		}
 	}, [currentStep, hasExperienceTicket])
 
-	const handleSave = useCallback(() => {
+	const handleSave = useCallback(async () => {
 		if (validateStep(currentStep)) {
-			// Remove startTime and endTime from workshopActivities before sending to server
-			const cleanedWorkshop = {
-				...workshop,
-				ticketTypes: workshop.ticketTypes.map(ticket => ({
-					...ticket,
-					workshopActivities: ticket.workshopActivities?.map(({ activity, description, durationMinutes, activityOrder }) => ({
-						activity,
-						description,
-						durationMinutes,
-						activityOrder,
-					})) || [],
-				})),
-			}
-			onSave(cleanedWorkshop)
-			onClose()
-			// Reset form state
-			setWorkshop({
-				name: "",
-				description: "",
-				content: "",
-				status: 1,
-				ticketTypes: [
-					{
-						type: TICKET_TYPES.VISIT,
-						name: "Vé tham quan",
-						price: 0,
-						isCombo: false,
-						durationMinutes: 0,
-						content: "Tham quan và khám phá không gian làng nghề",
-						workshopActivities: [],
-					},
-					{
-						type: TICKET_TYPES.EXPERIENCE,
-						name: "Vé trải nghiệm",
-						price: 0,
-						isCombo: true,
-						durationMinutes: 0,
-						content: "Tham quan và trải nghiệm thực hành",
-						workshopActivities: [],
-					},
-				],
-				schedules: [],
-				recurringRules: [
-					{
-						daysOfWeek: [1],
-						sessions: [
-							{
-								startTime: "08:00:00",
-								endTime: "10:00:00",
-								capacity: 20,
-							},
-						],
-					},
-				],
-				exceptions: [],
-			})
-			setCurrentStep(1)
-			setErrors({})
-			if (typeof fetchLatest === 'function') {
-				fetchLatest()
+			try {
+				setIsSaving(true)
+
+				const cleanedWorkshop = {
+					...workshop,
+					ticketTypes: workshop.ticketTypes.map(ticket => ({
+						...ticket,
+						workshopActivities: ticket.workshopActivities?.map(({ activity, description, durationMinutes, activityOrder }) => ({
+							activity,
+							description,
+							durationMinutes,
+							activityOrder,
+						})) || [],
+					})),
+				}
+
+				// Save the workshop first
+				await onSave(cleanedWorkshop)
+
+				// Only close and reset after successful save
+				onClose()
+				setCurrentStep(1)
+				setErrors({})
+			} catch (error) {
+				// Handle save error - don't close modal
+				console.error('Error saving workshop:', error)
+				// You might want to show error message to user
+			} finally {
+				setIsSaving(false)
 			}
 		}
-	}, [currentStep, validateStep, workshop, onSave, onClose, fetchLatest])
+	}, [currentStep, validateStep, workshop, onSave, onClose])
 
 	const addActivity = useCallback(() => {
 		if (!experienceTicket) return
@@ -864,7 +857,8 @@ export default function ModernWorkshopModal({
 												</div>
 
 												<div className="text-xs text-blue-700 bg-blue-100/50 p-3 rounded-lg">
-													💡 <strong>Tự động tính thời gian:</strong> Giờ kết thúc sẽ được tự động tính dựa trên thời gian của vé trải nghiệm ({experienceTicket?.durationMinutes || 120} phút). Chỉ cần chọn giờ bắt đầu.
+													💡 <strong>Tự động tính thời gian:</strong> Giờ kết thúc sẽ được tự động tính dựa trên thời gian của vé trải nghiệm ({experienceTicket?.durationMinutes || "Nếu chưa có "} phút). Chỉ cần chọn giờ bắt đầu.
+													<br />💡 <strong>Hệ thống sẽ tự động tạo thời gian trải nghiệm 1 tháng tới</strong>
 												</div>
 
 												{rule.sessions.map((session, sessionIndex) => (
@@ -912,7 +906,7 @@ export default function ModernWorkshopModal({
 																<Label className="text-sm">Thời gian kết thúc</Label>
 																<Input
 																	type="time"
-																	value={session.endTime.slice(0, 5)}
+																	value={session.endTime ? session.endTime.slice(0, 5) : "10:00"}
 																	onChange={(e) => updateSession(index, sessionIndex, { endTime: `${e.target.value}:00` })}
 																	onKeyDown={(e) => e.stopPropagation()}
 																	className="border-2 border-gray-200 focus:border-blue-400"
@@ -956,13 +950,18 @@ export default function ModernWorkshopModal({
 								Tiếp theo
 							</Button>
 						) : (
-							<Button type="button" onClick={handleSave} className="bg-gradient-to-r from-emerald-500 to-blue-500">
-								{editingWorkshop ? "Cập nhật" : "Lưu trải nghiệm"}
+							<Button
+								type="button"
+								onClick={handleSave}
+								disabled={isSaving}
+								className="bg-gradient-to-r from-emerald-500 to-blue-500 disabled:opacity-50"
+							>
+								{isSaving ? "Đang lưu..." : (editingWorkshop ? "Cập nhật" : "Lưu trải nghiệm")}
 							</Button>
 						)}
 					</div>
 				</DialogFooter>
 			</DialogContent>
-		</Dialog>
+		</Dialog >
 	)
 }

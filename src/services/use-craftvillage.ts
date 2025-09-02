@@ -4,8 +4,26 @@ import { useCallback } from "react"
 import useApiService from "@/hooks/useApi"
 import { CRAFT_VILLAGE_API_URL } from "@/constants/api"
 
+
 export function useCraftVillage() {
 	const { callApi, loading, setIsLoading } = useApiService()
+	// nguoi dung tu lay yeu cau cua nguoi dung tro thanh role lang nghe
+	const transformUserToCraftVillageRole = useCallback(async ({ status, pageNumber, pageSize }: { status?: number | null, pageNumber: number, pageSize: number }) => {
+		const payload = {
+			status,
+			pageNumber,
+			pageSize
+		}
+		setIsLoading(true)
+		try {
+			const response = await callApi("get", CRAFT_VILLAGE_API_URL.TRANSFORM_USER_TO_CRAFT_VILLAGE_ROLE, payload)
+			return response?.data
+		} catch (error) {
+			throw error
+		} finally {
+			setIsLoading(false)
+		}
+	}, [callApi, setIsLoading])
 
 	const getCraftVillageRequest = useCallback(async () => {
 		setIsLoading(true)
@@ -89,6 +107,7 @@ export function useCraftVillage() {
 		reviewCraftVillageRequest,
 		patchCraftVillageRequest,
 		getLastestCraftVillageRequest,
+		transformUserToCraftVillageRole,
 		loading
 	}
 }

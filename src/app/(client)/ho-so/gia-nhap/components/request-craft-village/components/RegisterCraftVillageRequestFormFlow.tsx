@@ -10,6 +10,8 @@ import toast from "react-hot-toast"
 
 import CraftVillageForm from "./CraftVillageForm"
 import WorkshopCreationModal from "./WorkshopCreationModal"
+import { useCraftVillage } from "@/services/use-craftvillage"
+import { set } from "date-fns"
 
 interface CraftVillageData {
 	name: string
@@ -72,6 +74,7 @@ export default function CraftVillageRegistrationFlow({ fetchLatest }: { fetchLat
 	const [showWorkshopModal, setShowWorkshopModal] = useState(false)
 	const [editingWorkshop, setEditingWorkshop] = useState<WorkshopSummary | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const { createCraftVillageRequest } = useCraftVillage()
 
 	const handleCraftVillageComplete = useCallback((data: CraftVillageData) => {
 		setCraftVillageData(data)
@@ -135,19 +138,17 @@ export default function CraftVillageRegistrationFlow({ fetchLatest }: { fetchLat
 				})),
 			}
 
-			const response = await fetch("/api/craft-villages", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(applicationData),
-			})
+			const response = await createCraftVillageRequest(applicationData)
+			console.log("DEBUG_RequestCVForm", response);
 
-			if (!response.ok) throw new Error("Failed to register craft village")
+			if (!response) throw new Error("Failed to register craft village")
 
 			toast.success("Đăng ký làng nghề thành công!")
 			setStep("complete")
 			fetchLatest()
-		} catch (error) {
-			toast.error("Không thể hoàn thành đăng ký")
+			setCraftVillageData(null)
+		} catch (error: any) {
+			toast.error(error?.response?.data?.Message || "Không thể hoàn thành đăng ký")
 		} finally {
 			setIsSubmitting(false)
 		}

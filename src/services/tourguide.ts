@@ -262,6 +262,20 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	);
 
+	const updateTourguide = useCallback(
+		async (data: any) => {
+			setLoading(true);
+			try {
+				const response = await callApi("put", TOUR_GUIDE_API_URL.TOUR_GUIDE_PROFILE_UPDATE, data);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
@@ -278,6 +292,7 @@ export function useTourguideAssign() {
 		getTourGuideScheduleDetail,
 		createRejectionRequest,
 		getTourguideFilter,
+		updateTourguide,
 		loading: isLoading || loading,
 	};
 }
