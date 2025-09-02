@@ -38,7 +38,7 @@ export const filterScheduleItems = (
 	if (filter === 'all') return items
 
 	return items.filter(item => {
-		const eventKind = (item as any).eventKind || (item as any).scheduleType || (item as any).status
+		const eventKind = item.scheduleType || 'Booking'
 		return eventKind === filter
 	})
 }
@@ -53,8 +53,8 @@ export const getEventBackgroundColor = (eventKind: string): string => {
 }
 
 export const createEventPropGetter = () => (event: CalendarEvent) => {
-	const item = event.resource as any
-	const kind = item.eventKind || item.scheduleType || item.status || 'Booking'
+	const item = event.resource as GuideScheduleItem
+	const kind = item.scheduleType || 'Booking'
 
 	return {
 		style: {

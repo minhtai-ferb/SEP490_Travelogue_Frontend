@@ -31,13 +31,14 @@ export const useScheduleData = ({ start, end }: UseScheduleDataProps) => {
 
 	const normalizeScheduleItem = (item: any): GuideScheduleItem => ({
 		...item,
-		eventKind: (item.scheduleType || item.status || 'Booking') as 'Booking' | 'TourSchedule',
+		// Keep the original scheduleType, don't add eventKind
+		scheduleType: (item.scheduleType || item.status || 'Booking') as 'Booking' | 'TourSchedule',
 	})
 
 	const removeDuplicates = (items: GuideScheduleItem[]): GuideScheduleItem[] => {
 		const map = new Map()
 		items.forEach(item => {
-			const key = item.id ?? `${item.eventKind}-${item.date}-${item.tourScheduleId ?? item.bookingId ?? Math.random()}`
+			const key = item.id ?? `${item.scheduleType}-${item.date}-${item.tourScheduleId ?? item.bookingId ?? Math.random()}`
 			map.set(key, item)
 		})
 		return Array.from(map.values())
@@ -90,9 +91,9 @@ export const useScheduleData = ({ start, end }: UseScheduleDataProps) => {
 		const base = { all: items.length, Booking: 0, TourSchedule: 0 }
 
 		items.forEach(item => {
-			const eventType = item.eventKind || 'Booking'
+			const eventType = item.scheduleType || 'Booking'
 			if (eventType === 'Booking' || eventType === 'TourSchedule') {
-				base[eventType]++
+				base[eventType as keyof typeof base]++
 			}
 		})
 
