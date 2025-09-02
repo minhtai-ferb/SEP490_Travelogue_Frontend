@@ -1,0 +1,67 @@
+/* booking-table.css */
+.booking-table .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.booking-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.booking-table .ant-table-tbody > tr:hover > td {
+  background-color: #f8f9ff;
+}
+
+.booking-table .ant-tag {
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.booking-table .ant-table-pagination {
+  margin-top: 16px;
+  text-align: right;
+}
+
+.booking-table .ant-table-pagination .ant-pagination-total-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Status specific styles */
+.booking-table .status-pending {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Service type indicators */
+.service-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.service-tag.trip-plan {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border: 1px solid #91d5ff;
+}
+
+.service-tag.tour-guide-only {
+  background-color: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+}

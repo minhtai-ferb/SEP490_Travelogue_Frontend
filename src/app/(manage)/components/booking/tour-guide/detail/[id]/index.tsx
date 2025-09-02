@@ -24,7 +24,6 @@ import {
   ArrowLeftOutlined,
   EyeOutlined,
   CompassOutlined,
-  EnvironmentOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useBookings } from "@/services/use-bookings";
@@ -79,7 +78,7 @@ interface BookingDetailData {
   participants: Participant[];
 }
 
-export default function BookingDetail() {
+export default function BookingTourGuideDetail({ href }: { href: string }) {
   const params = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -118,43 +117,6 @@ export default function BookingDetail() {
     }).format(price);
   };
 
-  const hasAdminInPath =
-    pathname?.includes("/admin") || pathname?.includes("/moderator");
-
-  const handleBackToTable = () => {
-    const basePath = hasAdminInPath
-      ? pathname?.includes("/admin")
-        ? "/admin"
-        : "/moderator"
-      : "";
-    router.push(`${basePath}/booking/tour-schedule`);
-  };
-
-  const handleViewTour = () => {
-    if (!booking?.tourId) return;
-    const basePath = hasAdminInPath
-      ? pathname?.includes("/admin")
-        ? "/admin"
-        : "/moderator"
-      : "";
-    router.push(`${basePath}/tour/${booking.tourId}`);
-  };
-
-  const handleViewTourGuide = () => {
-    if (!booking?.tourGuideId) return;
-    const basePath = hasAdminInPath
-      ? pathname?.includes("/admin")
-        ? "/admin"
-        : "/moderator"
-      : "";
-    router.push(`${basePath}/tour-guide/detail/${booking.tourGuideId}`);
-  };
-
-  if (loading) return <div className="p-4">Đang tải...</div>;
-  if (error) return <div className="p-4 text-red-500">Lỗi: {error}</div>;
-  if (!booking)
-    return <div className="p-4">Không tìm thấy dữ liệu booking.</div>;
-
   const formatDateTime = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY HH:mm");
   };
@@ -163,18 +125,27 @@ export default function BookingDetail() {
     return dayjs(dateString).format("DD/MM/YYYY");
   };
 
-  const handleViewTourDetail = async () => {
-    if (booking?.tourId) {
-      const basePath = hasAdminInPath
-        ? pathname?.includes("/admin")
-          ? "/admin"
-          : "/moderator"
-        : "";
-      await router.push(`${basePath}/tour/${booking.tourId}`);
+  const isDefaultDate = (dateString: string) => {
+    return dateString.startsWith("0001-01-01");
+  };
+
+  const handleViewTourGuide = async () => {
+    if (booking?.tourGuideId) {
+      const isAdminPath = hasAdminInPath(pathname);
+      const basePath = isAdminPath ? "/admin" : "/moderator";
+      await router.push(`${basePath}/user/${booking.tourGuideId}`);
     }
   };
 
-  const getStatusTag = (r: BookingItem) => {
+  const handleViewTripPlan = async () => {
+    if (booking?.tripPlanId) {
+      const isAdminPath = hasAdminInPath(pathname);
+      const basePath = isAdminPath ? "/admin" : "/moderator";
+      await router.push(`${basePath}/personal-plan/${booking.tripPlanId}`);
+    }
+  };
+
+  const getStatusTag = (r: BookingDetailData) => {
     const map: Record<number, { color: string; text: string }> = {
       0: { color: "gold", text: r.statusText || "Đang chờ thanh toán" },
       1: { color: "blue", text: r.statusText || "Đã thanh toán" },
@@ -269,20 +240,26 @@ export default function BookingDetail() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {/* Title */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">
-            Chi tiết đặt chỗ lịch tham quan
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Tag color="blue" className="font-mono">
-            #{booking.id.slice(-8)}
-          </Tag>
-          {getStatusTag(booking)}
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold mb-1">
+                Chi tiết đặt hướng dẫn viên
+              </h1>
+              <div className="flex items-center gap-2">
+                <Tag color="blue" className="font-mono">
+                  #{booking.id.slice(-8)}
+                </Tag>
+                {getStatusTag(booking)}
+                <Tag color="purple">{booking.bookingTypeText}</Tag>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Thông tin chính */}
         <div className="lg:col-span-2 space-y-6">
@@ -297,58 +274,65 @@ export default function BookingDetail() {
           >
             <Descriptions column={2} size="small">
               <Descriptions.Item label="Loại booking">
-                <Tag color="blue">{booking.bookingTypeText}</Tag>
+                <Tag color="purple">{booking.bookingTypeText}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Ngày đặt">
                 {formatDateTime(booking.bookingDate)}
               </Descriptions.Item>
-              <Descriptions.Item label="Tên chuyến tham quan">
-                <div className="flex items-center gap-2">
-                  <strong>{booking.tourName || "Chưa có"}</strong>
-                </div>
-              </Descriptions.Item>
 
-              <Descriptions.Item>
-                {booking.tourId && (
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={handleViewTour}
-                    className="flex items-center gap-1 p-0 h-auto"
-                  >
-                    <EyeOutlined /> Xem chi tiết
-                  </Button>
-                )}
-              </Descriptions.Item>
               <Descriptions.Item label="Hướng dẫn viên">
-                <div className="flex items-center gap-2">
-                  <span>{booking.tourGuideName || "Chưa có"}</span>
+                <div className="flex flex-col gap-1">
+                  <strong>{booking.tourGuideName || "Chưa có"}</strong>
                 </div>
               </Descriptions.Item>
-
-              <Descriptions.Item >
+              <Descriptions.Item label="">
                 {booking.tourGuideId && (
                   <Button
                     type="link"
                     size="small"
+                    icon={<EyeOutlined />}
                     onClick={handleViewTourGuide}
-                    className="flex items-center gap-1 p-0 h-auto"
+                    className="p-0 h-auto text-left"
                   >
-                    <UserOutlined /> Xem chi tiết
+                    Xem thông tin hướng dẫn viên
                   </Button>
                 )}
               </Descriptions.Item>
-              <Descriptions.Item label="Ngày khởi hành">
-                {booking.departureDate
-                  ? formatDateTime(booking.departureDate)
+              {booking.tripPlanName && (
+                <>
+                  <Descriptions.Item label="Kế hoạch tự do">
+                    <div className="flex flex-col gap-1">
+                      <strong>{booking.tripPlanName}</strong>
+                    </div>
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="">
+                    {booking.tripPlanId && (
+                      <Button
+                        type="link"
+                        size="small"
+                        icon={<CompassOutlined />}
+                        onClick={handleViewTripPlan}
+                        className="p-0 h-auto text-left"
+                      >
+                        Xem chi tiết kế hoạch
+                      </Button>
+                    )}
+                  </Descriptions.Item>
+                </>
+              )}
+
+              <Descriptions.Item label="Ngày bắt đầu">
+                {!isDefaultDate(booking.startDate)
+                  ? formatDateTime(booking.startDate)
                   : "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="Ngày bắt đầu">
-                {formatDateTime(booking.startDate)}
-              </Descriptions.Item>
               <Descriptions.Item label="Ngày kết thúc">
-                {formatDateTime(booking.endDate)}
+                {!isDefaultDate(booking.endDate)
+                  ? formatDateTime(booking.endDate)
+                  : "—"}
               </Descriptions.Item>
+
               {booking.cancelledAt && (
                 <Descriptions.Item label="Ngày hủy" span={2}>
                   <span className="text-red-600">
@@ -370,14 +354,20 @@ export default function BookingDetail() {
               </div>
             }
           >
-            <Table
-              dataSource={booking.participants}
-              columns={participantColumns}
-              rowKey="id"
-              size="small"
-              pagination={false}
-              scroll={{ x: true }}
-            />
+            {booking.participants.length > 0 ? (
+              <Table
+                dataSource={booking.participants}
+                columns={participantColumns}
+                rowKey="id"
+                size="small"
+                pagination={false}
+                scroll={{ x: true }}
+              />
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Chưa có thông tin người tham gia
+              </div>
+            )}
           </Card>
         </div>
 
@@ -395,39 +385,49 @@ export default function BookingDetail() {
             <div className="space-y-3">
               <div>
                 <div className="text-sm text-gray-500 mb-1">Tên người đặt</div>
-                <div className="font-medium">{booking.contactName}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Email</div>
-                <div className="flex items-center gap-2">
-                  <MailOutlined className="text-gray-400" />
-                  <a
-                    href={`mailto:${booking.contactEmail}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {booking.contactEmail}
-                  </a>
+                <div className="font-medium">
+                  {booking.contactName || booking.userName}
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Số điện thoại</div>
-                <div className="flex items-center gap-2">
-                  <PhoneOutlined className="text-gray-400" />
-                  <a
-                    href={`tel:${booking.contactPhone}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {booking.contactPhone}
-                  </a>
+              {booking.contactEmail && (
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Email</div>
+                  <div className="flex items-center gap-2">
+                    <MailOutlined className="text-gray-400" />
+                    <a
+                      href={`mailto:${booking.contactEmail}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {booking.contactEmail}
+                    </a>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Địa chỉ</div>
-                <div className="flex items-start gap-2">
-                  <HomeOutlined className="text-gray-400 mt-1 text-xs" />
-                  <span className="text-sm">{booking.contactAddress}</span>
+              )}
+              {booking.contactPhone && (
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Số điện thoại
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <PhoneOutlined className="text-gray-400" />
+                    <a
+                      href={`tel:${booking.contactPhone}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {booking.contactPhone}
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
+              {booking.contactAddress && (
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Địa chỉ</div>
+                  <div className="flex items-start gap-2">
+                    <HomeOutlined className="text-gray-400 mt-1 text-xs" />
+                    <span className="text-sm">{booking.contactAddress}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -460,8 +460,77 @@ export default function BookingDetail() {
                   {formatPrice(booking.finalPrice)}
                 </span>
               </div>
+
+              {booking.paymentLinkId && (
+                <div className="mt-4">
+                  <div className="text-sm text-gray-500 mb-1">
+                    Mã thanh toán
+                  </div>
+                  <Tag color="orange" className="font-mono">
+                    {booking.paymentLinkId}
+                  </Tag>
+                </div>
+              )}
             </div>
           </Card>
+
+          {/* Dịch vụ bổ sung */}
+          {(booking.tripPlanName || booking.tourGuideName) && (
+            <Card
+              title={
+                <div className="flex items-center gap-2">
+                  <CompassOutlined />
+                  <span>Dịch vụ</span>
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                {booking.tripPlanName && (
+                  <div>
+                    <div className="text-sm text-gray-500 mb-1">
+                      Kế hoạch tự do
+                    </div>
+                    <div className="font-medium mb-2">
+                      {booking.tripPlanName}
+                    </div>
+                    {booking.tripPlanId && (
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<EyeOutlined />}
+                        onClick={handleViewTripPlan}
+                        block
+                      >
+                        Xem chi tiết kế hoạch
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {booking.tourGuideName && (
+                  <div>
+                    <div className="text-sm text-gray-500 mb-1">
+                      Hướng dẫn viên
+                    </div>
+                    <div className="font-medium mb-2">
+                      {booking.tourGuideName}
+                    </div>
+                    {booking.tourGuideId && (
+                      <Button
+                        type="default"
+                        size="small"
+                        icon={<UserOutlined />}
+                        onClick={handleViewTourGuide}
+                        block
+                      >
+                        Xem thông tin hướng dẫn viên
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     </div>
