@@ -52,7 +52,7 @@ function WorkshopTable({ items }: WorkshopTableProps) {
 					switch (status) {
 						case 1: return 'Đã duyệt'
 						case 0: return 'Chờ duyệt'
-						case -1: return 'Bị từ chối'
+						case 2: return 'Bị từ chối'
 						default: return 'Không xác định'
 					}
 				}
@@ -66,10 +66,12 @@ function WorkshopTable({ items }: WorkshopTableProps) {
 		{
 			header: 'Hành động',
 			cell: ({ row }) => {
-				const id = (row.original as any)?.id
+				console.log("row response", row);
+
+				const id = (row?.original as any)?.id
 				return (
 					<div className="flex gap-2">
-						<Link href={`/craftvillage/dashboard/workshop/${id}/edit`}>
+						{/* <Link href={`/craftvillage/dashboard/workshop/${id}/edit`}>
 							<Button size="sm" variant="outline">Chỉnh sửa</Button>
 						</Link>
 						<Tooltip>
@@ -78,7 +80,7 @@ function WorkshopTable({ items }: WorkshopTableProps) {
 									<Trash2 />
 								</Button>
 							</TooltipTrigger>
-						</Tooltip>
+						</Tooltip> */}
 						<Tooltip>
 							<TooltipTrigger asChild content='Xem'>
 								<Button size="sm" variant="outline" onClick={() => handleView(id)}>

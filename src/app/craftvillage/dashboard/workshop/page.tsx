@@ -1,21 +1,22 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Grid, List, Plus } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
-import { useWorkshop } from "@/services/use-workshop"
-import { useUser } from "@/services/use-user"
-import { useEffect, useMemo, useState } from "react"
-import WorkshopFilterBar from "./molecules/WorkshopFilterBar"
-import WorkshopList from "./organisms/WorkshopList"
-import { WorkshopDetail, WorkshopFilterParams } from "@/types/Workshop"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
-import WorkshopTable from "./components/WorkshopTable"
-import WorkshopCard from "./components/WorkshopCard"
-import { useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useUser } from "@/services/use-user"
+import { useWorkshop } from "@/services/use-workshop"
+import { WorkshopFilterParams } from "@/types/Workshop"
 import { getUserFromLocalStorage } from "@/utils"
+import { format } from "date-fns"
+import { Grid, List, Plus } from "lucide-react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { DateRange } from "react-day-picker"
+import toast from "react-hot-toast"
+import WorkshopCard from "./components/WorkshopCard"
+import WorkshopTable from "./components/WorkshopTable"
+import WorkshopFilterBar from "./molecules/WorkshopFilterBar"
 
 // Updated interfaces based on API response
 interface TicketActivity {
@@ -101,9 +102,10 @@ export default function WorkshopPage() {
 	const { getUserDetail } = useUser()
 	const [status, setStatus] = useState<string | number>("all")
 	const [keyword, setKeyword] = useState("")
+	const [dateRange, setDateRange] = useState<DateRange | undefined>()
 	const [craftVillageId, setCraftVillageId] = useState<string | null>(null)
 	const [loadingCraftVillageId, setLoadingCraftVillageId] = useState(true)
-	const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
+	const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
 	const searchParams = useSearchParams()
 	const useMock = searchParams.get('mock') === '1'
 	const user = getUserFromLocalStorage()
@@ -117,7 +119,7 @@ export default function WorkshopPage() {
 				return { text: 'Đã duyệt', color: 'bg-green-100 text-green-800', variant: 'default' as const }
 			case 0:
 				return { text: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800', variant: 'secondary' as const }
-			case -1:
+			case 2:
 				return { text: 'Bị từ chối', color: 'bg-red-100 text-red-800', variant: 'destructive' as const }
 			default:
 				return { text: 'Bản nháp', color: 'bg-gray-100 text-gray-800', variant: 'outline' as const }
@@ -157,20 +159,9 @@ export default function WorkshopPage() {
 		try {
 			setLoadingCraftVillageId(true)
 
-			// Try to get from localStorage first
-			const storedCraftVillageId =
-				localStorage.getItem("craftVillageId") ||
-				localStorage.getItem("craft_village_id")
-
-			if (storedCraftVillageId) {
-				console.log("Found craftVillageId in localStorage:", storedCraftVillageId)
-				setCraftVillageId(storedCraftVillageId)
-				return storedCraftVillageId
-			}
-
 			// If not in localStorage, get from user detail
 			if (!user?.userId) {
-				console.warn("No user ID available for getting craft village ID")
+				toast.error("Không tải được thông tin làng nghề !!!")
 				return null
 			}
 
@@ -197,21 +188,58 @@ export default function WorkshopPage() {
 		}
 	}
 
-	const filters = useMemo(() => ({
-		craftVillageId: craftVillageId,
-		name: keyword || undefined,
-		status: status === "all" ? undefined : status,
-	}), [craftVillageId, keyword, status])
+	const filters = useMemo(() => {
+		const baseFilters: any = {
+			craftVillageId: craftVillageId,
+		}
 
-	const fetchWorkshops = async () => {
+		// Add name filter if keyword is provided
+		if (keyword && keyword.trim()) {
+			baseFilters.name = keyword.trim()
+		}
+
+		// Add status filter if not "all"
+		if (status !== "all" && status !== "" && status !== null && status !== undefined) {
+			baseFilters.status = Number(status)
+		}
+
+		// Add date range filters if selected
+		if (dateRange?.from) {
+			baseFilters.fromDate = format(dateRange.from, 'yyyy-MM-dd')
+		}
+		if (dateRange?.to) {
+			baseFilters.toDate = format(dateRange.to, 'yyyy-MM-dd')
+		}
+
+		console.log("Filter params:", baseFilters)
+		return baseFilters
+	}, [craftVillageId, keyword, status, dateRange])
+
+	const fetchWorkshops = async (customFilters?: any) => {
 		if (!craftVillageId) {
 			console.warn("No craftVillageId available for fetching workshops")
 			return
 		}
 
-		console.log("Fetching workshops with filters:", filters)
-		const res = await getWorkshops(filters as WorkshopFilterParams)
-		setItems(Array.isArray(res) ? res : (res?.data || []))
+		const filtersToUse = customFilters || filters
+		console.log("Fetching workshops with filters:", filtersToUse)
+
+		try {
+			const res = await getWorkshops(filtersToUse as WorkshopFilterParams)
+			console.log("Workshop API response:", res)
+
+			if (Array.isArray(res)) {
+				setItems(res)
+			} else if (res?.data && Array.isArray(res.data)) {
+				setItems(res.data)
+			} else {
+				setItems([])
+			}
+		} catch (error) {
+			console.error("Error fetching workshops:", error)
+			toast.error("Có lỗi khi tải danh sách workshop")
+			setItems([])
+		}
 	}
 
 	// useEffect to get craftVillageId on component mount
@@ -226,7 +254,55 @@ export default function WorkshopPage() {
 		if (!craftVillageId || loadingCraftVillageId) return
 		fetchWorkshops()
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [craftVillageId, status, loadingCraftVillageId])
+	}, [craftVillageId, loadingCraftVillageId])
+
+	// Handle manual search trigger
+	const handleSearch = async () => {
+		console.log("Manual search triggered with filters:", filters)
+		await fetchWorkshops()
+	}
+
+	// Handle date range change with validation
+	const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
+		// Validate date range
+		if (newDateRange?.from && newDateRange?.to && newDateRange.from > newDateRange.to) {
+			toast.error("Ngày bắt đầu không thể lớn hơn ngày kết thúc")
+			return
+		}
+		console.log("Date range changed:", newDateRange)
+		setDateRange(newDateRange)
+	}
+
+	// Handle status change
+	const handleStatusChange = (newStatus: string | number) => {
+		console.log("Status changed:", newStatus)
+		setStatus(newStatus)
+	}
+
+	// Handle keyword change
+	const handleKeywordChange = (newKeyword: string) => {
+		console.log("Keyword changed:", newKeyword)
+		setKeyword(newKeyword)
+	}
+
+	// Clear all filters
+	const clearFilters = () => {
+		console.log("Clearing all filters")
+		setStatus("all")
+		setKeyword("")
+		setDateRange(undefined)
+
+		// Trigger search with cleared filters after state updates
+		setTimeout(() => {
+			const clearedFilters = {
+				craftVillageId: craftVillageId,
+			}
+			fetchWorkshops(clearedFilters)
+		}, 100)
+	}
+
+	// Auto-search when keyword changes with debounce (removed to prevent conflicts)
+	// Removed auto-search on keyword change to prevent conflicts with manual search
 
 
 
@@ -304,9 +380,12 @@ export default function WorkshopPage() {
 								<WorkshopFilterBar
 									status={status}
 									keyword={keyword}
-									onChangeStatus={setStatus}
-									onChangeKeyword={setKeyword}
-									onSearch={fetchWorkshops}
+									dateRange={dateRange}
+									onChangeStatus={handleStatusChange}
+									onChangeKeyword={handleKeywordChange}
+									onChangeDateRange={handleDateRangeChange}
+									onSearch={handleSearch}
+									onClear={clearFilters}
 									loading={loading}
 								/>
 

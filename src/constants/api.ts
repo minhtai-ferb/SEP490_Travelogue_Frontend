@@ -53,11 +53,13 @@ export const CRAFT_VILLAGE_API_URL = {
   UPDATE_CRAFT_VILLAGE_REQUEST: "user/craft-village-request/:id/review",
   LASTEST_CRAFT_VILLAGE_REQUEST: "user/latest-craft-village-request/",
   TRANSFORM_USER_TO_CRAFT_VILLAGE_ROLE: "user/my-craft-village-requests",
-  CRAFT_VILLAGE_DASHBOARD: "craft-village/:id/dashboard"
+  CRAFT_VILLAGE_DASHBOARD: "craft-village/dashboard",
+  CRAFT_VILLAGE_INFO: "/craft-village/:id"
 };
 
 export const CRAFT_VILLAGE_API_DETAIL = {
-  GET_CRAFT_VILLAGE: "/craft-village/{id}"
+  GET_CRAFT_VILLAGE: "/craft-village/:id",
+  UPDATE_CRAFT_VILLAGE: "/craft-village/:id"
 }
 
 

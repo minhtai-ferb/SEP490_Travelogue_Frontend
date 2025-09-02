@@ -13,6 +13,8 @@ import dayjs from 'dayjs'
 import { useCraftVillage } from '@/services/use-craftvillage'
 import { useUser } from '@/services/use-user'
 import { getUserFromLocalStorage } from '@/utils'
+import toast from 'react-hot-toast'
+import { CiMoneyBill } from 'react-icons/ci'
 
 // Types based on your schema
 interface DailyRevenueDto {
@@ -58,11 +60,25 @@ function DashboardCraftVillage() {
 	const [dashboardData, setDashboardData] = useState<CraftVillageWorkshopDashboardDto | null>(null)
 	const [statistics, setStatistics] = useState<DashboardStats | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [chartLoading, setChartLoading] = useState(false) // Separate loading for charts
 	const [error, setError] = useState<string>("")
+	const [craftVillageId, setCraftVillageId] = useState<string | null>(null)
 	const [dateRange, setDateRange] = useState({
 		fromDate: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
 		toDate: dayjs().format('YYYY-MM-DD')
 	})
+
+	// Auto-validate date range on mount
+	useEffect(() => {
+		const { fromDate, toDate } = dateRange
+		if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
+			setDateRange({
+				fromDate: toDate,
+				toDate: toDate
+			})
+			toast.error("Đã điều chỉnh ngày bắt đầu vì không hợp lệ")
+		}
+	}, [])
 
 	const { getCraftVillageInfo, getCraftVillageDashboard } = useCraftVillage()
 	const { getUserDetail } = useUser()
@@ -71,30 +87,18 @@ function DashboardCraftVillage() {
 	// Function to get craft village ID from user detail
 	const getCraftVillageId = async () => {
 		try {
-			// Try to get from localStorage first
-			const storedCraftVillageId =
-				localStorage.getItem("craftVillageId") ||
-				localStorage.getItem("craft_village_id")
-
-			if (storedCraftVillageId) {
-				console.log("Found craftVillageId in localStorage:", storedCraftVillageId)
-				return storedCraftVillageId
-			}
-
 			// If not in localStorage, get from user detail
 			if (!user?.userId) {
-				console.warn("No user ID available")
+				// console.warn("No user ID available")
+				toast.error("Không tìm thấy thông tin làng nghề.")
 				return null
 			}
 
-			const userDetail = await getUserDetail(user.userId)
+			const userDetail = await getUserDetail(user?.userId)
 			console.log("User detail response:", userDetail)
 
 			const craftVillageId = userDetail?.data?.craftVillagesInfo?.id || userDetail?.craftVillagesInfo?.id
 			if (craftVillageId) {
-				// Store for future use
-				localStorage.setItem("craftVillageId", craftVillageId.toString())
-				console.log("Got craftVillageId from user detail:", craftVillageId)
 				return craftVillageId.toString()
 			}
 
@@ -106,13 +110,16 @@ function DashboardCraftVillage() {
 		}
 	}
 
-	// Function to fetch dashboard data (will need API endpoint)
-	const fetchDashboardData = async () => {
+	// Function to fetch dashboard data only when needed
+	const fetchDashboardData = async (showFullLoading = false) => {
 		try {
-			setLoading(true)
+			if (showFullLoading) {
+				setLoading(true)
+			} else {
+				setChartLoading(true)
+			}
 			setError("")
 
-			const craftVillageId = await getCraftVillageId()
 			if (!craftVillageId) {
 				setError("Không tìm thấy thông tin làng nghề ID")
 				return
@@ -163,6 +170,7 @@ function DashboardCraftVillage() {
 			setError("Không thể tải dữ liệu dashboard")
 		} finally {
 			setLoading(false)
+			setChartLoading(false)
 		}
 	}
 
@@ -230,7 +238,7 @@ function DashboardCraftVillage() {
 		} else {
 			insights.push({
 				type: 'info',
-				message: `${(100 - directPercentage).toFixed(1)}% doanh thu từ tour - cơ hội mở rộng hợp tác`
+				message: `${(100 - directPercentage).toFixed(1) || 0}% doanh thu từ tour - cơ hội mở rộng hợp tác`
 			})
 		}
 
@@ -255,16 +263,65 @@ function DashboardCraftVillage() {
 		return insights
 	}
 
+	// Initialize craftVillageId on mount
 	useEffect(() => {
-		fetchDashboardData()
-	}, [dateRange, user?.userId])
+		const initializeCraftVillageId = async () => {
+			const id = await getCraftVillageId()
+			if (id) {
+				setCraftVillageId(id)
+			}
+		}
+		if (user?.userId) {
+			initializeCraftVillageId()
+		}
+	}, [user?.userId])
 
-	// Handle date range change
+	// Fetch data when craftVillageId is available (initial load)
+	useEffect(() => {
+		if (craftVillageId && loading) {
+			fetchDashboardData(true) // Show full loading for initial load
+		}
+	}, [craftVillageId])
+
+	// Fetch data when date range changes (subsequent loads)
+	useEffect(() => {
+		if (craftVillageId && !loading) {
+			fetchDashboardData(false) // Show only chart loading for date changes
+		}
+	}, [dateRange.fromDate, dateRange.toDate])
+
+	// Handle date range change with validation
 	const handleDateRangeChange = (newFromDate: string, newToDate: string) => {
+		// Auto-correct if fromDate > toDate
+		if (newFromDate && newToDate && new Date(newFromDate) > new Date(newToDate)) {
+			if (newFromDate !== dateRange.fromDate) {
+				// User changed fromDate, adjust toDate
+				newToDate = newFromDate
+			} else {
+				// User changed toDate, adjust fromDate  
+				newFromDate = newToDate
+			}
+			toast.error("Ngày bắt đầu không thể lớn hơn ngày kết thúc.")
+		}
+
 		setDateRange({
 			fromDate: newFromDate,
 			toDate: newToDate
 		})
+	}
+
+	// Handle manual refresh
+	const handleRefresh = () => {
+		if (craftVillageId) {
+			fetchDashboardData(false)
+		}
+	}
+
+	// Quick date range presets
+	const setQuickDateRange = (days: number) => {
+		const toDate = dayjs().format('YYYY-MM-DD')
+		const fromDate = dayjs().subtract(days, 'days').format('YYYY-MM-DD')
+		setDateRange({ fromDate, toDate })
 	}
 
 	// Export dashboard data to JSON
@@ -319,7 +376,7 @@ function DashboardCraftVillage() {
 						</AlertDescription>
 					</Alert>
 					<div className="mt-4 text-center">
-						<Button onClick={fetchDashboardData} variant="outline">
+						<Button onClick={handleRefresh} variant="outline">
 							Thử lại
 						</Button>
 					</div>
@@ -351,6 +408,7 @@ function DashboardCraftVillage() {
 					<p className="text-gray-600 mt-1">Theo dõi hoạt động kinh doanh và workshop</p>
 				</div>
 				<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+
 					{/* Date Range Picker */}
 					<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
 						<div className="flex items-center gap-2">
@@ -359,6 +417,7 @@ function DashboardCraftVillage() {
 								id="fromDate"
 								type="date"
 								value={dateRange.fromDate}
+								max={dateRange.toDate} // Prevent fromDate > toDate
 								onChange={(e) => handleDateRangeChange(e.target.value, dateRange.toDate)}
 								className="w-40"
 							/>
@@ -369,6 +428,8 @@ function DashboardCraftVillage() {
 								id="toDate"
 								type="date"
 								value={dateRange.toDate}
+								min={dateRange.fromDate} // Prevent toDate < fromDate
+								max={dayjs().format('YYYY-MM-DD')} // Can't select future dates
 								onChange={(e) => handleDateRangeChange(dateRange.fromDate, e.target.value)}
 								className="w-40"
 							/>
@@ -376,9 +437,9 @@ function DashboardCraftVillage() {
 					</div>
 
 					<div className="flex items-center gap-2">
-						<Button onClick={fetchDashboardData} size="sm" variant="outline">
-							<RefreshCw className="w-4 h-4 mr-2" />
-							Làm mới
+						<Button onClick={handleRefresh} size="sm" variant="outline" disabled={chartLoading}>
+							<RefreshCw className={`w-4 h-4 mr-2 ${chartLoading ? 'animate-spin' : ''}`} />
+							{chartLoading ? 'Đang tải...' : 'Làm mới'}
 						</Button>
 						<Button onClick={exportData} size="sm" disabled={!dashboardData}>
 							<Download className="w-4 h-4 mr-2" />
@@ -421,11 +482,11 @@ function DashboardCraftVillage() {
 			</Card>
 
 			{/* Stats Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Tổng doanh thu</CardTitle>
-						<DollarSign className="h-4 w-4 text-green-600" />
+						<CiMoneyBill className="h-4 w-4 text-green-600" />
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">
@@ -467,7 +528,7 @@ function DashboardCraftVillage() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				{/* <Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Workshop đã bán</CardTitle>
 						<ShoppingBag className="h-4 w-4 text-orange-600" />
@@ -480,7 +541,7 @@ function DashboardCraftVillage() {
 							</Badge>
 						</div>
 					</CardContent>
-				</Card>
+				</Card> */}
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -504,7 +565,15 @@ function DashboardCraftVillage() {
 					<CardHeader>
 						<CardTitle>Biểu đồ doanh thu theo thời gian</CardTitle>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="relative">
+						{chartLoading && (
+							<div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
+								<div className="text-center">
+									<Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
+									<p className="text-sm text-gray-600">Đang cập nhật biểu đồ...</p>
+								</div>
+							</div>
+						)}
 						<ResponsiveContainer width="100%" height={350}>
 							<LineChart data={chartData}>
 								<CartesianGrid strokeDasharray="3 3" />
@@ -539,7 +608,15 @@ function DashboardCraftVillage() {
 					<CardHeader>
 						<CardTitle>Cơ cấu doanh thu</CardTitle>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="relative">
+						{chartLoading && (
+							<div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
+								<div className="text-center">
+									<Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
+									<p className="text-sm text-gray-600">Đang cập nhật...</p>
+								</div>
+							</div>
+						)}
 						<ResponsiveContainer width="100%" height={350}>
 							<PieChart>
 								<Pie
@@ -580,7 +657,15 @@ function DashboardCraftVillage() {
 				<CardHeader>
 					<CardTitle>Chi tiết doanh thu theo nguồn</CardTitle>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="relative">
+					{chartLoading && (
+						<div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
+							<div className="text-center">
+								<Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
+								<p className="text-sm text-gray-600">Đang cập nhật biểu đồ...</p>
+							</div>
+						</div>
+					)}
 					<ResponsiveContainer width="100%" height={300}>
 						<AreaChart data={chartData}>
 							<CartesianGrid strokeDasharray="3 3" />

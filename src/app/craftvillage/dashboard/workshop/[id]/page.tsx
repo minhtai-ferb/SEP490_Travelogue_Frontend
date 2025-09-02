@@ -1,21 +1,30 @@
 "use client"
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useParams, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useWorkshop } from "@/services/use-workshop"
 import {
-	Clock, Users, MapPin, Calendar, Edit, Trash2,
-	DollarSign, Activity, AlertCircle, CheckCircle,
-	XCircle, Eye
+	Activity, AlertCircle,
+	Calendar,
+	CheckCircle,
+	Clock,
+	DollarSign,
+	Edit,
+	Eye,
+	MapPin,
+	Ticket,
+	Trash2,
+	Users,
+	XCircle
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { CiMoneyBill } from "react-icons/ci"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 // Types based on API response
 interface TicketActivity {
@@ -104,136 +113,29 @@ function WorkshopDetailPage() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
-	// Mock data from API response for testing
-	const mockWorkshop: WorkshopDetailData = {
-		id: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-		name: "Trải nghiệm nặn gốm",
-		description: "Buổi trải nghiệm nặn gốm cùng nghệ nhân địa phương.",
-		content: "Bao gồm hướng dẫn, thực hành và trưng bày sản phẩm.",
-		status: 1,
-		craftVillageId: "08dde6d9-66ff-4c69-8e1a-082ffa97392a",
-		locationId: "08dde6d9-66f0-4b83-8ee9-b6a1b12fb5e8",
-		craftVillageName: "Làng gốm Bát Tràng",
-		ticketTypes: [
-			{
-				id: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				type: 1,
-				name: "Vé trải nghiệm (Người lớn)",
-				price: 150000,
-				isCombo: false,
-				durationMinutes: 90,
-				content: "Phù hợp cho người mới bắt đầu.",
-				activities: [
-					{
-						id: "08dde6d9-6c30-4720-8276-64a07fffa754",
-						workshopTicketTypeId: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-						activity: "Giới thiệu làng nghề",
-						description: "Lược sử Bát Tràng và các dòng gốm.",
-						durationMinutes: 0,
-						activityOrder: 1
-					},
-					{
-						id: "08dde6d9-6c3a-4a1c-8391-fd420ce85237",
-						workshopTicketTypeId: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-						activity: "Hướng dẫn kỹ thuật cơ bản",
-						description: "Căn chỉnh bàn xoay, kỹ thuật nắn, tạo dáng.",
-						durationMinutes: 0,
-						activityOrder: 2
-					},
-					{
-						id: "08dde6d9-6c3a-4afd-8771-5c461dabd0df",
-						workshopTicketTypeId: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-						activity: "Thực hành nặn sản phẩm",
-						description: "Tự tay nặn sản phẩm gốm đơn giản.",
-						durationMinutes: 0,
-						activityOrder: 3
-					}
-				]
-			}
-		],
-		schedules: [
-			{
-				id: "08dde6d9-7639-4ec8-819d-927a8a082e37",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				startTime: "2025-09-06T09:00:00",
-				endTime: "2025-09-06T10:30:00",
-				capacity: 20,
-				currentBooked: 0,
-				notes: "",
-				status: 1
-			},
-			{
-				id: "08dde6d9-7645-4027-8692-52c27f25a55e",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				startTime: "2025-09-06T14:00:00",
-				endTime: "2025-09-06T15:30:00",
-				capacity: 20,
-				currentBooked: 0,
-				notes: "",
-				status: 1
-			},
-			{
-				id: "08dde6d9-7646-4c24-8d54-2d7cc9aafa6f",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				startTime: "2025-09-07T09:00:00",
-				endTime: "2025-09-07T10:30:00",
-				capacity: 20,
-				currentBooked: 4,
-				notes: "",
-				status: 1
-			}
-		],
-		recurringRules: [
-			{
-				id: "08dde6d9-6cfc-470f-8245-6abbc740d5d0",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				daysOfWeek: [6, 0],
-				daysOfWeekText: ["Saturday", "Sunday"],
-				daysOfWeekDisplay: "Saturday, Sunday",
-				sessions: [
-					{
-						id: "08dde6d9-6ef9-4942-8f19-01e46ec69051",
-						recurringRuleId: "08dde6d9-6cfc-470f-8245-6abbc740d5d0",
-						startTime: "09:00:00",
-						endTime: "10:30:00",
-						capacity: 20
-					},
-					{
-						id: "08dde6d9-6f03-464e-817a-a5fa70ca2de2",
-						recurringRuleId: "08dde6d9-6cfc-470f-8245-6abbc740d5d0",
-						startTime: "14:00:00",
-						endTime: "15:30:00",
-						capacity: 20
-					}
-				]
-			}
-		],
-		exceptions: [
-			{
-				id: "08dde6d9-7043-430d-8ac9-5efc7be1ef5e",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				date: "2025-09-02T00:00:00",
-				reason: "Bảo trì khu trải nghiệm"
-			}
-		],
-		medias: []
-	}
+	// Pagination states
+	const [currentPage, setCurrentPage] = useState(1)
+	const [itemsPerPage] = useState(5) // 5 schedules per page
 
 	useEffect(() => {
-		fetchWorkshopDetail()
+		if (id) {
+			fetchWorkshopDetail()
+		}
 	}, [id])
 
 	const fetchWorkshopDetail = async () => {
 		try {
 			setLoading(true)
-			// For now, use mock data
-			setWorkshop(mockWorkshop)
-			// const result = await getWorkshopDetail(id as string)
-			// setWorkshop(result)
-		} catch (err) {
-			setError('Không thể tải thông tin workshop')
-			console.error(err)
+			setError(null)
+			const result = await getWorkshopDetail(id as string)
+			if (result) {
+				setWorkshop(result?.data)
+			} else {
+				setError('Workshop không tồn tại')
+			}
+		} catch (err: any) {
+			setError(err?.message || 'Không thể tải thông tin workshop')
+			console.error('Error fetching workshop detail:', err)
 		} finally {
 			setLoading(false)
 		}
@@ -253,7 +155,7 @@ function WorkshopDetailPage() {
 					icon: AlertCircle,
 					className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
 				}
-			case -1:
+			case 2:
 				return {
 					text: 'Bị từ chối',
 					icon: XCircle,
@@ -297,6 +199,26 @@ function WorkshopDetailPage() {
 			.filter(schedule => new Date(schedule.startTime) > now)
 			.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
 			.slice(0, 5)
+	}
+
+	// Pagination helpers
+	const getPaginatedSchedules = (schedules: WorkshopSchedule[]) => {
+		const startIndex = (currentPage - 1) * itemsPerPage
+		const endIndex = startIndex + itemsPerPage
+		return schedules.slice(startIndex, endIndex)
+	}
+
+	const getTotalPages = (totalItems: number) => {
+		return Math.ceil(totalItems / itemsPerPage)
+	}
+
+	const handlePageChange = (newPage: number) => {
+		setCurrentPage(newPage)
+		// Scroll to top of schedules section
+		const schedulesSection = document.getElementById('schedules-section')
+		if (schedulesSection) {
+			schedulesSection.scrollIntoView({ behavior: 'smooth' })
+		}
 	}
 
 	const breadcrumbItems = {
@@ -364,11 +286,11 @@ function WorkshopDetailPage() {
 							<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 								<div className="bg-blue-50 p-4 rounded-lg">
 									<div className="flex items-center gap-2">
-										<DollarSign className="h-5 w-5 text-blue-600" />
+										<CiMoneyBill className="h-5 w-5 text-blue-600" />
 										<span className="text-sm text-gray-600">Từ</span>
 									</div>
 									<p className="text-xl font-semibold text-blue-700">
-										{workshop.ticketTypes.length > 0
+										{workshop?.ticketTypes
 											? formatPrice(Math.min(...workshop.ticketTypes.map(t => t.price)))
 											: "0 ₫"
 										}
@@ -405,7 +327,7 @@ function WorkshopDetailPage() {
 						</div>
 
 						{/* Action Buttons */}
-						<div className="flex flex-col sm:flex-row lg:flex-col gap-3">
+						{/* <div className="flex flex-col sm:flex-row lg:flex-col gap-3">
 							<Button
 								onClick={() => router.push(`/craftvillage/dashboard/workshop/${workshop.id}/edit`)}
 								className="flex items-center gap-2"
@@ -421,7 +343,7 @@ function WorkshopDetailPage() {
 								<Trash2 className="h-4 w-4" />
 								Xóa
 							</Button>
-						</div>
+						</div> */}
 					</div>
 				</div>
 
@@ -453,7 +375,7 @@ function WorkshopDetailPage() {
 								</Card>
 
 								{/* Media Gallery */}
-								{workshop.medias && workshop.medias.length > 0 && (
+								{workshop?.medias && workshop?.medias?.length > 0 && (
 									<Card>
 										<CardHeader>
 											<CardTitle>Hình ảnh</CardTitle>
@@ -500,7 +422,7 @@ function WorkshopDetailPage() {
 										</div>
 
 										<div className="flex items-center gap-3">
-											<DollarSign className="h-5 w-5 text-gray-400" />
+											<Ticket className="h-5 w-5 text-gray-400" />
 											<div>
 												<p className="font-medium">Số loại vé</p>
 												<p className="text-sm text-gray-600">{workshop.ticketTypes.length} loại</p>
@@ -605,83 +527,319 @@ function WorkshopDetailPage() {
 					</TabsContent>
 
 					{/* Schedules Tab */}
-					<TabsContent value="schedules" className="space-y-6">
-						<Card>
-							<CardHeader>
-								<CardTitle>Tất cả lịch trình ({workshop.schedules.length})</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									{workshop.schedules.map((schedule) => {
-										const datetime = formatDateTime(schedule.startTime)
-										const endDatetime = formatDateTime(schedule.endTime)
-										const bookedPercentage = (schedule.currentBooked / schedule.capacity) * 100
-										const isFullyBooked = schedule.currentBooked >= schedule.capacity
-										const isPast = new Date(schedule.startTime) < new Date()
+					<TabsContent value="schedules" className="space-y-6" id="schedules-section">
+						<div className="grid gap-6">
+							{/* Summary Stats */}
+							<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+								<Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-blue-500 rounded-lg">
+												<Calendar className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-blue-700 font-medium">Tổng lịch trình</p>
+												<p className="text-2xl font-bold text-blue-800">{workshop.schedules.length}</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
 
-										return (
-											<div
-												key={schedule.id}
-												className={cn(
-													"p-4 border rounded-lg",
-													isPast && "bg-gray-50 opacity-75",
-													isFullyBooked && "border-orange-200 bg-orange-50"
-												)}
-											>
-												<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-													<div className="space-y-1">
-														<p className="font-medium">{datetime.date}</p>
-														<p className="text-sm text-gray-600">
-															{datetime.time} - {endDatetime.time}
-														</p>
-														{schedule.notes && (
-															<p className="text-sm text-gray-500">{schedule.notes}</p>
-														)}
-													</div>
+								<Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-green-500 rounded-lg">
+												<CheckCircle className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-green-700 font-medium">Còn chỗ</p>
+												<p className="text-2xl font-bold text-green-800">
+													{workshop.schedules.filter(s => s.currentBooked < s.capacity && new Date(s.startTime) > new Date()).length}
+												</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
 
-													<div className="flex items-center gap-4">
-														<div className="text-center">
-															<p className="text-sm text-gray-500">Đã đặt</p>
-															<p className="font-medium">
-																{schedule.currentBooked}/{schedule.capacity}
-															</p>
-														</div>
+								<Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-orange-500 rounded-lg">
+												<Users className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-orange-700 font-medium">Tổng đã đặt</p>
+												<p className="text-2xl font-bold text-orange-800">
+													{workshop.schedules.reduce((sum, s) => sum + s.currentBooked, 0)}
+												</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
 
-														<div className="w-24">
-															<div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-																<div
-																	className={cn(
-																		"h-2 rounded-full",
-																		bookedPercentage >= 100 ? "bg-red-500" :
-																			bookedPercentage >= 75 ? "bg-orange-500" : "bg-blue-500"
-																	)}
-																	style={{ width: `${bookedPercentage}%` }}
-																></div>
+								<Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-purple-500 rounded-lg">
+												<Activity className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-purple-700 font-medium">Tỷ lệ đặt</p>
+												<p className="text-2xl font-bold text-purple-800">
+													{Math.round((workshop.schedules.reduce((sum, s) => sum + s.currentBooked, 0) / workshop.schedules.reduce((sum, s) => sum + s.capacity, 0)) * 100) || 0}%
+												</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+							</div>
+
+							{/* Schedules Grid */}
+							<Card>
+								<CardHeader>
+									<div className="flex items-center justify-between">
+										<CardTitle className="flex items-center gap-2">
+											<Calendar className="h-5 w-5" />
+											Lịch trình chi tiết
+										</CardTitle>
+										<div className="flex items-center gap-2 text-sm text-gray-500">
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+												<span>Còn chỗ</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+												<span>Gần hết</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-red-500 rounded-full"></div>
+												<span>Hết chỗ</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+												<span>Đã qua</span>
+											</div>
+										</div>
+									</div>
+								</CardHeader>
+								<CardContent>
+									<div className="grid gap-4">
+										{getPaginatedSchedules(workshop?.schedules || [])?.map((schedule) => {
+											const datetime = formatDateTime(schedule.startTime)
+											const endDatetime = formatDateTime(schedule.endTime)
+											const bookedPercentage = (schedule.currentBooked / schedule.capacity) * 100
+											const isFullyBooked = schedule.currentBooked >= schedule.capacity
+											const isPast = new Date(schedule.startTime) < new Date()
+											const isNearFull = bookedPercentage >= 75 && !isFullyBooked
+
+											return (
+												<div
+													key={schedule.id}
+													className={cn(
+														"group relative p-5 border-2 rounded-xl transition-all duration-200 hover:shadow-lg",
+														isPast && "bg-gray-50 border-gray-200 opacity-75",
+														!isPast && !isFullyBooked && !isNearFull && "bg-blue-50 border-blue-200 hover:border-blue-300",
+														!isPast && isNearFull && "bg-orange-50 border-orange-200 hover:border-orange-300",
+														!isPast && isFullyBooked && "bg-red-50 border-red-200 hover:border-red-300"
+													)}
+												>
+													<div className="flex items-center justify-between">
+														{/* Left Section - Date & Time */}
+														<div className="flex items-center gap-4">
+															<div className={cn(
+																"p-3 rounded-xl",
+																isPast && "bg-gray-200",
+																!isPast && !isFullyBooked && !isNearFull && "bg-blue-500",
+																!isPast && isNearFull && "bg-orange-500",
+																!isPast && isFullyBooked && "bg-red-500"
+															)}>
+																<Calendar className="h-6 w-6 text-white" />
 															</div>
-															<p className="text-xs text-center text-gray-500">
-																{Math.round(bookedPercentage)}%
-															</p>
+															<div>
+																<p className="font-semibold text-lg text-gray-900">{datetime.date}</p>
+																<div className="flex items-center gap-2 mt-1">
+																	<Clock className="h-4 w-4 text-gray-500" />
+																	<p className="text-gray-600 font-medium">
+																		{datetime.time} - {endDatetime.time}
+																	</p>
+																</div>
+																{schedule.notes && (
+																	<p className="text-sm text-gray-500 mt-1 italic">{schedule.notes}</p>
+																)}
+															</div>
 														</div>
 
-														<Badge
-															variant={
-																isPast ? "secondary" :
-																	isFullyBooked ? "destructive" :
-																		"default"
-															}
-														>
-															{isPast ? "Đã qua" :
-																isFullyBooked ? "Hết chỗ" :
-																	"Còn chỗ"}
-														</Badge>
+														{/* Right Section - Stats & Status */}
+														<div className="flex items-center gap-6">
+															{/* Booking Stats */}
+															<div className="text-center">
+																<div className="flex items-center gap-2 mb-2">
+																	<Users className="h-4 w-4 text-gray-500" />
+																	<span className="text-sm text-gray-500 font-medium">Đã đặt</span>
+																</div>
+																<p className="text-2xl font-bold text-gray-900">
+																	<span className={cn(
+																		isFullyBooked && "text-red-600",
+																		isNearFull && "text-orange-600",
+																		!isNearFull && !isFullyBooked && "text-blue-600"
+																	)}>
+																		{schedule.currentBooked}
+																	</span>
+																	<span className="text-gray-400">/{schedule.capacity}</span>
+																</p>
+															</div>
+
+															{/* Progress Bar */}
+															<div className="w-32">
+																<div className="flex justify-between items-center mb-2">
+																	<span className="text-xs text-gray-500 font-medium">Tỷ lệ đặt</span>
+																	<span className={cn(
+																		"text-xs font-bold",
+																		isPast && "text-gray-500",
+																		!isPast && bookedPercentage >= 100 && "text-red-600",
+																		!isPast && bookedPercentage >= 75 && bookedPercentage < 100 && "text-orange-600",
+																		!isPast && bookedPercentage < 75 && "text-blue-600"
+																	)}>
+																		{Math.round(bookedPercentage)}%
+																	</span>
+																</div>
+																<div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+																	<div
+																		className={cn(
+																			"h-full rounded-full transition-all duration-300",
+																			isPast && "bg-gray-400",
+																			!isPast && bookedPercentage >= 100 && "bg-red-500",
+																			!isPast && bookedPercentage >= 75 && bookedPercentage < 100 && "bg-orange-500",
+																			!isPast && bookedPercentage < 75 && "bg-blue-500"
+																		)}
+																		style={{ width: `${Math.min(bookedPercentage, 100)}%` }}
+																	></div>
+																</div>
+															</div>
+
+															{/* Status Badge */}
+															<div className="text-right">
+																<Badge
+																	className={cn(
+																		"px-3 py-1 text-sm font-semibold",
+																		isPast && "bg-gray-100 text-gray-600 border-gray-300",
+																		!isPast && isFullyBooked && "bg-red-100 text-red-700 border-red-300",
+																		!isPast && isNearFull && "bg-orange-100 text-orange-700 border-orange-300",
+																		!isPast && !isNearFull && !isFullyBooked && "bg-blue-100 text-blue-700 border-blue-300"
+																	)}
+																	variant="outline"
+																>
+																	{isPast ? (
+																		<>
+																			<XCircle className="h-4 w-4 mr-1" />
+																			Đã qua
+																		</>
+																	) : isFullyBooked ? (
+																		<>
+																			<AlertCircle className="h-4 w-4 mr-1" />
+																			Hết chỗ
+																		</>
+																	) : isNearFull ? (
+																		<>
+																			<Clock className="h-4 w-4 mr-1" />
+																			Gần hết
+																		</>
+																	) : (
+																		<>
+																			<CheckCircle className="h-4 w-4 mr-1" />
+																			Còn chỗ
+																		</>
+																	)}
+																</Badge>
+															</div>
+														</div>
 													</div>
 												</div>
+											)
+										})}
+									</div>
+
+									{/* Pagination */}
+									{workshop?.schedules && workshop.schedules.length > itemsPerPage && (
+										<div className="flex items-center justify-between mt-8 pt-6 border-t">
+											<div className="flex items-center gap-2 text-sm text-gray-600">
+												<span>Hiển thị</span>
+												<span className="font-medium">
+													{((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, workshop.schedules.length)}
+												</span>
+												<span>của</span>
+												<span className="font-medium">{workshop.schedules.length}</span>
+												<span>lịch trình</span>
 											</div>
-										)
-									})}
-								</div>
-							</CardContent>
-						</Card>
+
+											<div className="flex items-center gap-2">
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => handlePageChange(currentPage - 1)}
+													disabled={currentPage === 1}
+													className="flex items-center gap-1"
+												>
+													<ChevronLeft className="h-4 w-4" />
+													Trước
+												</Button>
+
+												<div className="flex items-center gap-1">
+													{Array.from({ length: getTotalPages(workshop.schedules.length) }, (_, index) => {
+														const page = index + 1
+														const isCurrentPage = page === currentPage
+
+														// Show first page, last page, current page, and pages around current
+														const shouldShow =
+															page === 1 ||
+															page === getTotalPages(workshop.schedules.length) ||
+															Math.abs(page - currentPage) <= 1
+
+														if (!shouldShow) {
+															// Show ellipsis for gaps
+															if (page === currentPage - 2 || page === currentPage + 2) {
+																return (
+																	<span key={page} className="px-2 text-gray-400">
+																		...
+																	</span>
+																)
+															}
+															return null
+														}
+
+														return (
+															<Button
+																key={page}
+																variant={isCurrentPage ? "default" : "outline"}
+																size="sm"
+																onClick={() => handlePageChange(page)}
+																className={cn(
+																	"w-8 h-8 p-0",
+																	isCurrentPage && "bg-blue-600 hover:bg-blue-700"
+																)}
+															>
+																{page}
+															</Button>
+														)
+													})}
+												</div>
+
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => handlePageChange(currentPage + 1)}
+													disabled={currentPage === getTotalPages(workshop.schedules.length)}
+													className="flex items-center gap-1"
+												>
+													Sau
+													<ChevronRight className="h-4 w-4" />
+												</Button>
+											</div>
+										</div>
+									)}
+								</CardContent>
+							</Card>
+						</div>
 					</TabsContent>
 
 					{/* Recurring Rules Tab */}
@@ -696,22 +854,22 @@ function WorkshopDetailPage() {
 										<div key={rule.id} className="p-4 border rounded-lg">
 											<div className="mb-4">
 												<h4 className="font-medium mb-2">Ngày trong tuần</h4>
-												<p className="text-sm text-gray-600">{rule.daysOfWeekDisplay}</p>
+												<p className="text-sm text-gray-600">{rule?.daysOfWeekDisplay}</p>
 											</div>
 
 											<div>
-												<h4 className="font-medium mb-3">Các phiên ({rule.sessions.length})</h4>
+												<h4 className="font-medium mb-3">Các phiên ({rule?.sessions?.length})</h4>
 												<div className="grid gap-3">
-													{rule.sessions.map((session) => (
-														<div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+													{rule?.sessions?.map((session) => (
+														<div key={session?.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
 															<div>
 																<p className="font-medium">
-																	{session.startTime} - {session.endTime}
+																	{session?.startTime} - {session?.endTime}
 																</p>
 															</div>
 															<div className="text-right">
 																<p className="text-sm text-gray-600">Sức chứa</p>
-																<p className="font-medium">{session.capacity} người</p>
+																<p className="font-medium">{session?.capacity} người</p>
 															</div>
 														</div>
 													))}

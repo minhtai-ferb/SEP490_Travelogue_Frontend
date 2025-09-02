@@ -112,6 +112,19 @@ export function useCraftVillage() {
 		}
 	}, [callApi, setIsLoading])
 
+	// Function to update craft village profile
+	const updateCraftVillageProfile = useCallback(async (id: string, data: any) => {
+		setIsLoading(true)
+		try {
+			const response = await callApi("put", `${CRAFT_VILLAGE_API_DETAIL.UPDATE_CRAFT_VILLAGE.replace(':id', id)}`, data)
+			return response?.data
+		} catch (error) {
+			throw error
+		} finally {
+			setIsLoading(false)
+		}
+	}, [callApi, setIsLoading])
+
 	// Function to get craft village dashboard data
 	const getCraftVillageDashboard = useCallback(async (craftVillageId: string, fromDate: string, toDate: string) => {
 		const payload = {
@@ -120,7 +133,7 @@ export function useCraftVillage() {
 		}
 		setIsLoading(true)
 		try {
-			const response = await callApi("get", CRAFT_VILLAGE_API_URL.CRAFT_VILLAGE_DASHBOARD.replace(':id', craftVillageId), payload)
+			const response = await callApi("get", `${CRAFT_VILLAGE_API_URL.CRAFT_VILLAGE_DASHBOARD}?craftVillageId=${craftVillageId}`, payload)
 			return response?.data
 		} catch (error) {
 			console.error("Error fetching craft village dashboard:", error)
@@ -139,6 +152,7 @@ export function useCraftVillage() {
 		getLastestCraftVillageRequest,
 		transformUserToCraftVillageRole,
 		getCraftVillageInfo,
+		updateCraftVillageProfile,
 		getCraftVillageDashboard,
 		loading
 	}
