@@ -11,7 +11,6 @@ export interface TourLocationFormData {
 	distanceFromPrev: number
 	estimatedStartTime: number
 	estimatedEndTime: number
-	workshopId?: string
 	workshopTicketTypeId?: string
 	workshopSessionRuleId?: string
 	preferredStartTime?: { ticks: number }

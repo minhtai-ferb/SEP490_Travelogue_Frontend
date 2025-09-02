@@ -26,7 +26,8 @@ import {
 	Activity,
 	Wrench,
 	Timer,
-	Navigation
+	Navigation,
+	Hammer
 } from 'lucide-react'
 import React from 'react'
 import { getActivityColor } from '@/utils/format'
@@ -35,12 +36,13 @@ import { getActivityColor } from '@/utils/format'
 // Activity type icons mapping
 export const getActivityIcon = (activityType: number) => {
 	switch (activityType) {
-		case 1: return <Camera className="h-4 w-4" />
-		case 2: return <Utensils className="h-4 w-4" />
-		case 3: return <ShoppingBag className="h-4 w-4" />
-		case 4: return <Coffee className="h-4 w-4" />
-		case 5: return <Gamepad2 className="h-4 w-4" />
-		case 6: return <Activity className="h-4 w-4" />
+		case 1: return <Camera className="h-4 w-4" />        // Tham quan
+		case 2: return <Utensils className="h-4 w-4" />      // Ăn uống  
+		case 3: return <Hammer className="h-4 w-4" />        // Trải nghiệm làng nghề
+		case 4: return <Coffee className="h-4 w-4" />        // Nghỉ ngơi
+		case 5: return <ShoppingBag className="h-4 w-4" />   // Mua sắm
+		case 6: return <Gamepad2 className="h-4 w-4" />      // Giải trí
+		case 7: return <Activity className="h-4 w-4" />      // Trải nghiệm
 		default: return <MapPin className="h-4 w-4" />
 	}
 }

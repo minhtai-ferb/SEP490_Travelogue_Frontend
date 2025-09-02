@@ -32,14 +32,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route?api-version=1.1"
 // https://smartlog-lc.map.zone/api/route/v3?apikey={your-apikey}&point={point}&point={point}&points_encoded={points_encoded}&vehicle={vehicle}
-// Activity Types Constants
+// Activity Types Constants - Based on backend enum
 const ACTIVITY_TYPES = [
 	{ value: 1, label: "Tham quan" },
 	{ value: 2, label: "Ăn uống" },
-	{ value: 3, label: "Mua sắm" },
+	{ value: 3, label: "Trải nghiệm làng nghề" },
 	{ value: 4, label: "Nghỉ ngơi" },
-	{ value: 5, label: "Giải trí" },
-	{ value: 6, label: "Trải nghiệm" }
+	{ value: 5, label: "Mua sắm" },
+	{ value: 6, label: "Giải trí" },
+	{ value: 7, label: "Trải nghiệm" }
 ] as const
 
 
@@ -139,7 +140,6 @@ export function TourLocationForm({
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
 		activityType: 1,
-		workshopId: undefined,
 		workshopTicketTypeId: undefined,
 		workshopSessionRuleId: undefined,
 		preferredStartTime: undefined,
@@ -222,11 +222,7 @@ export function TourLocationForm({
 		const workshop = location.craftVillage?.workshop
 		if (!workshop) return
 
-		// Set workshop ID to location ID as specified
-		setNewLocation(prev => ({
-			...prev,
-			workshopId: location.id  // workshopId = locationId as per requirement
-		}))
+		// Workshop ID is now handled through locationId - no separate workshopId needed
 
 		// Load available tickets
 		setAvailableTickets(workshop.ticketTypes || [])
@@ -442,6 +438,12 @@ export function TourLocationForm({
 			return
 		}
 
+		// Automatically set activity type to "Trải nghiệm" (7) when workshop is selected
+		setNewLocation(prev => ({
+			...prev,
+			activityType: 7 // Experience activity type for workshops
+		}))
+
 		setShowWorkshopDialog(false)
 		setErrors({})
 	}
@@ -455,7 +457,6 @@ export function TourLocationForm({
 		setNewLocation(prev => ({
 			...prev,
 			locationId: "",
-			workshopId: undefined,
 			workshopTicketTypeId: undefined,
 			workshopSessionRuleId: undefined,
 			preferredStartTime: undefined,
@@ -535,7 +536,6 @@ export function TourLocationForm({
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
 			activityType: 1,
-			workshopId: undefined,
 			workshopTicketTypeId: undefined,
 			workshopSessionRuleId: undefined,
 			preferredStartTime: undefined,
@@ -658,9 +658,8 @@ export function TourLocationForm({
 			notes: loc.notes || "",
 			travelTimeFromPrev: loc.travelTimeFromPrev || 0,
 			distanceFromPrev: loc.distanceFromPrev || 0,
-			// Workshop fields (only if workshop is selected)
-			...(loc.workshopId && {
-				workshopId: loc.workshopId,                    // = locationId for craft villages
+			// Workshop fields (only if workshop ticket and session are selected)
+			...(loc.workshopTicketTypeId && {
 				workshopTicketTypeId: loc.workshopTicketTypeId, // ticketId
 				workshopSessionRuleId: loc.workshopSessionRuleId, // sessionId
 				preferredStartTime: loc.preferredStartTime, // Workshop time in HH:MM:SS format
@@ -675,7 +674,7 @@ export function TourLocationForm({
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-2xl font-bold">Thêm địa điểm cho tour</h2>
+				<h2 className="text-2xl font-bold">Thêm địa điểm cho chuyến đi</h2>
 				<div className="text-sm text-muted-foreground">
 					Đã thêm: {locations.length} địa điểm
 				</div>
@@ -1041,10 +1040,12 @@ export function TourLocationForm({
 											timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
 										)
 
+										console.log("Day location", dayLocations);
+
 										// Calculate day stats
 										const totalTravelTime = dayLocations.reduce((sum, loc) => sum + (loc.travelTimeFromPrev || 0), 0)
 										const totalDistance = dayLocations.reduce((sum, loc) => sum + (loc.distanceFromPrev || 0), 0)
-										const workshopCount = dayLocations.filter(loc => loc.workshopId).length
+										const workshopCount = dayLocations.filter(loc => loc.workshopTicketTypeId).length
 
 										return (
 											<AccordionItem key={dayNumber} value={`day-${dayNumber}`}>
@@ -1098,7 +1099,7 @@ export function TourLocationForm({
 																						{getActivityIcon(location.activityType)}
 																						<span className="ml-1">{activityType?.label}</span>
 																					</Badge> */}
-																						{location.workshopId && (
+																						{location.workshopTicketTypeId && (
 																							<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
 																								🏭 Workshop
 																							</Badge>
@@ -1118,7 +1119,7 @@ export function TourLocationForm({
 																				)}
 
 																				{/* Workshop Information */}
-																				{location.workshopId && (
+																				{location.workshopTicketTypeId && (
 																					<div className="p-2 bg-purple-50 border border-purple-200 rounded-lg mb-2">
 																						<div className="text-sm space-y-1">
 																							{location.workshopTicketTypeId && (

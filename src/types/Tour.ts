@@ -369,7 +369,6 @@ export interface TourLocationBulkRequest {
 	notes: string
 	travelTimeFromPrev: number
 	distanceFromPrev: number
-	workshopId?: string
 	workshopTicketTypeId?: string
 	workshopSessionRuleId?: string
 	preferredStartTime?: string
