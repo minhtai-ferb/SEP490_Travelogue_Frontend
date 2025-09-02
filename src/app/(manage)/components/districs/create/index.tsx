@@ -74,7 +74,7 @@ export function DistrictCreateForm({hrefCreate} : {hrefCreate: string}) {
 
       // Redirect to district list page after a delay
       setTimeout(() => {
-        router.push(hrefCreate);
+        router.push(`${hrefCreate}/districts`);
       }, 2000);
     } catch (error) {
       console.error("Error creating district:", error);

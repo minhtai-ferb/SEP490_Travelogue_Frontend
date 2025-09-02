@@ -9,9 +9,11 @@ const crumb: Crumb[] = [{ label: "Quản lý địa điểm" }];
 export default function ManageLocationPage() {
 
   return (
-    <SidebarInset>
-        <BreadcrumbHeader items={crumb} />
+    <>
+      <BreadcrumbHeader items={crumb} />
+      <div>
         <LocationsTable href="/admin/locations"/>
-    </SidebarInset>
+      </div>
+    </>
   );
 }

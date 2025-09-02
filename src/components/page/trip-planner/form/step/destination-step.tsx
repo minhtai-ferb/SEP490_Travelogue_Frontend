@@ -7,15 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, Utensils, Briefcase, ArrowLeft, ArrowRight, X, Loader2, CheckCircle2 } from 'lucide-react'
 import DestinationSelector from "../../destination-selector"
-import { TripPlan } from "@/types/Tripplan"
 import { useState } from "react"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface DestinationStepProps {
 	formData: any
 	updateFormData: (data: any) => void
-	onComplete: (plan: TripPlan) => void
+	onComplete: (plan: TripPlanTourGuide) => void
 	onBack: () => void
 }
 
@@ -45,7 +45,7 @@ export function DestinationStep({ formData, updateFormData, onComplete, onBack }
 		}
 
 		// Create the trip plan
-		const plan: TripPlan = {
+		const plan: TripPlanTourGuide = {
 			id: `trip-${Date.now()}`,
 			title: `Chuyến du lịch Tây Ninh - ${format(date || new Date(), "dd/MM/yyyy", { locale: vi })}`,
 			startDate: date || new Date(),

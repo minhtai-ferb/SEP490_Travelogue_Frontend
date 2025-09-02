@@ -11,18 +11,25 @@ export function useTripPlan() {
 	const router = useRouter();
 	const [isLoading, setLoading] = useAtom(isLoadingAtom);
 
-	const getAllTripPlan = useCallback(
-		async () => {
+	const getAllTripPlanSearch = useCallback(
+		async ({
+			title = '',
+		}) => {
 			setLoading(true);
 			try {
-				const response = await callApi("get", "TripPlan");
+				const response = await callApi('get', 'trip-plans/page', {
+					params: {
+						title,
+					},
+				});
 				return response?.data;
 			} catch (e: any) {
 				throw e;
 			} finally {
 				setLoading(false);
 			}
-		}, [callApi, setLoading]
+		},
+		[callApi, setLoading]
 	);
 
 
@@ -34,7 +41,7 @@ export function useTripPlan() {
 		}) => {
 			setLoading(true);
 			try {
-				const response = await callApi('get', '/trip-plans', {
+				const response = await callApi('get', 'trip-plans', {
 					params: {
 						title,
 						pageNumber,
@@ -68,9 +75,9 @@ export function useTripPlan() {
 
 
 	return {
-		getAllTripPlan,
 		getTripPlanSearch,
 		getTripPlanById,
+		getAllTripPlanSearch,
 		loading: isLoading || loading,
 	};
 }

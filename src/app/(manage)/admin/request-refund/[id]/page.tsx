@@ -6,14 +6,16 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 
 const crumb: Crumb[] = [
   { label: "Yêu cầu hoàn tiền", href: "/admin/request-refund" },
-  { label: "Chi tiết yêu cầu"},
+  { label: "Chi tiết yêu cầu" },
 ];
 
 export default function RefundRequestDetailPage() {
   return (
-    <SidebarInset>
+    <>
       <BreadcrumbHeader items={crumb} />
-      <RefundRequestDetail />
-    </SidebarInset>
+      <div>
+        <RefundRequestDetail />
+      </div>
+    </>
   );
 }

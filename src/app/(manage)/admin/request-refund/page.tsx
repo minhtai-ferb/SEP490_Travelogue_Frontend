@@ -10,9 +10,11 @@ const crumb: Crumb[] = [
 
 export default function WithdrawalRequestsTable() {
   return (
-    <SidebarInset >
+    <>
       <BreadcrumbHeader items={crumb} />
-      <RefundContainer />
-    </SidebarInset>
+      <div>
+        <RefundContainer />
+      </div>
+    </>
   );
 }

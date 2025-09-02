@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { X, MapPin, Calendar, Users, Star, CreditCard, Shield, CheckCircle2, Clock, User } from "lucide-react"
-import type { TripPlan } from "@/types/Tripplan"
 import type { TourGuide } from "@/types/Tourguide"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface BookingConfirmationModalProps {
 	isOpen: boolean
 	onClose: () => void
 	onConfirm: () => void
-	plan: TripPlan
+	plan: TripPlanTourGuide
 	tourGuide?: TourGuide
 	pricing: {
 		basePrice: number

@@ -18,11 +18,14 @@ export const DistrictActions = ({ districtId, href }: DistrictActionsProps) => {
       <div className="flex gap-3">
         <button
           className="text-sm font-medium text-white bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition"
-          onClick={() => router.push(`${href}/edit/${districtId}`)}
+          onClick={() => router.push(`${href}/districts/edit/${districtId}`)}
         >
           Chỉnh sửa
         </button>
-        <button className="text-sm font-medium text-gray-700 bg-gray-100 px-4 py-2 rounded hover:bg-gray-200 transition">
+        <button 
+          className="text-sm font-medium text-gray-700 bg-gray-100 px-4 py-2 rounded hover:bg-gray-200 transition"
+          onClick={() => router.push(`${href}/locations?districtId=${districtId}`)}
+        >
           Quản lý địa điểm
         </button>
       </div>

@@ -1,4 +1,54 @@
-import { TourGuide } from "./Tourguide"
+import { TourGuide } from "./Tourguide";
+
+export interface Activity {
+  tripPlanLocationId: string;
+  locationId: string;
+  type: string;
+  name: string;
+  description: string;
+  address: string;
+  startTime: string;
+  endTime: string;
+  startTimeFormatted: string;
+  endTimeFormatted: string;
+  duration: string;
+  notes: string;
+  order: number;
+  imageUrl: string;
+}
+
+export interface Day {
+  dayNumber: number;
+  date: string;
+  dateFormatted: string;
+  activities: Activity[];
+}
+
+export interface TripPlan {
+  id: string;
+  name: string;
+  description: string;
+  pickupAddress: string | null;
+  startDate: string;
+  endDate: string;
+  imageUrl: string;
+  totalDays: number;
+  userId: string;
+  ownerName: string;
+  status: number;
+  statusText: string;
+  days: Day[];
+}
+
+export interface TripPlanResponse {
+  items: TripPlan[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+
+//Tour Guide
 
 export interface TripLocation {
 	id: string
@@ -36,7 +86,7 @@ export interface TourGuideTripplan {
 	lastUpdatedBy: string
 	lastUpdatedByName: string | null
 }
-export interface TripPlan {
+export interface TripPlanTourGuide {
 	id: string
 	isAIGenerated: boolean
 	title?: string

@@ -10,12 +10,12 @@ const crumb: Crumb[] = [{ label: "Thống kê hệ thống" }];
 
 function ManageUser() {
   return (
-    <SidebarInset>
+    <>
       <BreadcrumbHeader items={crumb} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <SystemRevenueChart />
       </div>
-    </SidebarInset>
+    </>
   );
 }
 

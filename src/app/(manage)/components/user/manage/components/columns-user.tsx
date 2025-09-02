@@ -71,7 +71,7 @@ export const createColumns = (href?: string): ColumnDef<User>[] => [
       );
     },
     cell: ({ row }) => {
-      const createdTime = new Date(row.original.createdTime);
+      const createdTime = new Date(row.original.createdTime ?? "");
       return createdTime.toLocaleDateString("en-GB"); // Formats as dd-MM-yyyy
     },
   },
@@ -94,7 +94,7 @@ export const createColumns = (href?: string): ColumnDef<User>[] => [
         <div className="flex flex-wrap gap-1">
           {(roles ?? []).map((role, index) => (
             <Badge key={index} variant="secondary">
-              {role}
+              {String(role)}
             </Badge>
           ))}
         </div>

@@ -14,7 +14,7 @@ export function useUserManager() {
   const getListUser = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await callApi("get", "user");
+      const response = await callApi("get", "user/all-user-detail");
       return response?.data;
     } catch (e: any) {
       throw e;
@@ -47,10 +47,10 @@ export function useUserManager() {
   );
 
   const getUserById = useCallback(
-    async (id: string) => {
+    async (userId: string) => {
       setLoading(true);
       try {
-        const response = await callApi("get", `user/${id}`);
+        const response = await callApi("get", `user/user-detail?userId=${userId}`);
         console.log("Get user response:", response);
         return response?.data;
       } catch (e: any) {
@@ -138,6 +138,38 @@ export function useUserManager() {
     [callApi, setIsLoading]
   );
 
+  // Bật vai trò cho user
+  const enableUserRole = useCallback(
+    async (userId: string, roleId: string) => {
+      setLoading(true);
+      try {
+        const response = await callApi("patch", `user/enable-user-role/${userId}/${roleId}`);
+        return response?.data;
+      } catch (error: any) {
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
+  // Tắt vai trò cho user
+  const disableUserRole = useCallback(
+    async (userId: string, roleId: string) => {
+      setLoading(true);
+      try {
+        const response = await callApi("patch", `user/disable-user-role/${userId}/${roleId}`);
+        return response?.data;
+      } catch (error: any) {
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
   return {
     getListUser,
     getUserById,
@@ -146,6 +178,8 @@ export function useUserManager() {
     assignRoleToUser,
     removeRoleFromUser,
     updateUserAvatar,
+    enableUserRole,
+    disableUserRole,
     loading: isLoading || loading,
   };
 }

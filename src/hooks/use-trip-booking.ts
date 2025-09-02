@@ -2,12 +2,12 @@
 
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import type { TripPlan } from "@/types/Tripplan"
 import type { TourGuide } from "@/types/Tourguide"
 import type { TripBookingData, UserTripPlan } from "@/types/TripBooking"
+import { TripPlanTourGuide } from "@/types/TripPlan"
 
 interface UseTripBookingProps {
-	plan: TripPlan
+	plan: TripPlanTourGuide
 	tourGuide?: TourGuide
 }
 

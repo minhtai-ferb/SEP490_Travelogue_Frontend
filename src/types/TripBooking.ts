@@ -1,9 +1,7 @@
 import { TourGuide, TripPlanStatus } from "./Tourguide"
-import type { TripPlan } from "./Tripplan"
-
 export interface TripBookingData {
 	id: string
-	tripPlan: TripPlan
+	tripPlan: TripPlanTourGuide
 	tourGuide?: TourGuide
 	bookingDetails: {
 		totalPrice: number
@@ -26,7 +24,7 @@ export interface TripBookingData {
 	updatedAt: Date
 }
 
-export interface UserTripPlan extends TripPlan {
+export interface UserTripPlan extends TripPlanTourGuide {
 	bookingId?: string
 	tourGuide?: TourGuide
 	status: number
@@ -36,4 +34,44 @@ export interface UserTripPlan extends TripPlan {
 		notes?: string[]
 	},
 	title?: string
+}
+ interface TripPlanTourGuide {
+	id: string
+	isAIGenerated: boolean
+	title?: string
+	startDate: Date
+	duration: number
+	destinations: TripLocation[]
+	restaurants?: TripLocation[]
+	craftVillages?: TripLocation[]
+	budget: number
+	estimatedCost?: number
+	travelers: number
+	preferences?: string
+	itinerary?: TripDay[]
+	tourguide?: TourGuide
+	statusText: TripPlanStatus
+	status: number
+ }
+
+ 
+interface TripActivity {
+	time: string
+	title: string
+	description: string
+	location: string
+}
+
+interface TripDay {
+	day: number
+	activities: TripActivity[]
+}
+
+interface TripLocation {
+	id: string
+	name: string
+	type: "destination" | "restaurant" | "craftVillage"
+	address: string
+	description: string
+	imageUrl: string
 }

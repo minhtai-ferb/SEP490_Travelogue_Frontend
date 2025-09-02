@@ -55,8 +55,8 @@ export function LocationInfo({
         {/* Coordinates */}
         <div className="space-y-2">
           <p className="font-medium">Tọa độ</p>
-          <p className="text-sm text-gray-600">Lat: {latitude.toFixed(6)}</p>
-          <p className="text-sm text-gray-600">Lng: {longitude.toFixed(6)}</p>
+          <p className="text-sm text-gray-600">Vĩ độ: {latitude.toFixed(6)}</p>
+          <p className="text-sm text-gray-600">Kinh độ: {longitude.toFixed(6)}</p>
           <Button
             variant="outline"
             size="sm"

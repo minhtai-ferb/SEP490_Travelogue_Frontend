@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import type { TripPlan } from "@/types/Tripplan"
+import type { TripPlan, TripPlanTourGuide } from "@/types/TripPlan"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { formatDate, formatPrice } from "@/utils/format"
-import { TripPlanStatus } from "@/types/Tripplan"
+import { TripPlanStatus } from "@/types/TripPlan"
 import { useTourguideAssign } from "@/services/tourguide"
 
 function statusBadge(status: TripPlanStatus) {
@@ -33,9 +33,9 @@ export function TripPlansSection() {
 	const [search, setSearch] = useState("")
 	const [status, setStatus] = useState<TripPlanStatus | "all">("all")
 	const [open, setOpen] = useState(false)
-	const [selected, setSelected] = useState<TripPlan | null>(null)
+	const [selected, setSelected] = useState<TripPlanTourGuide | null>(null)
 	const { getTourGuideSchedule, loading } = useTourguideAssign()
-	const [plans, setPlans] = useState<TripPlan[]>([])
+	const [plans, setPlans] = useState<TripPlanTourGuide[]>([])
 	useEffect(() => {
 		getTourGuideSchedule(1, "2024-01-01", "2024-12-31", 1, 10).then((res: any) => {
 			setPlans(res)
