@@ -3,7 +3,7 @@
 
 import { Table, Tag, Space, Tooltip, Button as AntButton } from "antd";
 import type { TableProps } from "antd";
-import { Eye, XCircle, Wallet, MapPin, Calendar, User } from "lucide-react";
+import { Eye, XCircle, Wallet, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // ==== Types ====
@@ -62,7 +62,6 @@ export interface BookingTableProps {
   onCancel?: (record: BookingItem) => void;
   onPay?: (record: BookingItem) => void;
   onViewTour?: (record: BookingItem) => void;
-  onViewTourGuide?: (record: BookingItem) => void;
 
   // antd Table onChange (nếu cần sort/filter)
   onChange?: TableProps<BookingItem>["onChange"];
@@ -105,7 +104,6 @@ export function BookingTableComponent({
   onCancel,
   onPay,
   onViewTour,
-  onViewTourGuide,
   onChange,
 }: BookingTableProps) {
   const columns = [
@@ -149,27 +147,6 @@ export function BookingTableComponent({
               className="p-0 h-auto text-xs"
             >
               Xem chi tiết tour
-            </AntButton>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: "Hướng dẫn viên",
-      key: "tourGuide",
-      width: 180,
-      render: (_: any, r: BookingItem) => (
-        <div className="space-y-1">
-          <div className="font-medium">{r.tourGuideName || "—"}</div>
-          {r.tourGuideId && onViewTourGuide && (
-            <AntButton
-              type="link"
-              size="small"
-              icon={<User className="h-3 w-3" />}
-              onClick={() => onViewTourGuide(r)}
-              className="p-0 h-auto text-xs"
-            >
-              Xem thông tin
             </AntButton>
           )}
         </div>

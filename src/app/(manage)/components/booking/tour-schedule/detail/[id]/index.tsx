@@ -140,16 +140,6 @@ export default function BookingDetail() {
     router.push(`${basePath}/tour/${booking.tourId}`);
   };
 
-  const handleViewTourGuide = () => {
-    if (!booking?.tourGuideId) return;
-    const basePath = hasAdminInPath
-      ? pathname?.includes("/admin")
-        ? "/admin"
-        : "/moderator"
-      : "";
-    router.push(`${basePath}/tour-guide/detail/${booking.tourGuideId}`);
-  };
-
   if (loading) return <div className="p-4">Đang tải...</div>;
   if (error) return <div className="p-4 text-red-500">Lỗi: {error}</div>;
   if (!booking)
@@ -317,24 +307,6 @@ export default function BookingDetail() {
                     className="flex items-center gap-1 p-0 h-auto"
                   >
                     <EyeOutlined /> Xem chi tiết
-                  </Button>
-                )}
-              </Descriptions.Item>
-              <Descriptions.Item label="Hướng dẫn viên">
-                <div className="flex items-center gap-2">
-                  <span>{booking.tourGuideName || "Chưa có"}</span>
-                </div>
-              </Descriptions.Item>
-
-              <Descriptions.Item >
-                {booking.tourGuideId && (
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={handleViewTourGuide}
-                    className="flex items-center gap-1 p-0 h-auto"
-                  >
-                    <UserOutlined /> Xem chi tiết
                   </Button>
                 )}
               </Descriptions.Item>

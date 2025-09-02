@@ -13,7 +13,7 @@ export default function LocationViewPage() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumb} />
-      <LocationView />
+      <LocationView href={`/moderator`} />
     </SidebarInset>
   );
 }

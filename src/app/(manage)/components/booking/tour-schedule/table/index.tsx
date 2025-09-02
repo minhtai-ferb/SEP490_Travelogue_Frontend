@@ -119,15 +119,6 @@ export default function BookingScheduleTable({href} : {href: string}) {
     }
   };
 
-  // Handle view tour guide
-  const handleViewTourGuide = (booking: BookingItem) => {
-    if (booking.tourGuideId) {
-      const isAdminPath = hasAdminInPath(pathname);
-      const basePath = isAdminPath ? "/admin" : "/moderator";
-      router.push(`${basePath}/tour-guide/${booking.tourGuideId}`);
-    }
-  };
-
   return (
     <div className="gap-4 p-4 absolute w-full">
       <BookingFilterBar
@@ -156,7 +147,6 @@ export default function BookingScheduleTable({href} : {href: string}) {
         onCancel={(r: BookingItem) => console.log("cancel", r.id)}
         onPay={(r: BookingItem) => console.log("pay", r.paymentLinkId)}
         onViewTour={handleViewTour}
-        onViewTourGuide={handleViewTourGuide}
       />
     </div>
   );
