@@ -273,7 +273,7 @@ export function BookingTableComponent({
             Chi tiết
           </Button>
 
-          {onPay && r.paymentLinkId && r.status === 0 && (
+          {/* {onPay && r.paymentLinkId && r.status === 0 && (
             <Button onClick={() => onPay(r)} variant="outline" size="sm" className="w-full">
               <Wallet className="h-4 w-4 mr-1" />
               Thanh toán
@@ -290,7 +290,7 @@ export function BookingTableComponent({
               <XCircle className="h-4 w-4 mr-1" />
               Hủy
             </Button>
-          )}
+          )} */}
         </Space>
       ),
     },

@@ -34,7 +34,7 @@ const EditDistrictPage = ({ params }: { params: Promise<{ id: string }> }) => {
           onFormChange={handleChange}
           onSubmit={handleSubmit}
           districtId={id}
-          href="/moderator/districts"
+          href="/moderator"
         />
       )}
     </SidebarInset>

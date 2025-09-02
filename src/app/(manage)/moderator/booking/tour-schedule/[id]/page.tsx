@@ -18,7 +18,7 @@ const crumb: Crumb[] = [
 export default function BookingScheduleDetailPage() {
   return (
     <SidebarInset className="space-y-2">
-      <BreadcrumbHeader items={crumb} />
+      <BreadcrumbHeader items={crumb} showBackButton={true} />
       <BookingDetail />
     </SidebarInset>
   );

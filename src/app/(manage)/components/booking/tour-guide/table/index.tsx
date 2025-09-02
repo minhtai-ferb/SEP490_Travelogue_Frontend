@@ -8,11 +8,14 @@ import BookingFilterBar, {
   BookingFilter as UIXFilter,
 } from "./components/booking-filter-bar";
 import { useBookings } from "@/services/use-bookings";
+import { useTourguideAssign } from "@/services/tourguide";
 import { BookingItem, BookingTableComponent } from "./components/booking-table";
 import { hasAdminInPath } from "@/utils/check-admin";
+import TourGuideProfileModal from "../detail/[id]/components/TourGuideProfileModal";
 
 export default function BookingTourGuideTable() {
   const { loading, getBookingsPaged } = useBookings();
+  const { getTourguideProfile, loading: tourGuideLoading } = useTourguideAssign();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -31,6 +34,10 @@ export default function BookingTourGuideTable() {
   // raw data từ API (theo trang server)
   const [serverTotal, setServerTotal] = useState(0);
   const [rawItems, setRawItems] = useState<BookingItem[]>([]);
+
+  // tour guide modal state
+  const [tourGuideModalOpen, setTourGuideModalOpen] = useState(false);
+  const [tourGuideProfile, setTourGuideProfile] = useState<any>(null);
 
   // fetch theo status/type/date (không có keyword)
   const fetchData = async (opts?: { resetPage?: boolean }) => {
@@ -123,11 +130,16 @@ export default function BookingTourGuideTable() {
   };
 
   // Handle view tour guide
-  const handleViewTourGuide = (booking: BookingItem) => {
+  const handleViewTourGuide = async (booking: BookingItem) => {
     if (booking.tourGuideId) {
-      const isAdminPath = hasAdminInPath(pathname);
-      const basePath = isAdminPath ? "/admin" : "/moderator";
-      router.push(`${basePath}/tour-guide/${booking.tourGuideId}`);
+      try {
+        setTourGuideModalOpen(true);
+        const profileData = await getTourguideProfile(booking.tourGuideId);
+        setTourGuideProfile(profileData);
+      } catch (error) {
+        console.error("Error fetching tour guide profile:", error);
+        setTourGuideModalOpen(false);
+      }
     }
   };
 
@@ -169,6 +181,17 @@ export default function BookingTourGuideTable() {
         onPay={(r: BookingItem) => console.log("pay", r.paymentLinkId)}
         onViewTourGuide={handleViewTourGuide}
         onViewTripPlan={handleViewTripPlan}
+      />
+
+      {/* Tour Guide Profile Modal */}
+      <TourGuideProfileModal
+        open={tourGuideModalOpen}
+        onClose={() => {
+          setTourGuideModalOpen(false);
+          setTourGuideProfile(null);
+        }}
+        tourGuideProfile={tourGuideProfile}
+        loading={tourGuideLoading}
       />
     </div>
   );

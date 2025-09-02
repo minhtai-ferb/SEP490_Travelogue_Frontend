@@ -245,7 +245,7 @@ export function BookingTableComponent({
               Thanh toán
             </Button>
           )} */}
-
+{/* 
           {onCancel && [0, 1].includes(r.status) && (
             <Button
               onClick={() => onCancel(r)}
@@ -256,7 +256,7 @@ export function BookingTableComponent({
               <XCircle className="h-4 w-4 mr-1" />
               Hủy
             </Button>
-          )}
+          )} */}
         </Space>
       ),
     },

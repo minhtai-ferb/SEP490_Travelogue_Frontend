@@ -212,7 +212,7 @@ export default function TourguideRequestsTable() {
 
         <div className="rounded-md border">
           <div className="overflow-x-auto">
-            <Table className="min-w-[980px]">
+            <Table className="min-w-[900px]">
               <TableHeader className="sticky top-0 z-10 bg-white">
                 <TableRow>
                   <TableHead className="w-[320px]">
@@ -265,7 +265,7 @@ export default function TourguideRequestsTable() {
                     </button>
                   </TableHead>
                   <TableHead className="w-[140px]">Chứng chỉ</TableHead>
-                  <TableHead className="w-[280px] text-right">Hành động</TableHead>
+                  <TableHead className="w-[160px] text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -303,8 +303,7 @@ export default function TourguideRequestsTable() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
-                          <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
+                          <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
                           <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
                         </div>
                       </TableCell>

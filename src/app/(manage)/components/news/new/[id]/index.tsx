@@ -52,7 +52,7 @@ export default function ViewNews({href}: { href: string }) {
       await deleteNews(params.id as string);
       toast.success("Xóa tin tức thành công");
       setIsDeleteOpen(false);
-      router.push(`${href}/table`);
+      router.push(`${href}/new`);
     } catch (error) {
       console.error("Lỗi khi xóa tin tức:", error);
       toast.error("Không thể xóa tin tức");

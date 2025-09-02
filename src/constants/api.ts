@@ -114,3 +114,9 @@ export const COMMISSION_SETTING_API_URL = {
   GET_COMMISSION_SETTING_BY_ID: "commission-setting/:id",
   CREATE_COMMISSION_SETTING: "commission-setting",
 };
+
+export const TRANSACTIONS_API_URL = {
+  GET_ALL_TRANSACTIONS: "transaction",
+  GET_TRANSACTION_BY_ID: "transaction/users/:id/list",
+  GET_TOP_TRANSACTION_LATEST: "transaction/top-system-transactions",
+};

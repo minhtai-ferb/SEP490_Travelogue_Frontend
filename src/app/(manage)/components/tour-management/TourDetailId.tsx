@@ -292,7 +292,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
 							</Accordion>
 							{/* Schedules */}
 							{tour.schedules && tour.schedules.length > 0 && (
-								<Card className="sticky shadow-md">
+								<Card className="sticky shadow-md mt-4">
 									<CardHeader>
 										<CardTitle className="text-lg flex items-center gap-2">
 											<Calendar className="h-5 w-5" />
