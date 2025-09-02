@@ -8,6 +8,7 @@ import { WithdrawalRequest } from "@/types/RequestWithdrawal";
 import { formatVND } from "../utils";
 import StatusTag from "./satus-tag";
 import { Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function RequestsTable({
   data,
@@ -18,6 +19,11 @@ export default function RequestsTable({
   loading: boolean;
   onOpenDetail: (row: WithdrawalRequest) => void;
 }) {
+  const router = useRouter();
+
+  const handleViewUserDetail = (userId: string) => {
+    router.push(`/admin/user/${userId}`);
+  };
   const columns: ColumnsType<WithdrawalRequest> = [
     {
       title: "Người yêu cầu",
@@ -26,7 +32,12 @@ export default function RequestsTable({
       sorter: (a, b) => a.userName.localeCompare(b.userName),
       render: (text: string, record) => (
         <Space direction="vertical" size={0}>
-          <span className="font-medium">{text}</span>
+          <span 
+            className="font-medium cursor-pointer text-blue-500 hover:text-blue-600 hover:underline"
+            onClick={() => handleViewUserDetail(record.userId)}
+          >
+            {text}
+          </span>
           {/* <span className="text-[12px] text-gray-500">
             User ID: {record.userId}
           </span> */}
@@ -83,7 +94,7 @@ export default function RequestsTable({
         <div className="flex items-center justify-center">
           <Eye
             className="h-4 w-4 cursor-pointer text-blue-500 hover:text-blue-600"
-            onClick={() => onOpenDetail(r)}
+            onClick={() => handleViewUserDetail(r.userId)}
           />
         </div>
       ),

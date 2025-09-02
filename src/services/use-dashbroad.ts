@@ -76,10 +76,24 @@ export interface DailyRevenueSystem {
   bookingWorkshop: number;
 }
 
+//Tour Statistics
+export interface TopTour {
+  tourId: string;
+  tourName: string;
+  bookingCount: number;
+}
+
+export interface TourStatisticsResponse {
+  month: number;
+  year: number;
+  topTours: TopTour[];
+}
+
 const STATISTICS_API_URL = {
   BOOKING_STATS: "/dashboard/booking-statistics",
   REVENUE_ADMIN_STATISTICS: "/dashboard/admin-revenue-statistics",
-  REVENUE_SYSTEM_STATISTICS: "/dashboard/system-revenue-statistics"
+  REVENUE_SYSTEM_STATISTICS: "/dashboard/system-revenue-statistics",
+  TOUR_STATISTICS: "/dashboard/tour-statistics"
 };
 
 export function useBookingStats() {
@@ -149,10 +163,35 @@ export function useBookingStats() {
     [callApi, setLoading]
   );
 
+  const getTourStatistics = useCallback(
+    async (month: number, year: number, topCount?: number, status?: number): Promise<TourStatisticsResponse> => {
+      setLoading(true);
+      try {
+        const params: any = { month, year };
+        if (topCount !== undefined) params.topCount = topCount;
+        if (status !== undefined) params.status = status;
+        
+        const response = await callApi(
+          "get",
+          STATISTICS_API_URL.TOUR_STATISTICS,
+          { params }
+        );
+        return response.data as TourStatisticsResponse;
+      } catch (e: any) {
+        console.error("Error fetching tour statistics:", e.message);
+        throw e;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
   return {
     getBookingStats,
     getRevenueAdminStatistics,
     getRevenueSystemStatistics,
+    getTourStatistics,
     loading: isLoading || loading,
   };
 }

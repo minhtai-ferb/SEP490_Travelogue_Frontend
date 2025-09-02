@@ -62,7 +62,7 @@ const ViewDistricsPage = ({ params }: { params: Promise<{ id: string }> }) => {
         <LoadingContent />
       ) : (
         <DistrictContent
-          href="/moderator/districts"
+          href="/moderator"
           district={district}
           onImageUpdateClick={openImageModal}
         />
