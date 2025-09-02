@@ -218,6 +218,7 @@ export interface Location {
 	category: string
 	districtId: string
 	districtName: string
+	locationType?: number
 	medias: LocationMedia[]
 	craftVillage?: CraftVillage
 }
