@@ -192,7 +192,9 @@ export function TourScheduleForm({
 				setErrors({})
 			} else {
 				// Validation failed - show server errors
-				const serverMessage = response?.message || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+				console.log("response", response)
+				const serverMessage = response?.errors || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+
 				setErrors({
 					validation: serverMessage,
 					...(response?.errors || {}) // Include field-specific errors if available
@@ -257,10 +259,10 @@ export function TourScheduleForm({
 			}
 
 			const response = await validateSchedule(validationData, tourId)
-
+			console.log("object", response);
 			if (!response?.success && response?.isValid === false) {
 				// Validation failed - show error and stop
-				const serverMessage = response?.message || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+				const serverMessage = response?.errors || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
 				setErrors({
 					validation: serverMessage,
 					...(response?.errors || {})
