@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import ScheduleTourguideCL from "./ScheduleTourguideCL"
+import ScheduleTourguideRefactored from "./ScheduleTourguideRefactored"
 
 export const metadata: Metadata = {
 	title: "Lịch trình",
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 function LichTrinhPage() {
 	return (
 		<div>
-			<ScheduleTourguideCL />
+			<ScheduleTourguideRefactored />
 		</div>
 	)
 }
