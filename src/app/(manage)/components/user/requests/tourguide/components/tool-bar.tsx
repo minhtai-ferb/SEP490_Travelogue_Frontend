@@ -16,7 +16,7 @@ export function Toolbar({
   setStatus: (s: TourguideRequestStatus | "all") => void
 }) {
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-3">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input

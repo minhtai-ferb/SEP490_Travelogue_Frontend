@@ -7,13 +7,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { User as UserIcon, Plus, Minus, Wallet, CreditCard, Star, MapPin, Award, Building2 } from "lucide-react";
+import { User as UserIcon, Plus, Minus, Wallet, CreditCard, Star, MapPin, Award, Building2, History, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/types/Users";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AssignRoleDialog } from "./user-role";
-import { Divider, Typography, Row, Col, Statistic } from "antd";
+import { Divider, Typography, Row, Col, Statistic, Table, Tag } from "antd";
 
 const { Text, Title } = Typography;
 
@@ -120,10 +120,15 @@ export default function UserInfoDisplay({
                           formatter={(value) => formatCurrency(Number(value))}
                           valueStyle={{ color: '#1890ff', fontSize: '24px' }}
                         />
-                        <div className="mt-3">
+                        <div className="mt-3 flex items-center justify-between">
                           <Text type="secondary">
                             Giao dịch: {user.wallet.transactionDtos?.length || 0} lần
                           </Text>
+                          {user.wallet.transactionDtos && user.wallet.transactionDtos.length > 0 && (
+                            <Text type="secondary" className="text-xs">
+                              Gần nhất: {formatDate(user.wallet.transactionDtos[0].transactionDateTime)}
+                            </Text>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -427,13 +432,152 @@ export default function UserInfoDisplay({
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {user.bankAccounts.map((account, index) => (
-                            <div key={index} className="p-3 border rounded-lg bg-purple-50">
-                              <Text strong>{account.bankName || `Tài khoản ${index + 1}`}</Text>
-                              <p className="text-sm text-gray-600 mt-1">{account.accountNumber}</p>
+                            <div key={index} className="p-4 border rounded-lg bg-purple-50 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Text strong className="text-lg">{account.bankName}</Text>
+                                {account.isDefault && (
+                                  <Badge variant="outline" className="text-green-600 border-green-600">
+                                    Mặc định
+                                  </Badge>
+                                )}
+                              </div>
+                              <Row gutter={[16, 8]}>
+                                <Col xs={24} md={12}>
+                                  <div>
+                                    <Text strong className="text-gray-600">Số tài khoản:</Text>
+                                    <p className="mt-1 font-mono text-lg">{account.bankAccountNumber}</p>
+                                  </div>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                  <div>
+                                    <Text strong className="text-gray-600">Chủ tài khoản:</Text>
+                                    <p className="mt-1">{account.bankOwnerName}</p>
+                                  </div>
+                                </Col>
+                                <Col xs={24}>
+                                  <div>
+                                    <Text strong className="text-gray-600">Ngày tạo:</Text>
+                                    <p className="mt-1">{formatDate(account.createdAt)}</p>
+                                  </div>
+                                </Col>
+                              </Row>
                             </div>
                           ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Lịch sử giao dịch */}
+                  {user.wallet?.transactionDtos && user.wallet.transactionDtos.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <History className="h-5 w-5 text-green-600" />
+                          Lịch Sử Giao Dịch
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto">
+                          <Table
+                            dataSource={user.wallet.transactionDtos.map((transaction, index) => ({
+                              ...transaction,
+                              key: transaction.id || index,
+                            }))}
+                            pagination={{ pageSize: 10, showSizeChanger: true }}
+                            scroll={{ x: 1000 }}
+                            columns={[
+                              {
+                                title: 'Thời gian',
+                                dataIndex: 'transactionDateTime',
+                                key: 'transactionDateTime',
+                                width: 180,
+                                render: (date: string) => {
+                                  const formattedDate = new Date(date).toLocaleString('vi-VN', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    timeZone: 'Asia/Ho_Chi_Minh'
+                                  });
+                                  return (
+                                    <div className="text-sm">
+                                      <div className="font-medium">{formattedDate.split(' ')[0]}</div>
+                                      <div className="text-gray-500">{formattedDate.split(' ')[1]}</div>
+                                    </div>
+                                  );
+                                },
+                                sorter: (a: any, b: any) => new Date(a.transactionDateTime).getTime() - new Date(b.transactionDateTime).getTime(),
+                                defaultSortOrder: 'descend',
+                              },
+                              {
+                                title: 'Loại giao dịch',
+                                dataIndex: 'typeText',
+                                key: 'typeText',
+                                width: 120,
+                                render: (type: string, record: any) => (
+                                  <Tag color={
+                                    record.transactionDirection === 0 ? 'green' : 'red'
+                                  }>
+                                    {type}
+                                  </Tag>
+                                ),
+                              },
+                              {
+                                title: 'Số tiền',
+                                dataIndex: 'paidAmount',
+                                key: 'paidAmount',
+                                width: 150,
+                                render: (amount: number, record: any) => (
+                                  <div className={`text-right font-semibold ${
+                                    record.transactionDirection === 0 ? 'text-green-600' : 'text-red-600'
+                                  }`}>
+                                    {record.transactionDirection === 0 ? '+' : '-'}{formatCurrency(amount)}
+                                  </div>
+                                ),
+                              },
+                              {
+                                title: 'Trạng thái',
+                                dataIndex: 'statusText',
+                                key: 'statusText',
+                                width: 120,
+                                render: (status: string, record: any) => (
+                                  <Tag color={
+                                    record.status === 2 ? 'green' : 
+                                    record.status === 1 ? 'orange' : 'red'
+                                  }>
+                                    {status}
+                                  </Tag>
+                                ),
+                              },
+                              {
+                                title: 'Phương thức',
+                                dataIndex: 'method',
+                                key: 'method',
+                                width: 100,
+                                render: (method: string) => (
+                                  <Tag color="blue">{method}</Tag>
+                                ),
+                              },
+                              {
+                                title: 'Kênh thanh toán',
+                                dataIndex: 'paymentChannelText',
+                                key: 'paymentChannelText',
+                                width: 120,
+                              },
+                              {
+                                title: 'Lý do',
+                                dataIndex: 'reason',
+                                key: 'reason',
+                                ellipsis: true,
+                                render: (reason: string) => reason || 'Không có',
+                              },
+                            ]}
+                          />
                         </div>
                       </CardContent>
                     </Card>

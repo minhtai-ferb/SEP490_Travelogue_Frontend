@@ -4,6 +4,7 @@ import React from "react";
 import { SystemRevenueChart } from "./components/chart-line-interactive";
 import TransactionTable from "./components/transaction-table";
 import TopTransactionLatest from "./components/top-transaction-latest";
+import TopToursBooking from "./components/top-tours-booking";
 
 export default function SystemDashboard() {
   return (
@@ -13,11 +14,11 @@ export default function SystemDashboard() {
       </div>
       
       <div className="flex gap-4 mb-4">
-        <div className="w-1/2">
+        <div className="w-1/2 h-full">
           <TopTransactionLatest />
         </div>
-        <div className="w-1/2">
-          {/* Có thể thêm component khác ở đây */}
+        <div className="w-1/2 h-full">
+          <TopToursBooking />
         </div>
       </div>
       

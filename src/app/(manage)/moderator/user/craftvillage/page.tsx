@@ -1,5 +1,6 @@
+"use client";
 
-import CraftVillageRequestTable from "@/app/(manage)/components/user/requests/craftvillage/CraftVillageClient";
+import CraftVillageRequest from "@/app/(manage)/components/user/requests/craftvillage";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 
@@ -8,12 +9,23 @@ const crumbs: Crumb[] = [
   { label: "Quản lý làng nghề", href: "/moderator/user/craftvillage" },
 ];
 
-
 export default function CraftVillageRequestsPage() {
   return (
     <SidebarInset>
       <BreadcrumbHeader items={crumbs} />
-      <CraftVillageRequestTable href="/moderator/user" />
+      <div className="w-full mx-auto px-4 space-y-6 mt-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Quản lý yêu cầu làng nghề tham gia vào hệ thống
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Duyệt, chấp nhận hoặc từ chối các yêu cầu đăng ký
+            </p>
+          </div>
+        </div>
+        <CraftVillageRequest href="/moderator/user" />
+      </div>
     </SidebarInset>
   );
 }
