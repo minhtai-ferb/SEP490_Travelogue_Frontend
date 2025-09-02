@@ -24,6 +24,8 @@ export interface Location {
   districtId: string
   locationType: LocationType
   mediaDtos: MediaDto[]
+  minPrice: number
+  maxPrice: number
 }
 
 export interface CuisineData {

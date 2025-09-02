@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   AppWindowMac,
@@ -8,13 +8,9 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-} from "lucide-react"
+} from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,36 +19,40 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { useAuth } from "@/services/useAuth"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/sidebar";
+import { useAuth } from "@/services/useAuth";
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
 }: {
   user: {
-    fullName: string
-    email: string
-    avatar: string
-  }
+    fullName: string;
+    email: string;
+    avatar: string;
+  };
 }) {
-  const { isMobile } = useSidebar()
-  const { logout } = useAuth()
-  const router = useRouter()
-  
+  const { isMobile } = useSidebar();
+  const { logout } = useAuth();
+  const router = useRouter();
+
   const handleLogout = () => {
-		logout()
-	}
+    logout();
+  };
 
   const handleUserPage = () => {
-    router.push("/auth/choose-role")
-  }
+    router.push("/auth/choose-role");
+  };
+
+  const handleProfile = () => {
+    router.push("/admin/profile");
+  };
 
   return (
     <SidebarMenu>
@@ -87,7 +87,9 @@ export function NavUser({
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.fullName}</span>
+                  <span className="truncate font-semibold">
+                    {user.fullName}
+                  </span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
@@ -101,7 +103,7 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfile}>
                 <BadgeCheck />
                 Hồ sơ
               </DropdownMenuItem>
@@ -123,5 +125,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

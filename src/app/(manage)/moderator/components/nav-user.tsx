@@ -54,6 +54,10 @@ export function NavUser({
     router.push("/auth/choose-role")
   }
 
+  const handleProfile = () => {
+    router.push("/moderator/profile")
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -101,7 +105,7 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfile}>
                 <BadgeCheck />
                 Hồ sơ
               </DropdownMenuItem>

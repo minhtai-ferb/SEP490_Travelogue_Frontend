@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { MapPin } from "lucide-react";
 import { useLocations } from "@/services/use-locations";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,6 +22,7 @@ import { ImageUpload } from "./image-upload";
 import { LocationTypeSelector } from "./location-type-selector";
 import { MapSelector } from "./map-selector";
 import { TimeSelector } from "./time-selector";
+import { PriceRange } from "./price-range";
 
 interface LocationFormData {
   name: string;
@@ -34,6 +36,8 @@ interface LocationFormData {
   districtId: string;
   locationType: LocationType;
   mediaDtos: MediaDto[];
+  minPrice: number;
+  maxPrice: number;
 }
 
 interface LocationTypeData {
@@ -74,6 +78,8 @@ export function CreateLocationForm({ href }: { href: string }) {
     districtId: "",
     locationType: LocationType.ScenicSpot,
     mediaDtos: [],
+    minPrice: 0,
+    maxPrice: 0,
   });
 
   const [locationTypeData, setLocationTypeData] = useState<LocationTypeData>(
@@ -149,6 +155,10 @@ export function CreateLocationForm({ href }: { href: string }) {
 
   const handleContentChange = (content: string) => {
     setFormData((prev) => ({ ...prev, content }));
+  };
+
+  const handlePriceChange = (minPrice: number, maxPrice: number) => {
+    setFormData((prev) => ({ ...prev, minPrice, maxPrice }));
   };
 
   const handleSubmit = async () => {
@@ -267,13 +277,18 @@ export function CreateLocationForm({ href }: { href: string }) {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Tạo địa điểm mới</h1>
-          <p className="text-muted-foreground mt-2">
-            Thêm thông tin chi tiết về địa điểm du lịch, làng nghề, ẩm thực hoặc
-            di tích lịch sử
+    <div className="container mx-auto py-8 px-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Enhanced Header */}
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+            <MapPin className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Tạo địa điểm mới
+          </h1>
+          <p className="text-muted-foreground mt-3 text-lg max-w-2xl mx-auto">
+            Thêm thông tin chi tiết về địa điểm du lịch, làng nghề, ẩm thực hoặc di tích lịch sử để chia sẻ với cộng đồng
           </p>
         </div>
 
@@ -304,6 +319,13 @@ export function CreateLocationForm({ href }: { href: string }) {
               />
             </CardContent>
           </Card>
+
+          {/* Price Range */}
+          <PriceRange
+            minPrice={formData.minPrice}
+            maxPrice={formData.maxPrice}
+            onChange={handlePriceChange}
+          />
 
           {/* Image Upload */}
           <ImageUpload

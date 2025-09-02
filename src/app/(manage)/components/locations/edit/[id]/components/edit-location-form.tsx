@@ -22,6 +22,7 @@ import { HistoricalLocationForm } from "./historical-location-form";
 import { CraftVillageForm } from "./craft-village-form";
 import { CuisineForm } from "./cuisine-form";
 import { ActionButtons } from "./action-buttons";
+import { PriceRange } from "./price-range";
 import { useLocations } from "@/services/use-locations";
 import toast from "react-hot-toast";
 
@@ -44,6 +45,8 @@ interface LocationData {
   cuisine?: CuisineData;
   craftVillage?: CraftVillageData;
   historicalLocation?: HistoricalLocationData;
+  minPrice: number;
+  maxPrice: number;
 }
 
 interface EditLocationFormProps {
@@ -102,6 +105,10 @@ export function EditLocationForm({
 
   const handleLocationTypeDataChange = (field: string, data: any) => {
     setLocationData((prev) => ({ ...prev, [field]: data }));
+  };
+
+  const handlePriceChange = (minPrice: number, maxPrice: number) => {
+    setLocationData((prev) => ({ ...prev, minPrice, maxPrice }));
   };
 
   // Function to cleanup newly uploaded images
@@ -400,6 +407,13 @@ export function EditLocationForm({
           openTime={toHHmm(locationData.openTime)}
           closeTime={toHHmm(locationData.closeTime)}
           onChange={handleTimeChange}
+        />
+
+        {/* Price Range */}
+        <PriceRange
+          minPrice={locationData.minPrice || 0}
+          maxPrice={locationData.maxPrice || 0}
+          onChange={handlePriceChange}
         />
 
         {/* Image Upload */}
