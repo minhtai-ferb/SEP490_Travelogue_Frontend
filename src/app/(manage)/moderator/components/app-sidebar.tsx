@@ -10,16 +10,17 @@ import {
   SquareTerminal,
   Banknote,
   Ticket,
-  BanknoteX,
-  BanknoteArrowUp,
+  BanknoteX,    
   MapPinned,
+  LocateFixed,
+  CirclePercent,
+  MapPinCheckInsideIcon,
 } from "lucide-react";
 import * as React from "react";
 
-import { NavMain } from "@/app/(manage)/admin/components/nav-main";
-import { NavSecondary } from "@/app/(manage)/admin/components/nav-secondary";
-import { NavUser } from "@/app/(manage)/admin/components/nav-user";
-
+import { NavMain } from "@/app/(manage)/moderator/components/nav-main";
+import { NavSecondary } from "@/app/(manage)/moderator/components/nav-secondary";
+import { NavUser } from "@/app/(manage)/moderator/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -34,17 +35,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/auth";
+import { title } from "process";
 
 const data = {
   navSecondary: [
     {
       title: "Hỗ trợ",
-      url: "#",
+      url: "mailto:travelogue.fpt@gmail.com",
       icon: LifeBuoy,
     },
     {
       title: "Góp ý",
-      url: "#",
+      url: "https://www.facebook.com/TravelogueDukhaoveNguon",
       icon: Send,
     },
   ],
@@ -52,7 +54,7 @@ const data = {
   navMain: [
     {
       title: "Thống kê hệ thống",
-      url: "/moderator/dashboard",
+      url: "/moderator/dashboard/system",
       icon: SquareTerminal,
     },
     {
@@ -62,11 +64,11 @@ const data = {
       items: [
         {
           title: "Hướng dẫn viên",
-          url: "/admin/user/tourguide",
+          url: "/moderator/user/tourguide",
         },
         {
           title: "Làng nghề",
-          url: "/admin/user/craftvillage",
+          url: "/moderator/user/craftvillage",
         },
       ],
     },
@@ -99,14 +101,24 @@ const data = {
         },
         {
           title: "Yêu cầu hủy đặt chỗ",
-          url: "/admin/booking/rejection-request",
-        },
+          url: "/moderator/booking/rejection-request",
+        }
       ],
     },
     {
       title: "Quản lý chuyến tham quan",
       url: "/moderator/tour",
       icon: Map,
+    },
+    {
+      title: "Quản lý kế hoạch cá nhân",
+      url: "/moderator/personal-plan",
+      icon: MapPinCheckInsideIcon,
+    },
+    {
+      title: "Quản lý trải nghiệm làng nghề",
+      url: "/moderator/workshop",
+      icon: LocateFixed,
     },
     {
       title: "Quản lý tin tức",
@@ -135,7 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [user, setUser] = useAtom(userAtom);
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="sidebar" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -163,7 +175,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain
           items={data.navMain.map((item) => ({
             ...item,
-            isActive: pathname.includes(item.url),
+            isActive: pathname.includes(item.url), // Check if pathname includes the item's URL
           }))}
           titleMain="Kiểm duyệt viên"
         />

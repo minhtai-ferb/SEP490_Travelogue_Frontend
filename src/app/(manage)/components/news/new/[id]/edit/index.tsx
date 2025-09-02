@@ -92,6 +92,7 @@ export default function EditNews({ href }: { href: string }) {
         description: formData.description,
         content: formData.content,
         locationId: formData.locationId || undefined,
+        newsCategory: 1,
         isHighlighted: formData.isHighlighted,
         mediaDtos: images.length > 0 ? images : undefined,
       };

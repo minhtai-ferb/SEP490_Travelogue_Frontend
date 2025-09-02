@@ -10,10 +10,12 @@ const crumb: Crumb[] = [{ label: "Quản lý đặt chỗ" }];
 
 function PageDashboard() {
   return (
-    <SidebarInset>
+    <>
       <BreadcrumbHeader items={crumb} />
-      <ManageBooking />
-    </SidebarInset>
+      <div>
+        <ManageBooking />
+      </div>
+    </>
   );
 }
 

@@ -17,18 +17,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { format, subDays } from "date-fns";
+import { DatePicker } from "antd";
+import { format, subDays, addDays } from "date-fns";
 import { vi } from "date-fns/locale";
 import { BookingStatsItem, BookingStatsResponse, useBookingStats } from "@/services/use-dashbroad";
 import { BookingStatsCards } from "./booking-stats-cards";
+import dayjs, { Dayjs } from "dayjs";
 
 const chartConfig = {
   bookingSchedule: {
@@ -46,11 +40,11 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 interface Props {
-  timeRange: string;
-  setTimeRange: (value: string) => void;
+  dateRange: [Dayjs, Dayjs];
+  setDateRange: (value: [Dayjs, Dayjs]) => void;
 }
 
-export function BookingStatsChart({ setTimeRange, timeRange }: Props) {
+export function BookingStatsChart({ setDateRange, dateRange }: Props) {
   const isMobile = useIsMobile();
   const { getBookingStats, loading } = useBookingStats();
   const [data, setData] = useState<BookingStatsItem[]>([]);
@@ -59,25 +53,11 @@ export function BookingStatsChart({ setTimeRange, timeRange }: Props) {
       sum + item.bookingSchedule + item.bookingTourGuide + item.bookingWorkshop,
     0
   );
-  useEffect(() => {
-    if (isMobile) {
-      setTimeRange("7d");
-    }
-  }, [isMobile]);
 
   const fetchData = async () => {
     try {
-      let daysToSubtract = 30;
-      if (timeRange === "90d") {
-        daysToSubtract = 90;
-      } else if (timeRange === "7d") {
-        daysToSubtract = 7;
-      }
-
-      const endDate = new Date();
-      const startDate = subDays(endDate, daysToSubtract);
-      const startDateStr = format(startDate, "yyyy-MM-dd");
-      const endDateStr = format(endDate, "yyyy-MM-dd");
+      const startDateStr = format(dateRange[0].toDate(), "yyyy-MM-dd");
+      const endDateStr = format(dateRange[1].toDate(), "yyyy-MM-dd");
 
       const response : BookingStatsResponse = await getBookingStats(startDateStr, endDateStr);
 
@@ -94,7 +74,7 @@ export function BookingStatsChart({ setTimeRange, timeRange }: Props) {
 
   useEffect(() => {
     fetchData();
-  }, [timeRange]); // Dependency thay đổi thành timeRange
+  }, [dateRange]); // Dependency thay đổi thành dateRange
 
   return (
     <div className="space-y-6">
@@ -108,48 +88,23 @@ export function BookingStatsChart({ setTimeRange, timeRange }: Props) {
             <CardDescription>
               <span className="">
                 Tổng số {" "}
-                {totalBookings}{" "} booking trong{" "}
-                {timeRange === "90d"
-                  ? "3 tháng"
-                  : timeRange === "30d"
-                  ? "30 ngày"
-                  : "7 ngày"}{" "}
-                qua
+                {totalBookings}{" "} booking trong khoảng thời gian đã chọn
               </span>
             </CardDescription>
           </div>
           <CardAction>
-            <ToggleGroup
-              type="single"
-              value={timeRange}
-              onValueChange={setTimeRange}
-              variant="outline"
-              className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
-            >
-              <ToggleGroupItem value="90d">3 tháng qua</ToggleGroupItem>
-              <ToggleGroupItem value="30d">30 ngày qua</ToggleGroupItem>
-              <ToggleGroupItem value="7d">7 ngày qua</ToggleGroupItem>
-            </ToggleGroup>
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger
-                className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
-                // size="sm"
-                aria-label="Select a value"
-              >
-                <SelectValue placeholder="30 ngày qua" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="90d" className="rounded-lg">
-                  3 tháng qua
-                </SelectItem>
-                <SelectItem value="30d" className="rounded-lg">
-                  30 ngày qua
-                </SelectItem>
-                <SelectItem value="7d" className="rounded-lg">
-                  7 ngày qua
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <DatePicker.RangePicker
+              value={dateRange}
+              onChange={(dates) => {
+                if (dates && dates[0] && dates[1]) {
+                  setDateRange([dates[0], dates[1]]);
+                }
+              }}
+              format="DD/MM/YYYY"
+              placeholder={["Từ ngày", "Đến ngày"]}
+              allowClear={false}
+              className="w-64"
+            />
           </CardAction>
         </CardHeader>
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">

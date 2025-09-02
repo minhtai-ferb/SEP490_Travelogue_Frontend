@@ -95,11 +95,13 @@ export function SearchFilters({
     const list: Array<{ key: keyof SearchFilters; label: string }> = [];
     if (filters.title)
       list.push({ key: "title", label: `Tiêu đề: ${filters.title}` });
-    if (filters.locationId)
+    if (filters.locationId) {
+      const locationName = locationOptions.find(loc => loc.id === filters.locationId)?.name || filters.locationId;
       list.push({
         key: "locationId",
-        label: `ID địa điểm: ${filters.locationId}`,
+        label: `Địa điểm: ${locationName}`,
       });
+    }
     if (filters.isHighlighted !== undefined)
       list.push({
         key: "isHighlighted",
@@ -120,7 +122,7 @@ export function SearchFilters({
     }
     if (filters.year) list.push({ key: "year", label: `Năm ${filters.year}` });
     return list;
-  }, [filters]);
+  }, [filters, locationOptions]);
 
   // Nếu enum TypeExperience đã import ở file này
   const typeExperienceOptions = useMemo(() => {
