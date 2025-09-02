@@ -89,8 +89,15 @@ export function CreateLocationForm({ href }: { href: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
-    districtId?: string;
+    description?: string;
+    content?: string;
     address?: string;
+    latitude?: string;
+    longitude?: string;
+    districtId?: string;
+    locationType?: string;
+    minPrice?: string;
+    maxPrice?: string;
     heritageRank?: string;
     establishedDate?: string;
     typeHistoricalLocation?: string;
@@ -105,30 +112,98 @@ export function CreateLocationForm({ href }: { href: string }) {
     isSuccess,
   });
 
+  // Validation function
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = "Tên địa điểm là bắt buộc";
+    } else if (formData.name.length > 200) {
+      newErrors.name = "Tên địa điểm không được vượt quá 200 ký tự";
+    }
+
+    // Description validation
+    if (!formData.description.trim()) {
+      newErrors.description = "Mô tả là bắt buộc";
+    } else if (formData.description.length > 500) {
+      newErrors.description = "Mô tả không được vượt quá 500 ký tự";
+    }
+
+    // Content validation
+    if (!formData.content.trim()) {
+      newErrors.content = "Nội dung là bắt buộc";
+    }
+
+    // Address validation
+    if (!formData.address.trim()) {
+      newErrors.address = "Địa chỉ là bắt buộc";
+    } else if (formData.address.length > 300) {
+      newErrors.address = "Địa chỉ không được vượt quá 300 ký tự";
+    }
+
+    // Latitude validation
+    if (formData.latitude < -90 || formData.latitude > 90) {
+      newErrors.latitude = "Vĩ độ phải nằm trong khoảng -90 đến 90";
+    }
+
+    // Longitude validation
+    if (formData.longitude < -180 || formData.longitude > 180) {
+      newErrors.longitude = "Kinh độ phải nằm trong khoảng -180 đến 180";
+    }
+
+    // District validation
+    if (!formData.districtId) {
+      newErrors.districtId = "Vui lòng chọn quận/huyện";
+    }
+
+    // Price validation
+    if (formData.minPrice < 0) {
+      newErrors.minPrice = "Giá tối thiểu không hợp lệ";
+    }
+
+    if (formData.maxPrice < 0) {
+      newErrors.maxPrice = "Giá tối đa không hợp lệ";
+    }
+
+    if (formData.maxPrice > 0 && formData.minPrice > formData.maxPrice) {
+      newErrors.minPrice = "Giá tối thiểu không được lớn hơn giá tối đa";
+      newErrors.maxPrice = "Giá tối đa không được nhỏ hơn giá tối thiểu";
+    }
+
+    // Location type specific validation
+    if (formData.locationType === LocationType.HistoricalSite) {
+      const hist = locationTypeData.historicalLocation;
+      const hasDate = Boolean(hist?.establishedDate);
+      const hasType =
+        hist?.typeHistoricalLocation !== undefined &&
+        hist?.typeHistoricalLocation !== null;
+      const rank =
+        typeof hist?.heritageRank === "number" ? hist?.heritageRank : -1;
+      const rankValid = rank >= 0 && rank <= 5;
+      
+      if (!hist || !hasDate || !hasType || !rankValid) {
+        if (!rankValid) newErrors.heritageRank = "Xếp hạng phải từ 0 đến 5";
+        if (!hasDate) newErrors.establishedDate = "Vui lòng chọn ngày";
+        if (!hasType) newErrors.typeHistoricalLocation = "Vui lòng chọn loại di tích";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleBasicInfoChange = (data: Partial<LocationFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
-    // Inline validate as user types/selects
-    if (Object.prototype.hasOwnProperty.call(data, "name")) {
-      const value = String(data.name ?? "");
-      setErrors((prev) => ({
-        ...prev,
-        name: value.trim() ? undefined : "Vui lòng nhập tên địa điểm",
-      }));
-    }
-    if (Object.prototype.hasOwnProperty.call(data, "districtId")) {
-      const value = String(data.districtId ?? "");
-      setErrors((prev) => ({
-        ...prev,
-        districtId: value ? undefined : "Vui lòng chọn quận/huyện",
-      }));
-    }
-    if (Object.prototype.hasOwnProperty.call(data, "address")) {
-      const value = String(data.address ?? "");
-      setErrors((prev) => ({
-        ...prev,
-        address: value.trim() ? undefined : "Vui lòng nhập địa chỉ",
-      }));
-    }
+    
+    // Clear errors for fields being updated
+    const updatedErrors = { ...errors };
+    Object.keys(data).forEach(key => {
+      if (updatedErrors[key as keyof typeof errors]) {
+        delete updatedErrors[key as keyof typeof errors];
+      }
+    });
+    setErrors(updatedErrors);
   };
 
   const handleLocationTypeChange = (type: LocationType) => {
@@ -139,10 +214,25 @@ export function CreateLocationForm({ href }: { href: string }) {
 
   const handleLocationTypeDataChange = (data: Partial<LocationTypeData>) => {
     setLocationTypeData((prev) => ({ ...prev, ...data }));
+    
+    // Clear related errors when data changes
+    if (data.historicalLocation) {
+      const updatedErrors = { ...errors };
+      delete updatedErrors.heritageRank;
+      delete updatedErrors.establishedDate;
+      delete updatedErrors.typeHistoricalLocation;
+      setErrors(updatedErrors);
+    }
   };
 
   const handleCoordinatesChange = (lat: number, lng: number) => {
     setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+    
+    // Clear coordinate errors when values change
+    const updatedErrors = { ...errors };
+    delete updatedErrors.latitude;
+    delete updatedErrors.longitude;
+    setErrors(updatedErrors);
   };
 
   const handleMediaChange = (mediaDtos: MediaDto[]) => {
@@ -155,57 +245,38 @@ export function CreateLocationForm({ href }: { href: string }) {
 
   const handleContentChange = (content: string) => {
     setFormData((prev) => ({ ...prev, content }));
+    
+    // Clear content error when value changes
+    if (errors.content) {
+      const updatedErrors = { ...errors };
+      delete updatedErrors.content;
+      setErrors(updatedErrors);
+    }
   };
 
   const handlePriceChange = (minPrice: number, maxPrice: number) => {
     setFormData((prev) => ({ ...prev, minPrice, maxPrice }));
+    
+    // Clear price errors when values change
+    const updatedErrors = { ...errors };
+    delete updatedErrors.minPrice;
+    delete updatedErrors.maxPrice;
+    setErrors(updatedErrors);
   };
 
   const handleSubmit = async () => {
+    // Validate form before submitting
+    if (!validateForm()) {
+      toast.error("Vui lòng kiểm tra lại các trường bắt buộc");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Validate basic required fields
-      const basicErrors: typeof errors = {};
-      if (!formData.name.trim())
-        basicErrors.name = "Vui lòng nhập tên địa điểm";
-      if (!formData.districtId)
-        basicErrors.districtId = "Vui lòng chọn quận/huyện";
-      if (!formData.address.trim())
-        basicErrors.address = "Vui lòng nhập địa chỉ";
-
-      if (basicErrors.name || basicErrors.districtId || basicErrors.address) {
-        setErrors((prev) => ({ ...prev, ...basicErrors }));
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Validate type-specific required fields before submitting
-      if (formData.locationType === LocationType.HistoricalSite) {
-        const hist = locationTypeData.historicalLocation;
-        const hasDate = Boolean(hist?.establishedDate);
-        const hasType =
-          hist?.typeHistoricalLocation !== undefined &&
-          hist?.typeHistoricalLocation !== null;
-        const rank =
-          typeof hist?.heritageRank === "number" ? hist?.heritageRank : -1;
-        const rankValid = rank >= 0 && rank <= 5;
-        if (!hist || !hasDate || !hasType || !rankValid) {
-          setErrors((prev) => ({
-            ...prev,
-            heritageRank: rankValid ? undefined : "Xếp hạng phải từ 0 đến 5",
-            establishedDate: hasDate ? undefined : "Vui lòng chọn ngày",
-            typeHistoricalLocation: hasType
-              ? undefined
-              : "Vui lòng chọn loại di tích",
-          }));
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
       // Create main location
       const locationResponse = await createLocation(formData);
       const locationId = await locationResponse.id;
+      
       // Create location type specific data
       if (
         formData.locationType === LocationType.Cuisine &&
@@ -221,18 +292,14 @@ export function CreateLocationForm({ href }: { href: string }) {
           locationTypeData.historicalLocation
         );
       }
+      
       // Success notification
       setIsSuccess(true); // Đánh dấu tạo thành công để không xóa ảnh
       toast.success("Địa điểm đã được tạo thành công!");
       router.push(href);
     } catch (error) {
       console.error("Error creating location:", error);
-      setErrors({
-        name: "Vui lòng kiểm tra lại các trường bắt buộc và thử lại",
-        districtId: "Vui lòng kiểm tra lại các trường bắt buộc và thử lại",
-        address: "Vui lòng kiểm tra lại các trường bắt buộc và thử lại",
-      });
-      toast.error("Vui lòng kiểm tra lại các trường bắt buộc và thử lại");
+      toast.error("Có lỗi xảy ra khi tạo địa điểm. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -325,6 +392,10 @@ export function CreateLocationForm({ href }: { href: string }) {
             minPrice={formData.minPrice}
             maxPrice={formData.maxPrice}
             onChange={handlePriceChange}
+            errors={{
+              minPrice: errors.minPrice,
+              maxPrice: errors.maxPrice,
+            }}
           />
 
           {/* Image Upload */}
@@ -362,6 +433,10 @@ export function CreateLocationForm({ href }: { href: string }) {
                 longitude={formData.longitude}
                 center={[formData.latitude, formData.longitude]}
                 onChange={handleCoordinatesChange}
+                errors={{
+                  latitude: errors.latitude,
+                  longitude: errors.longitude,
+                }}
               />
             </CardContent>
           </Card>
@@ -369,12 +444,15 @@ export function CreateLocationForm({ href }: { href: string }) {
           {/* Content Editor */}
           <Card>
             <CardHeader>
-              <CardTitle>Nội dung chi tiết</CardTitle>
+              <CardTitle>
+                Nội dung chi tiết <span className="text-red-500">*</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ContentEditor
                 content={formData.content}
                 onChange={handleContentChange}
+                error={errors.content}
               />
             </CardContent>
           </Card>

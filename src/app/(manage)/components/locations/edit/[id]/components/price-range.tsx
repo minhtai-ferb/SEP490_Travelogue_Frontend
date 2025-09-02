@@ -10,9 +10,13 @@ interface PriceRangeProps {
   maxPrice: number;
   onChange: (minPrice: number, maxPrice: number) => void;
   className?: string;
+  errors?: {
+    minPrice?: string;
+    maxPrice?: string;
+  };
 }
 
-export function PriceRange({ minPrice, maxPrice, onChange, className }: PriceRangeProps) {
+export function PriceRange({ minPrice, maxPrice, onChange, className, errors }: PriceRangeProps) {
   const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
     onChange(value, maxPrice);
@@ -51,8 +55,11 @@ export function PriceRange({ minPrice, maxPrice, onChange, className }: PriceRan
               placeholder="0"
               min="0"
               step="1000"
-              className="text-right"
+              className={`text-right ${errors?.minPrice ? "border-red-500" : ""}`}
             />
+            {errors?.minPrice ? (
+              <div className="text-xs text-red-500">{errors.minPrice}</div>
+            ) : null}
             <p className="text-xs text-muted-foreground">
               {minPrice > 0 ? formatPrice(minPrice) : "Miễn phí"}
             </p>
@@ -70,8 +77,11 @@ export function PriceRange({ minPrice, maxPrice, onChange, className }: PriceRan
               placeholder="0"
               min="0"
               step="1000"
-              className="text-right"
+              className={`text-right ${errors?.maxPrice ? "border-red-500" : ""}`}
             />
+            {errors?.maxPrice ? (
+              <div className="text-xs text-red-500">{errors.maxPrice}</div>
+            ) : null}
             <p className="text-xs text-muted-foreground">
               {maxPrice > 0 ? formatPrice(maxPrice) : "Miễn phí"}
             </p>

@@ -16,6 +16,10 @@ interface MapSelectorProps {
   longitude: number;
   center: [latitude: number, longitude: number];
   onChange: (lat: number, lng: number) => void;
+  errors?: {
+    latitude?: string;
+    longitude?: string;
+  };
 }
 
 export function MapSelector({
@@ -24,6 +28,7 @@ export function MapSelector({
   longitude,
   center,
   onChange,
+  errors,
 }: MapSelectorProps) {
   const [searchAddress, setSearchAddress] = useState(address);
   const [manualMode, setManualMode] = useState(false);
@@ -238,6 +243,18 @@ export function MapSelector({
             </div>
           </div>
         )}
+
+      {/* Coordinate Validation Errors */}
+      {(errors?.latitude || errors?.longitude) && (
+        <div className="space-y-1">
+          {errors?.latitude && (
+            <div className="text-xs text-red-500">{errors.latitude}</div>
+          )}
+          {errors?.longitude && (
+            <div className="text-xs text-red-500">{errors.longitude}</div>
+          )}
+        </div>
+      )}
 
       {/* Map Display */}
       <Card className="overflow-hidden shadow-lg">

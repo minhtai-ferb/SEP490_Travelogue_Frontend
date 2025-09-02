@@ -63,6 +63,20 @@ export function EditLocationForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [newMediaUrls, setNewMediaUrls] = useState<string[]>([]); // Track new uploaded images
+  const [errors, setErrors] = useState<{
+    name?: string;
+    description?: string;
+    content?: string;
+    address?: string;
+    latitude?: string;
+    longitude?: string;
+    districtId?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    heritageRank?: string;
+    establishedDate?: string;
+    typeHistoricalLocation?: string;
+  }>({});
 
   const {
     updateCuisineInfo,
@@ -72,9 +86,101 @@ export function EditLocationForm({
     deleteMediaByFileName,
   } = useLocations();
 
+  // Validation function
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    // Name validation
+    if (!locationData.name.trim()) {
+      newErrors.name = "Tên địa điểm là bắt buộc";
+    } else if (locationData.name.length > 200) {
+      newErrors.name = "Tên địa điểm không được vượt quá 200 ký tự";
+    }
+
+    // Description validation
+    if (!locationData.description.trim()) {
+      newErrors.description = "Mô tả là bắt buộc";
+    } else if (locationData.description.length > 500) {
+      newErrors.description = "Mô tả không được vượt quá 500 ký tự";
+    }
+
+    // Content validation
+    if (!locationData.content.trim()) {
+      newErrors.content = "Nội dung là bắt buộc";
+    }
+
+    // Address validation
+    if (!locationData.address.trim()) {
+      newErrors.address = "Địa chỉ là bắt buộc";
+    } else if (locationData.address.length > 300) {
+      newErrors.address = "Địa chỉ không được vượt quá 300 ký tự";
+    }
+
+    // Latitude validation
+    if (locationData.latitude < -90 || locationData.latitude > 90) {
+      newErrors.latitude = "Vĩ độ phải nằm trong khoảng -90 đến 90";
+    }
+
+    // Longitude validation
+    if (locationData.longitude < -180 || locationData.longitude > 180) {
+      newErrors.longitude = "Kinh độ phải nằm trong khoảng -180 đến 180";
+    }
+
+    // District validation
+    if (!locationData.districtId) {
+      newErrors.districtId = "Vui lòng chọn quận/huyện";
+    }
+
+    // Price validation
+    if (locationData.minPrice < 0) {
+      newErrors.minPrice = "Giá tối thiểu không hợp lệ";
+    }
+
+    if (locationData.maxPrice < 0) {
+      newErrors.maxPrice = "Giá tối đa không hợp lệ";
+    }
+
+    if (locationData.maxPrice > 0 && locationData.minPrice > locationData.maxPrice) {
+      newErrors.minPrice = "Giá tối thiểu không được lớn hơn giá tối đa";
+      newErrors.maxPrice = "Giá tối đa không được nhỏ hơn giá tối thiểu";
+    }
+
+    // Historical location specific validation
+    if (locationData.category === Category.HistoricalSite) {
+      const hist = locationData.historicalLocation;
+      if (!hist) {
+        newErrors.heritageRank = "Thông tin di tích là bắt buộc";
+        newErrors.establishedDate = "Thông tin di tích là bắt buộc";
+        newErrors.typeHistoricalLocation = "Thông tin di tích là bắt buộc";
+      } else {
+        if (!hist.establishedDate || hist.establishedDate.trim() === "") {
+          newErrors.establishedDate = "Vui lòng chọn ngày thành lập";
+        }
+        if (hist.typeHistoricalLocation === undefined || hist.typeHistoricalLocation === null) {
+          newErrors.typeHistoricalLocation = "Vui lòng chọn loại di tích";
+        }
+        if (hist.heritageRank === undefined || hist.heritageRank === null || hist.heritageRank < 0 || hist.heritageRank > 5) {
+          newErrors.heritageRank = "Xếp hạng phải từ 0 đến 5";
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   // Handle form updates
   const handleBasicInfoChange = (data: any) => {
     setLocationData((prev) => ({ ...prev, ...data }));
+    
+    // Clear errors for fields being updated
+    const updatedErrors = { ...errors };
+    Object.keys(data).forEach(key => {
+      if (updatedErrors[key as keyof typeof errors]) {
+        delete updatedErrors[key as keyof typeof errors];
+      }
+    });
+    setErrors(updatedErrors);
   };
 
   const handleTimeChange = (openTime: string, closeTime: string) => {
@@ -87,6 +193,12 @@ export function EditLocationForm({
 
   const handleCoordinatesChange = (lat: number, lng: number) => {
     setLocationData((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+    
+    // Clear coordinate errors when values change
+    const updatedErrors = { ...errors };
+    delete updatedErrors.latitude;
+    delete updatedErrors.longitude;
+    setErrors(updatedErrors);
   };
 
   const handleMediaChange = (medias: MediaDto[]) => {
@@ -101,14 +213,36 @@ export function EditLocationForm({
 
   const handleContentChange = (content: string) => {
     setLocationData((prev) => ({ ...prev, content }));
+    
+    // Clear content error when value changes
+    if (errors.content) {
+      const updatedErrors = { ...errors };
+      delete updatedErrors.content;
+      setErrors(updatedErrors);
+    }
   };
 
   const handleLocationTypeDataChange = (field: string, data: any) => {
     setLocationData((prev) => ({ ...prev, [field]: data }));
+    
+    // Clear related errors when historical location data changes
+    if (field === "historicalLocation") {
+      const updatedErrors = { ...errors };
+      delete updatedErrors.heritageRank;
+      delete updatedErrors.establishedDate;
+      delete updatedErrors.typeHistoricalLocation;
+      setErrors(updatedErrors);
+    }
   };
 
   const handlePriceChange = (minPrice: number, maxPrice: number) => {
     setLocationData((prev) => ({ ...prev, minPrice, maxPrice }));
+    
+    // Clear price errors when values change
+    const updatedErrors = { ...errors };
+    delete updatedErrors.minPrice;
+    delete updatedErrors.maxPrice;
+    setErrors(updatedErrors);
   };
 
   // Function to cleanup newly uploaded images
@@ -198,46 +332,14 @@ export function EditLocationForm({
 
   // Handle form submission
   const handleSubmit = async () => {
+    // Validate form before submitting
+    if (!validateForm()) {
+      toast.error("Vui lòng kiểm tra lại các trường bắt buộc");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Validate type-specific required fields before submitting
-      if (locationData.category === Category.HistoricalSite) {
-        const hist = locationData.historicalLocation;
-
-        // Check if all required fields are present and valid
-        const missingFields: string[] = [];
-
-        if (!hist) {
-          toast.error("Vui lòng điền đầy đủ thông tin di tích lịch sử");
-          setIsSubmitting(false);
-          return;
-        }
-
-        if (!hist.establishedDate || hist.establishedDate.trim() === "") {
-          missingFields.push("Ngày thành lập/công nhận");
-        }
-
-        if (
-          hist.typeHistoricalLocation === undefined ||
-          hist.typeHistoricalLocation === null
-        ) {
-          missingFields.push("Loại di tích");
-        }
-
-        if (hist.heritageRank === undefined || hist.heritageRank === null) {
-          missingFields.push("Xếp hạng di sản");
-        } else if (hist.heritageRank < 0 || hist.heritageRank > 5) {
-          missingFields.push("Xếp hạng di sản (phải từ 0-5)");
-        }
-
-        if (missingFields.length > 0) {
-          toast.error(
-            `Vui lòng điền đầy đủ thông tin: ${missingFields.join(", ")}`
-          );
-          setIsSubmitting(false);
-          return;
-        }
-      }
       // Update location type specific data
       switch (locationData.category) {
         case Category.ScenicSpot:
@@ -338,7 +440,7 @@ export function EditLocationForm({
       router.push(backUrl);
     } catch (error) {
       console.error("Error updating location:", error);
-      toast.error("Có lỗi xảy ra khi cập nhật địa điểm");
+      toast.error("Có lỗi xảy ra khi cập nhật địa điểm. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -401,6 +503,12 @@ export function EditLocationForm({
             districtId: locationData.districtId,
           }}
           onChange={handleBasicInfoChange}
+          errors={{
+            name: errors.name,
+            description: errors.description,
+            address: errors.address,
+            districtId: errors.districtId,
+          }}
         />
 
         <TimeSelector
@@ -414,6 +522,10 @@ export function EditLocationForm({
           minPrice={locationData.minPrice || 0}
           maxPrice={locationData.maxPrice || 0}
           onChange={handlePriceChange}
+          errors={{
+            minPrice: errors.minPrice,
+            maxPrice: errors.maxPrice,
+          }}
         />
 
         {/* Image Upload */}
@@ -433,12 +545,17 @@ export function EditLocationForm({
           longitude={locationData.longitude}
           center={[locationData.latitude, locationData.longitude]}
           onChange={handleCoordinatesChange}
+          errors={{
+            latitude: errors.latitude,
+            longitude: errors.longitude,
+          }}
         />
 
         {/* Content Editor */}
         <ContentEditorRich
           content={locationData.content}
           onChange={handleContentChange}
+          error={errors.content}
         />
 
         <Separator />

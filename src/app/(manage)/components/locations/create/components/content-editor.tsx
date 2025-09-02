@@ -14,11 +14,13 @@ import { useLocations } from "@/services/use-locations";
 interface ContentEditorProps {
   content: string;
   onChange: (content: string) => void;
+  error?: string;
 }
 
 export default function ContentEditor({
   content,
   onChange,
+  error,
 }: ContentEditorProps) {
   const { uploadMediaMultiple, deleteMediaByFileName } = useLocations();
 
@@ -74,8 +76,9 @@ export default function ContentEditor({
     },
     editorProps: {
       attributes: {
-        class:
-          "min-h-[200px] max-h-[400px] overflow-y-auto border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
+        class: `min-h-[200px] max-h-[400px] overflow-y-auto border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          error ? "border-red-500" : "border-gray-300"
+        }`,
       },
     },
     injectCSS: false,
@@ -96,6 +99,9 @@ export default function ContentEditor({
     <div className="">
       <MenuBar editor={editor} />
       <EditorContent editor={editor} />
+      {error ? (
+        <div className="text-xs text-red-500 mt-1">{error}</div>
+      ) : null}
     </div>
   );
 }
