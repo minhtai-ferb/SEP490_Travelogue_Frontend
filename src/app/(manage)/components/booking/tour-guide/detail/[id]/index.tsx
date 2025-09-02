@@ -27,8 +27,10 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useBookings } from "@/services/use-bookings";
+import { useTourguideAssign } from "@/services/tourguide";
 import { BookingItem } from "@/types/Booking";
 import { hasAdminInPath } from "@/utils/check-admin";
+import TourGuideProfileModal from "./components/TourGuideProfileModal";
 
 // Types
 interface Participant {
@@ -83,9 +85,12 @@ export default function BookingTourGuideDetail({ href }: { href: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const { getBookingById, loading } = useBookings();
+  const { getTourguideProfile, loading: tourGuideLoading } = useTourguideAssign();
 
   const [booking, setBooking] = useState<BookingDetailData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tourGuideModalOpen, setTourGuideModalOpen] = useState(false);
+  const [tourGuideProfile, setTourGuideProfile] = useState<any>(null);
 
   const bookingId = params?.id as string;
 
@@ -131,9 +136,14 @@ export default function BookingTourGuideDetail({ href }: { href: string }) {
 
   const handleViewTourGuide = async () => {
     if (booking?.tourGuideId) {
-      const isAdminPath = hasAdminInPath(pathname);
-      const basePath = isAdminPath ? "/admin" : "/moderator";
-      await router.push(`${basePath}/user/${booking.tourGuideId}`);
+      try {
+        setTourGuideModalOpen(true);
+        const profileData = await getTourguideProfile(booking.tourGuideId);
+        setTourGuideProfile(profileData);
+      } catch (error) {
+        console.error("Error fetching tour guide profile:", error);
+        setTourGuideModalOpen(false);
+      }
     }
   };
 
@@ -533,6 +543,17 @@ export default function BookingTourGuideDetail({ href }: { href: string }) {
           )}
         </div>
       </div>
+
+      {/* Tour Guide Profile Modal */}
+      <TourGuideProfileModal
+        open={tourGuideModalOpen}
+        onClose={() => {
+          setTourGuideModalOpen(false);
+          setTourGuideProfile(null);
+        }}
+        tourGuideProfile={tourGuideProfile}
+        loading={tourGuideLoading}
+      />
     </div>
   );
 }

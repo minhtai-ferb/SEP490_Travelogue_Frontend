@@ -11,7 +11,7 @@ import { useBookings } from "@/services/use-bookings";
 import { BookingItem, BookingTableComponent } from "./components/booking-table";
 import { hasAdminInPath } from "@/utils/check-admin";
 
-export default function BookingScheduleTable({href} : {href: string}) {
+export default function BookingScheduleTable() {
   const { loading, getBookingsPaged } = useBookings();
   const router = useRouter();
   const pathname = usePathname();
@@ -107,7 +107,9 @@ export default function BookingScheduleTable({href} : {href: string}) {
 
   // Handle view booking detail
   const handleViewBooking = (booking: BookingItem) => {
-    router.push(`${href}/${booking.id}`);
+    const isAdminPath = hasAdminInPath(pathname);
+    const basePath = isAdminPath ? "/admin" : "/moderator";
+    router.push(`${basePath}/booking/tour-schedule/${booking.id}`);
   };
 
   // Handle view tour detail
@@ -120,7 +122,7 @@ export default function BookingScheduleTable({href} : {href: string}) {
   };
 
   return (
-    <div className="gap-4 p-4 absolute w-full">
+    <div className="gap-4 p-4 absolute w-full pt-20">
       <BookingFilterBar
         value={filter}
         onChange={setFilter}

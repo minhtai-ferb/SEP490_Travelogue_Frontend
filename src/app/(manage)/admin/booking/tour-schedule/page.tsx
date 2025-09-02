@@ -13,11 +13,9 @@ const crumb: Crumb[] = [
 ];
 export default function BookingSchedulePage() {
   return (
-    <div className="space-y-2">
+    <SidebarInset className="space-y-2">
       <BreadcrumbHeader items={crumb} />
-      <div className="">
-        <BookingScheduleTable href="/admin/booking/tour-schedule" />
-      </div>
-    </div>
+      <BookingScheduleTable />
+    </SidebarInset>
   );
 }

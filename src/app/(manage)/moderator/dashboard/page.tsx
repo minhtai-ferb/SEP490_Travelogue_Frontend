@@ -4,7 +4,7 @@ import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 
 import { SidebarInset } from "@/components/ui/sidebar";
 import React from "react";
-import { SystemRevenueChart } from "../../components/dashboard/moderator/chart-line-interactive";
+import { SystemRevenueChart } from "../../components/dashboard/moderator/components/chart-line-interactive";
 
 const crumb: Crumb[] = [{ label: "Thống kê hệ thống", href: "/moderator/dashboard" }];
 
