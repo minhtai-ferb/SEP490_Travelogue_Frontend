@@ -1,9 +1,9 @@
 // components/booking-table.tsx
 "use client";
 
-import { Table, Tag, Space, Tooltip } from "antd";
+import { Table, Tag, Space, Button as AntButton } from "antd";
 import type { TableProps } from "antd";
-import { Eye, XCircle, Wallet } from "lucide-react";
+import { Eye, XCircle, Wallet, Calendar, User, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // ==== Types ====
@@ -14,7 +14,7 @@ export interface BookingItem {
   tourId: string | null;
   tourName: string | null;
   tourScheduleId: string | null;
-  departureDate: string | null;       // có thể null
+  departureDate: string | null;       
   tourGuideId: string | null;
   tourGuideName: string | null;
   tripPlanId: string | null;
@@ -23,18 +23,30 @@ export interface BookingItem {
   workshopName: string | null;
   workshopScheduleId: string | null;
   paymentLinkId: string | null;
-  status: number;                     // 0: pending, 1: confirmed, 2: cancelled, ...
+  status: number;                     
   statusText: string;
-  bookingType: number;                // 1: Tour, 2: Workshop, 3: Tour Guide, 4: Trip Plan ...
+  bookingType: number;                
   bookingTypeText: string;
-  bookingDate: string;                // ISO
-  startDate: string;                  // ISO
-  endDate: string;                    // ISO
+  bookingDate: string;                
+  startDate: string;                  
+  endDate: string;                    
   cancelledAt: string | null;
   promotionId: string | null;
   originalPrice: number;
   discountAmount: number;
   finalPrice: number;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  participants: Array<{
+    id: string;
+    fullName: string;
+    genderText: string;
+    dateOfBirth: string;
+    quantity: number;
+    pricePerParticipant: number;
+  }>;
 }
 
 export interface BookingTableProps {
@@ -49,6 +61,7 @@ export interface BookingTableProps {
   onView: (record: BookingItem) => void;
   onCancel?: (record: BookingItem) => void;
   onPay?: (record: BookingItem) => void;
+  onViewWorkshop?: (record: BookingItem) => void;
 
   // antd Table onChange (nếu cần sort/filter)
   onChange?: TableProps<BookingItem>["onChange"];
@@ -58,20 +71,26 @@ export interface BookingTableProps {
 const fmtMoney = (n: number) =>
   n.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
-const isDefaultDate = (iso?: string) =>
-  !iso || iso.startsWith("0001-01-01");
+const isDefaultDate = (iso?: string) => !iso || iso.startsWith("0001-01-01");
 
 const fmtDate = (iso?: string | null) =>
   !iso || isDefaultDate(iso) ? "—" : new Date(iso).toLocaleString("vi-VN");
 
+const fmtDateOnly = (iso?: string | null) =>
+  !iso || isDefaultDate(iso) ? "—" : new Date(iso).toLocaleDateString("vi-VN");
+
 const statusTag = (r: BookingItem) => {
   const map: Record<number, { color: string; text: string }> = {
-    0: { color: "gold", text: r.statusText || "Đang chờ" },
-    1: { color: "green", text: r.statusText || "Đã xác nhận" },
-    2: { color: "red", text: r.statusText || "Đã hủy" },
+    0: { color: "gold", text: r.statusText || "Đang chờ thanh toán" },
+    1: { color: "blue", text: r.statusText || "Đã thanh toán" },
+    2: { color: "red", text: r.statusText || "Bị hủy chưa thanh toán" },
+    3: { color: "red", text: r.statusText || "Bị hủy đã thanh toán" },
+    4: { color: "red", text: r.statusText || "Bị hủy bởi nhà cung cấp" },
+    5: { color: "green", text: r.statusText || "Đã hoàn thành" },
+    6: { color: "default", text: r.statusText || "Hết hạn" },
   };
   const s = map[r.status] ?? { color: "default", text: r.statusText ?? "—" };
-  return <Tag color={s.color}>{ s.text }</Tag>;
+  return <Tag color={s.color}>{s.text}</Tag>;
 };
 
 export function BookingTableComponent({
@@ -84,77 +103,126 @@ export function BookingTableComponent({
   onView,
   onCancel,
   onPay,
+  onViewWorkshop,
   onChange,
 }: BookingTableProps) {
   const columns = [
     {
-      title: "Khách hàng",
-      dataIndex: "userName",
-      key: "userName",
-      ellipsis: true,
-      width: 180,
-    },
-    // {
-    //   title: "Loại đặt chỗ",
-    //   dataIndex: "bookingTypeText",
-    //   key: "bookingTypeText",
-    //   width: 140,
-    //   render: (t: string) => <Tag>{t}</Tag>,
-    // },
-    {
-      title: "Chuyến tham quan",
-      key: "tourName",
-      ellipsis: true,
-      width: 140,
+      title: "Mã booking",
+      key: "bookingCode",
+      width: 120,
       render: (_: any, r: BookingItem) => (
-        <Tooltip title={r.tourName || "—"}>
-          {r.tourName || "—"}
-        </Tooltip>
+        <div className="font-mono text-xs bg-purple-50 px-2 py-1 rounded">
+          #{r.id.slice(-8)}
+        </div>
       ),
     },
     {
-      title: "Khởi hành",
-      dataIndex: "departureDate",
-      key: "departureDate",
-      width: 170,
-      render: (v: string | null) => fmtDate(v ?? undefined),
+      title: "Khách hàng",
+      key: "customer",
+      width: 200,
+      render: (_: any, r: BookingItem) => (
+        <div className="space-y-1">
+          <div className="font-medium">{r.userName}</div>
+          <div className="text-sm text-gray-500">
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              {r.contactName}
+            </div>
+            <div>{r.contactPhone}</div>
+          </div>
+        </div>
+      ),
     },
     {
-      title: "Ngày đặt",
-      dataIndex: "bookingDate",
-      key: "bookingDate",
-      width: 170,
-      render: (v: string) => fmtDate(v),
-      sorter: (a: BookingItem, b: BookingItem) =>
-        new Date(a.bookingDate).getTime() - new Date(b.bookingDate).getTime(),
+      title: "Workshop",
+      key: "workshop",
+      width: 280,
+      render: (_: any, r: BookingItem) => (
+        <div className="space-y-2">
+          <div className="font-medium">{r.workshopName || "—"}</div>
+          <div className="flex items-center gap-2">
+            <Tag color="purple">{r.bookingTypeText}</Tag>
+            {r.workshopId && onViewWorkshop && (
+              <AntButton
+                type="link"
+                size="small"
+                icon={<MapPin className="h-3 w-3" />}
+                onClick={() => onViewWorkshop(r)}
+                className="p-0 h-auto text-xs"
+              >
+                Xem chi tiết workshop
+              </AntButton>
+            )}
+          </div>
+        </div>
+      ),
     },
-    
+    {
+      title: "Thời gian",
+      key: "duration",
+      width: 180,
+      render: (_: any, r: BookingItem) => (
+        <div className="space-y-1">
+          <div className="text-sm">
+            <span className="text-gray-500">Bắt đầu:</span> {fmtDateOnly(r.startDate)}
+          </div>
+          <div className="text-sm">
+            <span className="text-gray-500">Kết thúc:</span> {fmtDateOnly(r.endDate)}
+          </div>
+          <div className="text-xs text-gray-400">
+            Đặt: {fmtDate(r.bookingDate)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Người tham gia",
+      key: "participants",
+      width: 120,
+      align: "center" as const,
+      render: (_: any, r: BookingItem) => (
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">
+            {r.participants?.length || 0}
+          </div>
+        </div>
+      ),
+    },
     {
       title: "Trạng thái",
       key: "status",
       width: 150,
       render: (_: any, r: BookingItem) => statusTag(r),
       filters: [
-        { text: "Chờ xác nhận", value: 0 },
-        { text: "Đã xác nhận", value: 1 },
-        { text: "Đã hủy", value: 2 },
+        { text: "Đang chờ thanh toán", value: 0 },
+        { text: "Đã thanh toán", value: 1 },
+        { text: "Bị hủy", value: 2 },
+        { text: "Hoàn thành", value: 5 },
       ],
       onFilter: (value: any, record: BookingItem) => record.status === value,
     },
     {
-      title: "Thành tiền",
-      dataIndex: "finalPrice",
-      key: "finalPrice",
-      width: 140,
+      title: "Giá tiền",
+      key: "price",
+      width: 150,
       align: "right" as const,
-      render: (v: number, r: BookingItem) => (
-        <Tooltip
-          title={`Giá gốc: ${fmtMoney(r.originalPrice)} • Giảm: ${fmtMoney(
-            r.discountAmount
-          )}`}
-        >
-          <span className="font-medium">{fmtMoney(v)}</span>
-        </Tooltip>
+      render: (_: any, r: BookingItem) => (
+        <div className="text-right space-y-1">
+          {r.discountAmount > 0 && (
+            <div className="text-xs text-gray-400 line-through">
+              {fmtMoney(r.originalPrice)}
+            </div>
+          )}
+          <div className="font-medium text-green-600">
+            {fmtMoney(r.finalPrice)}
+          </div>
+          {r.discountAmount > 0 && (
+            <div className="text-xs text-red-500">
+              -{fmtMoney(r.discountAmount)}
+            </div>
+          )}
+        </div>
       ),
       sorter: (a: BookingItem, b: BookingItem) => a.finalPrice - b.finalPrice,
     },
@@ -162,27 +230,30 @@ export function BookingTableComponent({
       title: "Thao tác",
       key: "action",
       fixed: "right" as const,
-      width: 180,
+      width: 120,
       render: (_: any, r: BookingItem) => (
-        <Space size="small">
-          <Button onClick={() => onView(r)} variant="outline" size="sm">
-            <Eye className="h-4 w-4" />
+        <Space size="small" direction="vertical">
+          <Button onClick={() => onView(r)} variant="outline" size="sm" className="w-full">
+            <Eye className="h-4 w-4 mr-1" />
+            Chi tiết
           </Button>
 
-          {onPay && r.paymentLinkId && r.status === 0 && (
-            <Button onClick={() => onPay(r)} variant="outline" size="sm">
-              <Wallet className="h-4 w-4" />
+          {/* {onPay && r.paymentLinkId && r.status === 0 && (
+            <Button onClick={() => onPay(r)} variant="outline" size="sm" className="w-full">
+              <Wallet className="h-4 w-4 mr-1" />
+              Thanh toán
             </Button>
-          )}
+          )} */}
 
-          {onCancel && r.status === 0 && (
+          {onCancel && [0, 1].includes(r.status) && (
             <Button
               onClick={() => onCancel(r)}
               variant="outline"
               size="sm"
-              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+              className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
             >
-              <XCircle className="h-4 w-4" />
+              <XCircle className="h-4 w-4 mr-1" />
+              Hủy
             </Button>
           )}
         </Space>
@@ -205,8 +276,11 @@ export function BookingTableComponent({
         showSizeChanger: true,
         showTotal: (total, range) =>
           `${range[0]}-${range[1]} trong ${total} booking`,
+        pageSizeOptions: ["10", "20", "50"],
       }}
-      scroll={{ x: 1100 }}
+      scroll={{ x: 1200 }}
+      size="middle"
+      className="booking-table"
     />
   );
 }

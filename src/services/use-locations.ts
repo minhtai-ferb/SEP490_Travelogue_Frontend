@@ -163,7 +163,7 @@ export function useLocations() {
       setIsLoading(true);
       try {
         const response = await callApi("delete", `location/${id}`);
-        return response?.data;
+        return response;
       } catch (e: any) {
         throw e;
       } finally {

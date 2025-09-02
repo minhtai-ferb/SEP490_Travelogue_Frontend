@@ -15,11 +15,13 @@ import { useLocations } from "@/services/use-locations";
 interface ContentEditorRichProps {
   content: string;
   onChange: (content: string) => void;
+  error?: string;
 }
 
 export function ContentEditorRich({
   content,
   onChange,
+  error,
 }: ContentEditorRichProps) {
   const { uploadMediaMultiple, deleteMediaByFileName } = useLocations();
   const editor = useEditor({
@@ -76,8 +78,9 @@ export function ContentEditorRich({
     },
     editorProps: {
       attributes: {
-        class:
-          "min-h-[200px] max-h-[400px] overflow-y-auto border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
+        class: `min-h-[200px] max-h-[400px] overflow-y-auto border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          error ? "border-red-500" : "border-gray-300"
+        }`,
       },
     },
     injectCSS: false,
@@ -97,7 +100,9 @@ export function ContentEditorRich({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nội dung chi tiết</CardTitle>
+        <CardTitle>
+          Nội dung chi tiết <span className="text-red-500">*</span>
+        </CardTitle>
       </CardHeader>
       <CardContent className="">
         <div className="">
@@ -107,6 +112,9 @@ export function ContentEditorRich({
           <div className="">
             <EditorContent editor={editor} />
           </div>
+          {error ? (
+            <div className="text-xs text-red-500 mt-1">{error}</div>
+          ) : null}
         </div>
       </CardContent>
     </Card>

@@ -46,7 +46,7 @@ export default function BookingFilterBar({
         <span className="whitespace-nowrap text-sm">Tìm kiếm:</span>
         <Input
           allowClear
-          placeholder="Tìm tour / khách hàng"
+          placeholder="Tìm workshop / khách hàng"
           style={{ width: 360 }}
           value={value.keyword}
           onChange={(e) => onChange({ ...value, keyword: e.target.value })}

@@ -16,6 +16,10 @@ interface MapSelectorProps {
   longitude: number;
   center: [latitude: number, longitude: number];
   onChange: (lat: number, lng: number) => void;
+  errors?: {
+    latitude?: string;
+    longitude?: string;
+  };
 }
 
 export function MapSelector({
@@ -24,6 +28,7 @@ export function MapSelector({
   longitude,
   center,
   onChange,
+  errors,
 }: MapSelectorProps) {
   const [searchAddress, setSearchAddress] = useState(address);
   const [manualMode, setManualMode] = useState(false);
@@ -164,9 +169,14 @@ export function MapSelector({
                 className={`border-2 transition-colors ${
                   !manualMode
                     ? "bg-gray-50 border-gray-200 text-gray-500"
+                    : errors?.latitude
+                    ? "border-red-500 focus:border-red-500"
                     : "border-gray-200 focus:border-blue-500"
                 }`}
               />
+              {errors?.latitude && (
+                <div className="text-xs text-red-500">{errors.latitude}</div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="longitude" className="text-sm font-medium">
@@ -185,9 +195,14 @@ export function MapSelector({
                 className={`border-2 transition-colors ${
                   !manualMode
                     ? "bg-gray-50 border-gray-200 text-gray-500"
+                    : errors?.longitude
+                    ? "border-red-500 focus:border-red-500"
                     : "border-gray-200 focus:border-blue-500"
                 }`}
               />
+              {errors?.longitude && (
+                <div className="text-xs text-red-500">{errors.longitude}</div>
+              )}
             </div>
           </div>
 

@@ -13,6 +13,7 @@ import { LocationTableComponent } from "./components/location-table";
 import { useLocations } from "@/services/use-locations";
 import LoadingContent from "@/components/common/loading-content";
 import { useDebounce } from "@/hooks/useDebounce";
+import toast from "react-hot-toast";
 
 interface Option {
   value: string;
@@ -154,19 +155,13 @@ export default function LocationsTable({ href }: { href: string }) {
   const handleDelete = async () => {
     if (!locationToDelete) return;
     try {
-      await deleteLocation(locationToDelete.id);
+      const response = await deleteLocation(locationToDelete.id);
       // Refresh the current page data after deletion
       await fetchLocations();
-      Modal.success({
-        title: "Thành công",
-        content: "Đã xóa địa điểm thành công",
-      });
-    } catch (error) {
+      toast.success("Đã xóa địa điểm thành công");
+    } catch (error : any) {
       console.error("Error deleting location:", error);
-      Modal.error({
-        title: "Lỗi",
-        content: "Không thể xóa địa điểm. Vui lòng thử lại sau.",
-      });
+      toast.error(error?.response?.data?.Message || "Không thể xóa địa điểm. Vui lòng thử lại sau.");
     } finally {
       setDeleteDialogOpen(false);
       setLocationToDelete(null);
