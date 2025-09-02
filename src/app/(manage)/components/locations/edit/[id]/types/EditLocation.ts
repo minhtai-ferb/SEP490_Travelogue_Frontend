@@ -35,6 +35,8 @@ export interface Location {
   locationType: LocationType
   mediaDtos: MediaDto[]
   category?: Category
+  minPrice: number
+  maxPrice: number
 }
 
 export interface CuisineData {

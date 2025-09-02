@@ -15,7 +15,7 @@ export default function BookingWorkshopPage() {
   return (
     <SidebarInset className="space-y-2">
       <BreadcrumbHeader items={crumb} />
-      <BookingWorkshopTable />
+      <BookingWorkshopTable href="/moderator/booking/workshop" />
     </SidebarInset>
   );
 }

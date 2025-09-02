@@ -28,6 +28,8 @@ interface LocationData {
   cuisine?: CuisineData;
   craftVillage?: CraftVillageData;
   historicalLocation?: HistoricalLocationData;
+  minPrice: number;
+  maxPrice: number;
 }
 
 const crumb: Crumb[] = [
@@ -54,9 +56,13 @@ export default function EditLocationPage() {
 
   const loadLocationData = async () => {
     try {
-      setLoading(true);
       const data = await getLocationById(locationId);
-      setLocationData(data);
+      // Ensure minPrice and maxPrice are present (fallback to 0 if missing)
+      setLocationData({
+        ...data,
+        minPrice: data.minPrice ?? 0,
+        maxPrice: data.maxPrice ?? 0,
+      });
     } catch (err) {
       setError("Không thể tải thông tin địa điểm");
       console.error("Error loading location:", err);

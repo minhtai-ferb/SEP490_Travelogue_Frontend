@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { matchKeyword } from "./utils/text";
 import BookingFilterBar, {
   BookingFilter as UIXFilter,
@@ -8,8 +9,10 @@ import BookingFilterBar, {
 import { useBookings } from "@/services/use-bookings";
 import { BookingItem, BookingTableComponent } from "./components/booking-table";
 
-export default function BookingWorkshopTable() {
+export default function BookingWorkshopTable({href} : {href: string}) {
   const { loading, getBookingsPaged } = useBookings();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [filter, setFilter] = useState<UIXFilter>({
     status: undefined,
@@ -39,7 +42,11 @@ export default function BookingWorkshopTable() {
       pageSize,
     });
     if (res) {
-      setRawItems(res.items);
+      // Sort by bookingDate descending (most recent first)
+      const sortedItems = res.items.sort((a: BookingItem, b: BookingItem) => 
+        new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
+      );
+      setRawItems(sortedItems);
       setServerTotal(res.totalCount);
       if (opts?.resetPage) setPageNumber(1);
     }
@@ -74,7 +81,7 @@ export default function BookingWorkshopTable() {
     const kw = (filter.keyword ?? "").trim();
     if (!kw) return rawItems;
     return rawItems.filter((r) =>
-      matchKeyword(kw, r.tourName, r.tourGuideName, r.userName)
+      matchKeyword(kw, r.workshopName, r.userName, r.contactName)
     );
   }, [rawItems, filter.keyword]);
 
@@ -92,8 +99,21 @@ export default function BookingWorkshopTable() {
     return filteredLocal.slice(start, start + clientSize);
   }, [filteredLocal, isClientPaging, clientPage, clientSize]);
 
+  // Handle view booking detail
+  const handleViewBooking = (booking: BookingItem) => {
+    router.push(`${href}/${booking.id}`);
+  };
+
+  // Handle view workshop detail
+  const handleViewWorkshop = (booking: BookingItem) => {
+    if (booking.workshopId) {
+      const basePath = pathname?.includes('/admin') ? '/admin' : '/moderator';
+      router.push(`${basePath}/workshop/${booking.workshopId}`);
+    }
+  };
+
   return (
-    <div className="gap-4 p-4">
+    <div className="gap-4 p-4 absolute w-full">
       <BookingFilterBar
         value={filter}
         onChange={setFilter}
@@ -107,7 +127,7 @@ export default function BookingWorkshopTable() {
         currentPage={isClientPaging ? clientPage : pageNumber}
         pageSize={isClientPaging ? clientSize : pageSize}
         totalCount={isClientPaging ? filteredLocal.length : serverTotal}
-        onPaginationChange={(p, s) => {
+        onPaginationChange={(p: number, s: number) => {
           if (isClientPaging) {
             setClientPage(p);
             setClientSize(s);
@@ -116,9 +136,10 @@ export default function BookingWorkshopTable() {
             setPageSize(s);
           }
         }}
-        onView={(r) => console.log("view", r.id)}
-        onCancel={(r) => console.log("cancel", r.id)}
-        onPay={(r) => console.log("pay", r.paymentLinkId)}
+        onView={handleViewBooking}
+        onCancel={(r: BookingItem) => console.log("cancel", r.id)}
+        onPay={(r: BookingItem) => console.log("pay", r.paymentLinkId)}
+        onViewWorkshop={handleViewWorkshop}
       />
     </div>
   );

@@ -12,8 +12,8 @@ const crumb: Crumb[] = [
 export default function LocationViewPage() {
   return (
     <SidebarInset>
-      <BreadcrumbHeader items={crumb} />
-      <LocationView />
+      <BreadcrumbHeader items={crumb} showBackButton={true} />
+      <LocationView href="/admin"/>
     </SidebarInset>
   );
 }

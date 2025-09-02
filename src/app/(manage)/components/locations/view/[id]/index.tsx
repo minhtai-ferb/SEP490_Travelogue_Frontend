@@ -10,6 +10,7 @@ import { ImageGallery } from "./components/image-gallery";
 import { LocationContent } from "./components/location-content";
 import { LocationInfo } from "./components/location-info";
 import { LocationDetails } from "./components/location-details";
+import { QuickActions } from "./components/quick-actions";
 
 interface MediaItem {
   mediaUrl: string;
@@ -37,9 +38,11 @@ interface LocationData {
   cuisine: any;
   craftVillage: any;
   historicalLocation: any;
+  minPrice: number;
+  maxPrice: number;
 }
 
-export default function LocationView() {
+export default function LocationView({href} : {href: string}) {
   const params = useParams();
   const { getLocationById, loading } = useLocations();
   const [locationData, setLocationData] = useState<LocationData | null>(null);
@@ -66,7 +69,7 @@ export default function LocationView() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header Section */}
       <LocationHeader
         name={locationData.name}
@@ -74,11 +77,13 @@ export default function LocationView() {
         category={locationData.category}
         rating={locationData.rating}
         description={locationData.description}
+        minPrice={locationData.minPrice}
+        maxPrice={locationData.maxPrice}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-3 space-y-6">
           {/* Image Gallery */}
           <ImageGallery
             medias={locationData.medias}
@@ -87,10 +92,28 @@ export default function LocationView() {
 
           {/* Content Section */}
           <LocationContent content={locationData.content} />
+
+          {/* Additional Details - Show on main content for mobile */}
+          <div className="xl:hidden">
+            <LocationDetails
+              cuisine={locationData.cuisine}
+              craftVillage={locationData.craftVillage}
+              historicalLocation={locationData.historicalLocation}
+            />
+          </div>
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="xl:col-span-1 space-y-6">
+          {/* Quick Actions */}
+          <QuickActions
+            locationId={locationData.id}
+            rating={locationData.rating}
+            className="mb-4"
+            locationName={locationData.name}
+            href={href}
+          />
+
           {/* Location Info */}
           <LocationInfo
             openTime={locationData.openTime}
@@ -98,14 +121,18 @@ export default function LocationView() {
             latitude={locationData.latitude}
             longitude={locationData.longitude}
             districtName={locationData.districtName}
+            minPrice={locationData.minPrice}
+            maxPrice={locationData.maxPrice}
           />
 
-          {/* Additional Details */}
-          <LocationDetails
-            cuisine={locationData.cuisine}
-            craftVillage={locationData.craftVillage}
-            historicalLocation={locationData.historicalLocation}
-          />
+          {/* Additional Details - Show in sidebar for desktop */}
+          <div className="hidden xl:block">
+            <LocationDetails
+              cuisine={locationData.cuisine}
+              craftVillage={locationData.craftVillage}
+              historicalLocation={locationData.historicalLocation}
+            />
+          </div>
         </div>
       </div>
     </div>

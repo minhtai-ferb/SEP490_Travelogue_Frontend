@@ -24,8 +24,9 @@ interface BasicLocationInfoProps {
   onChange: (data: any) => void;
   errors: {
     name?: string;
-    districtId?: string;
+    description?: string;
     address?: string;
+    districtId?: string;
   };
 }
 
@@ -52,13 +53,17 @@ export function BasicLocationInfo({ data, onChange, errors }: BasicLocationInfoP
           id="name"
           value={data.name}
           onChange={(e) => onChange({ name: e.target.value })}
-          placeholder="Nhập tên địa điểm"
+          placeholder="Nhập tên địa điểm (tối đa 200 ký tự)"
           required
+          maxLength={200}
           className={errors.name ? "border-red-500" : ""}
         />
         {errors.name ? (
           <div className="text-xs text-red-500">{errors.name}</div>
         ) : null}
+        <div className="text-xs text-muted-foreground text-right">
+          {data.name.length}/200
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -95,23 +100,38 @@ export function BasicLocationInfo({ data, onChange, errors }: BasicLocationInfoP
           id="address"
           value={data.address}
           onChange={(e) => onChange({ address: e.target.value })}
-          placeholder="Nhập địa chỉ chi tiết"
+          placeholder="Nhập địa chỉ chi tiết (tối đa 300 ký tự)"
+          maxLength={300}
           className={errors.address ? "border-red-500" : ""}
         />
         {errors.address ? (
           <div className="text-xs text-red-500">{errors.address}</div>
         ) : null}
+        <div className="text-xs text-muted-foreground text-right">
+          {data.address.length}/300
+        </div>
       </div>
 
       <div className="md:col-span-2 space-y-2">
-        <Label htmlFor="description">Mô tả ngắn</Label>
+        <Label htmlFor="description">
+          Mô tả ngắn <span className="text-red-500">*</span>
+        </Label>
         <Textarea
           id="description"
           value={data.description}
           onChange={(e) => onChange({ description: e.target.value })}
-          placeholder="Nhập mô tả ngắn về địa điểm"
+          placeholder="Nhập mô tả ngắn về địa điểm (tối đa 500 ký tự)"
           rows={3}
+          maxLength={500}
+          required
+          className={errors.description ? "border-red-500" : ""}
         />
+        {errors.description ? (
+          <div className="text-xs text-red-500">{errors.description}</div>
+        ) : null}
+        <div className="text-xs text-muted-foreground text-right">
+          {data.description.length}/500
+        </div>
       </div>
     </div>
   );

@@ -23,6 +23,8 @@ import {
   TeamOutlined,
   ArrowLeftOutlined,
   EyeOutlined,
+  CompassOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useBookings } from "@/services/use-bookings";
@@ -46,16 +48,16 @@ interface BookingDetailData {
   id: string;
   userId: string;
   userName: string;
-  tourId: string;
-  tourName: string;
-  tourScheduleId: string;
-  departureDate: string;
+  tourId: string | null;
+  tourName: string | null;
+  tourScheduleId: string | null;
+  departureDate: string | null;
   tourGuideId: string | null;
-  tourGuideName: string;
+  tourGuideName: string | null;
   tripPlanId: string | null;
-  tripPlanName: string;
+  tripPlanName: string | null;
   workshopId: string | null;
-  workshopName: string;
+  workshopName: string | null;
   workshopScheduleId: string | null;
   paymentLinkId: string;
   status: number;
@@ -116,6 +118,33 @@ export default function BookingDetail() {
     }).format(price);
   };
 
+  const hasAdminInPath =
+    pathname?.includes("/admin") || pathname?.includes("/moderator");
+
+  const handleBackToTable = () => {
+    const basePath = hasAdminInPath
+      ? pathname?.includes("/admin")
+        ? "/admin"
+        : "/moderator"
+      : "";
+    router.push(`${basePath}/booking/tour-schedule`);
+  };
+
+  const handleViewTour = () => {
+    if (!booking?.tourId) return;
+    const basePath = hasAdminInPath
+      ? pathname?.includes("/admin")
+        ? "/admin"
+        : "/moderator"
+      : "";
+    router.push(`${basePath}/tour/${booking.tourId}`);
+  };
+
+  if (loading) return <div className="p-4">Đang tải...</div>;
+  if (error) return <div className="p-4 text-red-500">Lỗi: {error}</div>;
+  if (!booking)
+    return <div className="p-4">Không tìm thấy dữ liệu booking.</div>;
+
   const formatDateTime = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY HH:mm");
   };
@@ -126,8 +155,11 @@ export default function BookingDetail() {
 
   const handleViewTourDetail = async () => {
     if (booking?.tourId) {
-      const isAdminPath = hasAdminInPath(pathname);
-      const basePath = isAdminPath ? "/admin" : "/moderator";
+      const basePath = hasAdminInPath
+        ? pathname?.includes("/admin")
+          ? "/admin"
+          : "/moderator"
+        : "";
       await router.push(`${basePath}/tour/${booking.tourId}`);
     }
   };
@@ -227,23 +259,20 @@ export default function BookingDetail() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold mb-1">Chi tiết đặt chỗ</h1>
-              <div className="flex items-center gap-2">
-                <Tag color="blue" className="font-mono">
-                  #{booking.id.slice(-8)}
-                </Tag>
-                {getStatusTag(booking)}
-              </div>
-            </div>
-          </div>
+      {/* Title */}
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">
+            Chi tiết đặt chỗ lịch tham quan
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Tag color="blue" className="font-mono">
+            #{booking.id.slice(-8)}
+          </Tag>
+          {getStatusTag(booking)}
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Thông tin chính */}
         <div className="lg:col-span-2 space-y-6">
@@ -264,24 +293,27 @@ export default function BookingDetail() {
                 {formatDateTime(booking.bookingDate)}
               </Descriptions.Item>
               <Descriptions.Item label="Tên chuyến tham quan">
-                <strong>{booking.tourName}</strong>
+                <div className="flex items-center gap-2">
+                  <strong>{booking.tourName || "Chưa có"}</strong>
+                </div>
               </Descriptions.Item>
+
               <Descriptions.Item>
-                <p
-                  onClick={() => handleViewTourDetail()}
-                  className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <EyeOutlined />
-                  Xem chi tiết chuyến tham quan
-                </p>
+                {booking.tourId && (
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={handleViewTour}
+                    className="flex items-center gap-1 p-0 h-auto"
+                  >
+                    <EyeOutlined /> Xem chi tiết
+                  </Button>
+                )}
               </Descriptions.Item>
               <Descriptions.Item label="Ngày khởi hành">
                 {booking.departureDate
                   ? formatDateTime(booking.departureDate)
                   : "—"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Hướng dẫn viên">
-                {booking.tourGuideName || "Chưa có"}
               </Descriptions.Item>
               <Descriptions.Item label="Ngày bắt đầu">
                 {formatDateTime(booking.startDate)}

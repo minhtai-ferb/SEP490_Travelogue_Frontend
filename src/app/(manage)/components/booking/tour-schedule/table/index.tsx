@@ -2,17 +2,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { matchKeyword } from "./utils/text";
 import BookingFilterBar, {
   BookingFilter as UIXFilter,
 } from "./components/booking-filter-bar";
 import { useBookings } from "@/services/use-bookings";
 import { BookingItem, BookingTableComponent } from "./components/booking-table";
+import { hasAdminInPath } from "@/utils/check-admin";
 
 export default function BookingScheduleTable({href} : {href: string}) {
   const { loading, getBookingsPaged } = useBookings();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [filter, setFilter] = useState<UIXFilter>({
     status: undefined,
@@ -85,7 +87,7 @@ export default function BookingScheduleTable({href} : {href: string}) {
     const kw = (filter.keyword ?? "").trim();
     if (!kw) return rawItems;
     return rawItems.filter((r) =>
-      matchKeyword(kw, r.tourName, r.tourGuideName, r.userName)
+      matchKeyword(kw, r.tourName, r.tourGuideName, r.userName, r.contactName)
     );
   }, [rawItems, filter.keyword]);
 
@@ -108,8 +110,17 @@ export default function BookingScheduleTable({href} : {href: string}) {
     router.push(`${href}/${booking.id}`);
   };
 
+  // Handle view tour detail
+  const handleViewTour = (booking: BookingItem) => {
+    if (booking.tourId) {
+      const isAdminPath = hasAdminInPath(pathname);
+      const basePath = isAdminPath ? "/admin" : "/moderator";
+      router.push(`${basePath}/tour/${booking.tourId}`);
+    }
+  };
+
   return (
-    <div className="gap-4 p-4">
+    <div className="gap-4 p-4 absolute w-full">
       <BookingFilterBar
         value={filter}
         onChange={setFilter}
@@ -123,7 +134,7 @@ export default function BookingScheduleTable({href} : {href: string}) {
         currentPage={isClientPaging ? clientPage : pageNumber}
         pageSize={isClientPaging ? clientSize : pageSize}
         totalCount={isClientPaging ? filteredLocal.length : serverTotal}
-        onPaginationChange={(p, s) => {
+        onPaginationChange={(p: number, s: number) => {
           if (isClientPaging) {
             setClientPage(p);
             setClientSize(s);
@@ -133,8 +144,9 @@ export default function BookingScheduleTable({href} : {href: string}) {
           }
         }}
         onView={handleViewBooking}
-        onCancel={(r) => console.log("cancel", r.id)}
-        onPay={(r) => console.log("pay", r.paymentLinkId)}
+        onCancel={(r: BookingItem) => console.log("cancel", r.id)}
+        onPay={(r: BookingItem) => console.log("pay", r.paymentLinkId)}
+        onViewTour={handleViewTour}
       />
     </div>
   );

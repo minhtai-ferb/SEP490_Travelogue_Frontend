@@ -17,7 +17,7 @@ export default function BookingWorkshopPage() {
     <div className="space-y-2">
       <BreadcrumbHeader items={crumb} />
       <div className="">
-        <BookingWorkshopTable />
+        <BookingWorkshopTable href={'/admin/booking/workshop'} />
       </div>
     </div>
   );
