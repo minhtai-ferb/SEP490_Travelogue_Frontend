@@ -98,7 +98,7 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 											<div className="space-y-2">
 												<span className="text-lg font-semibold text-gray-700">Không có dữ liệu</span>
 												<p className="text-sm text-gray-500 max-w-md">
-													Không tìm thấy yêu cầu nào khớp với bộ lọc hiện tại. 
+													Không tìm thấy yêu cầu nào khớp với bộ lọc hiện tại.
 													Hãy thử thay đổi các tiêu chí tìm kiếm.
 												</p>
 											</div>
@@ -107,11 +107,10 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 								</TableRow>
 							) : (
 								data.map((item, index) => (
-									<TableRow 
-										key={item.id} 
-										className={`hover:bg-blue-50/70 transition-all duration-200 border-b border-gray-100 group ${
-											index % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'
-										}`}
+									<TableRow
+										key={item.id}
+										className={`hover:bg-blue-50/70 transition-all duration-200 border-b border-gray-100 group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'
+											}`}
 									>
 										{columns.map((column, cidx) => {
 											const key = (column as any).accessorKey as string | undefined
@@ -251,8 +250,8 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 											size="sm"
 											onClick={() => onPageChange(pageNum as number)}
 											className={`h-8 w-8 p-0 transition-all duration-200 ${pageNum === page
-													? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm"
-													: "hover:bg-blue-50 text-gray-700"
+												? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm"
+												: "hover:bg-blue-50 text-gray-700"
 												}`}
 										>
 											{pageNum}

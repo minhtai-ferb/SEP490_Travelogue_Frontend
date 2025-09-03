@@ -3,8 +3,6 @@
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 
 import { SidebarInset } from "@/components/ui/sidebar";
-import React from "react";
-import { SystemRevenueChart } from "../../components/dashboard/moderator/components/chart-line-interactive";
 import SystemDashboard from "../../components/dashboard/moderator";
 
 const crumb: Crumb[] = [

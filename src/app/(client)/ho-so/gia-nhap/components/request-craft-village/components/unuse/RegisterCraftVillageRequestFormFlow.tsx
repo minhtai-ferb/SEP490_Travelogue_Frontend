@@ -8,10 +8,9 @@ import { Plus, Workflow as Workshop, CheckCircle, Edit3, Trash2 } from "lucide-r
 import { cn } from "@/lib/utils"
 import toast from "react-hot-toast"
 
-import CraftVillageForm from "./CraftVillageForm"
-import WorkshopCreationModal from "./WorkshopCreationModal"
+import CraftVillageForm from "../CraftVillageForm"
+import WorkshopCreationModal from "../WorkshopCreationModal"
 import { useCraftVillage } from "@/services/use-craftvillage"
-import { set } from "date-fns"
 
 interface CraftVillageData {
 	name: string

@@ -342,7 +342,7 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 													/>
 												</SelectTrigger>
 
-												<SelectContent className="h-fit max-w-[400px]">
+												<SelectContent className="h-fit max-w-[full]">
 													{/* No guide available */}
 													{!tourGuide?.length && (
 														<SelectItem value="none">Không có hướng dẫn viên</SelectItem>
@@ -351,15 +351,15 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 													{/* Available guides list */}
 													{tourGuide?.map((guide) => (
 														<SelectItem value={guide.id} key={guide.id} className="py-2">
-															<div className="flex items-center gap-2">
+															<div className="flex items-center gap-2 max-w-[300px]">
 																<Avatar className="w-6 h-6 rounded-full flex-shrink-0">
 																	<AvatarImage src={guide.avatarUrl} />
 																	<AvatarFallback className="text-xs">{guide.userName.charAt(0)}</AvatarFallback>
 																</Avatar>
-																<div className="flex-1 min-w-0">
+																<div className="flex-1 min-w-0 overflow-hidden">
 																	<p className="font-medium text-sm truncate">{guide.userName}</p>
-																	<p className="text-xs text-gray-500 truncate">{guide.introduction}</p>
-																	<p className="text-xs text-gray-500">{formatPriceSimple(guide.price)}</p>
+																	<p className="text-xs text-gray-500 truncate line-clamp-1">{guide.introduction}</p>
+																	<p className="text-xs text-gray-500 truncate">{formatPriceSimple(guide.price)}</p>
 																</div>
 															</div>
 														</SelectItem>
@@ -373,19 +373,19 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 																key={formData.tourGuide[0].id}
 																className="py-2"
 															>
-																<div className="flex items-center gap-2">
+																<div className="flex items-center gap-2 max-w-full">
 																	<Avatar className="w-6 h-6 rounded-full flex-shrink-0">
 																		<AvatarImage src={formData.tourGuide[0].avatarUrl} />
 																		<AvatarFallback className="text-xs">
 																			{formData.tourGuide[0].userName.charAt(0)}
 																		</AvatarFallback>
 																	</Avatar>
-																	<div className="flex-1 min-w-0">
+																	<div className="flex-1 min-w-0 overflow-hidden">
 																		<p className="font-medium text-sm truncate">{formData.tourGuide[0].userName}</p>
-																		<p className="text-xs text-gray-500 truncate">
+																		<p className="text-xs text-gray-500 truncate line-clamp-1">
 																			{formData.tourGuide[0].introduction}
 																		</p>
-																		<p className="text-xs text-gray-500">
+																		<p className="text-xs text-gray-500 truncate">
 																			{formatPriceSimple(formData.tourGuide[0].price)}
 																		</p>
 																	</div>

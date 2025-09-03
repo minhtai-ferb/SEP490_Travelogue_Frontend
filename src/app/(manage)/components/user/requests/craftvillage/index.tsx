@@ -54,7 +54,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 						it.address?.toLowerCase().includes(search.toLowerCase())
 				)
 				: list;
-			
+
 			setDataTable(filtered);
 		} catch (e) {
 			console.error(e);
@@ -120,11 +120,6 @@ function CraftVillageRequest({ href }: { href: string }) {
 				const av = (a.ownerFullName || "").toLowerCase();
 				const bv = (b.ownerFullName || "").toLowerCase();
 				return av.localeCompare(bv) * dir;
-			}
-			if (sortBy === "createdTime") {
-				const timeA = a.createdTime ? new Date(a.createdTime).getTime() : 0;
-				const timeB = b.createdTime ? new Date(b.createdTime).getTime() : 0;
-				return (timeA - timeB) * dir;
 			}
 			const av = Number(a.status ?? CraftVillageRequestStatus.Pending);
 			const bv = Number(b.status ?? CraftVillageRequestStatus.Pending);
@@ -236,6 +231,22 @@ function CraftVillageRequest({ href }: { href: string }) {
 										)}
 									</button>
 								</TableHead>
+								<TableHead className="w-[140px]">
+									<button
+										className="inline-flex items-center gap-1 font-medium"
+										onClick={() => toggleSort("createdTime")}
+										title="Sắp xếp theo thời gian tạo"
+									>
+										<span>Ngày tạo</span>
+										{sortBy !== "createdTime" ? (
+											<ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+										) : sortDir === "asc" ? (
+											<ArrowUp className="w-3.5 h-3.5 text-gray-600" />
+										) : (
+											<ArrowDown className="w-3.5 h-3.5 text-gray-600" />
+										)}
+									</button>
+								</TableHead>
 								<TableHead className="w-[140px]">Ngày duyệt</TableHead>
 								<TableHead className="w-[120px] text-right">Hành động</TableHead>
 							</TableRow>
@@ -243,7 +254,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 						<TableBody>
 							{!isHydrated && (
 								<TableRow>
-									<TableCell colSpan={6} className="h-24 text-center text-sm text-gray-600">
+									<TableCell colSpan={7} className="h-24 text-center text-sm text-gray-600">
 										Đang tải...
 									</TableCell>
 								</TableRow>
@@ -269,6 +280,9 @@ function CraftVillageRequest({ href }: { href: string }) {
 										</TableCell>
 										<TableCell>
 											<div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
+										</TableCell>
+										<TableCell>
+											<div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
 										</TableCell>
 										<TableCell>
 											<div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
@@ -309,6 +323,11 @@ function CraftVillageRequest({ href }: { href: string }) {
 											{it.reviewedAt ? dayjs(it.reviewedAt).format("DD/MM/YYYY") : "—"}
 										</div>
 									</TableCell>
+									<TableCell>
+										<div className="text-sm text-gray-700">
+											{it.reviewedAt ? dayjs(it.reviewedAt).format("DD/MM/YYYY") : "—"}
+										</div>
+									</TableCell>
 									<TableCell className="text-right">
 										<div className="flex items-center justify-end gap-2">
 											<Button size="sm" variant="secondary" onClick={() => handleView(it.id)}>
@@ -321,7 +340,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 
 							{isHydrated && !loading && pagedItems.length === 0 && (
 								<TableRow>
-									<TableCell colSpan={6} className="h-24 text-center text-sm text-gray-600">
+									<TableCell colSpan={7} className="h-24 text-center text-sm text-gray-600">
 										Không có yêu cầu nào — thử đổi bộ lọc hoặc từ khóa.
 									</TableCell>
 								</TableRow>

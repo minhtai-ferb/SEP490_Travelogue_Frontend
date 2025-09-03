@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react'
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 import ApproveAction from '../ApproveAction'
@@ -46,7 +45,7 @@ function DetailSection({
 	const shouldShowComment = detail?.status === RejectionStatus.Rejected;
 	const router = useRouter();
 	const pathname = usePathname();
-	
+
 	return (
 		<div className="space-y-4">
 			{/* Basic Information */}
@@ -210,17 +209,17 @@ function RequestDialog({
 							{mode === 'view' && detail?.status === RejectionStatus.Pending ? (
 								<div className="col-span-2">
 									<div className="grid grid-cols-2 gap-3">
-										<Button 
-											variant="default" 
-											size="sm" 
+										<Button
+											variant="default"
+											size="sm"
 											onClick={() => onOpenChange(true, 'approve')}
 											className="bg-green-600 hover:bg-green-700"
 										>
 											Đồng ý yêu cầu
 										</Button>
-										<Button 
-											variant="destructive" 
-											size="sm" 
+										<Button
+											variant="destructive"
+											size="sm"
 											onClick={() => onOpenChange(true, 'reject')}
 										>
 											Từ chối yêu cầu

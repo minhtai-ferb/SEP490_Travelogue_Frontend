@@ -149,6 +149,7 @@ export interface RejectionRequestDetail {
 	requestType: number
 	tourId: string
 	tourScheduleId: string | null
+	tourId: string | null
 	bookingId: string
 	reason: string
 	status: number

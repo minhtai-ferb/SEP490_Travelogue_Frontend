@@ -230,8 +230,8 @@ export default function ModernWorkshopModal({
 			if (!workshop.description.trim()) newErrors.description = "Mô tả là bắt buộc"
 
 			// Validate visit ticket
-			if (visitTicket && visitTicket.price <= 0) {
-				newErrors.visitPrice = "Giá vé tham quan phải lớn hơn 0"
+			if (visitTicket && visitTicket.price < 10000) {
+				newErrors.visitPrice = "Giá vé tham quan phải từ 10000"
 			}
 			if (visitTicket && visitTicket.durationMinutes <= 0) {
 				newErrors.visitDuration = "Thời gian vé tham quan phải lớn hơn 0"

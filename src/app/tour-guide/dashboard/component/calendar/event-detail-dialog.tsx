@@ -257,9 +257,9 @@ export default function EventDetailDialog({
 
 							{item.tourId && (
 								<Button variant="outline" asChild>
-									<Link href={`/tour/${item.tourId}`} className="flex items-center gap-2">
+									<Link href={`tour/${item.tourId}`} className="flex items-center gap-2">
 										<CalendarDays className="w-4 h-4" />
-										Xem chi tiết tour
+										Xem chi tiết chuyến đi của bạn
 									</Link>
 								</Button>
 							)}
