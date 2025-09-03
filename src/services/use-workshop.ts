@@ -53,7 +53,7 @@ export function useWorkshop() {
 	const getWorkshopDetail = useCallback(async (workshopId: string) => {
 		const url = WORKSHOP_API_URL.WORKSHOP_DETAIL.replace(":id", workshopId)
 		const res = await callApi("get", url)
-		return res
+		return res?.data
 	}, [callApi])
 
 	const getWorkshops = useCallback(async (params?: WorkshopFilterParams) => {
