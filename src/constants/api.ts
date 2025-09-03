@@ -34,7 +34,10 @@ export const TOUR_GUIDE_API_URL = {
   DASHBOARD_TOURGUIDE_STATISTIC: "/dashboard/tour-guides-statistic/:tourGuideId",
   DASHBOARD_TOURGUIDE: "/tour-guide/dashboard",
   GET_BOOKING_PRICE_REQUEST: "/tour-guide/booking-price-requests/mine",
-  CREATE_REQUEST_PRICE: "/tour-guide/booking-price-request"
+  CREATE_REQUEST_PRICE: "/tour-guide/booking-price-request",
+  GET_ALL_REQUEST_UPDATE_PRICE: "/tour-guide/booking-price-requests/moderator",
+  APPROVE_REQUEST_UPDATE_PRICE: "/tour-guide/booking-price-request/:requestId/approve",
+  REJECT_REQUEST_UPDATE_PRICE: "/tour-guide/booking-price-request/:requestId/reject"
 };
 
 export const MEDIA_API_URL = {
