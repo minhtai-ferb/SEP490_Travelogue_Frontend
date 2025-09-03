@@ -105,8 +105,8 @@ export interface CraftVillageRequestResponse {
 		createdBy: string
 		lastUpdatedBy: string
 	}
+	createdTime?: string
+	lastUpdatedTime?: string
+	createdBy?: string
+	lastUpdatedBy?: string
 }
-
-
-
-

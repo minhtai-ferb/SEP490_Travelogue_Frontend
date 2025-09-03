@@ -23,8 +23,8 @@ function CraftVillageRequest({ href }: { href: string }) {
 
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-	const [sortBy, setSortBy] = useState<"name" | "ownerFullName" | "status">("name");
-	const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+	const [sortBy, setSortBy] = useState<"name" | "ownerFullName" | "status" | "createdTime">("createdTime");
+	const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 	const [isHydrated, setIsHydrated] = useState(false);
 
 	const { getCraftVillageRequest, loading } = useCraftVillage()
@@ -54,6 +54,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 						it.address?.toLowerCase().includes(search.toLowerCase())
 				)
 				: list;
+			
 			setDataTable(filtered);
 		} catch (e) {
 			console.error(e);
@@ -120,6 +121,11 @@ function CraftVillageRequest({ href }: { href: string }) {
 				const bv = (b.ownerFullName || "").toLowerCase();
 				return av.localeCompare(bv) * dir;
 			}
+			if (sortBy === "createdTime") {
+				const timeA = a.createdTime ? new Date(a.createdTime).getTime() : 0;
+				const timeB = b.createdTime ? new Date(b.createdTime).getTime() : 0;
+				return (timeA - timeB) * dir;
+			}
 			const av = Number(a.status ?? CraftVillageRequestStatus.Pending);
 			const bv = Number(b.status ?? CraftVillageRequestStatus.Pending);
 			return (av - bv) * dir;
@@ -135,7 +141,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 		return filteredAndSortedData.slice(start, start + pageSize);
 	}, [filteredAndSortedData, page, pageSize]);
 
-	const toggleSort = (field: "name" | "ownerFullName" | "status") => {
+	const toggleSort = (field: "name" | "ownerFullName" | "status" | "createdTime") => {
 		if (sortBy === field) {
 			setSortDir((d) => (d === "asc" ? "desc" : "asc"));
 		} else {
