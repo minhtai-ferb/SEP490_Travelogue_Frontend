@@ -20,8 +20,8 @@ export function useRejectionRequest() {
 					Status: filters.Status,
 					FromDate: filters.FromDate,
 					ToDate: filters.ToDate,
-					PageNumber: filters.pageNumber,
-					PageSize: filters.pageSize,
+					pageNumber: filters.pageNumber,
+					pageSize: filters.pageSize,
 				};
 
 				const res = await callApi(

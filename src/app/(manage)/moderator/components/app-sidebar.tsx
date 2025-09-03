@@ -100,7 +100,7 @@ const data = {
           url: "/moderator/booking/workshop",
         },
         {
-          title: "Yêu cầu hủy đặt chỗ",
+          title: "Yêu cầu từ chối lịch",
           url: "/moderator/booking/rejection-request",
         }
       ],
