@@ -1,7 +1,7 @@
 export const routeByRole: Record<string, string> = {
-  Admin: "/admin/dashboard",
-  Moderator: "/moderator/dashboard",
-  TourGuide: "/tour-guide/dashboard",
-  CraftVillageOwner: "/craftvillage/dashboard",
-  User: "/",
-};
+  admin: "/admin/dashboard",
+  moderator: "/moderator/dashboard",
+  tourguide: "/tour-guide/dashboard",
+  craftvillageowner: "/craftvillage/dashboard",
+  user: "/",
+}
