@@ -24,6 +24,7 @@ export default function RequestsTable({
   const handleViewUserDetail = (userId: string) => {
     router.push(`/admin/user/${userId}`);
   };
+
   const columns: ColumnsType<WithdrawalRequest> = [
     {
       title: "Người yêu cầu",
@@ -32,7 +33,7 @@ export default function RequestsTable({
       sorter: (a, b) => a.userName.localeCompare(b.userName),
       render: (text: string, record) => (
         <Space direction="vertical" size={0}>
-          <span 
+          <span
             className="font-medium cursor-pointer text-blue-500 hover:text-blue-600 hover:underline"
             onClick={() => handleViewUserDetail(record.userId)}
           >
@@ -94,7 +95,7 @@ export default function RequestsTable({
         <div className="flex items-center justify-center">
           <Eye
             className="h-4 w-4 cursor-pointer text-blue-500 hover:text-blue-600"
-            onClick={() => handleViewUserDetail(r.userId)}
+            onClick={() => onOpenDetail(r)}
           />
         </div>
       ),

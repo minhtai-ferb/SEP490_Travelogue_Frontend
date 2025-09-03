@@ -28,6 +28,9 @@ export function TourItineraryManager({ tour, onUpdate }: TourItineraryManagerPro
 	const [isEditOpen, setIsEditOpen] = useState(false)
 	const [editing, setEditing] = useState<{ dayNumber: number; activityIndex: number } | null>(null)
 
+	console.log('====================================');
+	console.log("Edit tour", tour);
+	console.log('====================================');
 
 	const openEditDialog = (dayNumber: number, activityIndex: number) => {
 		setEditing({ dayNumber, activityIndex })

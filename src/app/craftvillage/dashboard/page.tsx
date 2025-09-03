@@ -10,6 +10,7 @@ import Link from "next/link"
 import { userAtom } from "@/store/auth"
 import { useAtomValue } from "jotai"
 import BreadcrumbHeader from "@/components/common/breadcrumb-header"
+import DashboardCraftVillage from "./components/DashboardCraftVillage"
 
 export default function DashboardPage() {
 	const { getWorkshops, loading } = useWorkshop()
@@ -41,28 +42,7 @@ export default function DashboardPage() {
 
 	return (
 		<div className="space-y-6">
-			<BreadcrumbHeader items={breadcrumbItems.items} />
-			{/* <Card>
-				<CardHeader className="flex flex-row items-center justify-between">
-					<CardTitle>Danh sách workshop</CardTitle>
-					<div className="flex items-center gap-3">
-						<Link href="/craftvillage/dashboard/workshop/create" className="text-sm text-blue-600 hover:underline">Tạo workshop</Link>
-						<Link href="/craftvillage/dashboard/workshop" className="text-sm text-blue-600 hover:underline">Quản lý</Link>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<WorkshopStats items={items} />
-					<WorkshopFilterBar
-						status={status}
-						keyword={keyword}
-						onChangeStatus={setStatus}
-						onChangeKeyword={setKeyword}
-						onSearch={fetchWorkshops}
-						loading={loading}
-					/>
-					<WorkshopList items={items} />
-				</CardContent>
-			</Card> */}
+			<DashboardCraftVillage />
 		</div>
 	)
 }

@@ -58,20 +58,23 @@ export function useRejectionRequest() {
 	);
 
 	const approveRejectionRequest = useCallback(
-		async (requestId: string, payload: { newTourGuideId: string }) => {
+		async (requestId: string, newTourGuideId: any) => {
 			setGlobalLoading(true);
 			try {
-				const res = await callApi("put", TOUR_GUIDE_API_URL.TOUR_GUIDE_REJECTION_REQUEST_APPROVE.replace(":requestId", requestId), payload);
+				const url = `${TOUR_GUIDE_API_URL.TOUR_GUIDE_REJECTION_REQUEST_APPROVE.replace(
+					":requestId",
+					requestId
+				)}?newTourGuideId=${newTourGuideId?.newTourGuideId}`;
+
+				const res = await callApi("put", url);
 				return res?.data ?? res;
-			} catch (err) {
-				console.error("Error approving rejection request:", err);
-				throw err;
 			} finally {
 				setGlobalLoading(false);
 			}
 		},
 		[callApi, setGlobalLoading]
 	);
+
 
 	const rejectRejectionRequest = useCallback(
 		async (requestId: string, body: { moderatorComment: string }) => {

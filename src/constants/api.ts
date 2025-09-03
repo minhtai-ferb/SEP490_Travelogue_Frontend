@@ -30,6 +30,14 @@ export const TOUR_GUIDE_API_URL = {
   TOUR_GUIDE_REJECTION_REQUEST_APPROVE: "rejection-request/:requestId/approve",
   TOUR_GUIDE_REJECTION_REQUEST_REJECT: "rejection-request/:requestId/reject",
   TOUR_GUIDE_FILTER: "tour-guide/filter",
+  TOUR_GUIDE_PROFILE_UPDATE: "/tour-guide/update",
+  DASHBOARD_TOURGUIDE_STATISTIC: "/dashboard/tour-guides-statistic/:tourGuideId",
+  DASHBOARD_TOURGUIDE: "/tour-guide/dashboard",
+  GET_BOOKING_PRICE_REQUEST: "/tour-guide/booking-price-requests/mine",
+  CREATE_REQUEST_PRICE: "/tour-guide/booking-price-request",
+  GET_ALL_REQUEST_UPDATE_PRICE: "/tour-guide/booking-price-requests/moderator",
+  APPROVE_REQUEST_UPDATE_PRICE: "/tour-guide/booking-price-request/:requestId/approve",
+  REJECT_REQUEST_UPDATE_PRICE: "/tour-guide/booking-price-request/:requestId/reject"
 };
 
 export const MEDIA_API_URL = {
@@ -40,6 +48,7 @@ export const MEDIA_API_URL = {
 export const USER_API_URL = {
   GET_USER_REQUEST: "/user/tour-guide-request",
   REQUEST_REVIEW: "/user/:requestId/review",
+  GET_USER_DETAIL: "/user/user-detail",
 };
 
 export const CRAFT_VILLAGE_API_URL = {
@@ -48,7 +57,16 @@ export const CRAFT_VILLAGE_API_URL = {
   CRAFT_VILLAGE_REQUEST_BY_ID: "user/craft-village-request/:id",
   UPDATE_CRAFT_VILLAGE_REQUEST: "user/craft-village-request/:id/review",
   LASTEST_CRAFT_VILLAGE_REQUEST: "user/latest-craft-village-request/",
+  TRANSFORM_USER_TO_CRAFT_VILLAGE_ROLE: "user/my-craft-village-requests",
+  CRAFT_VILLAGE_DASHBOARD: "craft-village/dashboard",
+  CRAFT_VILLAGE_INFO: "/craft-village/:id"
 };
+
+export const CRAFT_VILLAGE_API_DETAIL = {
+  GET_CRAFT_VILLAGE: "/craft-village/:id",
+  UPDATE_CRAFT_VILLAGE: "/craft-village/:id"
+}
+
 
 export const WALLET_API_URL = {
   GET_WALLET_BALANCE: "wallet/balance",

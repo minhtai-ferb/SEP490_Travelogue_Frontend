@@ -339,7 +339,7 @@ export default function CraftVillageDetailView({
 																	<div className="flex items-center justify-between mb-1">
 																		<span className="font-medium text-gray-900">{activity.activity}</span>
 																		<span className="text-sm text-gray-600">
-																			{activity.startHour} - {activity.endHour}
+																			{activity?.durationMinutes} phút
 																		</span>
 																	</div>
 																	<p className="text-sm text-gray-700">{activity.description}</p>
@@ -364,7 +364,7 @@ export default function CraftVillageDetailView({
 														<div>
 															<span className="text-sm font-medium text-gray-700">Thời gian:</span>
 															<p className="text-gray-900">
-																{dayjs(rule.startDate).format("DD/MM/YYYY")} - {dayjs(rule.endDate).format("DD/MM/YYYY")}
+																{dayjs(rule.startDate).format("DD/MM/YYYY")}
 															</p>
 														</div>
 														<div>
@@ -385,7 +385,7 @@ export default function CraftVillageDetailView({
 													{/* Sessions */}
 													{rule.sessions && rule.sessions.length > 0 && (
 														<div>
-															<span className="text-sm font-medium text-gray-700 block mb-2">Các ca trong ngày:</span>
+															<span className="text-sm font-medium text-gray-700 block mb-2">Các khung giờ trong ngày:</span>
 															<div className="grid gap-2">
 																{rule.sessions.map((session: any, sessionIndex: number) => (
 																	<div key={session.id || sessionIndex} className="bg-blue-50 rounded p-3 flex items-center justify-between">

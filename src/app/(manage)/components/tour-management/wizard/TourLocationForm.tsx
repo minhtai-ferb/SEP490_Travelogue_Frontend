@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useLocationController } from "@/services/location-controller"
 import type { Location, TourLocationBulkRequest, WorkshopSession, TicketType } from "@/types/Tour"
+import { LocationType } from "@/types/LocationType"
 import axios from "axios"
 import { SeccretKey } from "@/secret/secret"
 import {
@@ -32,14 +33,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route?api-version=1.1"
 // https://smartlog-lc.map.zone/api/route/v3?apikey={your-apikey}&point={point}&point={point}&points_encoded={points_encoded}&vehicle={vehicle}
-// Activity Types Constants
+// Activity Types Constants - Based on backend enum
 const ACTIVITY_TYPES = [
 	{ value: 1, label: "Tham quan" },
 	{ value: 2, label: "Ăn uống" },
-	{ value: 3, label: "Mua sắm" },
+	{ value: 3, label: "Trải nghiệm làng nghề" },
 	{ value: 4, label: "Nghỉ ngơi" },
-	{ value: 5, label: "Giải trí" },
-	{ value: 6, label: "Trải nghiệm" }
+	{ value: 5, label: "Mua sắm" },
+	{ value: 6, label: "Giải trí" },
+	{ value: 7, label: "Trải nghiệm" }
 ] as const
 
 
@@ -139,7 +141,6 @@ export function TourLocationForm({
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
 		activityType: 1,
-		workshopId: undefined,
 		workshopTicketTypeId: undefined,
 		workshopSessionRuleId: undefined,
 		preferredStartTime: undefined,
@@ -155,6 +156,9 @@ export function TourLocationForm({
 	const [availableTickets, setAvailableTickets] = useState<TicketType[]>([])
 	const [availableSessions, setAvailableSessions] = useState<WorkshopSession[]>([])
 
+	// Store ticket type information for display purposes
+	const [ticketTypeMap, setTicketTypeMap] = useState<Record<string, { name: string; price?: number }>>({})
+
 	// Loading states
 	const [loadingLocationDetail, setLoadingLocationDetail] = useState(false)
 	const [loadingRouteCalculation, setLoadingRouteCalculation] = useState(false)
@@ -169,6 +173,49 @@ export function TourLocationForm({
 			setLocations(initialData)
 		}
 	}, [initialData])
+
+	// Populate ticket type map when available locations are loaded
+	useEffect(() => {
+		if (availableLocations.length > 0 && locations.length > 0) {
+			console.log('🔄 Populating ticketTypeMap...');
+			console.log('- availableLocations count:', availableLocations.length);
+			console.log('- locations count:', locations.length);
+
+			setTicketTypeMap(prevMap => {
+				const newTicketTypeMap = { ...prevMap } // Preserve existing data
+
+				locations.forEach(location => {
+					if (location.workshopTicketTypeId && !newTicketTypeMap[location.workshopTicketTypeId]) {
+						console.log('- Processing location:', location.locationId, 'with ticketTypeId:', location.workshopTicketTypeId);
+
+						const locationData = availableLocations.find(loc => loc.id === location.locationId)
+						console.log('- Found locationData:', !!locationData);
+						console.log('- locationData.craftVillage:', !!locationData?.craftVillage);
+						console.log('- locationData.craftVillage.workshop:', !!locationData?.craftVillage?.workshop);
+						console.log('- ticketTypes:', locationData?.craftVillage?.workshop?.ticketTypes);
+
+						const ticketType = locationData?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId)
+						console.log('- Found ticketType:', ticketType);
+
+						if (ticketType) {
+							newTicketTypeMap[location.workshopTicketTypeId] = {
+								name: ticketType.name,
+								price: ticketType.price
+							}
+							console.log('- Added to map:', location.workshopTicketTypeId, '→', ticketType.name);
+						} else {
+							console.log('- ❌ Could not find ticketType for ID:', location.workshopTicketTypeId);
+						}
+					} else if (location.workshopTicketTypeId) {
+						console.log('- Ticket type already in map:', location.workshopTicketTypeId);
+					}
+				})
+
+				console.log('- Final newTicketTypeMap:', newTicketTypeMap);
+				return newTicketTypeMap
+			})
+		}
+	}, [availableLocations, locations])
 
 	const loadAvailableLocations = async () => {
 		try {
@@ -200,10 +247,23 @@ export function TourLocationForm({
 			}))
 
 			// Step 2: Check if it's a craft village
-			if (locationData.craftVillage?.workshopsAvailable && locationData.craftVillage.workshop) {
-				// Step 2a: Show workshop dialog for craft village
-				await loadWorkshopData(locationData)
-				setShowWorkshopDialog(true)
+			if ((locationData.craftVillage?.workshopsAvailable && locationData.craftVillage.workshop) ||
+				locationData.locationType === LocationType.CraftVillage) {
+				// Step 2a: Show workshop dialog for craft village or set default activity type for craft village location
+				// Set default activity type to "Trải nghiệm làng nghề" (3) for craft villages
+				setNewLocation(prev => ({
+					...prev,
+					activityType: 3
+				}))
+
+				if (locationData.craftVillage?.workshopsAvailable && locationData.craftVillage.workshop) {
+					await loadWorkshopData(locationData)
+					setShowWorkshopDialog(true)
+				} else {
+					// Regular craft village location without workshop
+					setShowWorkshopDialog(false)
+					await calculateTravelTime(locationData)
+				}
 			} else {
 				// Step 2: Regular location - user inputs start/end time manually
 				setShowWorkshopDialog(false)
@@ -222,11 +282,7 @@ export function TourLocationForm({
 		const workshop = location.craftVillage?.workshop
 		if (!workshop) return
 
-		// Set workshop ID to location ID as specified
-		setNewLocation(prev => ({
-			...prev,
-			workshopId: location.id  // workshopId = locationId as per requirement
-		}))
+		// Workshop ID is now handled through locationId - no separate workshopId needed
 
 		// Load available tickets
 		setAvailableTickets(workshop.ticketTypes || [])
@@ -328,13 +384,30 @@ export function TourLocationForm({
 	// Step 2a.1: Handle ticket type selection
 	const handleTicketSelect = (ticketId: string) => {
 		const ticket = availableTickets.find(t => t.id === ticketId)
-		if (!ticket) return
+		if (!ticket) {
+			console.log('❌ Ticket not found for ID:', ticketId)
+			return
+		}
 
+		console.log('✅ Selected ticket:', ticket)
 		setSelectedTicketType(ticket)
 		setNewLocation(prev => ({
 			...prev,
 			workshopTicketTypeId: ticketId
 		}))
+
+		// Store ticket info in map for later display
+		setTicketTypeMap(prev => {
+			const newMap = {
+				...prev,
+				[ticketId]: {
+					name: ticket.name,
+					price: ticket.price
+				}
+			}
+			console.log('💾 Updated ticketTypeMap:', newMap)
+			return newMap
+		})
 
 		// All ticket types need to have sessions - load available sessions for any ticket type
 		loadAvailableSessionsForTicket(ticket)
@@ -442,6 +515,24 @@ export function TourLocationForm({
 			return
 		}
 
+		// Keep activity type as 3 ("Trải nghiệm làng nghề") for craft villages
+		setNewLocation(prev => ({
+			...prev,
+			activityType: 3 // Keep craft village experience type
+		}))
+
+		// Ensure ticket info is saved in map when confirming (in case it wasn't saved in handleTicketSelect)
+		if (selectedTicketType && newLocation.workshopTicketTypeId) {
+			console.log('💾 Saving ticket info to map:', selectedTicketType);
+			setTicketTypeMap(prev => ({
+				...prev,
+				[newLocation.workshopTicketTypeId!]: {
+					name: selectedTicketType.name,
+					price: selectedTicketType.price
+				}
+			}))
+		}
+
 		setShowWorkshopDialog(false)
 		setErrors({})
 	}
@@ -455,7 +546,6 @@ export function TourLocationForm({
 		setNewLocation(prev => ({
 			...prev,
 			locationId: "",
-			workshopId: undefined,
 			workshopTicketTypeId: undefined,
 			workshopSessionRuleId: undefined,
 			preferredStartTime: undefined,
@@ -535,7 +625,6 @@ export function TourLocationForm({
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
 			activityType: 1,
-			workshopId: undefined,
 			workshopTicketTypeId: undefined,
 			workshopSessionRuleId: undefined,
 			preferredStartTime: undefined,
@@ -658,9 +747,8 @@ export function TourLocationForm({
 			notes: loc.notes || "",
 			travelTimeFromPrev: loc.travelTimeFromPrev || 0,
 			distanceFromPrev: loc.distanceFromPrev || 0,
-			// Workshop fields (only if workshop is selected)
-			...(loc.workshopId && {
-				workshopId: loc.workshopId,                    // = locationId for craft villages
+			// Workshop fields (only if workshop ticket and session are selected)
+			...(loc.workshopTicketTypeId && {
 				workshopTicketTypeId: loc.workshopTicketTypeId, // ticketId
 				workshopSessionRuleId: loc.workshopSessionRuleId, // sessionId
 				preferredStartTime: loc.preferredStartTime, // Workshop time in HH:MM:SS format
@@ -675,7 +763,7 @@ export function TourLocationForm({
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-2xl font-bold">Thêm địa điểm cho tour</h2>
+				<h2 className="text-2xl font-bold">Thêm địa điểm cho chuyến đi</h2>
 				<div className="text-sm text-muted-foreground">
 					Đã thêm: {locations.length} địa điểm
 				</div>
@@ -746,6 +834,7 @@ export function TourLocationForm({
 							onValueChange={(value) =>
 								setNewLocation(prev => ({ ...prev, activityType: parseInt(value) }))
 							}
+							disabled={selectedLocation?.locationType === LocationType.CraftVillage}
 						>
 							<SelectTrigger>
 								<SelectValue />
@@ -758,6 +847,11 @@ export function TourLocationForm({
 								))}
 							</SelectContent>
 						</Select>
+						{selectedLocation?.locationType === LocationType.CraftVillage && (
+							<p className="text-sm text-blue-600 mt-1">
+								Làng nghề tự động được thiết lập là "Trải nghiệm làng nghề"
+							</p>
+						)}
 					</div>
 
 					{/* Step 2: Time Input (for regular locations) */}
@@ -961,6 +1055,37 @@ export function TourLocationForm({
 							</div>
 						)}
 
+						{/* Selected Ticket Type Info */}
+						{selectedTicketType && (
+							<div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+								<div className="flex items-center gap-2 text-green-800 mb-2">
+									<CheckCircle2 className="h-4 w-4" />
+									<span className="font-medium">Loại vé đã chọn</span>
+								</div>
+								<div className="space-y-2 text-sm">
+									<div className="flex justify-between items-center">
+										<span className="font-medium text-green-700">{selectedTicketType.name}</span>
+										<span className="font-bold text-green-800">
+											{selectedTicketType.price?.toLocaleString('vi-VN')} VNĐ
+										</span>
+									</div>
+									{selectedTicketType.description && (
+										<p className="text-green-600 text-xs">
+											{selectedTicketType.description}
+										</p>
+									)}
+									{selectedSession && (
+										<div className="flex items-center gap-1 text-green-600">
+											<Clock className="h-3 w-3" />
+											<span className="text-xs">
+												Khung giờ: {selectedSession.startTime.substring(0, 5)} - {selectedSession.endTime.substring(0, 5)}
+											</span>
+										</div>
+									)}
+								</div>
+							</div>
+						)}
+
 						{/* Suggested Time Info */}
 						{dialogData?.suggestedTime && (
 							<div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
@@ -1041,10 +1166,12 @@ export function TourLocationForm({
 											timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
 										)
 
+										console.log("Day location", dayLocations);
+
 										// Calculate day stats
 										const totalTravelTime = dayLocations.reduce((sum, loc) => sum + (loc.travelTimeFromPrev || 0), 0)
 										const totalDistance = dayLocations.reduce((sum, loc) => sum + (loc.distanceFromPrev || 0), 0)
-										const workshopCount = dayLocations.filter(loc => loc.workshopId).length
+										const workshopCount = dayLocations.filter(loc => loc.workshopTicketTypeId).length
 
 										return (
 											<AccordionItem key={dayNumber} value={`day-${dayNumber}`}>
@@ -1098,7 +1225,7 @@ export function TourLocationForm({
 																						{getActivityIcon(location.activityType)}
 																						<span className="ml-1">{activityType?.label}</span>
 																					</Badge> */}
-																						{location.workshopId && (
+																						{location.workshopTicketTypeId && (
 																							<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
 																								🏭 Workshop
 																							</Badge>
@@ -1118,11 +1245,53 @@ export function TourLocationForm({
 																				)}
 
 																				{/* Workshop Information */}
-																				{location.workshopId && (
+																				{location.workshopTicketTypeId && (
 																					<div className="p-2 bg-purple-50 border border-purple-200 rounded-lg mb-2">
 																						<div className="text-sm space-y-1">
 																							{location.workshopTicketTypeId && (
-																								<p><span className="text-purple-600 font-medium">Loại vé:</span> {availableLocations.find(loc => loc.id === location.locationId)?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId)?.name}</p>
+																								<div>
+																									<p>
+																										<span className="text-purple-600 font-medium">Loại vé:</span>
+																										{(() => {
+																											// First try to get from ticketTypeMap
+																											const mapTicket = ticketTypeMap[location.workshopTicketTypeId];
+																											if (mapTicket?.name) {
+																												return ` ${mapTicket.name}`;
+																											}
+
+																											// Then try to find from availableLocations
+																											const locationDetails = availableLocations.find(l => l.id === location.locationId);
+																											const fallbackTicket = locationDetails?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId);
+																											if (fallbackTicket?.name) {
+																												return ` ${fallbackTicket.name}`;
+																											}
+
+																											// Last resort: show ID
+																											return ` ID: ${location.workshopTicketTypeId}`;
+																										})()}
+																									</p>
+																									{(() => {
+																										// Get price from ticketTypeMap or fallback to availableLocations
+																										const mapTicket = ticketTypeMap[location.workshopTicketTypeId];
+																										let price = mapTicket?.price;
+
+																										if (!price) {
+																											const locationDetails = availableLocations.find(l => l.id === location.locationId);
+																											const fallbackTicket = locationDetails?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId);
+																											price = fallbackTicket?.price;
+																										}
+
+																										if (price) {
+																											return (
+																												<p>
+																													<span className="text-purple-600 font-medium">Giá vé:</span>
+																													{price.toLocaleString('vi-VN')} VNĐ
+																												</p>
+																											);
+																										}
+																										return null;
+																									})()}
+																								</div>
 																							)}
 																							{location.preferredStartTime && (
 																								<p><span className="text-purple-600 font-medium">Thời gian workshop:</span> {location.preferredStartTime.substring(0, 5)} - {location.preferredEndTime?.substring(0, 5)}</p>

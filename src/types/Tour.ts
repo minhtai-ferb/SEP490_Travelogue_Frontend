@@ -218,6 +218,7 @@ export interface Location {
 	category: string
 	districtId: string
 	districtName: string
+	locationType?: number
 	medias: LocationMedia[]
 	craftVillage?: CraftVillage
 }
@@ -369,7 +370,6 @@ export interface TourLocationBulkRequest {
 	notes: string
 	travelTimeFromPrev: number
 	distanceFromPrev: number
-	workshopId?: string
 	workshopTicketTypeId?: string
 	workshopSessionRuleId?: string
 	preferredStartTime?: string
