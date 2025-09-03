@@ -36,11 +36,10 @@ export default function CertificationUploader({
   const addFiles = (list: File[]) => {
     const accepted = list.filter((f) => {
       const okType =
-        f.type.startsWith("image/") ||
         f.type === "application/pdf" ||
         f.name.toLowerCase().endsWith(".pdf");
       const okSize = f.size <= 8 * 1024 * 1024;
-      if (!okType) toast.error(`${f.name} không phải hình/PDF`);
+      if (!okType) toast.error(`${f.name} không phải tệp PDF`);
       if (!okSize) toast.error(`${f.name} > 8MB`);
       return okType && okSize;
     });
@@ -51,9 +50,7 @@ export default function CertificationUploader({
       file: f,
       status: "pending",
       progress: 0,
-      previewUrl: f.type.startsWith("image/")
-        ? URL.createObjectURL(f)
-        : undefined,
+      previewUrl: undefined,
     }));
 
     setItems((prev) => [...prev, ...mapped]);
@@ -147,7 +144,7 @@ export default function CertificationUploader({
         <div>
           <Label>Chứng chỉ nghề (ít nhất 1)</Label>
           <p className="text-xs text-muted-foreground">
-            Hỗ trợ JPG/PNG/PDF, tối đa 8MB mỗi tệp.
+            Hỗ trợ PDF, tối đa 8MB mỗi tệp.
           </p>
         </div>
         <div className="flex gap-2">
@@ -174,7 +171,7 @@ export default function CertificationUploader({
             ref={inputRef}
             type="file"
             className="hidden"
-            accept="image/*,application/pdf"
+            accept="application/pdf"
             multiple
             onChange={onPick}
           />
@@ -209,8 +206,8 @@ export default function CertificationUploader({
       )}
 
       <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
-        Mẹo duyệt nhanh: Ảnh rõ nét, không che mờ thông tin; PDF nên xuất từ bản
-        gốc. Đặt đúng tên theo văn bản gốc.
+        Mẹo duyệt nhanh: PDF nên xuất từ bản gốc, rõ nét, không che mờ thông tin. 
+        Đặt đúng tên theo văn bản gốc.
       </div>
     </div>
   );
