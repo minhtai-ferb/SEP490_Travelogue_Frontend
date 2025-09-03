@@ -23,7 +23,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-	const [sortBy, setSortBy] = useState<"name" | "ownerFullName" | "status" | "createTime">("createTime");
+	const [sortBy, setSortBy] = useState<"name" | "ownerFullName" | "status" | "createdTime">("createdTime");
 	const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 	const [isHydrated, setIsHydrated] = useState(false);
 
@@ -54,6 +54,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 						it.address?.toLowerCase().includes(search.toLowerCase())
 				)
 				: list;
+
 			setDataTable(filtered);
 		} catch (e) {
 			console.error(e);
@@ -120,13 +121,6 @@ function CraftVillageRequest({ href }: { href: string }) {
 				const bv = (b.ownerFullName || "").toLowerCase();
 				return av.localeCompare(bv) * dir;
 			}
-			if (sortBy === "createTime") {
-				// Sử dụng reviewedAt làm thời gian tham chiếu, hoặc có thể dùng id để sort
-				const av = a.reviewedAt ? new Date(a.reviewedAt).getTime() : 0;
-				const bv = b.reviewedAt ? new Date(b.reviewedAt).getTime() : 0;
-				return (av - bv) * dir;
-			}
-			// Sort by status
 			const av = Number(a.status ?? CraftVillageRequestStatus.Pending);
 			const bv = Number(b.status ?? CraftVillageRequestStatus.Pending);
 			return (av - bv) * dir;
@@ -142,7 +136,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 		return filteredAndSortedData.slice(start, start + pageSize);
 	}, [filteredAndSortedData, page, pageSize]);
 
-	const toggleSort = (field: "name" | "ownerFullName" | "status" | "createTime") => {
+	const toggleSort = (field: "name" | "ownerFullName" | "status") => {
 		if (sortBy === field) {
 			setSortDir((d) => (d === "asc" ? "desc" : "asc"));
 		} else {

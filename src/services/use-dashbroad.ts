@@ -89,11 +89,76 @@ export interface TourStatisticsResponse {
   topTours: TopTour[];
 }
 
+//Tour Schedule Statistics
+export interface Participant {
+  id: string;
+  bookingId: string;
+  type: number;
+  quantity: number;
+  pricePerParticipant: number;
+  fullName: string;
+  gender: number;
+  genderText: string;
+  dateOfBirth: string;
+}
+
+export interface Booking {
+  id: string;
+  userId: string;
+  userName: string;
+  tourId: string;
+  tourName: string;
+  tourScheduleId: string;
+  departureDate: string;
+  tourGuideId: string | null;
+  tourGuideName: string | null;
+  tripPlanId: string | null;
+  tripPlanName: string | null;
+  workshopId: string | null;
+  workshopName: string | null;
+  workshopScheduleId: string | null;
+  paymentLinkId: string;
+  status: number;
+  statusText: string;
+  bookingType: number;
+  bookingTypeText: string;
+  bookingDate: string;
+  startDate: string;
+  endDate: string;
+  cancelledAt: string | null;
+  promotionId: string | null;
+  originalPrice: number;
+  discountAmount: number;
+  finalPrice: number;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  participants: Participant[];
+}
+
+export interface TourScheduleStatisticsResponse {
+  totalBookings: number;
+  pendingBookings: number;
+  confirmedBookings: number;
+  cancelledBookings: number;
+  expiredBookings: number;
+  cancelledByProviderBookings: number;
+  completedBookings: number;
+  completionRate: number;
+  totalRevenue: number;
+  confirmedRevenue: number;
+  completedRevenue: number;
+  lostRevenue: number;
+  bookings: Booking[];
+}
+
 const STATISTICS_API_URL = {
   BOOKING_STATS: "/dashboard/booking-statistics",
   REVENUE_ADMIN_STATISTICS: "/dashboard/admin-revenue-statistics",
   REVENUE_SYSTEM_STATISTICS: "/dashboard/system-revenue-statistics",
-  TOUR_STATISTICS: "/dashboard/tour-statistics"
+  TOUR_STATISTICS: "/dashboard/tour-statistics",
+  TOUR_SCHEDULE_STATISTICS: "/dashboard/tour-schedules-statistic/:tourScheduleId",
 };
 
 export function useBookingStats() {
@@ -187,11 +252,31 @@ export function useBookingStats() {
     [callApi, setLoading]
   );
 
+  const getTourScheduleStatistics = useCallback(
+    async (tourScheduleId: string): Promise<TourScheduleStatisticsResponse> => {
+      setLoading(true);
+      try {
+        const response = await callApi(
+          "get",
+          STATISTICS_API_URL.TOUR_SCHEDULE_STATISTICS.replace(":tourScheduleId", tourScheduleId)
+        );
+        return response.data as TourScheduleStatisticsResponse;
+      } catch (e: any) {
+        console.error("Error fetching tour schedule statistics:", e.message);
+        throw e;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callApi, setLoading]
+  );
+
   return {
     getBookingStats,
     getRevenueAdminStatistics,
     getRevenueSystemStatistics,
     getTourStatistics,
+    getTourScheduleStatistics,
     loading: isLoading || loading,
   };
 }
