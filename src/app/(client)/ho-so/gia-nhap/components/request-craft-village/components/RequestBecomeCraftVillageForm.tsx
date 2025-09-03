@@ -58,7 +58,7 @@ const TICKET_TYPES = {
 	EXPERIENCE: 2,
 } as const
 
-export default function RequestBecomeCraftVillageForm() {
+export default function RequestBecomeCraftVillageForm({ fetchLatest }: { fetchLatest: () => void }) {
 	const {
 		districts,
 		formData,
@@ -106,10 +106,15 @@ export default function RequestBecomeCraftVillageForm() {
 	}, [formData, modelFiles.length, uploadedModelUrls.length])
 
 	const addWorkshop = useCallback(() => {
+		// Chỉ cho phép tạo tối đa 1 trải nghiệm
+		if (workshops.length >= 1) {
+			toast.error("Chỉ được phép tạo tối đa 1 trải nghiệm")
+			return
+		}
 		// Don't set editingWorkshop for new workshop creation
 		setEditingWorkshop(null)
 		setShowWorkshopModal(true)
-	}, [formData.workshopsAvailable])
+	}, [workshops.length])
 
 	const editWorkshop = useCallback((workshop: WorkshopData) => {
 		setEditingWorkshop(workshop)
@@ -122,16 +127,27 @@ export default function RequestBecomeCraftVillageForm() {
 	}, [])
 
 	const saveWorkshop = useCallback(
-		(workshop: WorkshopData) => {
-			if (editingWorkshop && workshops.some((w) => w.name === editingWorkshop.name)) {
-				setWorkshops((prev) => prev.map((w) => (w.name === editingWorkshop.name ? workshop : w)))
-				toast.success("Đã cập nhật trải nghiệm")
-			} else {
-				setWorkshops((prev) => [...prev, workshop])
-				toast.success("Đã thêm trải nghiệm mới")
+		async (workshop: WorkshopData) => {
+			try {
+				if (editingWorkshop && workshops.some((w) => w.name === editingWorkshop.name)) {
+					setWorkshops((prev) => prev.map((w) => (w.name === editingWorkshop.name ? workshop : w)))
+					toast.success("Đã cập nhật trải nghiệm")
+				} else {
+					// Kiểm tra giới hạn số lượng workshop
+					if (workshops.length >= 1) {
+						toast.error("Chỉ được phép tạo tối đa 1 trải nghiệm")
+						throw new Error("Workshop limit exceeded")
+					}
+					setWorkshops((prev) => [...prev, workshop])
+					toast.success("Đã tạo trải nghiệm cho làng nghề thành công!")
+				}
+				setShowWorkshopModal(false)
+				setEditingWorkshop(null)
+			} catch (error) {
+				console.error('Error saving workshop:', error)
+				toast.error("Có lỗi xảy ra khi lưu trải nghiệm")
+				throw error // Re-throw để ModernWorkshopModal có thể handle
 			}
-			setShowWorkshopModal(false)
-			setEditingWorkshop(null)
 		},
 		[editingWorkshop, workshops],
 	)
@@ -141,7 +157,8 @@ export default function RequestBecomeCraftVillageForm() {
 		e.preventDefault()
 		// Pass workshop data to the hook's handleSubmit
 		handleSubmit(e, workshops)
-	}, [handleSubmit, workshops])
+		fetchLatest()
+	}, [handleSubmit, workshops, fetchLatest])
 
 	return (
 		<form
@@ -531,7 +548,7 @@ export default function RequestBecomeCraftVillageForm() {
 										<div className="flex items-center gap-2">
 											<Activity className="h-4 w-4 text-blue-600" />
 											<span className="text-sm font-medium text-blue-600">
-												Tuyệt vời! Bạn có thể tạo workshop ở phần dưới
+												Tuyệt vời! Bạn có thể tạo 1 trải nghiệm độc đáo cho làng nghề ở phần dưới
 											</span>
 										</div>
 									</div>
@@ -548,7 +565,7 @@ export default function RequestBecomeCraftVillageForm() {
 							<Ticket className="h-6 w-6" />
 							<div>
 								<h2 className="text-2xl font-bold">Trải nghiệm làng nghề</h2>
-								<p className="text-purple-100 font-normal text-base">Thiết kế những trải nghiệm hấp dẫn</p>
+								<p className="text-purple-100 font-normal text-base">Thiết kế trải nghiệm hấp dẫn (Tối đa 1 trải nghiệm)</p>
 							</div>
 						</CardTitle>
 					</CardHeader>
@@ -580,19 +597,26 @@ export default function RequestBecomeCraftVillageForm() {
 								<div className="flex items-center justify-between">
 									<div className="flex items-center gap-3">
 										<Badge variant="secondary" className="bg-purple-100 text-purple-700 px-3 py-1 text-base">
-											{workshops.length} trải nghiệm
+											{workshops.length}/1 trải nghiệm
 										</Badge>
-										<span className="text-sm text-gray-500">Tuyệt vời! Bạn đang tạo ra giá trị cho du khách</span>
+										<span className="text-sm text-gray-500">
+											{workshops.length >= 1
+												? "Bạn đã tạo trải nghiệm cho làng nghề!"
+												: "Tuyệt vời! Bạn đang tạo ra giá trị cho du khách"
+											}
+										</span>
 									</div>
-									<Button
-										type="button"
-										onClick={addWorkshop}
-										variant="outline"
-										className="border-purple-300 text-purple-600 hover:bg-purple-50 bg-transparent"
-									>
-										<Plus className="h-4 w-4 mr-2" />
-										Thêm trải nghiệm
-									</Button>
+									{workshops.length < 1 && (
+										<Button
+											type="button"
+											onClick={addWorkshop}
+											variant="outline"
+											className="border-purple-300 text-purple-600 hover:bg-purple-50 bg-transparent"
+										>
+											<Plus className="h-4 w-4 mr-2" />
+											Thêm trải nghiệm
+										</Button>
+									)}
 								</div>
 
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">

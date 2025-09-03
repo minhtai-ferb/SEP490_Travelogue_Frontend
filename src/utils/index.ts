@@ -30,3 +30,29 @@ export const getDataFromLocalStorage = (item: string) => {
 		return null;
 	}
 }
+
+// Get user from localStorage
+export const getUserFromLocalStorage = () => {
+	if (typeof window === 'undefined') {
+		return null;
+	}
+
+	const userDataString = localStorage.getItem('USER');
+	if (!userDataString) {
+		return null;
+	}
+
+	try {
+		const userData = JSON.parse(userDataString);
+		return userData;
+	} catch (error) {
+		console.error('Failed to parse user data from localStorage:', error);
+		return null;
+	}
+}
+
+// Get user ID from localStorage
+export const getUserIdFromLocalStorage = () => {
+	const user = getUserFromLocalStorage();
+	return user?.id || null;
+}

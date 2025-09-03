@@ -1,9 +1,11 @@
 import React from 'react'
+import DashboardTourguide from './component/DashboardTourguide'
+
 
 function page() {
 	return (
 		<div>
-			dashboard
+			<DashboardTourguide />
 		</div>
 	)
 }

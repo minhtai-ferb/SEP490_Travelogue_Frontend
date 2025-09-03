@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, PencilRuler, Wallet, Wallet2, Wrench } from "lucide-react"
+import { ClipboardClock, LayoutDashboard, PencilRuler, SquareUserRound, Wallet, Wallet2, Wrench } from "lucide-react"
 import * as React from "react"
 
 // import { Calendars } from "./calendar"
@@ -78,6 +78,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							<Link href="/craftvillage/dashboard/vi-cua-toi">
 								<Wallet2 />
 								<span>Ví của tôi</span>
+							</Link>
+						</SidebarMenuButton>
+						<SidebarMenuButton asChild>
+							<Link href="/craftvillage/dashboard/don-tu">
+								<ClipboardClock />
+								<span>Đơn của bạn</span>
+							</Link>
+						</SidebarMenuButton>
+						<SidebarMenuButton asChild>
+							<Link href="/craftvillage/dashboard/ho-so">
+								<SquareUserRound />
+								<span>Xem hồ sơ</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

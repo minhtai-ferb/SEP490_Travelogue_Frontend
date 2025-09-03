@@ -124,12 +124,17 @@ export function TourScheduleForm({
 			newErrors.maxParticipant = "Số người tham gia phải lớn hơn 0"
 		}
 
-		if (newSchedule.adultPrice <= 0) {
-			newErrors.adultPrice = "Giá người lớn phải lớn hơn 0"
+		if (newSchedule.adultPrice < 10000) {
+			newErrors.adultPrice = "Giá người lớn phải từ 10,000 VNĐ trở lên"
 		}
 
 		if (newSchedule.childrenPrice < 0) {
 			newErrors.childrenPrice = "Giá trẻ em không được âm"
+		}
+
+		// Additional validation: if children price is set, it should be at least 10,000 or 0 (free)
+		if (newSchedule.childrenPrice > 0 && newSchedule.childrenPrice < 10000) {
+			newErrors.childrenPrice = "Giá trẻ em phải từ 10,000 VNĐ trở lên hoặc để 0 (miễn phí)"
 		}
 
 		// Optional: validate tourGuideId existence when selected
@@ -192,7 +197,9 @@ export function TourScheduleForm({
 				setErrors({})
 			} else {
 				// Validation failed - show server errors
-				const serverMessage = response?.message || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+				console.log("response", response)
+				const serverMessage = response?.errors || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+
 				setErrors({
 					validation: serverMessage,
 					...(response?.errors || {}) // Include field-specific errors if available
@@ -257,10 +264,10 @@ export function TourScheduleForm({
 			}
 
 			const response = await validateSchedule(validationData, tourId)
-
+			console.log("object", response);
 			if (!response?.success && response?.isValid === false) {
 				// Validation failed - show error and stop
-				const serverMessage = response?.message || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
+				const serverMessage = response?.errors || response?.errorMessage || "Có lỗi xảy ra khi validation lịch trình"
 				setErrors({
 					validation: serverMessage,
 					...(response?.errors || {})
@@ -411,8 +418,9 @@ export function TourScheduleForm({
 							<Input
 								id="adultPrice"
 								type="number"
-								min="0"
-								placeholder="0"
+								min="10000"
+								step="1000"
+								placeholder="10000"
 								value={newSchedule.adultPrice}
 								onChange={(e) => setNewSchedule({ ...newSchedule, adultPrice: Number.parseInt(e.target.value) || 0 })}
 								className={errors.adultPrice ? "border-red-500" : ""}
@@ -431,7 +439,8 @@ export function TourScheduleForm({
 								id="childrenPrice"
 								type="number"
 								min="0"
-								placeholder="0"
+								step="1000"
+								placeholder="0 (miễn phí) hoặc từ 10,000"
 								value={newSchedule.childrenPrice}
 								onChange={(e) =>
 									setNewSchedule({ ...newSchedule, childrenPrice: Number.parseInt(e.target.value) || 0 })
@@ -442,13 +451,16 @@ export function TourScheduleForm({
 							<div className="space-y-2">
 								<p className="text-xs text-gray-500 font-medium">{formatCurrency(newSchedule.childrenPrice)}</p>
 
-								<p className="text-xs text-gray-600 font-medium">Tính nhanh theo % giá người lớn:</p>
+								<p className="text-xs text-gray-600 font-medium">Tính nhanh theo % giá người lớn (tối thiểu 10,000):</p>
 								<div className="flex gap-2 flex-wrap">
 									<Button
 										type="button"
 										variant="outline"
 										size="sm"
-										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.25) })}
+										onClick={() => {
+											const calculatedPrice = Math.round(newSchedule.adultPrice * 0.25);
+											setNewSchedule({ ...newSchedule, childrenPrice: Math.max(calculatedPrice, 10000) });
+										}}
 										disabled={isLoading || !newSchedule.adultPrice}
 										className="text-xs px-2 py-1 h-7"
 									>
@@ -458,7 +470,10 @@ export function TourScheduleForm({
 										type="button"
 										variant="outline"
 										size="sm"
-										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.3) })}
+										onClick={() => {
+											const calculatedPrice = Math.round(newSchedule.adultPrice * 0.3);
+											setNewSchedule({ ...newSchedule, childrenPrice: Math.max(calculatedPrice, 10000) });
+										}}
 										disabled={isLoading || !newSchedule.adultPrice}
 										className="text-xs px-2 py-1 h-7"
 									>
@@ -468,7 +483,10 @@ export function TourScheduleForm({
 										type="button"
 										variant="outline"
 										size="sm"
-										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.5) })}
+										onClick={() => {
+											const calculatedPrice = Math.round(newSchedule.adultPrice * 0.5);
+											setNewSchedule({ ...newSchedule, childrenPrice: Math.max(calculatedPrice, 10000) });
+										}}
 										disabled={isLoading || !newSchedule.adultPrice}
 										className="text-xs px-2 py-1 h-7"
 									>
@@ -478,7 +496,10 @@ export function TourScheduleForm({
 										type="button"
 										variant="outline"
 										size="sm"
-										onClick={() => setNewSchedule({ ...newSchedule, childrenPrice: Math.round(newSchedule.adultPrice * 0.75) })}
+										onClick={() => {
+											const calculatedPrice = Math.round(newSchedule.adultPrice * 0.75);
+											setNewSchedule({ ...newSchedule, childrenPrice: Math.max(calculatedPrice, 10000) });
+										}}
 										disabled={isLoading || !newSchedule.adultPrice}
 										className="text-xs px-2 py-1 h-7"
 									>

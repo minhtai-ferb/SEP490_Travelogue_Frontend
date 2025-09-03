@@ -24,6 +24,9 @@ import RejectionDialog from "../rejection-dialog"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { CiMoneyBill } from "react-icons/ci"
+import { useBookings } from "@/services/use-bookings"
+import BookingDetailDialog from "./BookingDetailDialog"
 
 export default function EventDetailDialog({
 	open,
@@ -35,8 +38,8 @@ export default function EventDetailDialog({
 	item?: any
 }) {
 	const [openRejectionDialog, setOpenRejectionDialog] = useState(false)
-
-	if (!item) return null
+	const [showBookingDetail, setShowBookingDetail] = useState(false)
+	const router = useRouter()
 
 	const scheduleTypeConfig = {
 		Booking: {
@@ -72,12 +75,16 @@ export default function EventDetailDialog({
 		},
 	}
 
-	const router = useRouter()
+	// Early return after all hooks have been called
+	if (!item) return null
 
 	const scheduleType = item?.scheduleType || "Booking"
 	const config = scheduleTypeConfig[scheduleType as keyof typeof scheduleTypeConfig] || scheduleTypeConfig.Booking
 	const rejectionRequest = item?.rejectionRequest
 	const hasRejectionRequest = rejectionRequest && rejectionRequest.requestType
+
+	// Check if the date is in the past
+	const isDateInPast = dayjs(item.date).isBefore(dayjs(), 'day')
 
 	const handleRejectionProcess = (open: boolean) => {
 		setOpenRejectionDialog(false)
@@ -135,7 +142,7 @@ export default function EventDetailDialog({
 									{typeof item.price === "number" && (
 										<div className="flex items-center gap-3">
 											<div className="p-2 bg-emerald-50 rounded-lg">
-												<DollarSign className="w-5 h-5 text-emerald-600" />
+												<CiMoneyBill className="w-5 h-5 text-emerald-600" />
 											</div>
 											<div>
 												<p className="text-sm text-muted-foreground">Thu nhập dự kiến</p>
@@ -162,7 +169,8 @@ export default function EventDetailDialog({
 						</Card>
 
 						{/* Rejection Request Status */}
-						{hasRejectionRequest && (
+
+						{hasRejectionRequest && scheduleType === "TourSchedule" && !isDateInPast && (
 							<Card className="border-l-4 border-l-amber-500">
 								<CardContent className="pt-6">
 									<div className="space-y-4">
@@ -236,6 +244,17 @@ export default function EventDetailDialog({
 
 						{/* Action Buttons */}
 						<div className="flex flex-col sm:flex-row gap-3 justify-end">
+							{item.bookingId && (
+								<Button
+									variant="default"
+									onClick={() => setShowBookingDetail(true)}
+									className="flex items-center gap-2"
+								>
+									<FileText className="w-4 h-4" />
+									Xem chi tiết booking
+								</Button>
+							)}
+
 							{item.tourId && (
 								<Button variant="outline" asChild>
 									<Link href={`/tour/${item.tourId}`} className="flex items-center gap-2">
@@ -255,44 +274,48 @@ export default function EventDetailDialog({
 							)}
 
 							{/* Cancel Button Logic */}
-							{!hasRejectionRequest ? (
-								// No rejection request exists - show cancel button
-								<Button
-									variant="destructive"
-									onClick={() => setOpenRejectionDialog(true)}
-									className="flex items-center gap-2"
-								>
-									<XCircle className="w-4 h-4" />
-									Hủy lịch trình
-								</Button>
-							) : (
-								// Rejection request exists - show status-based button
+							{!isDateInPast && (
 								<>
-									{rejectionRequest.status === 1 && (
-										// Pending - show processing status
-										<Button variant="outline" disabled className="flex items-center gap-2 bg-transparent">
-											<Clock className="w-4 h-4 animate-pulse" />
-											Đang xử lý yêu cầu hủy
-										</Button>
-									)}
-									{rejectionRequest.status === 2 && (
-										// Approved - show success status
-										<Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-2 px-3 py-2">
-											<CheckCircle className="w-4 h-4" />
-											Yêu cầu hủy đã được chấp thuận
-										</Badge>
-									)}
-									{/* {rejectionRequest.status === 3 && (
-										// Rejected - allow new request
+									{!hasRejectionRequest ? (
+										// No rejection request exists - show cancel button
 										<Button
 											variant="destructive"
 											onClick={() => setOpenRejectionDialog(true)}
 											className="flex items-center gap-2"
 										>
 											<XCircle className="w-4 h-4" />
-											Gửi yêu cầu hủy mới
+											Hủy lịch trình
 										</Button>
-									)} */}
+									) : (
+										// Rejection request exists - show status-based button
+										<>
+											{rejectionRequest.status === 1 && (
+												// Pending - show processing status
+												<Button variant="outline" disabled className="flex items-center gap-2 bg-transparent">
+													<Clock className="w-4 h-4 animate-pulse" />
+													Đang xử lý yêu cầu hủy
+												</Button>
+											)}
+											{rejectionRequest.status === 2 && (
+												// Approved - show success status
+												<Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-2 px-3 py-2">
+													<CheckCircle className="w-4 h-4" />
+													Yêu cầu hủy đã được chấp thuận
+												</Badge>
+											)}
+											{/* {rejectionRequest.status === 3 && (
+												// Rejected - allow new request
+												<Button
+													variant="destructive"
+													onClick={() => setOpenRejectionDialog(true)}
+													className="flex items-center gap-2"
+												>
+													<XCircle className="w-4 h-4" />
+													Gửi yêu cầu hủy mới
+												</Button>
+											)} */}
+										</>
+									)}
 								</>
 							)}
 						</div>
@@ -301,6 +324,15 @@ export default function EventDetailDialog({
 			</Dialog>
 
 			<RejectionDialog open={openRejectionDialog} onOpenChange={handleRejectionProcess} item={item} />
+
+			{/* Booking Detail Dialog */}
+			{item?.bookingId && (
+				<BookingDetailDialog
+					open={showBookingDetail}
+					onOpenChange={setShowBookingDetail}
+					bookingId={item.bookingId}
+				/>
+			)}
 		</>
 	)
 }

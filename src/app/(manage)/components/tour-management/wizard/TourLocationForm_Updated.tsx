@@ -18,24 +18,51 @@ import {
 	Clock,
 	Loader2,
 	MapPin,
+	Navigation,
 	Plus,
 	Settings,
-	Trash2
+	Trash2,
+	Users,
+	Wrench,
+	Camera,
+	Utensils,
+	Hammer,
+	Coffee,
+	ShoppingBag,
+	Gamepad2,
+	Activity
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { LocationSelect } from "./LocationSelect"
+import { getActivityColor } from "@/utils/format"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 const VIETMAP_ROUTE_ENDPOINT = "https://maps.vietmap.vn/api/route"
 
-// Activity Types Constants
+// Activity Types Constants - Based on backend enum
 const ACTIVITY_TYPES = [
 	{ value: 1, label: "Tham quan" },
 	{ value: 2, label: "Ăn uống" },
-	{ value: 3, label: "Mua sắm" },
+	{ value: 3, label: "Trải nghiệm làng nghề" },
 	{ value: 4, label: "Nghỉ ngơi" },
-	{ value: 5, label: "Giải trí" },
-	{ value: 6, label: "Trải nghiệm" }
+	{ value: 5, label: "Mua sắm" },
+	{ value: 6, label: "Giải trí" },
+	{ value: 7, label: "Trải nghiệm" }
 ] as const
+
+// Activity type icons mapping
+const getActivityIcon = (activityType: number) => {
+	switch (activityType) {
+		case 1: return <Camera className="h-4 w-4" />        // Tham quan
+		case 2: return <Utensils className="h-4 w-4" />      // Ăn uống  
+		case 3: return <Hammer className="h-4 w-4" />        // Trải nghiệm làng nghề
+		case 4: return <Coffee className="h-4 w-4" />        // Nghỉ ngơi
+		case 5: return <ShoppingBag className="h-4 w-4" />   // Mua sắm
+		case 6: return <Gamepad2 className="h-4 w-4" />      // Giải trí
+		case 7: return <Activity className="h-4 w-4" />      // Trải nghiệm
+		default: return <MapPin className="h-4 w-4" />
+	}
+}
 
 // Helper function to convert time string to .NET ticks
 const timeStringToTicks = (timeStr: string): number => {
@@ -50,6 +77,13 @@ const normalizeTimeString = (time: string): string => {
 	const parts = time.split(":")
 	if (parts.length === 2) return `${parts[0]}:${parts[1]}:00`
 	return time
+}
+
+// Helper function to convert HH:MM:SS to minutes for comparison
+const timeToMinutes = (timeStr: string): number => {
+	if (!timeStr) return 0
+	const [hours, minutes] = timeStr.split(':').map(Number)
+	return hours * 60 + minutes
 }
 
 interface TourLocationFormProps {
@@ -86,7 +120,6 @@ export function TourLocationForm({
 		travelTimeFromPrev: 0,
 		distanceFromPrev: 0,
 		activityType: 1,
-		workshopId: undefined,
 		workshopTicketTypeId: undefined,
 		workshopSessionRuleId: undefined,
 		preferredStartTime: undefined,
@@ -168,11 +201,7 @@ export function TourLocationForm({
 		const workshop = location.craftVillage?.workshop
 		if (!workshop) return
 
-		// Set workshop ID to location ID as specified
-		setNewLocation(prev => ({
-			...prev,
-			workshopId: location.id  // workshopId = locationId as per requirement
-		}))
+		// Workshop ID is now handled through locationId - no separate workshopId needed
 
 		// Load available tickets
 		setAvailableTickets(workshop.ticketTypes || [])
@@ -326,6 +355,12 @@ export function TourLocationForm({
 			return
 		}
 
+		// Automatically set activity type to "Trải nghiệm" (7) when workshop is selected
+		setNewLocation(prev => ({
+			...prev,
+			activityType: 7 // Experience activity type for workshops
+		}))
+
 		setShowWorkshopDialog(false)
 		setErrors({})
 	}
@@ -339,7 +374,6 @@ export function TourLocationForm({
 		setNewLocation(prev => ({
 			...prev,
 			locationId: "",
-			workshopId: undefined,
 			workshopTicketTypeId: undefined,
 			workshopSessionRuleId: undefined,
 			preferredStartTime: undefined,
@@ -396,7 +430,6 @@ export function TourLocationForm({
 			travelTimeFromPrev: 0,
 			distanceFromPrev: 0,
 			activityType: 1,
-			workshopId: undefined,
 			workshopTicketTypeId: undefined,
 			workshopSessionRuleId: undefined,
 			preferredStartTime: undefined,
@@ -468,9 +501,8 @@ export function TourLocationForm({
 			distanceFromPrev: loc.distanceFromPrev || 0,
 			estimatedStartTime: "00:00:00", // String format as per interface
 			estimatedEndTime: "00:00:00",   // String format as per interface
-			// Workshop fields (only if workshop is selected)
-			...(loc.workshopId && {
-				workshopId: loc.workshopId,                    // = locationId for craft villages
+			// Workshop fields (only if workshop ticket and session are selected)
+			...(loc.workshopTicketTypeId && {
 				workshopTicketTypeId: loc.workshopTicketTypeId, // ticketId
 				workshopSessionRuleId: loc.workshopSessionRuleId, // sessionId
 				preferredStartTime: loc.preferredStartTime, // Already in ticks string format
@@ -485,7 +517,7 @@ export function TourLocationForm({
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-2xl font-bold">Thêm địa điểm cho tour</h2>
+				<h2 className="text-2xl font-bold">Thêm địa điểm cho chuyến đi</h2>
 				<div className="text-sm text-muted-foreground">
 					Đã thêm: {locations.length} địa điểm
 				</div>
@@ -758,46 +790,157 @@ export function TourLocationForm({
 			{locations.length > 0 && (
 				<Card>
 					<CardHeader>
-						<CardTitle>Danh sách địa điểm đã thêm</CardTitle>
+						<CardTitle className="flex items-center gap-2">
+							<div className="w-2 h-2 bg-blue-500 rounded-full" />
+							Danh sách địa điểm đã thêm ({locations.length} địa điểm)
+						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
-							{locations.map((location, index) => {
-								const locationData = availableLocations.find(loc => loc.id === location.locationId)
-								const activityType = ACTIVITY_TYPES.find(type => type.value === location.activityType)
+						<Accordion type="multiple" className="w-full">
+							{(() => {
+								// Group locations by dayOrder
+								const locationsByDay = locations.reduce((acc, location, originalIndex) => {
+									if (!acc[location.dayOrder]) {
+										acc[location.dayOrder] = []
+									}
+									acc[location.dayOrder].push({ ...location, originalIndex })
+									return acc
+								}, {} as Record<number, Array<TourLocationBulkRequest & { originalIndex: number }>>)
 
-								return (
-									<div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-										<div className="flex-1">
-											<div className="flex items-center gap-2 mb-2">
-												<Badge variant="outline">Ngày {location.dayOrder}</Badge>
-												<Badge>{activityType?.label}</Badge>
-												{location.workshopId && (
-													<Badge variant="secondary">Làng nghề</Badge>
+								// Sort days
+								const sortedDays = Object.keys(locationsByDay).sort((a, b) => parseInt(a) - parseInt(b))
+
+								return sortedDays.map(dayOrder => {
+									const dayNumber = parseInt(dayOrder)
+									const dayLocations = locationsByDay[dayNumber].sort((a, b) =>
+										timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+									)
+
+									// Calculate day stats
+									const totalTravelTime = dayLocations.reduce((sum, loc) => sum + (loc.travelTimeFromPrev || 0), 0)
+									const totalDistance = dayLocations.reduce((sum, loc) => sum + (loc.distanceFromPrev || 0), 0)
+									const workshopCount = dayLocations.filter(loc => loc.workshopTicketTypeId).length
+
+									return (
+										<AccordionItem key={dayNumber} value={`day-${dayNumber}`}>
+											<AccordionTrigger className="hover:no-underline">
+												<div className="flex items-center gap-4 w-full">
+													<Badge variant="outline" className="bg-blue-50 text-blue-700">
+														Ngày {dayNumber}
+													</Badge>
+													<div className="flex items-center gap-4 text-sm text-gray-600">
+														<span className="flex items-center gap-1">
+															<MapPin className="w-3 h-3" />
+															{dayLocations.length} địa điểm
+														</span>
+														<span className="flex items-center gap-1">
+															<Clock className="w-3 h-3" />
+															{dayLocations.length > 0 ? `${dayLocations[0].startTime.substring(0, 5)} - ${dayLocations[dayLocations.length - 1].endTime.substring(0, 5)}` : 'N/A'}
+														</span>
+														<span className="flex items-center gap-1">
+															<Navigation className="w-3 h-3" />
+															{totalDistance}km
+														</span>
+														<span className="flex items-center gap-1">
+															🚗
+															{totalTravelTime}phút
+														</span>
+														{workshopCount > 0 && (
+															<span className="flex items-center gap-1">
+																<Wrench className="w-3 h-3" />
+																{workshopCount} workshop
+															</span>
+														)}
+													</div>
+												</div>
+											</AccordionTrigger>
+											<AccordionContent>
+												{dayLocations.length === 0 ? (
+													<p className="text-gray-500 text-sm py-4">Chưa có hoạt động nào cho ngày này</p>
+												) : (
+													<div className="space-y-4">
+														{dayLocations.map((location) => {
+															const locationData = availableLocations.find(loc => loc.id === location.locationId)
+															const activityType = ACTIVITY_TYPES.find(type => type.value === location.activityType)
+
+															return (
+																<div key={location.originalIndex} className="border rounded-lg p-4 bg-gray-50">
+																	<div className="flex items-start justify-between">
+																		<div className="flex-1">
+																			<div className="flex items-center gap-2 mb-2">
+																				<div className="flex items-center gap-2">
+																					<Badge className={`text-xs ${getActivityColor(location?.activityType || 1)}`}>
+																						{getActivityIcon(location.activityType || 1)}
+																						<span className="ml-1">{activityType?.label}</span>
+																					</Badge>
+																					{location.workshopTicketTypeId && (
+																						<Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+																							🏭 Workshop
+																						</Badge>
+																					)}
+																				</div>
+																				<h4 className="font-semibold">{locationData?.name || 'Unknown Location'}</h4>
+																				<Badge variant="outline" className="text-xs">
+																					<Clock className="w-3 h-3 mr-1" />
+																					{location.startTime.substring(0, 5)} - {location.endTime.substring(0, 5)}
+																				</Badge>
+																			</div>
+
+																			<p className="text-sm text-gray-500 mb-2">📍 {locationData?.address || 'Chưa có địa chỉ'}</p>
+
+																			{location.notes && (
+																				<p className="text-sm text-blue-600 italic mb-2">💡 {location.notes}</p>
+																			)}
+
+																			{/* Workshop Information */}
+																			{location.workshopTicketTypeId && (
+																				<div className="p-2 bg-purple-50 border border-purple-200 rounded-lg mb-2">
+																					<div className="text-sm space-y-1">
+																						{location.workshopTicketTypeId && (
+																							<p><span className="text-purple-600 font-medium">Loại vé:</span> {availableLocations.find(loc => loc.id === location.locationId)?.craftVillage?.workshop?.ticketTypes?.find(t => t.id === location.workshopTicketTypeId)?.name}</p>
+																						)}
+																						{location.preferredStartTime && (
+																							<p><span className="text-purple-600 font-medium">Thời gian workshop:</span> {location.preferredStartTime.substring(0, 5)} - {location.preferredEndTime?.substring(0, 5)}</p>
+																						)}
+																					</div>
+																				</div>
+																			)}
+
+																			<div className="flex gap-4 text-xs text-gray-500">
+																				{location.travelTimeFromPrev > 0 && (
+																					<span className="flex items-center gap-1">
+																						🚗
+																						Di chuyển: {location.travelTimeFromPrev} phút
+																					</span>
+																				)}
+																				{location.distanceFromPrev > 0 && (
+																					<span className="flex items-center gap-1">
+																						<Navigation className="w-3 h-3" />
+																						Khoảng cách: {location.distanceFromPrev} km
+																					</span>
+																				)}
+																			</div>
+																		</div>
+
+																		<div className="flex items-center gap-2 ml-4">
+																			<div className="flex flex-col gap-1">
+																				<Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleRemoveLocation(location.originalIndex)}>
+																					<Trash2 className="w-4 h-4" />
+																				</Button>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															)
+														})}
+													</div>
 												)}
-											</div>
-											<h4 className="font-medium">{locationData?.name || 'Unknown Location'}</h4>
-											<div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-												<span className="flex items-center gap-1">
-													<Clock className="h-3 w-3" />
-													{location.startTime} - {location.endTime}
-												</span>
-												{location.travelTimeFromPrev > 0 && (
-													<span>🚗 {location.travelTimeFromPrev}p</span>
-												)}
-											</div>
-										</div>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => handleRemoveLocation(index)}
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</div>
-								)
-							})}
-						</div>
+											</AccordionContent>
+										</AccordionItem>
+									)
+								})
+							})()}
+						</Accordion>
 					</CardContent>
 				</Card>
 			)}

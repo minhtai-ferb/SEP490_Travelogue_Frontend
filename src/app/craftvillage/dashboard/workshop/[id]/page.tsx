@@ -1,645 +1,928 @@
 "use client"
-
-import BreadcrumbHeader from "@/components/common/breadcrumb-header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { useParams, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
-import { useWorkshop } from "@/services/use-workshop"
-import { Clock, Users, MapPin, Star, Calendar, Camera, CreditCard } from "lucide-react"
-import type { WorkshopDetail } from "@/types/Workshop"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import BreadcrumbHeader from "@/components/common/breadcrumb-header"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useWorkshop } from "@/services/use-workshop"
+import {
+	Activity, AlertCircle,
+	Calendar,
+	CheckCircle,
+	Clock,
+	DollarSign,
+	Edit,
+	Eye,
+	MapPin,
+	Ticket,
+	Trash2,
+	Users,
+	XCircle
+} from "lucide-react"
 import Image from "next/image"
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { CiMoneyBill } from "react-icons/ci"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+// Types based on API response
+interface TicketActivity {
+	id: string
+	workshopTicketTypeId: string
+	activity: string
+	description: string
+	durationMinutes: number
+	activityOrder: number
+}
+
+interface TicketType {
+	id: string
+	workshopId: string
+	type: number
+	name: string
+	price: number
+	isCombo: boolean
+	durationMinutes: number
+	content: string
+	activities: TicketActivity[]
+}
+
+interface WorkshopSchedule {
+	id: string
+	workshopId: string
+	startTime: string
+	endTime: string
+	capacity: number
+	currentBooked: number
+	notes: string
+	status: number
+}
+
+interface SessionRule {
+	id: string
+	recurringRuleId: string
+	startTime: string
+	endTime: string
+	capacity: number
+}
+
+interface RecurringRule {
+	id: string
+	workshopId: string
+	daysOfWeek: number[]
+	daysOfWeekText: string[]
+	daysOfWeekDisplay: string
+	sessions: SessionRule[]
+}
+
+interface WorkshopException {
+	id: string
+	workshopId: string
+	date: string
+	reason: string
+}
+
+interface WorkshopMedia {
+	id: string
+	url: string
+	type: string
+}
+
+interface WorkshopDetailData {
+	id: string
+	name: string
+	description: string
+	content: string
+	status: number
+	craftVillageId: string
+	locationId: string
+	craftVillageName: string
+	ticketTypes: TicketType[]
+	schedules: WorkshopSchedule[]
+	recurringRules: RecurringRule[]
+	exceptions: WorkshopException[]
+	medias: WorkshopMedia[]
+}
 
 function WorkshopDetailPage() {
 	const { id } = useParams()
+	const router = useRouter()
 	const { getWorkshopDetail } = useWorkshop()
-	const searchParams = useSearchParams()
-	const useMock = searchParams.get("mock") === "1"
+	const [workshop, setWorkshop] = useState<WorkshopDetailData | null>(null)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 
-	const [workshop, setWorkshop] = useState<any>(null)
-
-	const mockItems: any[] = useMemo(
-		() => [
-			{
-				id: "ws_001",
-				name: "Trải nghiệm làm gốm truyền thống Tây Ninh",
-				description:
-					"Khám phá nghệ thuật nặn gốm cổ truyền với các nghệ nhân lành nghề, tạo ra những sản phẩm gốm độc đáo mang đậm bản sắc văn hóa địa phương.",
-				content: `🏺 **Giới thiệu về trải nghiệm**
-
-Trải nghiệm làm gốm truyền thống Tây Ninh là cơ hội tuyệt vời để bạn khám phá một trong những nghề thủ công lâu đời nhất của vùng đất này. Dưới sự hướng dẫn của các nghệ nhân có kinh nghiệm hơn 30 năm, bạn sẽ được học từ những kỹ thuật cơ bản nhất đến những bí quyết tạo nên những sản phẩm gốm tinh xảo.
-
-🎯 **Nội dung trải nghiệm**
-
-**Phần 1: Tìm hiểu nguyên liệu và dụng cụ (30 phút)**
-- Giới thiệu về đất sét địa phương và đặc tính
-- Các loại dụng cụ làm gốm truyền thống
-- Lịch sử và văn hóa gốm sứ Tây Ninh
-
-**Phần 2: Thực hành nặn gốm cơ bản (90 phút)**
-- Kỹ thuật chuẩn bị đất sét
-- Học cách nặn hình cơ bản: bát, chén, lọ hoa
-- Tạo hoa văn và trang trí bề mặt
-- Kỹ thuật làm mịn và hoàn thiện sản phẩm
-
-**Phần 3: Trang trí và hoàn thiện (60 phút)**
-- Vẽ hoa văn truyền thống
-- Kỹ thuật tạo màu tự nhiên
-- Cách bảo quản và sấy khô sản phẩm
-
-🎁 **Bạn sẽ nhận được:**
-- 1 sản phẩm gốm do chính tay bạn làm
-- Kiến thức về nghề gốm truyền thống
-- Certificate hoàn thành workshop
-- Ảnh kỷ niệm với nghệ nhân
-- Tài liệu hướng dẫn làm gốm tại nhà
-
-👥 **Phù hợp với:** Mọi lứa tuổi từ 8 tuổi trở lên, đặc biệt thích hợp cho gia đình, nhóm bạn, và những ai yêu thích nghệ thuật thủ công.`,
-				status: "Approved",
-				statusText: "Đã duyệt",
-				rating: 4.8,
-				totalReviews: 127,
-				difficulty: "Dễ",
-				duration: "3 giờ",
-				category: "Gốm sứ",
-				location: "Làng gốm Tân Biên, Tây Ninh",
-				instructor: "Nghệ nhân Nguyễn Văn Thành",
-				instructorExperience: "35 năm kinh nghiệm",
-				languages: ["Tiếng Việt", "Tiếng Anh cơ bản"],
-				includes: [
-					"Nguyên liệu làm gốm",
-					"Dụng cụ chuyên dụng",
-					"Hướng dẫn viên chuyên nghiệp",
-					"Nước uống và bánh kẹo",
-					"Certificate hoàn thành",
-					"Đóng gói sản phẩm",
-				],
-				requirements: [
-					"Mặc trang phục thoải mái, có thể bẩn",
-					"Mang theo tạp dề (hoặc sẽ được cung cấp)",
-					"Cắt ngắn móng tay",
-					"Không mang đồ trang sức quý",
-				],
-				mediaDtos: [
-					{ mediaUrl: "/traditional-pottery-making-workshop.png", isThumbnail: true },
-					{ mediaUrl: "/clay-pottery-wheel-spinning.png", isThumbnail: false },
-					{ mediaUrl: "/finished-ceramic-bowls-and-vases.png", isThumbnail: false },
-					{ mediaUrl: "/pottery-instructor-teaching-students.png", isThumbnail: false },
-				],
-				schedules: [
-					{
-						scheduleId: "sch_001",
-						startTime: "08:00",
-						endTime: "11:00",
-						maxParticipant: 12,
-						currentBookings: 8,
-						adultPrice: 280000,
-						childrenPrice: 180000,
-						notes: "Buổi sáng - Không khí mát mẻ, thích hợp nhất",
-						availableDates: ["2024-12-20", "2024-12-22", "2024-12-24", "2024-12-27"],
-					},
-					{
-						scheduleId: "sch_002",
-						startTime: "14:00",
-						endTime: "17:00",
-						maxParticipant: 10,
-						currentBookings: 6,
-						adultPrice: 280000,
-						childrenPrice: 180000,
-						notes: "Buổi chiều - Ánh sáng đẹp cho chụp ảnh",
-						availableDates: ["2024-12-21", "2024-12-23", "2024-12-25", "2024-12-28"],
-					},
-				],
-				createdAt: "2024-07-01",
-				updatedAt: "2024-12-15",
-			},
-			{
-				id: "ws_002",
-				name: "Dệt thổ cẩm và nhuộm màu tự nhiên",
-				description:
-					"Trải nghiệm quy trình dệt thổ cẩm hoàn chỉnh từ chuẩn bị sợi, nhuộm màu tự nhiên đến dệt thành sản phẩm hoàn chỉnh.",
-				content: `🧵 **Khám phá nghệ thuật dệt thổ cẩm**
-
-Thổ cẩm là một trong những nghề thủ công truyền thống quý báu của các dân tộc thiểu số Việt Nam. Tại workshop này, bạn sẽ được trải nghiệm toàn bộ quy trình từ việc chuẩn bị nguyên liệu đến khi hoàn thành một sản phẩm thổ cẩm đẹp mắt.
-
-🎨 **Quy trình trải nghiệm**
-
-**Bước 1: Tìm hiểu về thổ cẩm (45 phút)**
-- Lịch sử và ý nghĩa văn hóa của thổ cẩm
-- Các loại sợi và nguyên liệu truyền thống
-- Ý nghĩa của các họa tiết và màu sắc
-
-**Bước 2: Nhuộm màu tự nhiên (90 phút)**
-- Chuẩn bị các loại lá, củ, quả để nhuộm
-- Kỹ thuật nhuộm màu đỏ từ gấc, màu vàng từ nghệ
-- Cách tạo màu xanh từ lá chàm, màu nâu từ vỏ cây
-
-**Bước 3: Dệt thổ cẩm (120 phút)**
-- Cách dựng khung cửi truyền thống
-- Kỹ thuật dệt cơ bản và tạo hoa văn
-- Hoàn thiện sản phẩm và cách bảo quản
-
-🎁 **Sản phẩm mang về:**
-- 1 khăn thổ cẩm nhỏ (30x30cm) do bạn tự dệt
-- Bộ sợi nhuộm màu tự nhiên
-- Hướng dẫn dệt thổ cẩm tại nhà`,
-				status: "Approved",
-				statusText: "Đã duyệt",
-				rating: 4.6,
-				totalReviews: 89,
-				difficulty: "Trung bình",
-				duration: "4.5 giờ",
-				category: "Dệt may",
-				location: "Làng dệt Châu Thành, Tây Ninh",
-				instructor: "Cô Nguyễn Thị Lan",
-				instructorExperience: "25 năm kinh nghiệm",
-				languages: ["Tiếng Việt"],
-				includes: [
-					"Nguyên liệu nhuộm tự nhiên",
-					"Sợi cotton chất lượng cao",
-					"Khung cửi mini",
-					"Dụng cụ dệt chuyên dụng",
-					"Bữa trưa nhẹ",
-					"Tài liệu hướng dẫn",
-				],
-				requirements: [
-					"Mặc quần áo tối màu",
-					"Mang theo găng tay (nếu có)",
-					"Cần kiên nhẫn và tỉ mỉ",
-					"Phù hợp từ 12 tuổi trở lên",
-				],
-				mediaDtos: [
-					{ mediaUrl: "/traditional-weaving-loom-with-colorful-threads.png", isThumbnail: true },
-					{ mediaUrl: "/natural-dye-materials-herbs-and-plants.png", isThumbnail: false },
-					{ mediaUrl: "/finished-brocade-textile-patterns.png", isThumbnail: false },
-				],
-				schedules: [
-					{
-						scheduleId: "sch_101",
-						startTime: "08:30",
-						endTime: "13:00",
-						maxParticipant: 8,
-						currentBookings: 5,
-						adultPrice: 350000,
-						childrenPrice: 250000,
-						notes: "Bao gồm bữa trưa nhẹ",
-						availableDates: ["2024-12-19", "2024-12-21", "2024-12-26", "2024-12-28"],
-					},
-				],
-				createdAt: "2024-06-20",
-				updatedAt: "2024-12-10",
-			},
-			{
-				id: "ws_003",
-				name: "Đan lát tre trúc nghệ thuật",
-				description:
-					"Học nghệ thuật đan lát từ tre trúc địa phương, tạo ra những sản phẩm thủ công tinh xảo và thân thiện với môi trường.",
-				content: `🎋 **Nghệ thuật đan lát tre trúc**
-
-Tre trúc là nguyên liệu quen thuộc trong đời sống người Việt từ hàng ngàn năm nay. Workshop này sẽ giúp bạn khám phá vẻ đẹp và tính ứng dụng cao của nghề đan lát truyền thống.
-
-🛠️ **Nội dung trải nghiệm**
-
-**Phần 1: Chuẩn bị nguyên liệu (30 phút)**
-- Cách chọn tre tốt và xử lý tre
-- Kỹ thuật chẻ tre thành các thanh nhỏ
-- Làm mềm và tạo độ dẻo cho tre
-
-**Phần 2: Kỹ thuật đan cơ bản (90 phút)**
-- Các kiểu đan cơ bản: đan thẳng, đan chéo, đan xoắn
-- Cách tạo đáy và thành giỏ
-- Kỹ thuật tạo độ chắc chắn cho sản phẩm
-
-**Phần 3: Hoàn thiện sản phẩm (60 phút)**
-- Tạo viền và quai xách
-- Kỹ thuật hoàn thiện và làm đẹp
-- Cách bảo quản sản phẩm tre
-
-🌿 **Ý nghĩa môi trường:**
-- Sử dụng nguyên liệu tự nhiên 100%
-- Có thể tái chế và phân hủy sinh học
-- Góp phần bảo vệ môi trường`,
-				status: "Approved",
-				statusText: "Đã duyệt",
-				rating: 4.7,
-				totalReviews: 156,
-				difficulty: "Trung bình",
-				duration: "3 giờ",
-				category: "Thủ công mỹ nghệ",
-				location: "Làng tre Gò Dầu, Tây Ninh",
-				instructor: "Thầy Trần Văn Minh",
-				instructorExperience: "40 năm kinh nghiệm",
-				languages: ["Tiếng Việt", "Tiếng Anh"],
-				includes: [
-					"Nguyên liệu tre đã xử lý",
-					"Bộ dụng cụ đan lát",
-					"Găng tay bảo hộ",
-					"Nước mát và trái cây",
-					"Túi đựng sản phẩm",
-				],
-				requirements: [
-					"Mặc quần dài và áo tay dài",
-					"Mang giày bảo hộ hoặc giày kín",
-					"Cẩn thận với dụng cụ sắc nhọn",
-					"Phù hợp từ 10 tuổi trở lên",
-				],
-				mediaDtos: [
-					{ mediaUrl: "/bamboo-basket-weaving-workshop.png", isThumbnail: true },
-					{ mediaUrl: "/bamboo-strips-preparation-cutting.png", isThumbnail: false },
-					{ mediaUrl: "/finished-bamboo-baskets-and-containers.png", isThumbnail: false },
-				],
-				schedules: [
-					{
-						scheduleId: "sch_201",
-						startTime: "08:00",
-						endTime: "11:00",
-						maxParticipant: 15,
-						currentBookings: 12,
-						adultPrice: 220000,
-						childrenPrice: 150000,
-						notes: "Buổi sáng mát mẻ, dễ tập trung",
-						availableDates: ["2024-12-20", "2024-12-22", "2024-12-24", "2024-12-27", "2024-12-29"],
-					},
-					{
-						scheduleId: "sch_202",
-						startTime: "14:30",
-						endTime: "17:30",
-						maxParticipant: 12,
-						currentBookings: 7,
-						adultPrice: 220000,
-						childrenPrice: 150000,
-						notes: "Buổi chiều thoáng mát",
-						availableDates: ["2024-12-21", "2024-12-23", "2024-12-25", "2024-12-28", "2024-12-30"],
-					},
-				],
-				createdAt: "2024-05-10",
-				updatedAt: "2024-12-12",
-			},
-			{
-				id: "ws_004",
-				name: "Làm bánh tráng phơi sương Tây Ninh",
-				description:
-					"Trải nghiệm làm bánh tráng phơi sương - đặc sản nổi tiếng của Tây Ninh với công thức truyền thống được truyền qua nhiều thế hệ.",
-				content: `🥞 **Bánh tráng phơi sương - Đặc sản Tây Ninh**
-
-Bánh tráng phơi sương là món ăn đặc trưng không thể thiếu trong ẩm thực Tây Ninh. Với hương vị thơm ngon độc đáo và cách làm truyền thống, bánh tráng đã trở thành niềm tự hào của người dân địa phương.
-
-👩‍🍳 **Quy trình làm bánh**
-
-**Bước 1: Chuẩn bị nguyên liệu (30 phút)**
-- Gạo tẻ chất lượng cao của địa phương
-- Nước trong sạch và muối biển
-- Cách ngâm và xay gạo đúng cách
-- Pha bột với tỷ lệ chuẩn
-
-**Bước 2: Tráng bánh (90 phút)**
-- Kỹ thuật đốt lửa và điều chỉnh nhiệt độ
-- Cách tráng bánh mỏng đều
-- Thời điểm lật bánh và lấy bánh
-- Bí quyết tạo độ giòn và thơm
-
-**Bước 3: Phơi sương (60 phút)**
-- Cách phơi bánh đúng cách
-- Tầm quan trọng của sương đêm
-- Cách bảo quản và đóng gói
-
-🍽️ **Thưởng thức bánh tráng:**
-- Cách ăn bánh tráng truyền thống
-- Các loại nước chấm đặc trưng
-- Kết hợp với các món ăn khác`,
-				status: "Approved",
-				statusText: "Đã duyệt",
-				rating: 4.9,
-				totalReviews: 203,
-				difficulty: "Dễ",
-				duration: "3 giờ",
-				category: "Ẩm thực",
-				location: "Làng bánh tráng Trảng Bàng, Tây Ninh",
-				instructor: "Bà Nguyễn Thị Hoa",
-				instructorExperience: "45 năm kinh nghiệm",
-				languages: ["Tiếng Việt"],
-				includes: [
-					"Nguyên liệu làm bánh tráng",
-					"Dụng cụ tráng bánh chuyên dụng",
-					"Bữa sáng nhẹ",
-					"Bánh tráng mang về (1kg)",
-					"Công thức làm bánh",
-					"Nước chấm đặc biệt",
-				],
-				requirements: [
-					"Mặc quần áo thoải mái, chịu nhiệt",
-					"Mang theo nón hoặc khăn che đầu",
-					"Cẩn thận với lửa và nhiệt độ cao",
-					"Phù hợp mọi lứa tuổi",
-				],
-				mediaDtos: [
-					{ mediaUrl: "/traditional-rice-paper-making-process.png", isThumbnail: true },
-					{ mediaUrl: "/rice-paper-drying-in-morning-dew.png", isThumbnail: false },
-					{ mediaUrl: "/finished-rice-papers-stacked.png", isThumbnail: false },
-					{ mediaUrl: "/rice-paper-with-dipping-sauce.png", isThumbnail: false },
-				],
-				schedules: [
-					{
-						scheduleId: "sch_301",
-						startTime: "05:30",
-						endTime: "08:30",
-						maxParticipant: 20,
-						currentBookings: 18,
-						adultPrice: 180000,
-						childrenPrice: 120000,
-						notes: "Buổi sáng sớm để tận dụng sương mai",
-						availableDates: ["2024-12-20", "2024-12-21", "2024-12-22", "2024-12-23", "2024-12-24"],
-					},
-					{
-						scheduleId: "sch_302",
-						startTime: "15:00",
-						endTime: "18:00",
-						maxParticipant: 15,
-						currentBookings: 10,
-						adultPrice: 180000,
-						childrenPrice: 120000,
-						notes: "Buổi chiều, phơi bánh qua đêm",
-						availableDates: ["2024-12-25", "2024-12-26", "2024-12-27", "2024-12-28"],
-					},
-				],
-				createdAt: "2024-04-02",
-				updatedAt: "2024-12-14",
-			},
-		],
-		[],
-	)
+	// Pagination states
+	const [currentPage, setCurrentPage] = useState(1)
+	const [itemsPerPage] = useState(5) // 5 schedules per page
 
 	useEffect(() => {
-		const load = async () => {
-			const workshopId = id as string
-			if (!workshopId) return
-			if (useMock) {
-				const found = mockItems.find((m: any) => m.id === workshopId) || { ...mockItems[0], id: workshopId }
-				setWorkshop(found || mockItems[0])
-				return
-			}
-			try {
-				const res = await getWorkshopDetail(workshopId)
-				setWorkshop(res as any)
-			} catch (error) {
-				setWorkshop(mockItems[0])
-			}
+		if (id) {
+			fetchWorkshopDetail()
 		}
-		load()
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [id, useMock])
+	}, [id])
+
+	const fetchWorkshopDetail = async () => {
+		try {
+			setLoading(true)
+			setError(null)
+			const result = await getWorkshopDetail(id as string)
+			if (result) {
+				setWorkshop(result?.data)
+			} else {
+				setError('Workshop không tồn tại')
+			}
+		} catch (err: any) {
+			setError(err?.message || 'Không thể tải thông tin workshop')
+			console.error('Error fetching workshop detail:', err)
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	const getStatusInfo = (status: number) => {
+		switch (status) {
+			case 1:
+				return {
+					text: 'Đã duyệt',
+					icon: CheckCircle,
+					className: 'bg-green-100 text-green-800 border-green-200'
+				}
+			case 0:
+				return {
+					text: 'Chờ duyệt',
+					icon: AlertCircle,
+					className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+				}
+			case 2:
+				return {
+					text: 'Bị từ chối',
+					icon: XCircle,
+					className: 'bg-red-100 text-red-800 border-red-200'
+				}
+			default:
+				return {
+					text: 'Không xác định',
+					icon: AlertCircle,
+					className: 'bg-gray-100 text-gray-800 border-gray-200'
+				}
+		}
+	}
+
+	const formatPrice = (price: number) => {
+		return new Intl.NumberFormat('vi-VN', {
+			style: 'currency',
+			currency: 'VND'
+		}).format(price)
+	}
+
+	const formatDateTime = (dateString: string) => {
+		const date = new Date(dateString)
+		return {
+			date: date.toLocaleDateString('vi-VN', {
+				weekday: 'long',
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric'
+			}),
+			time: date.toLocaleTimeString('vi-VN', {
+				hour: '2-digit',
+				minute: '2-digit'
+			})
+		}
+	}
+
+	const getUpcomingSchedules = (schedules: WorkshopSchedule[]) => {
+		const now = new Date()
+		return schedules
+			.filter(schedule => new Date(schedule.startTime) > now)
+			.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+			.slice(0, 5)
+	}
+
+	// Pagination helpers
+	const getPaginatedSchedules = (schedules: WorkshopSchedule[]) => {
+		const startIndex = (currentPage - 1) * itemsPerPage
+		const endIndex = startIndex + itemsPerPage
+		return schedules.slice(startIndex, endIndex)
+	}
+
+	const getTotalPages = (totalItems: number) => {
+		return Math.ceil(totalItems / itemsPerPage)
+	}
+
+	const handlePageChange = (newPage: number) => {
+		setCurrentPage(newPage)
+		// Scroll to top of schedules section
+		const schedulesSection = document.getElementById('schedules-section')
+		if (schedulesSection) {
+			schedulesSection.scrollIntoView({ behavior: 'smooth' })
+		}
+	}
 
 	const breadcrumbItems = {
 		items: [
-			{
-				label: "Trải nghiệm",
-				href: "/craftvillage/dashboard/workshop",
-			},
-			{
-				label: "Chi tiết trải nghiệm",
-				href: `/craft-village/workshop/${id}`,
-			},
-		],
-		active: workshop?.name || "Chi tiết trải nghiệm",
-		activeHref: `/craft-village/workshop/${id}?mock=1`,
+			{ label: "Dashboard", href: "/craftvillage/dashboard" },
+			{ label: "Trải nghiệm", href: "/craftvillage/dashboard/workshop" },
+			{ label: workshop?.name || "Chi tiết" }
+		]
 	}
 
-	const getStatusBadge = (status: string, statusText: string) => {
-		const variants = {
-			Approved: "default",
-			Pending: "secondary",
-			Draft: "outline",
-			Rejected: "destructive",
-		} as const
-
-		return <Badge variant={variants[status as keyof typeof variants] || "secondary"}>{statusText}</Badge>
-	}
-
-	const getDifficultyColor = (difficulty: string) => {
-		switch (difficulty) {
-			case "Dễ":
-				return "text-green-600 bg-green-50"
-			case "Trung bình":
-				return "text-yellow-600 bg-yellow-50"
-			case "Khó":
-				return "text-red-600 bg-red-50"
-			default:
-				return "text-gray-600 bg-gray-50"
-		}
-	}
-
-	if (!workshop) {
+	if (loading) {
 		return (
-			<>
-				<BreadcrumbHeader items={breadcrumbItems.items} />
-				<div className="p-4">
-					<Card>
-						<CardContent className="pt-6">
-							<div className="flex items-center justify-center h-32">
-								<div className="text-center">
-									<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-									<p className="text-muted-foreground">Đang tải thông tin workshop...</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+					<p className="text-gray-600">Đang tải thông tin workshop...</p>
 				</div>
-			</>
+			</div>
 		)
 	}
+
+	if (error || !workshop) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="text-center">
+					<AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+					<p className="text-red-600 mb-4">{error || 'Không tìm thấy workshop'}</p>
+					<Button onClick={() => router.back()} variant="outline">
+						Quay lại
+					</Button>
+				</div>
+			</div>
+		)
+	}
+
+	const statusInfo = getStatusInfo(workshop.status)
+	const StatusIcon = statusInfo.icon
 
 	return (
 		<>
 			<BreadcrumbHeader items={breadcrumbItems.items} />
-			<div className="p-4 space-y-6">
-				{/* Header Card */}
-				<Card>
-					<CardHeader>
-						<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-							<div className="flex-1">
-								<div className="flex items-center gap-3 mb-2">
-									<CardTitle className="text-2xl">{workshop.name}</CardTitle>
-									{getStatusBadge(workshop.status, workshop.statusText)}
-								</div>
-								<p className="text-muted-foreground text-lg">{workshop.description}</p>
-
-								{/* Rating and Reviews */}
-								{workshop.rating && (
-									<div className="flex items-center gap-2 mt-3">
-										<div className="flex items-center gap-1">
-											<Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-											<span className="font-medium">{workshop.rating}</span>
-										</div>
-										<span className="text-muted-foreground">({workshop.totalReviews} đánh giá)</span>
-									</div>
-								)}
+			<div className="container mx-auto p-6 max-w-7xl">
+				{/* Header Section */}
+				<div className="mb-8">
+					<div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+						<div className="flex-1">
+							<div className="flex items-center gap-3 mb-4">
+								<Badge className={cn("flex items-center gap-2", statusInfo.className)}>
+									<StatusIcon className="h-4 w-4" />
+									{statusInfo.text}
+								</Badge>
+								<Badge variant="outline" className="flex items-center gap-2">
+									<MapPin className="h-4 w-4" />
+									{workshop.craftVillageName}
+								</Badge>
 							</div>
+							<h1 className="text-4xl font-bold text-gray-900 mb-3">
+								{workshop.name}
+							</h1>
+							<p className="text-lg text-gray-600 mb-6 max-w-3xl">
+								{workshop.description}
+							</p>
 
-							{/* Quick Info */}
-							<div className="flex flex-col gap-2 min-w-[200px]">
-								<div className="flex items-center gap-2 text-sm">
-									<Clock className="h-4 w-4 text-blue-600" />
-									<span>{workshop.duration}</span>
+							{/* Quick Stats */}
+							<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+								<div className="bg-blue-50 p-4 rounded-lg">
+									<div className="flex items-center gap-2">
+										<CiMoneyBill className="h-5 w-5 text-blue-600" />
+										<span className="text-sm text-gray-600">Từ</span>
+									</div>
+									<p className="text-xl font-semibold text-blue-700">
+										{workshop?.ticketTypes
+											? formatPrice(Math.min(...workshop.ticketTypes.map(t => t.price)))
+											: "0 ₫"
+										}
+									</p>
 								</div>
-								<div className="flex items-center gap-2 text-sm">
-									<Users className="h-4 w-4 text-green-600" />
-									<span>Tối đa {workshop.schedules?.[0]?.maxParticipant || "N/A"} người</span>
+								<div className="bg-green-50 p-4 rounded-lg">
+									<div className="flex items-center gap-2">
+										<Clock className="h-5 w-5 text-green-600" />
+										<span className="text-sm text-gray-600">Thời gian</span>
+									</div>
+									<p className="text-xl font-semibold text-green-700">
+										{workshop.ticketTypes[0]?.durationMinutes || 0} phút
+									</p>
 								</div>
-								<div className="flex items-center gap-2 text-sm">
-									<MapPin className="h-4 w-4 text-red-600" />
-									<span>{workshop.location}</span>
+								<div className="bg-purple-50 p-4 rounded-lg">
+									<div className="flex items-center gap-2">
+										<Calendar className="h-5 w-5 text-purple-600" />
+										<span className="text-sm text-gray-600">Lịch trình</span>
+									</div>
+									<p className="text-xl font-semibold text-purple-700">
+										{workshop.schedules.length} buổi
+									</p>
 								</div>
-								{workshop.difficulty && (
-									<Badge className={cn("w-fit", getDifficultyColor(workshop.difficulty))}>{workshop.difficulty}</Badge>
-								)}
+								<div className="bg-orange-50 p-4 rounded-lg">
+									<div className="flex items-center gap-2">
+										<Users className="h-5 w-5 text-orange-600" />
+										<span className="text-sm text-gray-600">Sức chứa</span>
+									</div>
+									<p className="text-xl font-semibold text-orange-700">
+										{workshop.schedules[0]?.capacity || 0} người
+									</p>
+								</div>
 							</div>
 						</div>
-					</CardHeader>
-				</Card>
 
-				{/* Images Gallery */}
-				{workshop.mediaDtos && workshop.mediaDtos.length > 0 && (
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Camera className="h-5 w-5" />
-								Hình ảnh trải nghiệm
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-								<Image
-									src="/imgws.png"
-									alt={workshop.name}
-									width={100}
-									height={100}
-									className="w-full h-48 object-cover rounded-lg border hover:shadow-lg transition-shadow"
-								/>
-							</div>
-						</CardContent>
-					</Card>
-				)}
-
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-					{/* Main Content */}
-					<div className="lg:col-span-2 space-y-6">
-						{/* Workshop Content */}
-						<Card>
-							<CardHeader>
-								<CardTitle>Nội dung trải nghiệm</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="prose max-w-none">
-									<div className="whitespace-pre-wrap text-sm leading-relaxed">{workshop.content}</div>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-
-					{/* Sidebar */}
-					<div className="space-y-6">
-						{/* Workshop Info */}
-						<Card>
-							<CardHeader>
-								<CardTitle className="text-lg">Thông tin chi tiết</CardTitle>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div className="grid grid-cols-2 gap-4 text-sm">
-									<div>
-										<Label className="text-xs text-muted-foreground">Danh mục</Label>
-										<p className="font-medium">{workshop.category}</p>
-									</div>
-									<div>
-										<Label className="text-xs text-muted-foreground">Thời lượng</Label>
-										<p className="font-medium">{workshop.duration}</p>
-									</div>
-									<div>
-										<Label className="text-xs text-muted-foreground">Ngày tạo</Label>
-										<p className="font-medium">{new Date(workshop.createdAt).toLocaleDateString("vi-VN")}</p>
-									</div>
-								</div>
-
-								<Separator />
-
-								<div>
-									<Label className="text-xs text-muted-foreground">Địa điểm</Label>
-									<p className="font-medium text-sm">{workshop.location}</p>
-								</div>
-							</CardContent>
-						</Card>
+						{/* Action Buttons */}
+						{/* <div className="flex flex-col sm:flex-row lg:flex-col gap-3">
+							<Button
+								onClick={() => router.push(`/craftvillage/dashboard/workshop/${workshop.id}/edit`)}
+								className="flex items-center gap-2"
+							>
+								<Edit className="h-4 w-4" />
+								Chỉnh sửa
+							</Button>
+							<Button variant="outline" className="flex items-center gap-2">
+								<Eye className="h-4 w-4" />
+								Xem trước
+							</Button>
+							<Button variant="destructive" className="flex items-center gap-2">
+								<Trash2 className="h-4 w-4" />
+								Xóa
+							</Button>
+						</div> */}
 					</div>
 				</div>
 
-				{/* Schedules */}
-				{workshop.schedules && workshop.schedules.length > 0 && (
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Calendar className="h-5 w-5" />
-								Lịch tổ chức trải nghiệm
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								{workshop.schedules.map((schedule: any, idx: any) => (
-									<div key={schedule.scheduleId} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-										<div className="flex justify-between items-start mb-3">
-											<div>
-												<div className="flex items-center gap-2 mb-1">
-													<Clock className="h-4 w-4 text-blue-600" />
-													<span className="font-medium">
-														{schedule.startTime} - {schedule.endTime}
-													</span>
-												</div>
-												<div className="flex items-center gap-2 text-sm text-muted-foreground">
-													<Users className="h-4 w-4" />
-													<span>
-														{schedule.currentBookings || 0}/{schedule.maxParticipant} người
-													</span>
-												</div>
-											</div>
-											<div className="text-right">
-												<div className="flex items-center gap-1 text-lg font-bold text-green-600">
-													<CreditCard className="h-4 w-4" />
-													{schedule.adultPrice.toLocaleString("vi-VN")}đ
-												</div>
-												{schedule.childrenPrice > 0 && (
-													<div className="text-sm text-muted-foreground">
-														Trẻ em: {schedule.childrenPrice.toLocaleString("vi-VN")}đ
+				{/* Main Content Tabs */}
+				<Tabs defaultValue="overview" className="space-y-6">
+					<TabsList className="grid w-full grid-cols-5">
+						<TabsTrigger value="overview">Tổng quan</TabsTrigger>
+						<TabsTrigger value="tickets">Loại vé</TabsTrigger>
+						<TabsTrigger value="schedules">Lịch trình</TabsTrigger>
+						<TabsTrigger value="recurring">Lặp lại</TabsTrigger>
+						<TabsTrigger value="exceptions">Ngoại lệ</TabsTrigger>
+					</TabsList>
+
+					{/* Overview Tab */}
+					<TabsContent value="overview" className="space-y-6">
+						<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+							<div className="lg:col-span-2 space-y-6">
+								<Card>
+									<CardHeader>
+										<CardTitle>Mô tả chi tiết</CardTitle>
+									</CardHeader>
+									<CardContent>
+										<div className="prose prose-gray max-w-none">
+											<p className="text-gray-700 leading-relaxed">
+												{workshop.content}
+											</p>
+										</div>
+									</CardContent>
+								</Card>
+
+								{/* Media Gallery */}
+								{workshop?.medias && workshop?.medias?.length > 0 && (
+									<Card>
+										<CardHeader>
+											<CardTitle>Hình ảnh</CardTitle>
+										</CardHeader>
+										<CardContent>
+											<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+												{workshop.medias.map((media, index) => (
+													<div key={media.id} className="relative aspect-video rounded-lg overflow-hidden">
+														<Image
+															src={media.url}
+															alt={`Workshop media ${index + 1}`}
+															fill
+															className="object-cover"
+														/>
 													</div>
-												)}
+												))}
+											</div>
+										</CardContent>
+									</Card>
+								)}
+							</div>
+
+							{/* Sidebar */}
+							<div className="space-y-6">
+								<Card>
+									<CardHeader>
+										<CardTitle>Thông tin nhanh</CardTitle>
+									</CardHeader>
+									<CardContent className="space-y-4">
+										<div className="flex items-center gap-3">
+											<MapPin className="h-5 w-5 text-gray-400" />
+											<div>
+												<p className="font-medium">Làng nghề</p>
+												<p className="text-sm text-gray-600">{workshop.craftVillageName}</p>
 											</div>
 										</div>
 
-										{schedule.notes && <p className="text-sm text-muted-foreground mb-3">{schedule.notes}</p>}
+										<div className="flex items-center gap-3">
+											<Calendar className="h-5 w-5 text-gray-400" />
+											<div>
+												<p className="font-medium">Số lịch trình</p>
+												<p className="text-sm text-gray-600">{workshop.schedules.length} buổi</p>
+											</div>
+										</div>
 
-										{schedule.availableDates && (
-											<div className="mb-3">
-												<Label className="text-xs">Ngày có sẵn</Label>
-												<div className="flex flex-wrap gap-1 mt-1">
-													{schedule.availableDates.slice(0, 4).map((date: any, idx: any) => (
-														<Badge key={idx} variant="outline" className="text-xs">
-															{new Date(date).toLocaleDateString("vi-VN")}
-														</Badge>
-													))}
-													{schedule.availableDates.length > 4 && (
-														<Badge variant="outline" className="text-xs">
-															+{schedule.availableDates.length - 4} ngày khác
-														</Badge>
+										<div className="flex items-center gap-3">
+											<Ticket className="h-5 w-5 text-gray-400" />
+											<div>
+												<p className="font-medium">Số loại vé</p>
+												<p className="text-sm text-gray-600">{workshop.ticketTypes.length} loại</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+
+								<Card>
+									<CardHeader>
+										<CardTitle>Lịch trình sắp tới</CardTitle>
+									</CardHeader>
+									<CardContent>
+										<div className="space-y-3">
+											{getUpcomingSchedules(workshop.schedules).map((schedule) => {
+												const datetime = formatDateTime(schedule.startTime)
+												const bookedPercentage = (schedule.currentBooked / schedule.capacity) * 100
+												return (
+													<div key={schedule.id} className="p-3 bg-gray-50 rounded-lg">
+														<div className="flex justify-between items-start mb-2">
+															<div>
+																<p className="font-medium text-sm">{datetime.date}</p>
+																<p className="text-sm text-gray-600">
+																	{datetime.time} - {formatDateTime(schedule.endTime).time}
+																</p>
+															</div>
+															<Badge
+																variant={schedule.currentBooked === 0 ? "secondary" : "default"}
+																className="text-xs"
+															>
+																{schedule.currentBooked}/{schedule.capacity}
+															</Badge>
+														</div>
+														<div className="w-full bg-gray-200 rounded-full h-2">
+															<div
+																className="bg-blue-600 h-2 rounded-full"
+																style={{ width: `${bookedPercentage}%` }}
+															></div>
+														</div>
+													</div>
+												)
+											})}
+										</div>
+									</CardContent>
+								</Card>
+							</div>
+						</div>
+					</TabsContent>
+
+					{/* Ticket Types Tab */}
+					<TabsContent value="tickets" className="space-y-6">
+						<div className="grid gap-6">
+							{workshop.ticketTypes.map((ticketType) => (
+								<Card key={ticketType.id}>
+									<CardHeader>
+										<div className="flex justify-between items-start">
+											<div>
+												<CardTitle className="flex items-center gap-2">
+													{ticketType.name}
+													{ticketType.isCombo && (
+														<Badge variant="secondary">Combo</Badge>
 													)}
+												</CardTitle>
+												<p className="text-sm text-gray-600 mt-1">{ticketType.content}</p>
+											</div>
+											<div className="text-right">
+												<p className="text-2xl font-bold text-blue-600">
+													{formatPrice(ticketType.price)}
+												</p>
+												<p className="text-sm text-gray-500">
+													{ticketType.durationMinutes} phút
+												</p>
+											</div>
+										</div>
+									</CardHeader>
+									<CardContent>
+										<div className="space-y-4">
+											<h4 className="font-medium flex items-center gap-2">
+												<Activity className="h-4 w-4" />
+												Hoạt động bao gồm
+											</h4>
+											<div className="space-y-3">
+												{ticketType.activities
+													.sort((a, b) => a.activityOrder - b.activityOrder)
+													.map((activity, index) => (
+														<div key={activity.id} className="flex gap-3">
+															<div className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+																{index + 1}
+															</div>
+															<div>
+																<p className="font-medium">{activity.activity}</p>
+																<p className="text-sm text-gray-600">{activity.description}</p>
+															</div>
+														</div>
+													))}
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					</TabsContent>
+
+					{/* Schedules Tab */}
+					<TabsContent value="schedules" className="space-y-6" id="schedules-section">
+						<div className="grid gap-6">
+							{/* Summary Stats */}
+							<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+								<Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-blue-500 rounded-lg">
+												<Calendar className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-blue-700 font-medium">Tổng lịch trình</p>
+												<p className="text-2xl font-bold text-blue-800">{workshop.schedules.length}</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+
+								<Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-green-500 rounded-lg">
+												<CheckCircle className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-green-700 font-medium">Còn chỗ</p>
+												<p className="text-2xl font-bold text-green-800">
+													{workshop.schedules.filter(s => s.currentBooked < s.capacity && new Date(s.startTime) > new Date()).length}
+												</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+
+								<Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-orange-500 rounded-lg">
+												<Users className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-orange-700 font-medium">Tổng đã đặt</p>
+												<p className="text-2xl font-bold text-orange-800">
+													{workshop.schedules.reduce((sum, s) => sum + s.currentBooked, 0)}
+												</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+
+								<Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+									<CardContent className="p-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-purple-500 rounded-lg">
+												<Activity className="h-5 w-5 text-white" />
+											</div>
+											<div>
+												<p className="text-sm text-purple-700 font-medium">Tỷ lệ đặt</p>
+												<p className="text-2xl font-bold text-purple-800">
+													{Math.round((workshop.schedules.reduce((sum, s) => sum + s.currentBooked, 0) / workshop.schedules.reduce((sum, s) => sum + s.capacity, 0)) * 100) || 0}%
+												</p>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+							</div>
+
+							{/* Schedules Grid */}
+							<Card>
+								<CardHeader>
+									<div className="flex items-center justify-between">
+										<CardTitle className="flex items-center gap-2">
+											<Calendar className="h-5 w-5" />
+											Lịch trình chi tiết
+										</CardTitle>
+										<div className="flex items-center gap-2 text-sm text-gray-500">
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+												<span>Còn chỗ</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+												<span>Gần hết</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-red-500 rounded-full"></div>
+												<span>Hết chỗ</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+												<span>Đã qua</span>
+											</div>
+										</div>
+									</div>
+								</CardHeader>
+								<CardContent>
+									<div className="grid gap-4">
+										{getPaginatedSchedules(workshop?.schedules || [])?.map((schedule) => {
+											const datetime = formatDateTime(schedule.startTime)
+											const endDatetime = formatDateTime(schedule.endTime)
+											const bookedPercentage = (schedule.currentBooked / schedule.capacity) * 100
+											const isFullyBooked = schedule.currentBooked >= schedule.capacity
+											const isPast = new Date(schedule.startTime) < new Date()
+											const isNearFull = bookedPercentage >= 75 && !isFullyBooked
+
+											return (
+												<div
+													key={schedule.id}
+													className={cn(
+														"group relative p-5 border-2 rounded-xl transition-all duration-200 hover:shadow-lg",
+														isPast && "bg-gray-50 border-gray-200 opacity-75",
+														!isPast && !isFullyBooked && !isNearFull && "bg-blue-50 border-blue-200 hover:border-blue-300",
+														!isPast && isNearFull && "bg-orange-50 border-orange-200 hover:border-orange-300",
+														!isPast && isFullyBooked && "bg-red-50 border-red-200 hover:border-red-300"
+													)}
+												>
+													<div className="flex items-center justify-between">
+														{/* Left Section - Date & Time */}
+														<div className="flex items-center gap-4">
+															<div className={cn(
+																"p-3 rounded-xl",
+																isPast && "bg-gray-200",
+																!isPast && !isFullyBooked && !isNearFull && "bg-blue-500",
+																!isPast && isNearFull && "bg-orange-500",
+																!isPast && isFullyBooked && "bg-red-500"
+															)}>
+																<Calendar className="h-6 w-6 text-white" />
+															</div>
+															<div>
+																<p className="font-semibold text-lg text-gray-900">{datetime.date}</p>
+																<div className="flex items-center gap-2 mt-1">
+																	<Clock className="h-4 w-4 text-gray-500" />
+																	<p className="text-gray-600 font-medium">
+																		{datetime.time} - {endDatetime.time}
+																	</p>
+																</div>
+																{schedule.notes && (
+																	<p className="text-sm text-gray-500 mt-1 italic">{schedule.notes}</p>
+																)}
+															</div>
+														</div>
+
+														{/* Right Section - Stats & Status */}
+														<div className="flex items-center gap-6">
+															{/* Booking Stats */}
+															<div className="text-center">
+																<div className="flex items-center gap-2 mb-2">
+																	<Users className="h-4 w-4 text-gray-500" />
+																	<span className="text-sm text-gray-500 font-medium">Đã đặt</span>
+																</div>
+																<p className="text-2xl font-bold text-gray-900">
+																	<span className={cn(
+																		isFullyBooked && "text-red-600",
+																		isNearFull && "text-orange-600",
+																		!isNearFull && !isFullyBooked && "text-blue-600"
+																	)}>
+																		{schedule.currentBooked}
+																	</span>
+																	<span className="text-gray-400">/{schedule.capacity}</span>
+																</p>
+															</div>
+
+															{/* Progress Bar */}
+															<div className="w-32">
+																<div className="flex justify-between items-center mb-2">
+																	<span className="text-xs text-gray-500 font-medium">Tỷ lệ đặt</span>
+																	<span className={cn(
+																		"text-xs font-bold",
+																		isPast && "text-gray-500",
+																		!isPast && bookedPercentage >= 100 && "text-red-600",
+																		!isPast && bookedPercentage >= 75 && bookedPercentage < 100 && "text-orange-600",
+																		!isPast && bookedPercentage < 75 && "text-blue-600"
+																	)}>
+																		{Math.round(bookedPercentage)}%
+																	</span>
+																</div>
+																<div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+																	<div
+																		className={cn(
+																			"h-full rounded-full transition-all duration-300",
+																			isPast && "bg-gray-400",
+																			!isPast && bookedPercentage >= 100 && "bg-red-500",
+																			!isPast && bookedPercentage >= 75 && bookedPercentage < 100 && "bg-orange-500",
+																			!isPast && bookedPercentage < 75 && "bg-blue-500"
+																		)}
+																		style={{ width: `${Math.min(bookedPercentage, 100)}%` }}
+																	></div>
+																</div>
+															</div>
+
+															{/* Status Badge */}
+															<div className="text-right">
+																<Badge
+																	className={cn(
+																		"px-3 py-1 text-sm font-semibold",
+																		isPast && "bg-gray-100 text-gray-600 border-gray-300",
+																		!isPast && isFullyBooked && "bg-red-100 text-red-700 border-red-300",
+																		!isPast && isNearFull && "bg-orange-100 text-orange-700 border-orange-300",
+																		!isPast && !isNearFull && !isFullyBooked && "bg-blue-100 text-blue-700 border-blue-300"
+																	)}
+																	variant="outline"
+																>
+																	{isPast ? (
+																		<>
+																			<XCircle className="h-4 w-4 mr-1" />
+																			Đã qua
+																		</>
+																	) : isFullyBooked ? (
+																		<>
+																			<AlertCircle className="h-4 w-4 mr-1" />
+																			Hết chỗ
+																		</>
+																	) : isNearFull ? (
+																		<>
+																			<Clock className="h-4 w-4 mr-1" />
+																			Gần hết
+																		</>
+																	) : (
+																		<>
+																			<CheckCircle className="h-4 w-4 mr-1" />
+																			Còn chỗ
+																		</>
+																	)}
+																</Badge>
+															</div>
+														</div>
+													</div>
+												</div>
+											)
+										})}
+									</div>
+
+									{/* Pagination */}
+									{workshop?.schedules && workshop.schedules.length > itemsPerPage && (
+										<div className="flex items-center justify-between mt-8 pt-6 border-t">
+											<div className="flex items-center gap-2 text-sm text-gray-600">
+												<span>Hiển thị</span>
+												<span className="font-medium">
+													{((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, workshop.schedules.length)}
+												</span>
+												<span>của</span>
+												<span className="font-medium">{workshop.schedules.length}</span>
+												<span>lịch trình</span>
+											</div>
+
+											<div className="flex items-center gap-2">
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => handlePageChange(currentPage - 1)}
+													disabled={currentPage === 1}
+													className="flex items-center gap-1"
+												>
+													<ChevronLeft className="h-4 w-4" />
+													Trước
+												</Button>
+
+												<div className="flex items-center gap-1">
+													{Array.from({ length: getTotalPages(workshop.schedules.length) }, (_, index) => {
+														const page = index + 1
+														const isCurrentPage = page === currentPage
+
+														// Show first page, last page, current page, and pages around current
+														const shouldShow =
+															page === 1 ||
+															page === getTotalPages(workshop.schedules.length) ||
+															Math.abs(page - currentPage) <= 1
+
+														if (!shouldShow) {
+															// Show ellipsis for gaps
+															if (page === currentPage - 2 || page === currentPage + 2) {
+																return (
+																	<span key={page} className="px-2 text-gray-400">
+																		...
+																	</span>
+																)
+															}
+															return null
+														}
+
+														return (
+															<Button
+																key={page}
+																variant={isCurrentPage ? "default" : "outline"}
+																size="sm"
+																onClick={() => handlePageChange(page)}
+																className={cn(
+																	"w-8 h-8 p-0",
+																	isCurrentPage && "bg-blue-600 hover:bg-blue-700"
+																)}
+															>
+																{page}
+															</Button>
+														)
+													})}
+												</div>
+
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => handlePageChange(currentPage + 1)}
+													disabled={currentPage === getTotalPages(workshop.schedules.length)}
+													className="flex items-center gap-1"
+												>
+													Sau
+													<ChevronRight className="h-4 w-4" />
+												</Button>
+											</div>
+										</div>
+									)}
+								</CardContent>
+							</Card>
+						</div>
+					</TabsContent>
+
+					{/* Recurring Rules Tab */}
+					<TabsContent value="recurring" className="space-y-6">
+						<Card>
+							<CardHeader>
+								<CardTitle>Quy tắc lặp lại ({workshop.recurringRules.length})</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="space-y-6">
+									{workshop.recurringRules.map((rule) => (
+										<div key={rule.id} className="p-4 border rounded-lg">
+											<div className="mb-4">
+												<h4 className="font-medium mb-2">Ngày trong tuần</h4>
+												<p className="text-sm text-gray-600">{rule?.daysOfWeekDisplay}</p>
+											</div>
+
+											<div>
+												<h4 className="font-medium mb-3">Các phiên ({rule?.sessions?.length})</h4>
+												<div className="grid gap-3">
+													{rule?.sessions?.map((session) => (
+														<div key={session?.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+															<div>
+																<p className="font-medium">
+																	{session?.startTime} - {session?.endTime}
+																</p>
+															</div>
+															<div className="text-right">
+																<p className="text-sm text-gray-600">Sức chứa</p>
+																<p className="font-medium">{session?.capacity} người</p>
+															</div>
+														</div>
+													))}
 												</div>
 											</div>
-										)}
+										</div>
+									))}
+								</div>
+							</CardContent>
+						</Card>
+					</TabsContent>
+
+					{/* Exceptions Tab */}
+					<TabsContent value="exceptions" className="space-y-6">
+						<Card>
+							<CardHeader>
+								<CardTitle>Ngày ngoại lệ ({workshop.exceptions.length})</CardTitle>
+							</CardHeader>
+							<CardContent>
+								{workshop.exceptions.length === 0 ? (
+									<div className="text-center py-8">
+										<AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+										<p className="text-gray-500">Không có ngày ngoại lệ nào</p>
 									</div>
-								))}
-							</div>
-						</CardContent>
-					</Card>
-				)}
+								) : (
+									<div className="space-y-4">
+										{workshop.exceptions.map((exception) => {
+											const date = new Date(exception.date)
+											return (
+												<div key={exception.id} className="p-4 border border-red-200 bg-red-50 rounded-lg">
+													<div className="flex items-center gap-3">
+														<AlertCircle className="h-5 w-5 text-red-500" />
+														<div>
+															<p className="font-medium text-red-800">
+																{date.toLocaleDateString('vi-VN', {
+																	weekday: 'long',
+																	year: 'numeric',
+																	month: 'long',
+																	day: 'numeric'
+																})}
+															</p>
+															<p className="text-sm text-red-600">{exception.reason}</p>
+														</div>
+													</div>
+												</div>
+											)
+										})}
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					</TabsContent>
+				</Tabs>
 			</div>
 		</>
 	)

@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, LayoutDashboard, Wallet } from "lucide-react"
+import { Calendar, LayoutDashboard, Library, SquareUserRound, Wallet } from "lucide-react"
 import * as React from "react"
 
 // import { Calendars } from "./calendar"
@@ -82,6 +82,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							<Link href="/tour-guide/dashboard/vi-cua-toi">
 								<Wallet />
 								<span>Ví của tôi</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuButton asChild>
+						<Link href="/tour-guide/dashboard/gia-dat-hdv">
+							<Library />
+							<span>Yêu cầu cập nhật giá</span>
+						</Link>
+					</SidebarMenuButton>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+							<Link href="/tour-guide/dashboard/ho-so">
+								<SquareUserRound />
+								<span>Hồ sơ HDV</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

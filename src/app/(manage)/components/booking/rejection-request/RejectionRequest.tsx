@@ -127,9 +127,32 @@ export default function RejectionRequestTable() {
 
 	const columns: ColumnDef<RejectionRequestDetail>[] = useMemo(
 		() => [
-			{ header: 'Loại yêu cầu', accessorKey: 'requestType' },
 			{
-				header: 'Tourguide',
+				header: 'Loại yêu cầu',
+				accessorKey: 'requestType',
+				cell: ({ row }) => {
+					const requestType = row.original.requestType
+					return (
+						<div className="flex items-center gap-2">
+							{requestType === 1 ? (
+								<>
+									<span className="text-sm font-medium text-blue-500">Chuyến đi hệ thống</span>
+								</>
+							) : requestType === 2 ? (
+								<>
+									<span className="text-sm font-medium text-orange-950">Người dùng đặt</span>
+								</>
+							) : (
+								<>
+									<span className="text-sm font-medium text-gray-600">Không xác định</span>
+								</>
+							)}
+						</div>
+					)
+				}
+			},
+			{
+				header: 'Hướng dẫn viên',
 				accessorKey: 'tourGuideId',
 			},
 			{ header: 'Lý do', accessorKey: 'reason' },
@@ -167,7 +190,7 @@ export default function RejectionRequestTable() {
 		<div>
 			<Card>
 				<CardHeader>
-					<CardTitle>Yêu cầu từ chối tour</CardTitle>
+					<CardTitle>Yêu cầu từ chối chuyến tham quan (Hướng Dẫn Viên)</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div className="flex justify-between items-center">

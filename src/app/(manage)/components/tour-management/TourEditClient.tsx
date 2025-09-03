@@ -93,7 +93,7 @@ export default function TourEditClient({ tourId, href }: TourEditClientProps) {
 						className={`px-3 py-1 rounded-full text-sm font-medium ${tour.status === 1 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
 							}`}
 					>
-						{tour.statusText}
+						{tour.statusText === "Cancelled" ? "Đã hủy" : tour.statusText === "Confirmed" ? "Đã xác nhận" : tour.statusText === "Draft" ? "Bản nháp" : tour.statusText}
 					</div>
 				</div>
 			</div>
