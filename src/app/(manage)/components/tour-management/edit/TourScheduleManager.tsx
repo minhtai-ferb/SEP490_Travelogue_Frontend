@@ -335,14 +335,14 @@ export function TourScheduleManager({ tour, onUpdate }: TourScheduleManagerProps
 													}))
 												}
 											>
-												<SelectTrigger className="w-fit h-fit">
+												<SelectTrigger className="w-full h-fit">
 													<SelectValue
 														placeholder="Chọn hướng dẫn viên"
 														defaultValue={formData.tourGuide?.[0]?.id}
 													/>
 												</SelectTrigger>
 
-												<SelectContent className="h-fit max-w-[280px]">
+												<SelectContent className="h-fit max-w-[full]">
 													{/* No guide available */}
 													{!tourGuide?.length && (
 														<SelectItem value="none">Không có hướng dẫn viên</SelectItem>
