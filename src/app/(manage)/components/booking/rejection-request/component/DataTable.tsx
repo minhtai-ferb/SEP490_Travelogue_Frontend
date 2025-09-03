@@ -237,8 +237,8 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 											size="sm"
 											onClick={() => onPageChange(pageNum as number)}
 											className={`h-8 w-8 p-0 ${pageNum === page
-													? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-													: "hover:bg-blue-50"
+												? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+												: "hover:bg-blue-50"
 												}`}
 										>
 											{pageNum}

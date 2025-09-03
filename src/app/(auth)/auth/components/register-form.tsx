@@ -3,10 +3,11 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Mail, Lock, User } from "lucide-react"
+import { Mail, Lock, User, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { addToast } from "@heroui/react"
 import { useAuth } from "@/services/useAuth"
 import { useRouter } from "next/navigation"
@@ -27,6 +28,7 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 		email: "",
 		password: "",
 		confirmPassword: "",
+		sex: 1, // 1 = Nam, 2 = Nữ
 	})
 	const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
@@ -74,6 +76,21 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 		}
 	}
 
+	const handleSelectChange = (name: string, value: string) => {
+		setFormData((prev) => ({
+			...prev,
+			[name]: parseInt(value),
+		}))
+
+		// Clear validation error
+		if (validationErrors[name]) {
+			setValidationErrors((prev) => ({
+				...prev,
+				[name]: "",
+			}))
+		}
+	}
+
 	const validateForm = () => {
 		const errors: Record<string, string> = {}
 
@@ -98,6 +115,11 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 			errors.fullName = "Vui lòng nhập họ và tên hợp lệ"
 		}
 
+		// Validate sex
+		if (!formData.sex || (formData.sex !== 1 && formData.sex !== 2)) {
+			errors.sex = "Vui lòng chọn giới tính"
+		}
+
 		setValidationErrors(errors)
 		return Object.keys(errors).length === 0
 	}
@@ -119,6 +141,7 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 				email: formData.email,
 				password: formData.password,
 				confirmPassword: formData.confirmPassword,
+				sex: formData.sex,
 			})
 
 			console.log("Registration response:", response)
@@ -153,7 +176,7 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-5">
+		<form onSubmit={handleSubmit} className="flex flex-col gap-1">
 			<div className="space-y-2">
 				<label htmlFor="fullName" className="text-sm font-medium text-gray-700">
 					Họ và tên
@@ -174,6 +197,30 @@ export function RegisterForm({ onSwitchMode, onForgotPassword }: RegisterFormPro
 					/>
 				</div>
 				{validationErrors.fullName && <p className="text-sm text-red-500 mt-1">{validationErrors.fullName}</p>}
+			</div>
+
+			<div className="space-y-2">
+				<label htmlFor="sex" className="text-sm font-medium text-gray-700">
+					Giới tính
+				</label>
+				<div className="relative">
+					<div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 z-10">
+						<Users className="h-5 w-5" />
+					</div>
+					<Select
+						value={formData.sex.toString()}
+						onValueChange={(value) => handleSelectChange("sex", value)}
+					>
+						<SelectTrigger className={`pl-10 ${validationErrors.sex ? "border-red-500" : ""}`}>
+							<SelectValue placeholder="Chọn giới tính" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="1">Nam</SelectItem>
+							<SelectItem value="2">Nữ</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+				{validationErrors.sex && <p className="text-sm text-red-500 mt-1">{validationErrors.sex}</p>}
 			</div>
 
 			<div className="space-y-2">

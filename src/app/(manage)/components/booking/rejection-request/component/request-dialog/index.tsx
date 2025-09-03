@@ -1,4 +1,6 @@
 import { useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { ExternalLink } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -41,33 +43,78 @@ function DetailSection({
 	detail: RejectionRequestDetail | null
 	tourguideProfile: TourGuideDetail | null
 }) {
+	const router = useRouter()
+
+	const handleViewTour = useCallback(() => {
+		if (detail?.tourId) {
+			// Điều hướng đến trang tour detail trong admin
+			router.push(`/admin/tour/${detail.tourId}`)
+		}
+	}, [detail?.tourId, router])
+
 	return (
-		<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-			<div className="space-y-1">
-				<p className="text-xs text-muted-foreground">Trạng thái</p>
-				<Badge className={`font-medium ${detail?.statusText === "Pending" ? "bg-amber-100 text-amber-800 border-amber-200"
-					: detail?.statusText === "Approved" ? "bg-green-100 text-green-800 border-green-200"
-						: detail?.statusText === "Rejected" ? "bg-red-100 text-red-800 border-red-200" : ''}`}>
-					{detail?.statusText === "Pending" ? "Đang chờ duyệt"
-						: detail?.statusText === "Approved" ? "Đã duyệt"
-							: detail?.statusText === "Rejected" ? "Đã từ chối" : '-'}
-				</Badge>
-			</div>
-			<div className="space-y-1">
-				<p className="text-xs text-muted-foreground">Tourguide</p>
-				<p className="font-medium">{tourguideProfile?.userName || '-'}</p>
-			</div>
-			<div className="space-y-1">
-				<p className="text-xs text-muted-foreground">Email</p>
-				<p className="font-medium break-all">{tourguideProfile?.email || '-'}</p>
-			</div>
-			<div className="space-y-1 sm:col-span-2">
-				<p className="text-xs text-muted-foreground text-red-500 font-bold">Lý do</p>
-				<p className="font-medium">{detail?.reason || '-'}</p>
-			</div>
-			<div className="space-y-1 sm:col-span-2">
-				<p className="text-xs text-muted-foreground">Nhận xét</p>
-				<p className="font-medium whitespace-pre-wrap">{detail?.moderatorComment || '-'}</p>
+		<div className="space-y-4">
+			{/* Nút xem tour và thông tin tour */}
+			{detail?.tourId ? (
+				<div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+					{/* <div className="flex gap-6">
+						<div className="space-y-1">
+							<p className="text-xs text-blue-600 font-medium">Tour ID</p>
+							<p className="text-sm font-mono text-blue-800">{detail.tourId}</p>
+						</div>
+						{detail.tourScheduleId && (
+							<div className="space-y-1">
+								<p className="text-xs text-green-600 font-medium">Schedule ID</p>
+								<p className="text-sm font-mono text-green-800">{detail.tourScheduleId}</p>
+							</div>
+						)}
+					</div> */}
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleViewTour}
+						className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+					>
+						<ExternalLink className="w-4 h-4" />
+						Xem Chi Tiết Tour
+					</Button>
+				</div>
+			) : detail?.tourScheduleId ? (
+				<div className="p-3 bg-green-50 rounded-lg border border-green-200">
+					<div className="space-y-1">
+						<p className="text-xs text-green-600 font-medium">Schedule ID</p>
+						<p className="text-sm font-mono text-green-800">{detail.tourScheduleId}</p>
+					</div>
+				</div>
+			) : null}
+
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+				<div className="space-y-1">
+					<p className="text-xs text-muted-foreground">Trạng thái</p>
+					<Badge className={`font-medium ${detail?.statusText === "Pending" ? "bg-amber-100 text-amber-800 border-amber-200"
+						: detail?.statusText === "Approved" ? "bg-green-100 text-green-800 border-green-200"
+							: detail?.statusText === "Rejected" ? "bg-red-100 text-red-800 border-red-200" : ''}`}>
+						{detail?.statusText === "Pending" ? "Đang chờ duyệt"
+							: detail?.statusText === "Approved" ? "Đã duyệt"
+								: detail?.statusText === "Rejected" ? "Đã từ chối" : '-'}
+					</Badge>
+				</div>
+				<div className="space-y-1">
+					<p className="text-xs text-muted-foreground">Hướng dẫn viên</p>
+					<p className="font-medium">{tourguideProfile?.userName || '-'}</p>
+				</div>
+				<div className="space-y-1">
+					<p className="text-xs text-muted-foreground">Email</p>
+					<p className="font-medium break-all">{tourguideProfile?.email || '-'}</p>
+				</div>
+				<div className="space-y-1 sm:col-span-2">
+					<p className="text-xs text-muted-foreground text-red-500 font-bold">Lý do</p>
+					<p className="font-medium">{detail?.reason || '-'}</p>
+				</div>
+				<div className="space-y-1 sm:col-span-2">
+					<p className="text-xs text-muted-foreground">Nhận xét</p>
+					<p className="font-medium whitespace-pre-wrap">{detail?.moderatorComment || '-'}</p>
+				</div>
 			</div>
 		</div>
 	)

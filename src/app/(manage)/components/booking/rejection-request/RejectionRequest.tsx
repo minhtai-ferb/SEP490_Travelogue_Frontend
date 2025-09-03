@@ -5,6 +5,7 @@ import { CheckIcon, EyeIcon, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -26,7 +27,7 @@ const STATUS_OPTIONS: Array<{ label: string; value: RejectionStatus | 'all' }> =
 export default function RejectionRequestTable() {
 	// services
 	const { filterRejectionRequests, getRejectionRequestDetail } = useRejectionRequest()
-	const { getTourguideProfile, getTourGuide } = useTourguideAssign()
+	const { getTourguideProfile, getTourGuide, getAvailableTourGuides, getTourScheduleDetails } = useTourguideAssign()
 
 	// table state
 	const [data, setData] = useState<RejectionRequestDetail[]>([])
@@ -63,13 +64,20 @@ export default function RejectionRequestTable() {
 
 			setLoading(true)
 			try {
-				const res = await filterRejectionRequests({
+				const params = {
 					pageNumber: _page,
 					pageSize: _pageSize,
 					Status: _status === 'all' ? undefined : Number(_status),
 					FromDate: _from,
 					ToDate: _to,
-				})
+				}
+
+				console.log('Rejection Request Params:', params) // Debug log
+
+				const res = await filterRejectionRequests(params)
+
+				console.log('Rejection Request Response:', res) // Debug log
+
 				setData(res?.items ?? [])
 				setTotal(res?.totalCount ?? 0)
 			} catch (err) {
@@ -87,7 +95,8 @@ export default function RejectionRequestTable() {
 	}, [page, pageSize])
 
 	useEffect(() => {
-		fetchList()
+		setPage(1) // Reset về trang 1 khi thay đổi filter
+		fetchList({ page: 1 })
 	}, [status, fromDate, toDate])
 
 	const openWithData = useCallback(
@@ -96,13 +105,58 @@ export default function RejectionRequestTable() {
 				const res = await getRejectionRequestDetail(id)
 				setDetail(res)
 
-				const [profile, guides] = await Promise.all([
-					res?.tourGuideId ? getTourguideProfile(res.tourGuideId) : Promise.resolve(null),
-					mode !== 'reject' ? getTourGuide() : Promise.resolve([]), // guides only needed for approve/view
-				])
-
+				// Lấy thông tin tour guide hiện tại
+				const profile = res?.tourGuideId ? await getTourguideProfile(res.tourGuideId) : null
 				setTourguideProfile((profile || null) as TourGuideDetail | null)
-				setGuideOptions(Array.isArray(guides) ? guides : [])
+
+				// Nếu mode là approve hoặc view, lấy danh sách tour guides có sẵn
+				if (mode !== 'reject') {
+					let availableGuides: any[] = []
+
+					// Nếu có tourScheduleId, lấy thông tin chi tiết để biết ngày
+					if (res?.tourScheduleId) {
+						try {
+							const scheduleDetails = await getTourScheduleDetails(res.tourScheduleId)
+							console.log('Schedule Details:', scheduleDetails)
+
+							// Nếu có thông tin ngày trong schedule, lấy available guides cho ngày đó
+							if (scheduleDetails?.startDate) {
+								const scheduleDate = new Date(scheduleDetails.startDate).toISOString().split('T')[0]
+								console.log('Getting available guides for date:', scheduleDate)
+								availableGuides = await getAvailableTourGuides(scheduleDate)
+
+								// Loại bỏ tour guide hiện tại khỏi danh sách available guides
+								if (res.tourGuideId && Array.isArray(availableGuides)) {
+									availableGuides = availableGuides.filter(guide => guide.id !== res.tourGuideId)
+								}
+
+								console.log('Available guides (excluding current guide):', availableGuides)
+							} else {
+								// Fallback: lấy tất cả tour guides (trừ guide hiện tại)
+								const allGuides = await getTourGuide()
+								availableGuides = Array.isArray(allGuides)
+									? allGuides.filter(guide => guide.id !== res.tourGuideId)
+									: []
+							}
+						} catch (error) {
+							console.error('Error getting schedule details, falling back to all guides:', error)
+							const allGuides = await getTourGuide()
+							availableGuides = Array.isArray(allGuides)
+								? allGuides.filter(guide => guide.id !== res.tourGuideId)
+								: []
+						}
+					} else {
+						// Không có tourScheduleId, lấy tất cả tour guides (trừ guide hiện tại)
+						const allGuides = await getTourGuide()
+						availableGuides = Array.isArray(allGuides)
+							? allGuides.filter(guide => guide.id !== res.tourGuideId)
+							: []
+					}
+
+					setGuideOptions(availableGuides)
+				} else {
+					setGuideOptions([])
+				}
 
 				setDialogMode(mode)
 				setOpenDialog(true)
@@ -110,7 +164,7 @@ export default function RejectionRequestTable() {
 				console.error(error)
 			}
 		},
-		[getRejectionRequestDetail, getTourguideProfile, getTourGuide],
+		[getRejectionRequestDetail, getTourguideProfile, getTourGuide, getAvailableTourGuides, getTourScheduleDetails],
 	)
 
 	const handleOpenView = useCallback((id: string) => openWithData(id, 'view'), [openWithData])
@@ -154,7 +208,75 @@ export default function RejectionRequestTable() {
 			{
 				header: 'Hướng dẫn viên',
 				accessorKey: 'tourGuideId',
+				cell: ({ row }) => {
+					const tourGuideId = row.original.tourGuideId
+					return (
+						<div className="text-sm">
+							{tourGuideId ? (
+								<span className="font-medium text-blue-600">
+									ID: {tourGuideId.slice(-8)}
+								</span>
+							) : (
+								<span className="text-gray-400">Không có</span>
+							)}
+						</div>
+					)
+				}
 			},
+			{
+				header: 'Trạng thái',
+				accessorKey: 'status',
+				cell: ({ row }) => {
+					const status = row.original.status
+					const statusText = row.original.statusText
+
+					// Tạo badge dựa trên status
+					if (status === RejectionStatus.Pending) {
+						return (
+							<Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+								{statusText || 'Chờ duyệt'}
+							</Badge>
+						)
+					} else if (status === RejectionStatus.Approved) {
+						return (
+							<Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+								{statusText || 'Đã duyệt'}
+							</Badge>
+						)
+					} else if (status === RejectionStatus.Rejected) {
+						return (
+							<Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">
+								{statusText || 'Từ chối'}
+							</Badge>
+						)
+					} else {
+						return (
+							<Badge variant="outline" className="border-gray-200 bg-gray-50 text-gray-700">
+								{statusText || 'Không xác định'}
+							</Badge>
+						)
+					}
+				}
+			},
+			// {
+			// 	hidden: true,
+			// 	header: 'Lịch trình',
+			// 	accessorKey: 'tourScheduleId',
+			// 	cell: ({ row }) => {
+			// 		const tourScheduleId = row.original.tourScheduleId
+			// 		return (
+			// 			<div className="text-sm">
+			// 				{tourScheduleId ? (
+			// 					<span className="font-medium text-green-600">
+			// 						ID: {tourScheduleId.slice(-8)}
+			// 					</span>
+			// 				) : (
+			// 					<span className="text-gray-400">Không có</span>
+			// 				)}
+			// 			</div>
+			// 		)
+			// 	}
+			// },
 			{ header: 'Lý do', accessorKey: 'reason' },
 			{ header: 'Comment', accessorKey: 'moderatorComment' },
 			{
@@ -193,26 +315,6 @@ export default function RejectionRequestTable() {
 					<CardTitle>Yêu cầu từ chối chuyến tham quan (Hướng Dẫn Viên)</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="flex justify-between items-center">
-						<div className="flex gap-2">
-							<Select value={String(status)} onValueChange={(value) => setStatus(value === 'all' ? 'all' : (Number(value) as RejectionStatus))}>
-								<SelectTrigger>
-									<SelectValue placeholder="Status" />
-								</SelectTrigger>
-								<SelectContent>
-									{STATUS_OPTIONS.map((opt) => (
-										<SelectItem key={opt.label} value={String(opt.value)}>
-											{opt.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<Input type="date" placeholder="Từ ngày" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-							<Input type="date" placeholder="Đến ngày" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-						</div>
-						<Button variant="outline" onClick={() => fetchList({ page: 1 })}>Làm mới</Button>
-					</div>
-
 					<DataTable
 						columns={columns}
 						data={data}

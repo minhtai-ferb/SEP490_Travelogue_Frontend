@@ -45,7 +45,7 @@ export default function AuthForm() {
 	}
 
 	return (
-		<div className="flex min-h-screen flex-col md:flex-row">
+		<div className="flex max-h-screen flex-col md:flex-row">
 			{/* Left side - Background image and branding */}
 			<div className="relative flex flex-1 flex-col items-center justify-center bg-blue-900 p-8 text-center text-white">
 				<div className="relative z-10 max-w-md">
@@ -67,12 +67,12 @@ export default function AuthForm() {
 			</div>
 
 			{/* Right side - Auth form */}
-			<div className="flex flex-1 flex-col items-center justify-center bg-white p-8 h-screen overflow-auto">
+			<div className="flex flex-1 flex-col items-center justify-center bg-white p-8 min-h-screen overflow-auto">
 				<div className="w-full max-w-md">
 					<div className="mb-8 text-center">
-						<div className="relative flex justify-center">
+						<div className="flex justify-center">
 							<Link href="/">
-								<Image src="/mascot.png" alt="logo" width={80} height={80} className="object-contain cursor-pointer" />
+								<Image src="/mascot.png" alt="logo" width={80} height={80} className="object-cover cursor-pointer" />
 							</Link>
 						</div>
 						<h2 className="text-4xl font-bold text-sky-500">

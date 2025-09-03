@@ -383,6 +383,62 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	);
 
+	const getAvailableTourGuides = useCallback(
+		async (date: string) => {
+			setLoading(true);
+			try {
+				// Format date to YYYY-MM-DD if needed
+				const formattedDate = date.includes('T') ? date.split('T')[0] : date;
+
+				// Lấy tất cả tour guides có sẵn trong ngày (không bận)
+				const params = {
+					FullName: "",
+					StartDate: formattedDate,
+					EndDate: formattedDate,
+					MinRating: 0,
+					MaxRating: Number.MAX_SAFE_INTEGER,
+					Gender: "",
+					MinPrice: 0,
+					MaxPrice: Number.MAX_SAFE_INTEGER,
+				}
+
+				console.log('Getting available tour guides with params:', params);
+
+				const response = await callApi("get", TOUR_GUIDE_API_URL.TOUR_GUIDE_FILTER, { params });
+
+				console.log('Available tour guides response:', response?.data);
+
+				return response?.data;
+			} catch (e: any) {
+				console.log('====================================');
+				console.log(`Error fetching available tour guides: ${e.message}`);
+				console.log('====================================');
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
+	const getTourScheduleDetails = useCallback(
+		async (tourScheduleId: string) => {
+			if (!tourScheduleId) return null;
+
+			setLoading(true);
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.GET_TOUR_GUIDE_SCHEDULE_DETAIL.replace(":id", tourScheduleId));
+				return response?.data;
+			} catch (e: any) {
+				console.log('====================================');
+				console.log(`Error fetching tour schedule details: ${e.message}`);
+				console.log('====================================');
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	)
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
@@ -397,6 +453,8 @@ export function useTourguideAssign() {
 		deleteCertification,
 		getTourGuideRequestLatest,
 		getTourGuideScheduleDetail,
+		getAvailableTourGuides,
+		getTourScheduleDetails,
 		createRejectionRequest,
 		getTourguideFilter,
 		updateTourguide,
