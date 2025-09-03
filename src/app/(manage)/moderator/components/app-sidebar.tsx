@@ -54,7 +54,7 @@ const data = {
   navMain: [
     {
       title: "Thống kê hệ thống",
-      url: "/moderator/dashboard/system",
+      url: "/moderator/dashboard",
       icon: SquareTerminal,
     },
     {
