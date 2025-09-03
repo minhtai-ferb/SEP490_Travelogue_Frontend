@@ -239,17 +239,6 @@ export default function TransactionTable() {
       },
     },
     {
-      title: "Trạng thái thanh toán",
-      key: "paymentStatus",
-      width: 150,
-      render: (_: any, record: Transaction) => (
-        <PaymentStatusTag
-          status={record.paymentStatus}
-          statusText={record.paymentStatusText}
-        />
-      ),
-    },
-    {
       title: "Trạng thái giao dịch",
       key: "status",
       width: 150,
