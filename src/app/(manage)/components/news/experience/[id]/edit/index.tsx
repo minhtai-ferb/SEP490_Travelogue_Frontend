@@ -107,6 +107,7 @@ export default function EditExperience({ href }: { href: string }) {
         description: formData.description,
         content: formData.content,
         locationId: formData.locationId,
+        newsCategory: 3,
         isHighlighted: formData.isHighlighted,
         typeExperience: formData.typeExperience,
         mediaDtos: images.length > 0 ? images : undefined,

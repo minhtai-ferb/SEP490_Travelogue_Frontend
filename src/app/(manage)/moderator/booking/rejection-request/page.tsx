@@ -1,6 +1,6 @@
 "use client";
 
-import RejectionRequestTable from "@/app/(manage)/components/booking/rejection-request/RejectionRequest";
+import RejectionRequestTable from "@/app/(manage)/components/booking/rejection-request";
 import BreadcrumbHeader, { Crumb } from "@/components/common/breadcrumb-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 

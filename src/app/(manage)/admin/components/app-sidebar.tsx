@@ -123,7 +123,7 @@ const data = {
           url: "/admin/booking/workshop",
         },
         {
-          title: "Yêu cầu hủy đặt chỗ",
+          title: "Yêu cầu từ chối lịch",
           url: "/admin/booking/rejection-request",
         }
       ],
