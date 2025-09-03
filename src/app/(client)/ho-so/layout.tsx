@@ -4,21 +4,19 @@ import React, { useEffect, useState } from "react";
 import Header from "./components/header";
 import Sidebar from "./components/sidebar";
 import VerificationAlert from "./components/verificationAlert";
-import { useLoginCheck } from "@/lib/login-check";
+import { useAtom } from "jotai";
+import { userAtom } from "@/store/auth";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 function Layout({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn } = useLoginCheck();
-
+  const [user] = useAtom(userAtom);
+  const router = useRouter();
   useEffect(() => {
-    isLoggedIn().then((loggedIn) => {
-      if (!loggedIn) {
-        console.log("User is not logged in. Redirecting to login...");
-      } else {
-        console.log("User is logged in.");
-      }
-    });
-  }, [isLoggedIn]);
-
+    if (!user) {
+      router.push("/auth");
+    }
+  }, []);
   return (
     <main className="flex min-h-screen flex-col">
       <Header />
