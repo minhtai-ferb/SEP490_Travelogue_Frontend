@@ -238,12 +238,12 @@ function CraftVillageLatestRequest({
 											{latestCraftVillage.workshop.recurringRules.map((rule: any, index: number) => (
 												<div key={rule.id || index} className="bg-white rounded-lg border p-3">
 													<div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-														<div>
+														{/* <div>
 															<span className="text-gray-500">Thời gian:</span>
 															<p className="font-medium">
 																{dayjs(rule.startDate).format("DD/MM/YYYY")} - {dayjs(rule.endDate).format("DD/MM/YYYY")}
 															</p>
-														</div>
+														</div> */}
 														<div>
 															<span className="text-gray-500">Các ngày:</span>
 															<div className="flex flex-wrap gap-1 mt-1">

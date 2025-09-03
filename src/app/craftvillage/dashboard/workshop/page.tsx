@@ -350,12 +350,12 @@ export default function WorkshopPage() {
 								</Button>
 							</div>
 
-							<Link href="/craftvillage/dashboard/workshop/create">
+							{/* <Link href="/craftvillage/dashboard/workshop/create">
 								<Button disabled={loadingCraftVillageId || !craftVillageId}>
 									<Plus className="h-4 w-4 mr-2" />
 									Tạo trải nghiệm
 								</Button>
-							</Link>
+							</Link> */}
 						</div>
 					</CardHeader>
 					<CardContent>

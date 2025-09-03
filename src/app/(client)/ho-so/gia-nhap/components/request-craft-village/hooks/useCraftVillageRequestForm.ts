@@ -189,10 +189,6 @@ export function useCraftVillageRequestForm() {
         toast.error(`${file.name} không phải là hình ảnh hoặc PDF`)
         continue
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} có kích thước vượt quá 5MB`)
-        continue
-      }
       validFiles.push(file)
       validTypes.push(file.type)
       validNames.push(file.name)
@@ -284,21 +280,39 @@ export function useCraftVillageRequestForm() {
     setModelPreviews([])
     setModelMimeTypes([])
     setModelFileNames([])
+    setUploadedModelUrls([])
     setErrors({})
+    setIsSuccess(false)
+  }
+
+  // Manual reset function for user to call if needed
+  const resetFormManual = () => {
+    if (window.confirm("Bạn có chắc muốn xóa toàn bộ thông tin đã nhập?")) {
+      resetForm()
+      toast.success("Form đã được làm mới")
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent, workshopData?: any[]) => {
     e.preventDefault()
+
+    // Validate form trước khi submit
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin")
       return
     }
 
     setIsSubmitting(true)
+
     try {
+      // Show loading toast for better UX
+      const loadingToastId = toast.loading("Đang xử lý đăng ký...")
+
       // Prefer pre-uploaded URLs from custom uploader; fallback to uploading local files
       let modelUrls: MediaDto[] = uploadedModelUrls
       if ((!Array.isArray(modelUrls) || modelUrls.length === 0) && modelFiles.length > 0) {
+        // Update loading message
+        toast.loading("Đang tải lên hình ảnh...", { id: loadingToastId })
         const uploadedUrls = await uploadCertifications(modelFiles) as unknown as MediaDto[]
         modelUrls = uploadedUrls
       } else {
@@ -322,18 +336,42 @@ export function useCraftVillageRequestForm() {
       console.log("Workshop data:", workshopData)
       console.log("====================================")
 
-      await createCraftVillageRequest(finalPayload)
-      setIsSuccess(true)
-      toast.success("Đăng ký thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.")
+      // Update loading message
+      toast.loading("Đang gửi đăng ký...", { id: loadingToastId })
 
+      // API call - chỉ khi này thành công mới tiếp tục
+      await createCraftVillageRequest(finalPayload)
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToastId)
+
+      // API thành công -> set success state
+      setIsSuccess(true)
+      toast.success("🎉 Đăng ký thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.")
+
+      // CHỈ reset form sau khi API thành công và có delay để user thấy thông báo
       setTimeout(() => {
         resetForm()
         setIsSuccess(false)
+        toast.success("Form đã được làm mới để bạn có thể đăng ký thêm")
       }, 3000)
+
     } catch (error: any) {
       // eslint-disable-next-line no-console
       console.error("Submit error:", error)
-      toast.error(error?.message || "Có lỗi xảy ra, vui lòng thử lại")
+
+      // KHÔNG reset form khi có lỗi - giữ nguyên dữ liệu để user có thể sửa
+      const errorMessage = error?.response?.data?.Message || error?.message || "Có lỗi xảy ra, vui lòng thử lại"
+      toast.error(`❌ ${errorMessage}`)
+
+      // Optional: scroll to first error field
+      const firstErrorField = Object.keys(errors)[0]
+      if (firstErrorField) {
+        const element = document.querySelector(`[name="${firstErrorField}"]`)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -358,6 +396,7 @@ export function useCraftVillageRequestForm() {
     handleModelFileChange,
     removeModelFile,
     handleSubmit,
+    resetFormManual,
   }
 }
 
