@@ -13,7 +13,7 @@ export default function UserDetailViewPage() {
 
   return (
     <SidebarInset>
-      <BreadcrumbHeader items={crumbs} />
+      <BreadcrumbHeader items={crumbs} showBackButton={true}/>
       <UserDetailView />
     </SidebarInset>
   );
