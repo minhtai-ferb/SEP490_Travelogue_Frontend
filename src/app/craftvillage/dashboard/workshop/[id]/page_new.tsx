@@ -104,133 +104,15 @@ function WorkshopDetailPage() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
-	// Mock data from API response for testing
-	const mockWorkshop: WorkshopDetailData = {
-		id: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-		name: "Trải nghiệm nặn gốm",
-		description: "Buổi trải nghiệm nặn gốm cùng nghệ nhân địa phương.",
-		content: "Bao gồm hướng dẫn, thực hành và trưng bày sản phẩm.",
-		status: 1,
-		craftVillageId: "08dde6d9-66ff-4c69-8e1a-082ffa97392a",
-		locationId: "08dde6d9-66f0-4b83-8ee9-b6a1b12fb5e8",
-		craftVillageName: "Làng gốm Bát Tràng",
-		ticketTypes: [
-			{
-				id: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				type: 1,
-				name: "Vé trải nghiệm (Người lớn)",
-				price: 150000,
-				isCombo: false,
-				durationMinutes: 90,
-				content: "Phù hợp cho người mới bắt đầu.",
-				activities: [
-					{
-						id: "08dde6d9-6c30-4720-8276-64a07fffa754",
-						workshopTicketTypeId: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-						activity: "Giới thiệu làng nghề",
-						description: "Lược sử Bát Tràng và các dòng gốm.",
-						durationMinutes: 0,
-						activityOrder: 1
-					},
-					{
-						id: "08dde6d9-6c3a-4a1c-8391-fd420ce85237",
-						workshopTicketTypeId: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-						activity: "Hướng dẫn kỹ thuật cơ bản",
-						description: "Căn chỉnh bàn xoay, kỹ thuật nắn, tạo dáng.",
-						durationMinutes: 0,
-						activityOrder: 2
-					},
-					{
-						id: "08dde6d9-6c3a-4afd-8771-5c461dabd0df",
-						workshopTicketTypeId: "08dde6d9-6c24-4aae-8ee4-fcb5e7a792d2",
-						activity: "Thực hành nặn sản phẩm",
-						description: "Tự tay nặn sản phẩm gốm đơn giản.",
-						durationMinutes: 0,
-						activityOrder: 3
-					}
-				]
-			}
-		],
-		schedules: [
-			{
-				id: "08dde6d9-7639-4ec8-819d-927a8a082e37",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				startTime: "2025-09-06T09:00:00",
-				endTime: "2025-09-06T10:30:00",
-				capacity: 20,
-				currentBooked: 0,
-				notes: "",
-				status: 1
-			},
-			{
-				id: "08dde6d9-7645-4027-8692-52c27f25a55e",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				startTime: "2025-09-06T14:00:00",
-				endTime: "2025-09-06T15:30:00",
-				capacity: 20,
-				currentBooked: 0,
-				notes: "",
-				status: 1
-			},
-			{
-				id: "08dde6d9-7646-4c24-8d54-2d7cc9aafa6f",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				startTime: "2025-09-07T09:00:00",
-				endTime: "2025-09-07T10:30:00",
-				capacity: 20,
-				currentBooked: 4,
-				notes: "",
-				status: 1
-			}
-		],
-		recurringRules: [
-			{
-				id: "08dde6d9-6cfc-470f-8245-6abbc740d5d0",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				daysOfWeek: [6, 0],
-				daysOfWeekText: ["Saturday", "Sunday"],
-				daysOfWeekDisplay: "Saturday, Sunday",
-				sessions: [
-					{
-						id: "08dde6d9-6ef9-4942-8f19-01e46ec69051",
-						recurringRuleId: "08dde6d9-6cfc-470f-8245-6abbc740d5d0",
-						startTime: "09:00:00",
-						endTime: "10:30:00",
-						capacity: 20
-					},
-					{
-						id: "08dde6d9-6f03-464e-817a-a5fa70ca2de2",
-						recurringRuleId: "08dde6d9-6cfc-470f-8245-6abbc740d5d0",
-						startTime: "14:00:00",
-						endTime: "15:30:00",
-						capacity: 20
-					}
-				]
-			}
-		],
-		exceptions: [
-			{
-				id: "08dde6d9-7043-430d-8ac9-5efc7be1ef5e",
-				workshopId: "08dde6d9-6b7a-4c29-8ef1-70610afe10f9",
-				date: "2025-09-02T00:00:00",
-				reason: "Bảo trì khu trải nghiệm"
-			}
-		],
-		medias: []
-	}
-
 	useEffect(() => {
-		fetchWorkshopDetail()
+		fetchWorkshopDetail(id as string)
 	}, [id])
 
-	const fetchWorkshopDetail = async () => {
+	const fetchWorkshopDetail = async (id: string) => {
 		try {
 			setLoading(true)
-			// For now, use mock data
-			setWorkshop(mockWorkshop)
-			// const result = await getWorkshopDetail(id as string)
-			// setWorkshop(result)
+			const response = await getWorkshopDetail(id)
+			setWorkshop(response)
 		} catch (err) {
 			setError('Không thể tải thông tin workshop')
 			console.error(err)

@@ -306,6 +306,41 @@ export function useTourguideAssign() {
 		}
 	}, [callApi, setLoading]);
 
+	const createPriceRequest = useCallback(
+		async ({ price }: { price: number }) => {
+			setLoading(true);
+			// params price: { price }
+			try {
+				const response = await callApi("post", TOUR_GUIDE_API_URL.CREATE_REQUEST_PRICE, { price });
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
+	const getBookingPriceRequest = useCallback(
+		async ({ status, fromDate, toDate }: { status?: number; fromDate?: string; toDate?: string }) => {
+			setLoading(true);
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.GET_BOOKING_PRICE_REQUEST, {
+					params: {
+						status,
+						fromDate,
+						toDate
+					}
+				});
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
@@ -324,6 +359,8 @@ export function useTourguideAssign() {
 		getTourguideFilter,
 		updateTourguide,
 		tourguideDashboard,
+		getBookingPriceRequest,
+		createPriceRequest,
 		loading: isLoading || loading,
 	};
 }

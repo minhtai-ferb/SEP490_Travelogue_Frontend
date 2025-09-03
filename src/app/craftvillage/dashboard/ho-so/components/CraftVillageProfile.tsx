@@ -23,7 +23,6 @@ import {
 	Mail,
 	Globe,
 	Clock,
-	DollarSign,
 	Edit2,
 	Save,
 	X,
@@ -39,6 +38,7 @@ import {
 } from "lucide-react"
 import toast from "react-hot-toast"
 import { MediaDto } from "@/app/(manage)/components/locations/create/types/CreateLocation"
+import { CiMoneyBill } from "react-icons/ci"
 
 // Local MediaDto interface for craft village images
 interface CraftVillageMediaDto {
@@ -69,16 +69,102 @@ const convertToCraftVillageMediaDto = (mediaDtos: MediaDto[]): CraftVillageMedia
 	}))
 }
 
-// TimeSpan utility functions
-const ticksToTimeString = (ticks: number): string => {
-	const hours = Math.floor(ticks / 36000000000)
-	const minutes = Math.floor((ticks % 36000000000) / 600000000)
-	return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+// TimeSpan utility functions - REMOVED since we now use "HH:MM:SS" format directly
+// const ticksToTimeString = (ticks: number): string => {...}
+// const timeStringToTicks = (timeString: string): number => {...}
+
+// API Response interfaces based on actual data structure
+interface WorkshopActivity {
+	id: string
+	workshopTicketTypeId: string
+	activity: string
+	description: string
+	durationMinutes: number
+	activityOrder: number
 }
 
-const timeStringToTicks = (timeString: string): number => {
-	const [hours, minutes] = timeString.split(':').map(Number)
-	return (hours * 36000000000) + (minutes * 600000000)
+interface TicketType {
+	id: string
+	workshopId: string
+	type: number
+	name: string
+	price: number
+	isCombo: boolean
+	durationMinutes: number
+	content: string
+	activities: WorkshopActivity[]
+}
+
+interface WorkshopSchedule {
+	id: string
+	workshopId: string
+	startTime: string
+	endTime: string
+	capacity: number
+	currentBooked: number
+	notes: string
+	status: number
+}
+
+interface WorkshopSession {
+	id: string
+	recurringRuleId: string
+	startTime: string
+	endTime: string
+	capacity: number
+}
+
+interface RecurringRule {
+	id: string
+	workshopId: string
+	daysOfWeek: number[]
+	daysOfWeekText: string[]
+	daysOfWeekDisplay: string
+	sessions: WorkshopSession[]
+}
+
+interface WorkshopException {
+	id: string
+	workshopId: string
+	date: string
+	reason: string
+}
+
+interface WorkshopData {
+	id: string
+	name: string
+	description: string
+	content: string
+	status: number
+	craftVillageId: string
+	locationId: string
+	craftVillageName: string
+	ticketTypes: TicketType[]
+	schedules: WorkshopSchedule[]
+	recurringRules: RecurringRule[]
+	exceptions: WorkshopException[]
+	medias: any[]
+}
+
+interface CraftVillageInfo {
+	ownerId: string
+	phoneNumber: string
+	email: string
+	website: string
+	signatureProduct: string
+	yearsOfHistory: number
+	workshopsAvailable: boolean
+	isRecognizedByUnesco: boolean
+	workshop: WorkshopData | null
+}
+
+interface LocationMedia {
+	id: string
+	url: string
+	name: string
+	description?: string
+	isThumbnail: boolean
+	type: string
 }
 
 interface CraftVillageData {
@@ -87,25 +173,26 @@ interface CraftVillageData {
 	description: string
 	content: string
 	address: string
+	minPrice: number
+	maxPrice: number
 	latitude: number
 	longitude: number
-	openTime: number // TimeSpan in ticks
-	closeTime: number // TimeSpan in ticks
-	districtId?: string
-	phoneNumber: string
-	email: string
-	website?: string
-	signatureProduct: string
-	yearsOfHistory: number
-	isRecognizedByUnesco: boolean
-	workshopsAvailable: boolean
-	visitPrice?: number
-	medias?: Array<{
-		id: string
-		url: string
-		isThumbnail: boolean
-		type: string
-	}>
+	rating: number
+	openTime: string // "HH:MM:SS" format
+	closeTime: string // "HH:MM:SS" format
+	category: string
+	districtId: string
+	districtName: string
+	medias: LocationMedia[]
+	cuisine: any
+	craftVillage: CraftVillageInfo
+	historicalLocation: any
+	createdTime: string
+	lastUpdatedTime: string
+	createdBy: string
+	createdByName: string | null
+	lastUpdatedBy: string
+	lastUpdatedByName: string | null
 }
 
 interface CraftVillageProfileProps {
@@ -166,32 +253,43 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 				const data = await getCraftVillageInfo(craftVillageId)
 				if (data) {
 					setCraftVillage(data)
-					// Populate form fields
+					// Populate form fields from the new data structure
 					setName(data.name || "")
 					setDescription(data.description || "")
 					setContent(data.content || "")
 					setAddress(data.address || "")
 					setLatitude(data.latitude || 11.314528)
 					setLongitude(data.longitude || 106.086614)
-					setOpenTime(data.openTime ? ticksToTimeString(data.openTime) : "08:00")
-					setCloseTime(data.closeTime ? ticksToTimeString(data.closeTime) : "17:00")
+
+					// Convert time format from "HH:MM:SS" to "HH:MM"
+					setOpenTime(data.openTime ? data.openTime.substring(0, 5) : "08:00")
+					setCloseTime(data.closeTime ? data.closeTime.substring(0, 5) : "17:00")
+
 					setDistrictId(data.districtId?.toString() || "")
-					setPhoneNumber(data.phoneNumber || "")
-					setEmail(data.email || "")
-					setWebsite(data.website || "")
-					setSignatureProduct(data.signatureProduct || "")
-					setYearsOfHistory(data.yearsOfHistory || "")
-					setIsRecognizedByUnesco(data.isRecognizedByUnesco || false)
-					setWorkshopsAvailable(data.workshopsAvailable || false)
-					setVisitPrice(data.visitPrice || "")
+
+					// Map craftVillage info
+					if (data.craftVillage) {
+						setPhoneNumber(data.craftVillage.phoneNumber || "")
+						setEmail(data.craftVillage.email || "")
+						setWebsite(data.craftVillage.website || "")
+						setSignatureProduct(data.craftVillage.signatureProduct || "")
+						setYearsOfHistory(data.craftVillage.yearsOfHistory || "")
+						setIsRecognizedByUnesco(data.craftVillage.isRecognizedByUnesco || false)
+						setWorkshopsAvailable(data.craftVillage.workshopsAvailable || false)
+					}
+
+					// Set visit price from minPrice if no workshops available
+					if (!data.craftVillage?.workshopsAvailable && data.minPrice) {
+						setVisitPrice(data.minPrice)
+					}
 
 					// Convert medias to CraftVillageMediaDto format
-					if (data.medias) {
-						const convertedMedias: CraftVillageMediaDto[] = data.medias.map((media: any, index: number) => ({
-							id: index,
+					if (data.medias && data.medias.length > 0) {
+						const convertedMedias: CraftVillageMediaDto[] = data.medias.map((media: LocationMedia, index: number) => ({
+							id: media.id || index,
 							url: media.url,
-							name: `Image ${index + 1}`,
-							description: "",
+							name: media.name || `Image ${index + 1}`,
+							description: media.description || "",
 							isThumbnail: media.isThumbnail,
 							type: media.type
 						}))
@@ -265,8 +363,9 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 				address: address.trim(),
 				latitude,
 				longitude,
-				openTime: timeStringToTicks(openTime),
-				closeTime: timeStringToTicks(closeTime),
+				// Convert time from "HH:MM" to "HH:MM:SS" format
+				openTime: `${openTime}:00`,
+				closeTime: `${closeTime}:00`,
 				districtId: districtId,
 				phoneNumber: phoneNumber.replace(/\s/g, ""),
 				email: email.trim(),
@@ -298,34 +397,6 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 		if (craftVillage) {
 			// Reset form to original data
 			setName(craftVillage.name || "")
-			setDescription(craftVillage.description || "")
-			setContent(craftVillage.content || "")
-			setAddress(craftVillage.address || "")
-			setLatitude(craftVillage.latitude || 11.314528)
-			setLongitude(craftVillage.longitude || 106.086614)
-			setOpenTime(craftVillage.openTime ? ticksToTimeString(craftVillage.openTime) : "08:00")
-			setCloseTime(craftVillage.closeTime ? ticksToTimeString(craftVillage.closeTime) : "17:00")
-			setDistrictId(craftVillage.districtId?.toString() || "")
-			setPhoneNumber(craftVillage.phoneNumber || "")
-			setEmail(craftVillage.email || "")
-			setWebsite(craftVillage.website || "")
-			setSignatureProduct(craftVillage.signatureProduct || "")
-			setYearsOfHistory(craftVillage.yearsOfHistory || "")
-			setIsRecognizedByUnesco(craftVillage.isRecognizedByUnesco || false)
-			setWorkshopsAvailable(craftVillage.workshopsAvailable || false)
-			setVisitPrice(craftVillage.visitPrice || "")
-
-			if (craftVillage.medias) {
-				const convertedMedias: CraftVillageMediaDto[] = craftVillage.medias.map((media: any, index: number) => ({
-					id: index,
-					url: media.url,
-					name: `Image ${index + 1}`,
-					description: "",
-					isThumbnail: media.isThumbnail,
-					type: media.type
-				}))
-				setMediaDtos(convertedMedias)
-			}
 		}
 		setErrors({})
 		setIsEditing(false)
@@ -368,13 +439,13 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 							<div className="flex items-center gap-4 mb-2">
 								<h1 className="text-4xl font-bold">{craftVillage.name}</h1>
 								<div className="flex gap-2">
-									{craftVillage.isRecognizedByUnesco && (
+									{craftVillage.craftVillage?.isRecognizedByUnesco && (
 										<Badge className="bg-yellow-500 text-black font-medium">
 											<Award className="h-3 w-3 mr-1" />
 											UNESCO
 										</Badge>
 									)}
-									{craftVillage.workshopsAvailable && (
+									{craftVillage.craftVillage?.workshopsAvailable && (
 										<Badge className="bg-green-500 text-white">
 											<Users className="h-3 w-3 mr-1" />
 											Workshop
@@ -390,7 +461,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 								</span>
 								<span className="flex items-center gap-1">
 									<History className="h-4 w-4" />
-									{craftVillage.yearsOfHistory} năm lịch sử
+									{craftVillage.craftVillage?.yearsOfHistory} năm lịch sử
 								</span>
 							</div>
 						</div>
@@ -430,7 +501,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 			</div>
 
 			{/* Main Content */}
-			<div className="max-w-7xl mx-auto px-6 -mt-20 relative z-10">
+			<div className="max-w-7xl mx-auto px-6 mt-20 relative z-10">
 				<Tabs defaultValue="overview" className="space-y-6">
 					<TabsList className="grid w-full grid-cols-4 bg-white shadow-lg rounded-xl p-2">
 						<TabsTrigger value="overview" className="rounded-lg">Tổng quan</TabsTrigger>
@@ -534,7 +605,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 												placeholder="VD: Gốm sứ, mây tre..."
 											/>
 										) : (
-											<p className="font-medium text-orange-700">{craftVillage.signatureProduct}</p>
+											<p className="font-medium text-orange-700">{craftVillage.craftVillage?.signatureProduct}</p>
 										)}
 										{errors.signatureProduct && <p className="text-xs text-red-500">{errors.signatureProduct}</p>}
 									</div>
@@ -549,7 +620,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 												placeholder="VD: 200"
 											/>
 										) : (
-											<p className="font-medium text-blue-700">{craftVillage.yearsOfHistory} năm</p>
+											<p className="font-medium text-blue-700">{craftVillage.craftVillage?.yearsOfHistory} năm</p>
 										)}
 										{errors.yearsOfHistory && <p className="text-xs text-red-500">{errors.yearsOfHistory}</p>}
 									</div>
@@ -570,7 +641,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 										) : (
 											<p className="flex items-center gap-2 font-medium text-green-700">
 												<Clock className="h-4 w-4" />
-												{ticksToTimeString(craftVillage.openTime)} - {ticksToTimeString(craftVillage.closeTime)}
+												{craftVillage.openTime?.substring(0, 5)} - {craftVillage.closeTime?.substring(0, 5)}
 											</p>
 										)}
 										{errors.closeTime && <p className="text-xs text-red-500">{errors.closeTime}</p>}
@@ -596,7 +667,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 												<Label htmlFor="isRecognizedByUnesco">Được UNESCO công nhận</Label>
 											</div>
 
-											{!workshopsAvailable && (
+											{workshopsAvailable && (
 												<div className="space-y-2">
 													<Label>Giá tham quan (VNĐ) *</Label>
 													<Input
@@ -611,12 +682,12 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 										</div>
 									)}
 
-									{!workshopsAvailable && !isEditing && craftVillage.visitPrice && (
+									{!workshopsAvailable && !isEditing && craftVillage.minPrice && (
 										<div className="space-y-2">
 											<Label>Giá tham quan</Label>
 											<p className="flex items-center gap-2 font-medium text-green-700">
-												<DollarSign className="h-4 w-4" />
-												{craftVillage.visitPrice.toLocaleString("vi-VN")}đ
+												<CiMoneyBill className="h-4 w-4" />
+												{craftVillage.minPrice.toLocaleString("vi-VN")}đ
 											</p>
 										</div>
 									)}
@@ -647,7 +718,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 										) : (
 											<p className="flex items-center gap-2 text-lg">
 												<Phone className="h-4 w-4 text-green-600" />
-												{craftVillage.phoneNumber}
+												{craftVillage.craftVillage?.phoneNumber}
 											</p>
 										)}
 										{errors.phoneNumber && <p className="text-xs text-red-500">{errors.phoneNumber}</p>}
@@ -664,7 +735,7 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 										) : (
 											<p className="flex items-center gap-2 text-lg">
 												<Mail className="h-4 w-4 text-blue-600" />
-												{craftVillage.email}
+												{craftVillage.craftVillage?.email}
 											</p>
 										)}
 										{errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
@@ -679,16 +750,16 @@ export default function CraftVillageProfile({ craftVillageId }: CraftVillageProf
 												placeholder="https://..."
 											/>
 										) : (
-											craftVillage.website && (
+											craftVillage.craftVillage?.website && (
 												<p className="flex items-center gap-2 text-lg">
 													<Globe className="h-4 w-4 text-purple-600" />
 													<a
-														href={craftVillage.website}
+														href={craftVillage.craftVillage.website}
 														target="_blank"
 														rel="noopener noreferrer"
 														className="text-blue-600 hover:underline"
 													>
-														{craftVillage.website}
+														{craftVillage.craftVillage.website}
 													</a>
 												</p>
 											)

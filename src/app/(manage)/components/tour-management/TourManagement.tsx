@@ -1,5 +1,6 @@
 "use client";
 
+import '@ant-design/v5-patch-for-react-19';
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, message, Modal } from "antd";
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -104,7 +105,7 @@ function TourManagement({ href }: TourManagementAntdProps) {
   const paginatedTours = useMemo(() => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
-    return filteredTours.slice(start, end);
+    return filteredTours.slice(start, end)
   }, [page, pageSize, filteredTours]);
 
   // Actions

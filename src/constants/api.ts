@@ -33,6 +33,8 @@ export const TOUR_GUIDE_API_URL = {
   TOUR_GUIDE_PROFILE_UPDATE: "/tour-guide/update",
   DASHBOARD_TOURGUIDE_STATISTIC: "/dashboard/tour-guides-statistic/:tourGuideId",
   DASHBOARD_TOURGUIDE: "/tour-guide/dashboard",
+  GET_BOOKING_PRICE_REQUEST: "/tour-guide/booking-price-requests/mine",
+  CREATE_REQUEST_PRICE: "/tour-guide/booking-price-request"
 };
 
 export const MEDIA_API_URL = {
