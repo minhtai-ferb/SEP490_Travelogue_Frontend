@@ -30,7 +30,7 @@ export const useLoginCheck = () => {
     const token = Cookies.get("jwtToken");
     const refreshToken = Cookies.get("refreshToken");
 
-    if (!token || !refreshToken) {
+    if (token == null || refreshToken == null) {
       RedirectLogin();
       return false;
     }

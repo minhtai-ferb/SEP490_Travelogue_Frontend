@@ -54,7 +54,7 @@ const data = {
   navMain: [
     {
       title: "Thống kê hệ thống",
-      url: "/moderator/dashboard/system",
+      url: "/moderator/dashboard",
       icon: SquareTerminal,
     },
     {
@@ -100,7 +100,7 @@ const data = {
           url: "/moderator/booking/workshop",
         },
         {
-          title: "Yêu cầu hủy đặt chỗ",
+          title: "Yêu cầu từ chối lịch",
           url: "/moderator/booking/rejection-request",
         }
       ],

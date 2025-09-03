@@ -6,6 +6,7 @@ import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { TableSkeleton } from './Skeleton'
 interface DataTableProps {
 	columns: ColumnDef<RejectionRequestDetail>[]
 	data: RejectionRequestDetail[]
@@ -55,23 +56,14 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 
 	return (
 		<div className="space-y-4">
-			{/* Header with total count */}
-			<div className="flex justify-between items-center">
-				<div className="text-sm text-gray-600 font-medium">
-					Tổng cộng {total.toLocaleString()} kết quả
-				</div>
-				<div className="text-xs text-gray-500">
-					Trang {page} / {Math.ceil(total / pageSize)}
-				</div>
-			</div>
 
 			{/* Table */}
-			<div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+			<div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
 				<Table>
 					<TableHeader>
-						<TableRow className="bg-gray-50/80 hover:bg-gray-50">
+						<TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 border-b-2 border-gray-200">
 							{columns.map((column, idx) => (
-								<TableHead key={(column as any).accessorKey ?? column.id ?? idx} className="font-semibold text-gray-700">
+								<TableHead key={(column as any).accessorKey ?? column.id ?? idx} className="font-semibold text-gray-800 py-4 text-sm">
 									{typeof column.header === 'string' ? column.header : null}
 								</TableHead>
 							))}
@@ -80,10 +72,16 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 					{loading ? (
 						<TableBody>
 							<TableRow>
-								<TableCell colSpan={columns.length} className="text-center py-12">
-									<div className="flex flex-col items-center gap-2">
-										<Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-										<span className="text-sm text-gray-500">Đang tải dữ liệu...</span>
+								<TableCell colSpan={columns.length} className="text-center py-16">
+									<div className="flex flex-col items-center gap-3">
+										<div className="relative">
+											<Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+											<div className="absolute inset-0 w-8 h-8 border-2 border-blue-200 rounded-full animate-pulse"></div>
+										</div>
+										<div className="space-y-1">
+											<span className="text-base font-medium text-gray-700">Đang tải dữ liệu...</span>
+											<span className="text-sm text-gray-500">Vui lòng chờ trong giây lát</span>
+										</div>
 									</div>
 								</TableCell>
 							</TableRow>
@@ -92,19 +90,28 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 						<TableBody>
 							{data.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={columns.length} className="text-center py-12">
-										<div className="flex flex-col items-center gap-2">
-											<div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-												<span className="text-gray-400 text-xl">📄</span>
+									<TableCell colSpan={columns.length} className="text-center py-16">
+										<div className="flex flex-col items-center gap-4">
+											<div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-sm">
+												<span className="text-gray-400 text-2xl">📄</span>
 											</div>
-											<span className="text-sm text-gray-500 font-medium">Không có dữ liệu</span>
-											<span className="text-xs text-gray-400">Thử thay đổi bộ lọc hoặc tìm kiếm khác</span>
+											<div className="space-y-2">
+												<span className="text-lg font-semibold text-gray-700">Không có dữ liệu</span>
+												<p className="text-sm text-gray-500 max-w-md">
+													Không tìm thấy yêu cầu nào khớp với bộ lọc hiện tại.
+													Hãy thử thay đổi các tiêu chí tìm kiếm.
+												</p>
+											</div>
 										</div>
 									</TableCell>
 								</TableRow>
 							) : (
 								data.map((item, index) => (
-									<TableRow key={item.id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+									<TableRow
+										key={item.id}
+										className={`hover:bg-blue-50/70 transition-all duration-200 border-b border-gray-100 group ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'
+											}`}
+									>
 										{columns.map((column, cidx) => {
 											const key = (column as any).accessorKey as string | undefined
 											const value = key ? (item as any)[key] : undefined
@@ -119,7 +126,7 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 											if (key === 'tourGuideId') content = guideById[value]?.name ?? value
 											if (key === 'tourGuideEmail') content = guideById[value]?.email ?? ''
 											return (
-												<TableCell key={key ?? column.id ?? cidx} className="text-gray-700">
+												<TableCell key={key ?? column.id ?? cidx} className="text-gray-700 py-4 group-hover:bg-transparent transition-colors">
 													{content ?? ''}
 												</TableCell>
 											)
@@ -133,12 +140,12 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 			</div>
 
 			{/* Pagination Controls */}
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+			<div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-4 px-2">
 				{/* Page Size Selector */}
-				<div className="flex items-center gap-2 text-sm">
-					<span className="text-gray-600 whitespace-nowrap">Hiển thị</span>
+				<div className="flex items-center gap-3 text-sm">
+					<span className="text-gray-600 whitespace-nowrap font-medium">Hiển thị</span>
 					<Select value={pageSize.toString()} onValueChange={(value) => onPageSizeChange(Number(value))}>
-						<SelectTrigger className="w-[80px] h-8">
+						<SelectTrigger className="w-[80px] h-9 border-gray-300 bg-white hover:border-blue-400 transition-colors">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -153,42 +160,48 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 				</div>
 
 				{/* Page Info and Navigation */}
-				<div className="flex items-center gap-6">
+				<div className="flex flex-col lg:flex-row items-center gap-4">
 					{/* Page Range Info */}
-					<div className="text-sm text-gray-600 hidden sm:block">
+					<div className="text-sm text-gray-600 font-medium bg-gray-50 px-3 py-2 rounded-lg hidden lg:block">
 						{total === 0 ? (
 							"Không có dữ liệu"
 						) : (
-							`${((page - 1) * pageSize + 1).toLocaleString()}-${Math.min(page * pageSize, total).toLocaleString()} trong ${total.toLocaleString()}`
+							<span>
+								<span className="font-semibold text-blue-600">{((page - 1) * pageSize + 1).toLocaleString()}</span>
+								{" - "}
+								<span className="font-semibold text-blue-600">{Math.min(page * pageSize, total).toLocaleString()}</span>
+								{" trong "}
+								<span className="font-semibold">{total.toLocaleString()}</span>
+							</span>
 						)}
 					</div>
 
 					{/* Navigation Buttons */}
-					<div className="flex items-center gap-1">
+					<div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
 						<Button
-							variant="outline"
+							variant="ghost"
 							size="sm"
 							onClick={() => onPageChange(1)}
 							disabled={page <= 1}
-							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50"
+							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50 transition-colors"
 							title="Trang đầu"
 						>
 							<ChevronsLeft className="h-4 w-4" />
 						</Button>
 
 						<Button
-							variant="outline"
+							variant="ghost"
 							size="sm"
 							onClick={() => onPageChange(page - 1)}
 							disabled={page <= 1}
-							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50"
+							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50 transition-colors"
 							title="Trang trước"
 						>
 							<ChevronLeft className="h-4 w-4" />
 						</Button>
 
 						{/* Page Numbers */}
-						<div className="flex items-center gap-1">
+						<div className="flex items-center gap-1 mx-1">
 							{(() => {
 								const totalPages = Math.ceil(total / pageSize)
 								const showPages = []
@@ -233,12 +246,12 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 									) : (
 										<Button
 											key={pageNum}
-											variant={pageNum === page ? "default" : "outline"}
+											variant={pageNum === page ? "default" : "ghost"}
 											size="sm"
 											onClick={() => onPageChange(pageNum as number)}
-											className={`h-8 w-8 p-0 ${pageNum === page
-												? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-												: "hover:bg-blue-50"
+											className={`h-8 w-8 p-0 transition-all duration-200 ${pageNum === page
+												? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm"
+												: "hover:bg-blue-50 text-gray-700"
 												}`}
 										>
 											{pageNum}
@@ -249,22 +262,22 @@ function DataTable({ columns, data, loading, total, page, pageSize, onPageChange
 						</div>
 
 						<Button
-							variant="outline"
+							variant="ghost"
 							size="sm"
 							onClick={() => onPageChange(page + 1)}
 							disabled={page >= Math.ceil(total / pageSize)}
-							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50"
+							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50 transition-colors"
 							title="Trang sau"
 						>
 							<ChevronRight className="h-4 w-4" />
 						</Button>
 
 						<Button
-							variant="outline"
+							variant="ghost"
 							size="sm"
 							onClick={() => onPageChange(Math.ceil(total / pageSize))}
 							disabled={page >= Math.ceil(total / pageSize)}
-							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50"
+							className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50 transition-colors"
 							title="Trang cuối"
 						>
 							<ChevronsRight className="h-4 w-4" />
