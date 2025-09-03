@@ -136,7 +136,7 @@ function CraftVillageRequest({ href }: { href: string }) {
 		return filteredAndSortedData.slice(start, start + pageSize);
 	}, [filteredAndSortedData, page, pageSize]);
 
-	const toggleSort = (field: "name" | "ownerFullName" | "status") => {
+	const toggleSort = (field: "name" | "ownerFullName" | "status" | "createdTime") => {
 		if (sortBy === field) {
 			setSortDir((d) => (d === "asc" ? "desc" : "asc"));
 		} else {
@@ -234,11 +234,11 @@ function CraftVillageRequest({ href }: { href: string }) {
 								<TableHead className="w-[140px]">
 									<button
 										className="inline-flex items-center gap-1 font-medium"
-										onClick={() => toggleSort("createTime")}
+										onClick={() => toggleSort("createdTime")}
 										title="Sắp xếp theo thời gian tạo"
 									>
 										<span>Ngày tạo</span>
-										{sortBy !== "createTime" ? (
+										{sortBy !== "createdTime" ? (
 											<ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
 										) : sortDir === "asc" ? (
 											<ArrowUp className="w-3.5 h-3.5 text-gray-600" />

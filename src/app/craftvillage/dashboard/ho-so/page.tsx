@@ -2,7 +2,7 @@
 
 import BreadcrumbHeader from '@/components/common/breadcrumb-header'
 import React, { useEffect, useState } from 'react'
-import CraftVillageProfile from './components/CraftVillageProfile'
+import CraftVillageProfileView from './components/CraftVillageProfileView'
 import { getUserFromLocalStorage } from '@/utils'
 import { useUser } from '@/services/use-user'
 import toast from 'react-hot-toast'
@@ -103,7 +103,7 @@ function page() {
 		<div className="min-h-screen bg-gray-50">
 			<BreadcrumbHeader items={items} />
 			<div className="py-8">
-				<CraftVillageProfile craftVillageId={craftVillageId} />
+				<CraftVillageProfileView craftVillageId={craftVillageId} />
 			</div>
 		</div>
 	)
