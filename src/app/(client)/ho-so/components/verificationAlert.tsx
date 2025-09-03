@@ -24,7 +24,6 @@ export default function VerificationAlert() {
       } else {
         console.error("User email is undefined. Cannot resend verification email.");
       }
-      logout(); 
       setResendSuccess(true);
       toast.success("Đã gửi lại email xác thực thành công!");
       setTimeout(() => setResendSuccess(false), 5000);
