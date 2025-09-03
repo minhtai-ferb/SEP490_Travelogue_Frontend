@@ -341,6 +341,48 @@ export function useTourguideAssign() {
 		}, [callApi, setLoading]
 	);
 
+	const getAllRequestUpdatePrice = useCallback(
+		async () => {
+			setLoading(true);
+			try {
+				const response = await callApi("get", TOUR_GUIDE_API_URL.GET_ALL_REQUEST_UPDATE_PRICE);
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
+	const approveRequestUpdatePrice = useCallback(
+		async (requestId: string) => {
+			setLoading(true);
+			try {
+				const response = await callApi("put", TOUR_GUIDE_API_URL.APPROVE_REQUEST_UPDATE_PRICE.replace(":requestId", requestId));
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
+	const rejectRequestUpdatePrice = useCallback(
+		async (requestId: string, reason: string) => {
+			setLoading(true);
+			try {
+				const response = await callApi("put", TOUR_GUIDE_API_URL.REJECT_REQUEST_UPDATE_PRICE.replace(":requestId", requestId), { reason });
+				return response?.data;
+			} catch (e: any) {
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		}, [callApi, setLoading]
+	);
+
 	return {
 		getTourGuide,
 		getTourguideProfile,
@@ -361,6 +403,9 @@ export function useTourguideAssign() {
 		tourguideDashboard,
 		getBookingPriceRequest,
 		createPriceRequest,
+		getAllRequestUpdatePrice,
+		approveRequestUpdatePrice,
+		rejectRequestUpdatePrice,
 		loading: isLoading || loading,
 	};
 }
