@@ -317,12 +317,24 @@ export default function UserInfoDisplay({
                               <div className="mt-2">
                                 {user.tourGuideInfo.certifications?.length > 0 ? (
                                   <div className="flex flex-wrap gap-2">
-                                    {user.tourGuideInfo.certifications.map((cert, index) => (
-                                      <Badge key={index} variant="outline" className="flex items-center gap-1">
-                                        <Award className="h-3 w-3" />
-                                        {cert}
-                                      </Badge>
-                                    ))}
+                                    {user.tourGuideInfo.certifications.map((cert, index) => {
+                                      const isObject = typeof cert === 'object' && cert !== null;
+                                      const certName = isObject ? cert.name : cert;
+                                      const certUrl = isObject ? cert.certificateUrl : null;
+                                      
+                                      return (
+                                        <Badge 
+                                          key={index} 
+                                          variant="outline" 
+                                          className={`flex items-center gap-1 ${certUrl ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-300' : ''}`}
+                                          onClick={certUrl ? () => window.open(certUrl, '_blank') : undefined}
+                                        >
+                                          <Award className="h-3 w-3" />
+                                          {certName}
+                                          {certUrl && <span className="text-xs text-blue-600 ml-1">📄</span>}
+                                        </Badge>
+                                      );
+                                    })}
                                   </div>
                                 ) : (
                                   <Text type="secondary">Chưa có chứng chỉ</Text>
