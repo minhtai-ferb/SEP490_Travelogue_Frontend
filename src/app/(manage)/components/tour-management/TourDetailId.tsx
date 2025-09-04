@@ -186,14 +186,14 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
                               {day.activities.some(
                                 (act: any) => act.workshop
                               ) && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-purple-100 text-purple-700"
-                                >
-                                  <Wrench className="h-3 w-3 mr-1" />
-                                  Có workshop
-                                </Badge>
-                              )}
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs bg-purple-100 text-purple-700"
+                                  >
+                                    <Wrench className="h-3 w-3 mr-1" />
+                                    Có workshop
+                                  </Badge>
+                                )}
                             </div>
                           </div>
                         </div>
@@ -239,11 +239,10 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
                                 {/* Activity Content */}
                                 <div className="flex-1">
                                   <div
-                                    className={`p-6 rounded-lg border-2 ${
-                                      activityExt.workshop
+                                    className={`p-6 rounded-lg border-2 ${activityExt.workshop
                                         ? "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-md"
                                         : "bg-white border-gray-200 shadow-sm"
-                                    }`}
+                                      }`}
                                   >
                                     {/* Activity Header */}
                                     <div className="flex sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
@@ -418,7 +417,7 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
                               variant={
                                 schedule.maxParticipant -
                                   schedule.currentBooked >
-                                0
+                                  0
                                   ? "default"
                                   : "destructive"
                               }
@@ -474,11 +473,10 @@ function TourDetailId({ tour }: { tour: TourDetail }) {
                             <div
                               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                               style={{
-                                width: `${
-                                  (schedule.currentBooked /
+                                width: `${(schedule.currentBooked /
                                     schedule.maxParticipant) *
                                   100
-                                }%`,
+                                  }%`,
                               }}
                             />
                           </div>
