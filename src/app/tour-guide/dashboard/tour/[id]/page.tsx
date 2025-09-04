@@ -1,11 +1,150 @@
-import React from 'react'
+"use client";
 
-function page() {
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useTour } from "@/services/tour";
+import type { TourDetail } from "@/types/Tour";
+import { TourTypeLabels } from "@/types/Tour";
+import { AlertCircle, ArrowLeft, Edit, Loader2, Calendar, Users, Phone } from "lucide-react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import TourDetailId from "../components/TourDetailCL";
+
+const statusColorMap: Record<string, string> = {
+	"Nháp": "bg-yellow-100 text-yellow-800",
+	"Đã xác nhận": "bg-green-100 text-green-800",
+	"Đã hủy": "bg-red-100 text-red-800",
+};
+
+export default function TourGuideTourDetail() {
+	const params = useParams();
+	const router = useRouter();
+	const [tour, setTour] = useState<TourDetail | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState("");
+
+	const { getTourDetail } = useTour();
+	const tourId = params?.id as string;
+
+	useEffect(() => {
+		const fetchTour = async () => {
+			try {
+				setLoading(true);
+				setError("");
+				if (tourId) {
+					const response = await getTourDetail(tourId);
+					if (response) {
+						setTour(response);
+					} else {
+						throw new Error("Failed to fetch tour");
+					}
+				}
+			} catch (error: any) {
+				console.error("Error fetching tour:", error);
+				setError(error.message || "Không thể tải thông tin tour");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchTour();
+	}, [tourId, getTourDetail]);
+
+	const handleBack = () => {
+		router.push("/tour-guide/dashboard/lich-trinh");
+	};
+
+	const handleViewBookings = () => {
+		router.push(`/tour-guide/dashboard/lich-trinh?tourId=${tourId}`);
+	};
+
+	if (!tourId) {
+		return (
+			<div className="container mx-auto p-6 max-w-6xl">
+				<Alert className="mb-6">
+					<AlertCircle className="h-4 w-4" />
+					<AlertDescription>Không tìm thấy ID tour</AlertDescription>
+				</Alert>
+				<Button onClick={() => router.push("/tour-guide/dashboard")} variant="outline">
+					<ArrowLeft className="w-4 h-4 mr-2" />
+					Quay về Dashboard
+				</Button>
+			</div>
+		);
+	}
+
+	if (loading) {
+		return (
+			<div className="container mx-auto p-6 max-w-6xl">
+				<div className="flex items-center justify-center py-12">
+					<Loader2 className="w-8 h-8 animate-spin" />
+					<span className="ml-2">Đang tải...</span>
+				</div>
+			</div>
+		);
+	}
+
+	if (error || !tour) {
+		return (
+			<div className="container mx-auto p-6 max-w-6xl">
+				<Alert className="mb-6">
+					<AlertCircle className="h-4 w-4" />
+					<AlertDescription>{error || "Không tìm thấy tour"}</AlertDescription>
+				</Alert>
+				<Button onClick={handleBack} variant="outline">
+					<ArrowLeft className="w-4 h-4 mr-2" />
+					Quay lại lịch trình
+				</Button>
+			</div>
+		);
+	}
+
 	return (
-		<div>
+		<div className="container mx-auto p-6 max-w-6xl">
+			{/* Header */}
+			<div className="flex items-center justify-between mb-6">
+				<div className="flex items-center gap-4">
+					<Button onClick={handleBack} variant="outline" size="sm">
+						<ArrowLeft className="w-4 h-4 mr-2" />
+						Quay lại
+					</Button>
+					<div>
+						<h1 className="text-3xl font-bold">{tour.name}</h1>
+						<div className="flex items-center gap-2 mt-2">
+							<Badge
+								className={`${statusColorMap[
+									tour.statusText === "Draft"
+										? "Nháp"
+										: tour.statusText === "Confirmed"
+											? "Đã xác nhận"
+											: tour.statusText === "Cancelled"
+												? "Đã hủy"
+												: tour.statusText
+								] || "bg-gray-100 text-gray-800"} text-xs`}
+							>
+								{tour.statusText == "Draft" ? "Nháp" : tour.statusText == "Confirmed" ? "Đã xác nhận" : tour.statusText == "Cancelled" ? "Đã hủy" : tour.statusText}
+							</Badge>
+							<Badge variant="outline" className="text-xs">
+								{TourTypeLabels[tour.tourType as keyof typeof TourTypeLabels]}
+							</Badge>
+						</div>
+					</div>
+				</div>
+				<div className="flex gap-2">
+					<Button
+						onClick={handleViewBookings}
+						variant="outline"
+						className="flex items-center gap-2"
+					>
+						<Calendar className="w-4 h-4" />
+						Xem lịch trình
+					</Button>
+				</div>
+			</div>
 
+			{/* Tour Detail Component */}
+			<TourDetailId tour={tour} />
 		</div>
-	)
+	);
 }
-
-export default page
