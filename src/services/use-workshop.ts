@@ -56,8 +56,19 @@ export function useWorkshop() {
 		return res?.data
 	}, [callApi])
 
+	const getWorkshopSchedules = useCallback(async (workshopId: string) => {
+		const url = WORKSHOP_API_URL.WORKSHOP_SCHEDULES.replace(":id", workshopId)
+		const res = await callApi("get", url)
+		return res
+	}, [callApi])
+
 	const getWorkshops = useCallback(async (params?: WorkshopFilterParams) => {
 		const res = await callApi("get", WORKSHOP_API_URL.WORKSHOP, { params })
+		return res
+	}, [callApi])
+
+	const getWorkshopsByCraftVillage = useCallback(async (craftVillageId: string) => {
+		const res = await callApi("get", `${WORKSHOP_API_URL.WORKSHOP}?craftVillageId=${craftVillageId}`)
 		return res
 	}, [callApi])
 
@@ -75,7 +86,9 @@ export function useWorkshop() {
 		updateSchedule,
 		deleteSchedule,
 		getWorkshopDetail,
+		getWorkshopSchedules,
 		getWorkshops,
+		getWorkshopsByCraftVillage,
 		getModeratorWorkshops,
 		loading,
 	}

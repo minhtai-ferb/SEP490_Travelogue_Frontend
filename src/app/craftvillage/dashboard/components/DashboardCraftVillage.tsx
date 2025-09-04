@@ -7,7 +7,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CalendarIcon, DollarSign, TrendingUp, TrendingDown, Users, ShoppingBag, Building2, Loader2, Download, RefreshCw } from "lucide-react"
+import { CalendarIcon, DollarSign, TrendingUp, TrendingDown, Users, ShoppingBag, Building2, Loader2, Download, RefreshCw, Calendar } from "lucide-react"
+import Link from 'next/link'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import dayjs from 'dayjs'
 import { useCraftVillage } from '@/services/use-craftvillage'
@@ -408,6 +409,13 @@ function DashboardCraftVillage() {
 					<p className="text-gray-600 mt-1">Theo dõi hoạt động kinh doanh và workshop</p>
 				</div>
 				<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+					{/* Schedule Calendar Button */}
+					<Link href="/craftvillage/dashboard/lich-trinh/workshops">
+						<Button variant="outline" className="flex items-center gap-2 bg-white hover:bg-blue-50 border-blue-200 hover:border-blue-300">
+							<Calendar className="h-4 w-4" />
+							Xem Lịch Trình Workshop
+						</Button>
+					</Link>
 
 					{/* Date Range Picker */}
 					<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -458,7 +466,7 @@ function DashboardCraftVillage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 						<div className="text-center">
 							<p className="text-blue-600 font-medium">Tỷ lệ lợi nhuận</p>
 							<p className="text-2xl font-bold text-blue-900">
@@ -471,12 +479,12 @@ function DashboardCraftVillage() {
 								{((statistics?.tourRevenue || 0) / (statistics?.totalRevenue || 1) * 100).toFixed(1)}%
 							</p>
 						</div>
-						<div className="text-center">
+						{/* <div className="text-center">
 							<p className="text-blue-600 font-medium">Workshop/ngày</p>
 							<p className="text-2xl font-bold text-blue-900">
 								{Math.round((statistics?.workshopsSold || 0) / 30)}
 							</p>
-						</div>
+						</div> */}
 					</div>
 				</CardContent>
 			</Card>
