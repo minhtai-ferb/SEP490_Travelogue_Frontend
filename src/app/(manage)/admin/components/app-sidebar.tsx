@@ -118,10 +118,10 @@ const data = {
           title: "Đặt hướng dẫn viên",
           url: "/admin/booking/tour-guide",
         },
-        {
-          title: "Đặt trải nghiệm làng nghề",
-          url: "/admin/booking/workshop",
-        },
+        // {
+        //   title: "Đặt trải nghiệm làng nghề",
+        //   url: "/admin/booking/workshop",
+        // },
         {
           title: "Yêu cầu từ chối lịch",
           url: "/admin/booking/rejection-request",

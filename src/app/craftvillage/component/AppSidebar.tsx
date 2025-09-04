@@ -94,12 +94,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 								<span>Đơn của bạn</span>
 							</Link>
 						</SidebarMenuButton>
-						<SidebarMenuButton asChild>
+						{/* <SidebarMenuButton asChild>
 							<Link href="/craftvillage/dashboard/ho-so">
 								<SquareUserRound />
 								<span>Xem hồ sơ</span>
 							</Link>
-						</SidebarMenuButton>
+						</SidebarMenuButton> */}
 					</SidebarMenuItem>
 				</SidebarMenu>
 				<SidebarSeparator className="mx-0" />
