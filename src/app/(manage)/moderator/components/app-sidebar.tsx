@@ -10,7 +10,7 @@ import {
   SquareTerminal,
   Banknote,
   Ticket,
-  BanknoteX,    
+  BanknoteX,
   MapPinned,
   LocateFixed,
   CirclePercent,
@@ -95,10 +95,10 @@ const data = {
           title: "Đặt hướng dẫn viên",
           url: "/moderator/booking/tour-guide",
         },
-        {
-          title: "Đặt trải nghiệm làng nghề",
-          url: "/moderator/booking/workshop",
-        },
+        // {
+        //   title: "Đặt trải nghiệm làng nghề",
+        //   url: "/moderator/booking/workshop",
+        // },
         {
           title: "Yêu cầu từ chối lịch",
           url: "/moderator/booking/rejection-request",
